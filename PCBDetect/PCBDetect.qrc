@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/PCBDetect">
+        <file>Icons/detect.png</file>
+        <file>Icons/exit.png</file>
+        <file>Icons/getTempl.png</file>
+        <file>Icons/set.png</file>
+        <file>Icons/logo.png</file>
+        <file>Icons/screen.png</file>
+    </qresource>
+</RCC>
