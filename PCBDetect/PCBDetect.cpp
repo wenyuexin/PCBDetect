@@ -41,6 +41,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	detectUI->setDetectConfig(&config);
 	detectUI->setDetectParams(&params);
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
+
 }
 
 PCBDetect::~PCBDetect()
