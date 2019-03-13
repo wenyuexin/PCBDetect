@@ -83,9 +83,9 @@ void DetectUI::initGraphicsView()
 {
 	//基本参数
 	itemSpacing = 3; //图元间距
-	nCamera = config->nCamera; //相机个数
-	nPhotographing = config->nPhotographing; //拍摄次数
-	SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
+	int nCamera = config->nCamera; //相机个数
+	int nPhotographing = config->nPhotographing; //拍摄次数
+	QString SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
 	//QSize imageSize = config->imageSize; //原图尺寸
 
 	//计算总间距
@@ -119,22 +119,10 @@ void DetectUI::initGraphicsView()
 	}
 
 	//itemArray的初始化
-	itemArray.resize(nPhotographing); //设置大小
-	for (int iPhotographing=0; iPhotographing<nPhotographing; iPhotographing++) { //行
-		itemArray[iPhotographing].resize(nCamera);
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) { //列
-			itemArray[iPhotographing][iCamera] = Q_NULLPTR;
-		}
-	}
+	initPointersInItemArray();
 
 	//sampleImages的初始化
-	samples.resize(nPhotographing);
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { //行
-		samples[iPhotographing].resize(nCamera);
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) {
-			samples[iPhotographing][iCamera] = Q_NULLPTR;
-		}
-	}
+	initPointersInSampleImages();
 
 	//初始化若干用于监视程序运行状态的变量
 	currentRow_show = -1; //显示行号
@@ -162,7 +150,7 @@ void DetectUI::readSampleImages()
 	double t1 = clock();
 
 	//获取对应目录的路径
-	QString dirpath = SampleDirPath + "/" + params->sampleModelNum + "/" + params->sampleBatchNum + "/" + params->sampleNum;
+	QString dirpath = config->SampleDirPath + "/" + params->sampleModelNum + "/" + params->sampleBatchNum + "/" + params->sampleNum;
 
 	//读取目录下的样本图像
 	QDir dir(dirpath);
@@ -186,13 +174,8 @@ void DetectUI::readSampleImages()
 		int iPhotographing = idxs[0].toInt() - 1;
 		int iCamera = idxs[1].toInt() - 1;
 		if (iPhotographing != currentRow_show) continue;
-
-		/*
-		int num = fileList.at(i).baseName().toInt(); //图片的编号
-		int iCamera = (num - 1) % nCamera; //0 1 ... nCamera-1
-		int iPhotographing = (num - 1) / nCamera; //0 1 ... nPhotographing-1
-		if (iPhotographing != currentRow) continue;
-		*/
+		if (iPhotographing < 0 || iPhotographing >= config->nPhotographing) continue;
+		if (iCamera < 0 || iCamera >= config->nCamera) continue;
 
 		QString filepath = fileList.at(i).absoluteFilePath(); //样本图的路径
 		double t11 = clock();
@@ -212,7 +195,7 @@ void DetectUI::readSampleImages()
 void DetectUI::showSampleImages()
 {
 	//定义图元
-	for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 		QImage imgScaled = (*samples[currentRow_show][iCamera]).scaled(itemSize, Qt::KeepAspectRatio);
 		QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(imgScaled)); //定义图元
 		item->setPos(itemGrid[currentRow_show][iCamera]); //图元的显示位置
@@ -220,7 +203,7 @@ void DetectUI::showSampleImages()
 	}
 
 	//加载相机组新拍摄的一行图元
-	for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 		scene.addItem(itemArray[currentRow_show][iCamera]);
 	}
 
@@ -233,13 +216,51 @@ void DetectUI::showSampleImages()
 }
 
 
+/********* 图元矩阵和样本图像矩阵的初始化和删除等操作 ***********/
+
+//初始化图元矩阵中的指针
+void DetectUI::initPointersInItemArray()
+{
+	if (itemArray.size() > 0) {
+		deletePointersInItemArray();//若执行过init函数，则先delete指针
+	}
+	else {
+		itemArray.resize(config->nPhotographing); //设置大小
+		for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) { //行
+			itemArray[iPhotographing].resize(config->nCamera);
+			for (int iCamera = 0; iCamera < config->nCamera; iCamera++) { //列
+				itemArray[iPhotographing][iCamera] = Q_NULLPTR;
+			}
+		}
+	}
+}
+
+
 //删除图元矩阵中的指针
 void DetectUI::deletePointersInItemArray()
 {
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) {
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
+		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 			delete itemArray[iPhotographing][iCamera];
 			itemArray[iPhotographing][iCamera] = Q_NULLPTR;
+		}
+	}
+}
+
+
+//初始化样本图像向量中的指针
+void DetectUI::initPointersInSampleImages()
+{
+	if (samples.size() > 0) {
+		deletePointersInSampleImages();//若执行过init函数，则先delete指针
+	}
+	else {
+		samples.resize(config->nPhotographing);
+		for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) { //行
+			samples[iPhotographing].resize(config->nCamera);
+			for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+				samples[iPhotographing][iCamera] = Q_NULLPTR;
+			}
 		}
 	}
 }
@@ -248,8 +269,8 @@ void DetectUI::deletePointersInItemArray()
 //删除样本图像向量中的指针
 void DetectUI::deletePointersInSampleImages()
 {
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { 
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
+		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 			delete samples[iPhotographing][iCamera];
 			samples[iPhotographing][iCamera] = Q_NULLPTR;
 		}
@@ -299,7 +320,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 //在绘图网格中显示下一行图像
 void DetectUI::nextRowOfSampleImages()
 {
-	if (currentRow_show + 1 < nPhotographing) { //直接显示新的样本行
+	if (currentRow_show + 1 < config->nPhotographing) { //直接显示新的样本行
 		currentRow_show += 1; //更新显示行号
 		eventCounter += 1; //更新事件计数器
 		qDebug() << "currentRow_show  - " << currentRow_show;
@@ -318,7 +339,7 @@ void DetectUI::nextRowOfSampleImages()
 			detectSampleImages(); //执行检测
 		}
 	}
-	else if (params->currentRow_detect == nPhotographing - 1 && !detectThread->isRunning()) {
+	else if (params->currentRow_detect == config->nPhotographing - 1 && !detectThread->isRunning()) {
 		qDebug() << "currentRow_show  - " << currentRow_show;
 		//params->sampleNum = QString::number(params->sampleNum.toInt() + 1); //编号自增
 

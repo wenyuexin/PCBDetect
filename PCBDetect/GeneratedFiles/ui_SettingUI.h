@@ -73,6 +73,15 @@ public:
     QLabel *label_roiHeight_L_4;
     QSpacerItem *horizontalSpacer_8;
     QComboBox *comboBox_ImageFormat;
+    QWidget *layoutWidget_8;
+    QHBoxLayout *horizontalLayout_8;
+    QLabel *label_roiHeight_L_5;
+    QSpacerItem *horizontalSpacer_9;
+    QLineEdit *lineEdit_imageAspectRatio_W;
+    QSpacerItem *horizontalSpacer_11;
+    QLabel *label_roiHeight_L_6;
+    QSpacerItem *horizontalSpacer_12;
+    QLineEdit *lineEdit_imageAspectRatio_H;
 
     void setupUi(QWidget *SettingUI)
     {
@@ -268,7 +277,7 @@ public:
 
         layoutWidget_4 = new QWidget(SettingUI);
         layoutWidget_4->setObjectName(QStringLiteral("layoutWidget_4"));
-        layoutWidget_4->setGeometry(QRect(120, 360, 311, 37));
+        layoutWidget_4->setGeometry(QRect(120, 300, 311, 37));
         horizontalLayout_4 = new QHBoxLayout(layoutWidget_4);
         horizontalLayout_4->setSpacing(6);
         horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -302,7 +311,7 @@ public:
 
         layoutWidget_5 = new QWidget(SettingUI);
         layoutWidget_5->setObjectName(QStringLiteral("layoutWidget_5"));
-        layoutWidget_5->setGeometry(QRect(120, 420, 311, 37));
+        layoutWidget_5->setGeometry(QRect(120, 360, 311, 37));
         horizontalLayout_5 = new QHBoxLayout(layoutWidget_5);
         horizontalLayout_5->setSpacing(6);
         horizontalLayout_5->setContentsMargins(11, 11, 11, 11);
@@ -336,7 +345,7 @@ public:
 
         layoutWidget_6 = new QWidget(SettingUI);
         layoutWidget_6->setObjectName(QStringLiteral("layoutWidget_6"));
-        layoutWidget_6->setGeometry(QRect(120, 480, 341, 37));
+        layoutWidget_6->setGeometry(QRect(120, 420, 341, 37));
         horizontalLayout_6 = new QHBoxLayout(layoutWidget_6);
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setContentsMargins(11, 11, 11, 11);
@@ -385,7 +394,7 @@ public:
 
         layoutWidget_7 = new QWidget(SettingUI);
         layoutWidget_7->setObjectName(QStringLiteral("layoutWidget_7"));
-        layoutWidget_7->setGeometry(QRect(120, 300, 311, 37));
+        layoutWidget_7->setGeometry(QRect(120, 490, 311, 37));
         horizontalLayout_7 = new QHBoxLayout(layoutWidget_7);
         horizontalLayout_7->setSpacing(6);
         horizontalLayout_7->setContentsMargins(11, 11, 11, 11);
@@ -422,6 +431,70 @@ public:
 
         horizontalLayout_7->addWidget(comboBox_ImageFormat);
 
+        layoutWidget_8 = new QWidget(SettingUI);
+        layoutWidget_8->setObjectName(QStringLiteral("layoutWidget_8"));
+        layoutWidget_8->setGeometry(QRect(110, 550, 321, 37));
+        horizontalLayout_8 = new QHBoxLayout(layoutWidget_8);
+        horizontalLayout_8->setSpacing(6);
+        horizontalLayout_8->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_8->setObjectName(QStringLiteral("horizontalLayout_8"));
+        horizontalLayout_8->setContentsMargins(0, 0, 0, 0);
+        label_roiHeight_L_5 = new QLabel(layoutWidget_8);
+        label_roiHeight_L_5->setObjectName(QStringLiteral("label_roiHeight_L_5"));
+        sizePolicy.setHeightForWidth(label_roiHeight_L_5->sizePolicy().hasHeightForWidth());
+        label_roiHeight_L_5->setSizePolicy(sizePolicy);
+        label_roiHeight_L_5->setMinimumSize(QSize(120, 35));
+        label_roiHeight_L_5->setMaximumSize(QSize(120, 35));
+        label_roiHeight_L_5->setFont(font1);
+        label_roiHeight_L_5->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_8->addWidget(label_roiHeight_L_5);
+
+        horizontalSpacer_9 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        horizontalLayout_8->addItem(horizontalSpacer_9);
+
+        lineEdit_imageAspectRatio_W = new QLineEdit(layoutWidget_8);
+        lineEdit_imageAspectRatio_W->setObjectName(QStringLiteral("lineEdit_imageAspectRatio_W"));
+        sizePolicy.setHeightForWidth(lineEdit_imageAspectRatio_W->sizePolicy().hasHeightForWidth());
+        lineEdit_imageAspectRatio_W->setSizePolicy(sizePolicy);
+        lineEdit_imageAspectRatio_W->setMinimumSize(QSize(60, 35));
+        lineEdit_imageAspectRatio_W->setMaximumSize(QSize(60, 35));
+        lineEdit_imageAspectRatio_W->setFont(font1);
+        lineEdit_imageAspectRatio_W->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_8->addWidget(lineEdit_imageAspectRatio_W);
+
+        horizontalSpacer_11 = new QSpacerItem(3, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        horizontalLayout_8->addItem(horizontalSpacer_11);
+
+        label_roiHeight_L_6 = new QLabel(layoutWidget_8);
+        label_roiHeight_L_6->setObjectName(QStringLiteral("label_roiHeight_L_6"));
+        sizePolicy.setHeightForWidth(label_roiHeight_L_6->sizePolicy().hasHeightForWidth());
+        label_roiHeight_L_6->setSizePolicy(sizePolicy);
+        label_roiHeight_L_6->setMinimumSize(QSize(8, 35));
+        label_roiHeight_L_6->setMaximumSize(QSize(8, 35));
+        label_roiHeight_L_6->setFont(font1);
+        label_roiHeight_L_6->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_8->addWidget(label_roiHeight_L_6);
+
+        horizontalSpacer_12 = new QSpacerItem(3, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        horizontalLayout_8->addItem(horizontalSpacer_12);
+
+        lineEdit_imageAspectRatio_H = new QLineEdit(layoutWidget_8);
+        lineEdit_imageAspectRatio_H->setObjectName(QStringLiteral("lineEdit_imageAspectRatio_H"));
+        sizePolicy.setHeightForWidth(lineEdit_imageAspectRatio_H->sizePolicy().hasHeightForWidth());
+        lineEdit_imageAspectRatio_H->setSizePolicy(sizePolicy);
+        lineEdit_imageAspectRatio_H->setMinimumSize(QSize(60, 35));
+        lineEdit_imageAspectRatio_H->setMaximumSize(QSize(60, 35));
+        lineEdit_imageAspectRatio_H->setFont(font1);
+        lineEdit_imageAspectRatio_H->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_8->addWidget(lineEdit_imageAspectRatio_H);
+
         label_3->raise();
         label_title->raise();
         line->raise();
@@ -434,6 +507,7 @@ public:
         layoutWidget_5->raise();
         layoutWidget_6->raise();
         layoutWidget_7->raise();
+        layoutWidget_8->raise();
 
         retranslateUi(SettingUI);
 
@@ -461,6 +535,9 @@ public:
         comboBox_ImageFormat->setItemText(1, QApplication::translate("SettingUI", "    *.bmp", nullptr));
         comboBox_ImageFormat->setItemText(2, QApplication::translate("SettingUI", "    *.jpg", nullptr));
 
+        label_roiHeight_L_5->setText(QApplication::translate("SettingUI", "\345\233\276\345\203\217\345\256\275\351\253\230\346\257\224", nullptr));
+        label_roiHeight_L_6->setText(QApplication::translate("SettingUI", ":", nullptr));
+        lineEdit_imageAspectRatio_H->setText(QString());
     } // retranslateUi
 
 };

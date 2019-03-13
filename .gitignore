@@ -262,6 +262,6 @@ __pycache__/
 
 
 # Personal documents that need to be ignored
-*.config
+.config
 OpenCV_contrib_x64_Debug_PS.props
 OpenCV_contrib_x64_Release_PS.props

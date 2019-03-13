@@ -17,7 +17,7 @@ private:
 	Ui::DetectParams *params;
 	Ui::QImageArray *qimages;
 	Ui::CvMatArray cvmats;
-	TemplFunc *templFunc;
+	TemplFunc *templFunc = Q_NULLPTR;
 
 	std::vector<ImgConvertThread *> threads; //格式转换线程
 	int nThreads = 10; //默认相机个数不超过10

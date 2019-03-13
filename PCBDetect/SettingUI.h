@@ -36,12 +36,14 @@ private:
 
 Q_SIGNALS:
 	void showDetectMainUI();
+	void resetDetectSystem();
 
 private Q_SLOTS:
 	void on_pushButton_SampleDirPath_clicked();
 	void on_pushButton_TemplDirPath_clicked();
 	void on_pushButton_OutputDirPath_clicked();
 	void on_currentIndexChanged_imageFormat();
+	//void on_currentIndexChanged_aspectRatio();
 
 	void on_pushButton_confirm_clicked();
 	void on_pushButton_return_clicked();

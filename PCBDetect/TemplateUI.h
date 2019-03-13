@@ -22,10 +22,6 @@ private:
 	Ui::DetectConfig *config; //参数配置
 	Ui::DetectParams *params; //临时参数
 
-	int nCamera; //相机个数
-	int nPhotographing; //拍摄次数
-	QString SampleDirPath; //sample文件夹的路径
-
 	int itemSpacing; //图元间距
 	QSize itemSize; //图元尺寸
 	QGraphicsScene scene; //绘图场景
@@ -51,9 +47,12 @@ private:
 	void readSampleImages();
 	void showSampleImages();
 	void extractTemplateImages();
-	void deletePointersInItemArray();
-	void deletePointersInSampleImages();
-	void removeItemsFromGraphicsScene();
+
+	void initPointersInItemArray();//初始化itemArray
+	void deletePointersInItemArray();//删除itemArray中的指针
+	void initPointersInSampleImages();//初始化sampleImages
+	void deletePointersInSampleImages();//删除sampleImages中的指针
+	void removeItemsFromGraphicsScene();//移除场景中的图元
 
 Q_SIGNALS:
 	void showDetectMainUI();

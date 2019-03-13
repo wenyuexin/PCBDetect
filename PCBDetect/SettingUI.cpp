@@ -16,8 +16,9 @@ SettingUI::SettingUI(QWidget *parent)
 	//设置界面初始化
 	initSettingUI();
 
-	//槽函数
+	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imageFormat()));
+	//connect(ui.comboBox_imageAspectRatio, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_aspectRatio()));
 }
 
 SettingUI::~SettingUI()
@@ -80,6 +81,8 @@ void SettingUI::on_pushButton_OutputDirPath_clicked()
 //确认
 void SettingUI::on_pushButton_confirm_clicked()
 {
+	bool sysResetFlag = false; //是否重置检测系统
+
 	//样本路径
 	QString SampleDirPath = ui.lineEdit_SampleDirPath->text();
 	if (!(QFileInfo(config->SampleDirPath).isDir())) {
@@ -109,17 +112,19 @@ void SettingUI::on_pushButton_confirm_clicked()
 		return;
 	}
 	config->OutputDirPath = OutputDirPath;
-
-	//样本图像的尺寸
-	//QSize imageSize; 
 	
+	//图像格式
+	//config->ImageFormat
+
 	//相机个数
 	int nCamera = ui.lineEdit_nCamera->text().toInt();
-	config->nCamera = nCamera;
+	if (!sysResetFlag) sysResetFlag = (config->nCamera != nCamera);
+	if (sysResetFlag) config->nCamera = nCamera;
 
 	//拍照次数
 	int nPhotographing = ui.lineEdit_nPhotographing->text().toInt();
-	config->nPhotographing = nPhotographing;
+	if (!sysResetFlag) sysResetFlag = (config->nPhotographing != nPhotographing);
+	if (sysResetFlag) config->nPhotographing = nPhotographing;
 
 	//每一行中的基本单元数
 	int nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();
@@ -128,12 +133,23 @@ void SettingUI::on_pushButton_confirm_clicked()
 	//每一列中的基本单元数
 	int nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();
 	config->nBasicUnitInCol = nBasicUnitInCol;
+	
+	//样本图像的宽高比
+	//double imageAspectRatio = ui.comboBox_imageAspectRatio->text;
+	//config->imageAspectRatio = imageAspectRatio;
+	double imageAspectRatio_W = ui.lineEdit_imageAspectRatio_W->text().toInt();
+	double imageAspectRatio_H = ui.lineEdit_imageAspectRatio_H->text().toInt();
+	double imageAspectRatio = 1.0 * imageAspectRatio_W / imageAspectRatio_H;
+	if (!sysResetFlag) sysResetFlag = (abs(config->imageAspectRatio - imageAspectRatio) < 1E-5);
+	if (sysResetFlag) config->imageAspectRatio = imageAspectRatio;
 
 
 	//将参数保存到config文件中
 	QString configFileName = ".config";
 	writeConfigFile(configFileName);
 
+	//判断是否发送重置信号
+	if (sysResetFlag) emit resetDetectSystem();
 }
 
 //返回
@@ -143,7 +159,7 @@ void SettingUI::on_pushButton_return_clicked()
 }
 
 
-/******************************************/
+/************** comboBox的槽函数 *****************/
 
 void SettingUI::on_currentIndexChanged_imageFormat()
 {
