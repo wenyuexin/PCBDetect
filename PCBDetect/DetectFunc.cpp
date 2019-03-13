@@ -145,10 +145,11 @@ float DetectFunc::correlationCoefficient(const vector<double> &X, const vector<d
 
 	return corr;
 }
+
 /**
-*imgOut:模板灰度图
-*imgOut2:样本灰度图
-*/
+ * imgOut:模板灰度图
+ * imgOut2:样本灰度图
+ */
 cv::Mat DetectFunc::sub_process(cv::Mat &imgOut, cv::Mat &imgOut2) {
 	//阈值处理
 	Mat imgFlaw;

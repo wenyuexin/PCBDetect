@@ -1,10 +1,10 @@
 #pragma once
-#include <string>
+#include "Configurator.h"
 #include "direct.h"
 #include <io.h>
+#include <string>
 #include <vector>
 #include "opencv2/opencv.hpp"
-#include "Configurator.h"
 #include <qDebug>
 
 
@@ -22,8 +22,8 @@ public:
 	DetectFunc() = default;
 	~DetectFunc() {};
 
-	void setDetectConfig(Ui::DetectConfig *ptr);
-	void setDetectParams(Ui::DetectParams *ptr);
+	void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR);
+	void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR);
 
 	void alignImages(cv::Mat &im1Gray, cv::Mat &im2Gray, cv::Mat &im1Reg, cv::Mat &h, cv::Mat &imMatches);
 	cv::Mat sub_process(cv::Mat &imgOut, cv::Mat &imgOut2);
