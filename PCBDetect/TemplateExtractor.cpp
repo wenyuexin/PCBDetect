@@ -5,10 +5,15 @@ using Ui::DetectConfig;
 using Ui::DetectParams;
 using Ui::CvMatVector;
 using Ui::CvMatArray;
-
 using std::vector;
 using std::string;
 using cv::Mat;
+using cv::Point;
+using cv::Point2i;
+using cv::Point2f;
+using cv::Vec4i;
+using cv::Rect;
+using cv::Size;
 using cv::imread;
 
 
@@ -63,7 +68,7 @@ void TemplateExtractor::extract(TemplFunc *templFunc)
 		Mat mask = (*templFunc).find1(col + 1, params->currentRow_extract + 1, src);
 
 		cv::imwrite(mask_path + "/" + std::to_string(params->currentRow_extract + 1) + "_" + std::to_string(col + 1) + "_mask" + config->ImageFormat.toStdString(), mask);
-		Mat roi = templFunc->big_templ(cv::Rect(col*config->imageSize.width(), params->currentRow_extract*config->imageSize.height(), config->imageSize.width(), config->imageSize.height()));
+		Mat roi = templFunc->big_templ(Rect(col*params->imageSize.width(), params->currentRow_extract*params->imageSize.height(), params->imageSize.width(), params->imageSize.height()));
 		src.copyTo(roi);
 	}
 

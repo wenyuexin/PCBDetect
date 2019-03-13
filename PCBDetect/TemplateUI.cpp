@@ -84,7 +84,7 @@ void TemplateUI::initGraphicsView()
 	nCamera = config->nCamera; //相机个数
 	nPhotographing = config->nPhotographing; //拍摄次数
 	SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
-	QSize imageSize = config->imageSize; //原图尺寸
+	//QSize imageSize = config->imageSize; //原图尺寸
 
 	//计算总间距
 	QSize totalSpacing; //总间距
@@ -94,7 +94,8 @@ void TemplateUI::initGraphicsView()
 	//计算图元尺寸
 	QSize viewSize = ui.graphicsView->size(); //视图尺寸
 	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
-	qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
+	//qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
+	qreal itemAspectRatio = config->imageAspectRatio; //宽高比
 	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
 
 	//计算场景尺寸
@@ -142,10 +143,8 @@ void TemplateUI::initGraphicsView()
 	templExtractor->setDetectParams(params);
 	templExtractor->setDetectConfig(config);
 	templThread->setDetectParams(params);
-	templThread->setSampleImages(&samples);
-
-	//新增
 	templThread->setDetectConfig(config);
+	templThread->setSampleImages(&samples);
 
 	//视图控件的设置
 	ui.graphicsView->setFocusPolicy(Qt::NoFocus); //设置聚焦策略
@@ -167,6 +166,12 @@ void TemplateUI::readSampleImages()
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
 	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
+
+	if (params->imageSize.height() <= 0) {
+		QImage img = QImage(fileList.at(0).absoluteFilePath());//读图
+		params->imageSize = img.size();
+		templThread->initTemplFunc();
+	}
 
 	//读取并储存图像
 	for (int i = 0; i < fileList.size(); i++) {

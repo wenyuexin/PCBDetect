@@ -7,22 +7,32 @@
 #include "Configurator.h"
 #include <qDebug>
 
-using namespace std;
-using namespace cv;
+
 class DetectFunc {
-public:
-	DetectFunc() = default;
-	~DetectFunc() {};
-	void alignImages(Mat &im1Gray, Mat &im2Gray, Mat &im1Reg, Mat &h, Mat &imMatches);
-	cv::Mat sub_process(cv::Mat &imgOut, cv::Mat &imgOut2);
-	void markDefect(Mat &diffBw, Mat &src, Mat &temp_bw, Mat &templ_reg, Ui::DetectConfig* detectConfig, int model_num, int batch_num, int pcb_num, int &defectNum,int cur_row,int cur_col);
 
 private:
-	float correlationCoefficient(const vector<double> &X, const vector<double> & Y);
-
+	Ui::DetectConfig* config;
+	Ui::DetectParams* params;
+	
 	//配准函数需要用到的参数
 	int MAX_FEATURES = 500;
 	float GOOD_MATCH_PERCENT = 0.15f;//保留的良好匹配的比例
+
+public:
+	DetectFunc() = default;
+	~DetectFunc() {};
+
+	void setDetectConfig(Ui::DetectConfig *ptr);
+	void setDetectParams(Ui::DetectParams *ptr);
+
+	void alignImages(cv::Mat &im1Gray, cv::Mat &im2Gray, cv::Mat &im1Reg, cv::Mat &h, cv::Mat &imMatches);
+	cv::Mat sub_process(cv::Mat &imgOut, cv::Mat &imgOut2);
+	void markDefect(cv::Mat &diffBw, cv::Mat &src, cv::Mat &temp_bw, cv::Mat &templ_reg, int &defectNum,int currentCol);
+
+private:
+	float correlationCoefficient(const std::vector<double> &X, const std::vector<double> &Y);
+
+	
 	
 
 };
