@@ -27,7 +27,7 @@ public:
 	LaunchUI(QWidget *parent = Q_NULLPTR, QPixmap *background = Q_NULLPTR);
 	~LaunchUI();
 
-	void setDetectConfig(Ui::DetectConfig *); //≈‰÷√
+	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; } 
 	void runInitThread(); //‘À––
 
 Q_SIGNALS:

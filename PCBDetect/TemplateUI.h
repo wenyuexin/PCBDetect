@@ -43,8 +43,8 @@ public:
 	TemplateUI(QWidget *parent = Q_NULLPTR);
 	~TemplateUI();
 	
-	void setDetectConfig(Ui::DetectConfig *config);
-	void setDetectParams(Ui::DetectParams *params);
+	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
+	inline void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
 	void initGraphicsView();
 
 private:

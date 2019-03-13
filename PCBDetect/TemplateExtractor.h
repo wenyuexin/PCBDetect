@@ -29,10 +29,10 @@ public:
 	TemplateExtractor(QObject *parent = Q_NULLPTR);
 	~TemplateExtractor();
 
-	void setSampleImages(Ui::CvMatArray *ptr = Q_NULLPTR);
-	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR);
-	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR);
-	void setTemplFunc(TemplFunc *ptr = Q_NULLPTR);
+	void setSampleImages(Ui::CvMatArray *ptr = Q_NULLPTR) { samples = ptr; }
+	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
+	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	void setTemplFunc(TemplFunc *ptr = Q_NULLPTR) { templFunc = ptr; }
 
 	void extract();
 

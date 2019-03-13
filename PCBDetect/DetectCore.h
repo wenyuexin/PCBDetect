@@ -31,10 +31,11 @@ public:
 	DetectCore();
 	~DetectCore();
 
-	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR);
-	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR);
-	void setDetectResult(Ui::DetectResult *ptr = Q_NULLPTR);
-	void setSampleImages(Ui::CvMatVector *ptr = Q_NULLPTR);
+	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; } //来自配置文件或参数设置界面
+	inline void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; } //临时变量或临时参数
+	inline void setSampleImages(Ui::CvMatVector* ptr = Q_NULLPTR) { samples = ptr; } //当前正在检测的一行样本
+	inline void setDetectResult(Ui::DetectResult* ptr = Q_NULLPTR) { result = ptr; } //检测结果
+
 	void doDetect();
 
 private:

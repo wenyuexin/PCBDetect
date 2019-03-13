@@ -24,9 +24,9 @@ public:
 	DetectThread();
 	~DetectThread();
 
-	void setDetectCore(DetectCore *ptr = Q_NULLPTR);
-	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR);
-	void setSampleImages(Ui::QImageArray *ptr = Q_NULLPTR);
+	inline void setDetectCore(DetectCore* ptr = Q_NULLPTR) { detectCore = ptr; }
+	inline void setSampleImages(Ui::QImageArray* ptr = Q_NULLPTR) { samples = ptr; }
+	inline void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
 
 private:
 	void initImageConvertThreads();

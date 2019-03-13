@@ -23,10 +23,10 @@ public:
 	TemplFunc() = default;
 	~TemplFunc(){};
 
-	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR);
-	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR);
-	void generateBigTempl();
+	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
+	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
 
+	void generateBigTempl();
 	cv::Mat find1(int currentCol, cv::Mat &image);
 
 	inline cv::Mat getBigTempl() { return big_templ; }

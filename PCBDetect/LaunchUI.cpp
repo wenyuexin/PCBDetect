@@ -18,10 +18,8 @@ LaunchUI::~LaunchUI()
 {
 }
 
-/***************** 初始化线程 ******************/
 
-//设置参数结构体的指针
-void LaunchUI::setDetectConfig(Ui::DetectConfig *ptr) { config = ptr; }
+/***************** 初始化线程 ******************/
 
 //开启初始化线程
 void LaunchUI::runInitThread()

@@ -18,7 +18,8 @@ private:
 public:
 	SysInitThread();
 	~SysInitThread();
-	void setDetectConfig(Ui::DetectConfig *ptr);
+
+	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
 
 protected:
 	void run();

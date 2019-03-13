@@ -44,7 +44,7 @@ void Configurator::init(QString filePath)
 /********************** 单个参数的读写 *************************/
 
 //将参数写入配置文件中
-void Configurator::jsonSetValue(const QString &key, QString &value)
+bool Configurator::jsonSetValue(const QString &key, QString &value)
 {
 	QTextStream textStrteam(configFile);
 	configFile->seek(0);
@@ -60,12 +60,14 @@ void Configurator::jsonSetValue(const QString &key, QString &value)
 				QJsonDocument document = QJsonDocument::fromVariant(obj.toVariantMap());
 				configFile->resize(0);
 				textStrteam << document.toJson();
+				return true;
 			}
 		}
 		else { //文件为空
 			qDebug() << "文件空";
 		}
 	}
+	return false;
 }
 
 //从配置文件中读取参数 - QString

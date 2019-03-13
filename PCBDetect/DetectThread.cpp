@@ -20,15 +20,6 @@ DetectThread::~DetectThread()
 }
 
 
-/***************** 配置线程 ******************/
-
-void DetectThread::setDetectCore(DetectCore *ptr) { detectCore = ptr; }
-
-void DetectThread::setSampleImages(QImageArray *ptr) { samples = ptr; }
-
-void DetectThread::setDetectParams(DetectParams *ptr) { params = ptr; }
-
-
 /***************** 启动线程 ******************/
 
 //检测当前的一行样本

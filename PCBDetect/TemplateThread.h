@@ -27,11 +27,11 @@ public:
 	TemplateThread(QObject *parent = Q_NULLPTR);
 	~TemplateThread();
 
-	void setTemplateExtractor(TemplateExtractor *ptr = Q_NULLPTR);
-	void setSampleImages(Ui::QImageArray *ptr = Q_NULLPTR);
-	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR);
-	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR);
-	
+	inline void setTemplateExtractor(TemplateExtractor *ptr = Q_NULLPTR) { templExtractor = ptr; }
+	inline void setSampleImages(Ui::QImageArray *ptr = Q_NULLPTR) { qimages = ptr; }
+	inline void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	inline void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
+
 	void initTemplFunc();
 
 private:
