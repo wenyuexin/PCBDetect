@@ -6,6 +6,9 @@ using Ui::CvMatVector;
 using Ui::CvMatArray;
 using Ui::QImageArray;
 using Ui::DetectParams;
+using cv::Size;
+using cv::Mat;
+
 
 TemplateThread::TemplateThread(QObject *parent)
 	: QThread(parent)
@@ -28,13 +31,14 @@ void TemplateThread::setSampleImages(QImageArray *ptr) { qimages = ptr; }
 
 void TemplateThread::setDetectParams(DetectParams *ptr) { params = ptr; }
 
-void TemplateThread::setDetectConfig(Ui::DetectConfig *ptr) {
-	config = ptr;
-	templFunc = new TemplFunc;
-	cv::Mat temp = cv::Mat(cv::Size(config->imageSize.width()*config->nCamera, config->imageSize.height()*config->nPhotographing), CV_8UC3);
-	templFunc->big_templ = temp;
-};
+void TemplateThread::setDetectConfig(DetectConfig *ptr) { config = ptr; }
 
+void TemplateThread::initTemplFunc()
+{
+	templFunc = new TemplFunc;
+	Mat temp = Mat(Size(params->imageSize.width()*config->nCamera, params->imageSize.height()*config->nPhotographing), CV_8UC3);
+	templFunc->big_templ = temp;
+}
 
 /******************** ÔËÐÐ **********************/
 

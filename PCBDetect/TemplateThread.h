@@ -17,11 +17,11 @@ private:
 	Ui::DetectParams *params;
 	Ui::QImageArray *qimages;
 	Ui::CvMatArray cvmats;
+	TemplFunc *templFunc;
 
 	std::vector<ImgConvertThread *> threads; //格式转换线程
 	int nThreads = 10; //默认相机个数不超过10
 
-	TemplFunc *templFunc;
 
 public:
 	TemplateThread(QObject *parent = Q_NULLPTR);
@@ -30,8 +30,9 @@ public:
 	void setTemplateExtractor(TemplateExtractor *ptr = Q_NULLPTR);
 	void setSampleImages(Ui::QImageArray *ptr = Q_NULLPTR);
 	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR);
-
-	void setDetectConfig(Ui::DetectConfig *config);
+	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR);
+	
+	void initTemplFunc();
 
 private:
 	void initImageConvertThreads();

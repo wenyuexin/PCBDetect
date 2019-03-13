@@ -93,7 +93,7 @@ void DetectUI::initGraphicsView()
 	nCamera = config->nCamera; //相机个数
 	nPhotographing = config->nPhotographing; //拍摄次数
 	SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
-	QSize imageSize = config->imageSize; //原图尺寸
+	//QSize imageSize = config->imageSize; //原图尺寸
 
 	//计算总间距
 	QSize totalSpacing; //总间距
@@ -103,7 +103,8 @@ void DetectUI::initGraphicsView()
 	//计算图元尺寸
 	QSize viewSize = ui.graphicsView->size(); //视图尺寸
 	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
-	qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
+	//qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
+	qreal itemAspectRatio = config->imageAspectRatio; //宽高比
 	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
 
 	//计算场景尺寸
@@ -176,6 +177,11 @@ void DetectUI::readSampleImages()
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
 	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
+
+	if (params->imageSize.height() <= 0) {
+		QImage img = QImage(fileList.at(0).absoluteFilePath());//读图
+		params->imageSize = img.size();
+	}
 
 	//读取并将图像存到itemArray和sampleImages中
 	double loadtime = 0;

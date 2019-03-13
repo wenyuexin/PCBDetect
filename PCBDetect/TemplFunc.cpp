@@ -14,13 +14,9 @@ using cv::Rect;
 cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 	shape = Mat::zeros(Size(100, 100), CV_8UC1);//创建一个像素值全为0的图像，位深8位无符号整数，单通道的灰度图
 
-
-	if (num_cols == 1 && num_rows == 1)//左上
-	{
-		for (i = 10; i < 60; i++)
-		{
-			for (j = 10; j < 12; j++)
-			{
+	if (num_cols == 1 && num_rows == 1) { //左上
+		for (i = 10; i < 60; i++) {
+			for (j = 10; j < 12; j++) {
 				shape.at<uchar>(i, j) = 255;//访问像素点用at
 				shape.at<uchar>(j, i) = 255;
 			}
@@ -44,19 +40,14 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		mask(rect).setTo(255);//制作合适的掩模，矩形区域内像素值为255	
 	}
 
-	if (num_cols == 1 && num_rows == rows)//左下
-	{
-		for (i = 50; i < 100; i++)
-		{
-			for (j = 50; j < 52; j++)
-			{
+	if (num_cols == 1 && num_rows == rows) { //左下
+		for (i = 50; i < 100; i++) {
+			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(j, i) = 255;
 			}
 		}
-		for (i = 50; i > 0; i--)
-		{
-			for (j = 50; j < 52; j++)
-			{
+		for (i = 50; i > 0; i--) {
+			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(i, j) = 255;//访问像素点用at
 			}
 		}
@@ -69,8 +60,6 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		lf2.y = minloc.y + 2600 + shape.rows;
 		//cout << "n1_lf2:" << lf2 << endl;//输出左下角坐标
 
-
-
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
 		rect.x = lf2.x;
@@ -79,22 +68,16 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.height = lf2.y;
 		mask(rect).setTo(255);
 
-
-
 	}
-	if (num_cols == cols && num_rows == 1)//右上
-	{
-		for (i = 50; i < 100; i++)
-		{
-			for (j = 50; j < 52; j++)
-			{
+
+	if (num_cols == cols && num_rows == 1) { //右上
+		for (i = 50; i < 100; i++) {
+			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(i, j) = 255;//访问像素点用at
 			}
 		}
-		for (i = 50; i > 0; i--)
-		{
-			for (j = 50; j < 52; j++)
-			{
+		for (i = 50; i > 0; i--) {
+			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(j, i) = 255;//访问像素点用at
 			}
 		}
@@ -115,16 +98,11 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.height = image.rows - br1.y;
 		mask(rect).setTo(255);
 
-
-
-
 	}
-	if (num_cols == cols && num_rows == rows)//右下角
-	{
-		for (i = 50; i > 0; i--)
-		{
-			for (j = 50; j < 52; j++)
-			{
+
+	if (num_cols == cols && num_rows == rows) { //右下角
+		for (i = 50; i > 0; i--) {
+			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(i, j) = 255;//访问像素点用at
 				shape.at<uchar>(j, i) = 255;//访问像素点用at
 			}
@@ -175,9 +153,6 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.height = image.rows;
 		mask(rect).setTo(255);
 
-
-
-
 	}
 
 	if (num_rows == 1 && 1 < num_cols && num_cols < cols)//上边
@@ -189,9 +164,6 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.width = image.cols;
 		rect.height = image.rows - lf1.y;
 		mask(rect).setTo(255);
-
-
-
 
 	}
 
@@ -206,8 +178,7 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		mask(rect).setTo(255);
 	}
 
-	if (1 < num_cols && num_cols < cols && 1 < num_rows && num_rows < rows)
-	{
+	if (1 < num_cols && num_cols < cols && 1 < num_rows && num_rows < rows) {
 		mask = Mat::ones(image.size(), CV_8UC1) * 255;//原始掩模
 	}
 	return mask;

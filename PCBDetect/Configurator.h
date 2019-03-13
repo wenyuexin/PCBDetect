@@ -40,7 +40,8 @@ namespace Ui {
 		QString TemplDirPath;//模板文件的存储路径
 		QString OutputDirPath;//检测结果存储路径
 		QString ImageFormat; //图像后缀
-		QSize imageSize; //样本图像的尺寸
+		//QSize imageSize; //样本图像的尺寸
+		double imageAspectRatio; //样本图像的宽高比
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
 		int nBasicUnitInRow; //每一行中的基本单元数
@@ -55,6 +56,7 @@ namespace Ui {
 		QString sampleModelNum; //型号
 		QString sampleBatchNum; //批次号
 		QString sampleNum; //样本编号
+		QSize imageSize; //样本图像的原始尺寸
 		int currentRow_detect; //检测行号
 		int currentRow_extract; //提取行号
 	};

@@ -1,10 +1,26 @@
 #include "DetectFunc.h"
 
 
-using namespace std;
-using namespace cv;
+using Ui::DetectConfig;
+using Ui::DetectParams;
+using std::vector;
+using std::string;
+using std::to_string;
+using cv::Mat;
+using cv::Point;
+using cv::Point2i;
+using cv::Point2f;
+using cv::Vec4i;
+using cv::Rect;
+using cv::Size;
+using cv::imwrite;
 
 
+/****************** 配置 ******************/
+
+void DetectFunc::setDetectConfig(DetectConfig *ptr) { config = ptr; }
+
+void DetectFunc::setDetectParams(DetectParams *ptr) { params = ptr; }
 
 /***************** 检测 ******************/
 /**
@@ -21,7 +37,7 @@ void DetectFunc::alignImages(Mat &im1Gray, Mat &im2Gray, Mat &im1Reg, Mat &h, Ma
 {
 	time_t t0 = clock();
 	// Variables to store keypoints and descriptors
-	std::vector<cv::KeyPoint> keypoints1, keypoints2;
+	vector<cv::KeyPoint> keypoints1, keypoints2;
 	Mat descriptors1, descriptors2;
 	// Detect BRISK features and compute descriptors.
 	cv::Ptr<cv::Feature2D> orb = cv::BRISK::create(50);
@@ -203,7 +219,7 @@ cv::Mat DetectFunc::sub_process(cv::Mat &imgOut, cv::Mat &imgOut2) {
 *		cal:调用次数
 *		off_x，off_y:样本相对模板的偏移量
 */
-void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg, Ui::DetectConfig* detectConfig,int model_num,int batch_num,int pcb_num,int &defectNum,int cur_row,int cur_col) {
+void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,int &defectNum,int currentCol) {
 	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 
@@ -214,13 +230,13 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg, 
 	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
 	if (contours.size() == 0)
 		return;
-	std::string batch_path = (detectConfig->OutputDirPath).toStdString() + "\\" + std::to_string(model_num);//检查输出文件夹中型号文件是否存在
+	string batch_path = (config->OutputDirPath).toStdString() + "\\" + params->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
 	if (0 != _access(batch_path.c_str(), 0))
 		_mkdir(batch_path.c_str());
-	std::string num_path = batch_path + "\\" + std::to_string(batch_num);//检查批次号文件夹是否存在
+	string num_path = batch_path + "\\" + params->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
 	if (0 != _access(num_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(num_path.c_str());
-	std::string out_path = num_path + "\\" + std::to_string(pcb_num);//检查编号文件夹是否存在
+	string out_path = num_path + "\\" + params->sampleNum.toStdString();//检查编号文件夹是否存在
 	if (0 != _access(out_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(out_path.c_str());
 
@@ -273,13 +289,11 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg, 
 				line(diff_part, Point2f(rect_points[j].x - pt3.x, rect_points[j].y - pt3.y), Point2f(rect_points[(j + 1) % 4].x - pt3.x, rect_points[(j + 1) % 4].y - pt3.y), (255, 255, 255));
 			}
 
-
-
 			//变换次数
 			int trans_num = 0;
 			vector<vector<Point>> contours_rect;
 			vector<Vec4i>   hierarchy_rect;
-			findContours(diff_part, contours_rect, hierarchy_rect, RETR_EXTERNAL, CHAIN_APPROX_NONE, Point(0, 0));
+			findContours(diff_part, contours_rect, hierarchy_rect, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE, Point(0, 0));
 
 			for (int k = 1; k < contours_rect[0].size(); k++) {
 				Point pre = contours_rect[0][k - 1];
@@ -316,7 +330,6 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg, 
 				defect_flag = trans_num > 2 ? 1 : 2;
 			}
 			else {
-
 				defect_flag = trans_num > 2 ? 3 : 4;
 			}
 
@@ -346,15 +359,13 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg, 
 
 			rectangle(imgSeg, rect1, CV_RGB(255, 0, 0), 2);
 			defectNum++;//增加缺陷计数
-			pos_x = (detectConfig->imageSize).width()*cur_col + pos_x;//缺陷在整体图像中的横坐标
-			pos_y = (detectConfig->imageSize).height()*cur_row + pos_y;//缺陷在整体图像中的纵坐标
+			pos_x = (params->imageSize).width()*currentCol + pos_x;//缺陷在整体图像中的横坐标
+			pos_y = (params->imageSize).height()*params->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
 
 			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + detectConfig->ImageFormat.toStdString(), diffSeg);
 			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + detectConfig->ImageFormat.toStdString(), templSeg);
-			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + detectConfig->ImageFormat.toStdString(), imgSeg);
+			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + config->ImageFormat.toStdString(), imgSeg);
 
 		}
 	}
 }
-
-

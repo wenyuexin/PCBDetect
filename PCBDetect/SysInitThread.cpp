@@ -64,6 +64,8 @@ int SysInitThread::initDetectConfig()
 		if (!(QFileInfo(config->SampleDirPath).isDir())) return -3;
 	}
 
-	config->imageSize = QSize(4384, 3288); //样本图像的尺寸
+	//config->imageSize = QSize(4384, 3288); //样本图像的尺寸
+	config->imageAspectRatio = 4384.0 / 3288.0; //图像宽高比
+
 	return 0;
 }
