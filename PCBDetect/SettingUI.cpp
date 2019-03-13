@@ -24,10 +24,6 @@ SettingUI::~SettingUI()
 {
 }
 
-/******************* 配置 *******************/
-
-void SettingUI::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
 
 /************* 界面的设置、输入 **************/
 
@@ -198,6 +194,7 @@ void SettingUI::writeConfigFile(QString &fileName)
 		configurator.jsonSetValue("nPhotographing", QString::number(config->nPhotographing)); //拍照次数
 		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow)); //每一行中的基本单元数
 		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol)); //每一列中的基本单元数
+		configurator.jsonSetValue("imageAspectRatio", QString::number(config->imageAspectRatio)); //样本图像的宽高比
 		configFile.close();
 	}
 }

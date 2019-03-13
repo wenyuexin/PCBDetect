@@ -31,10 +31,6 @@ void SysInitThread::run()
 
 /****************** 初始化 ********************/
 
-//设置参数结构体的指针
-void SysInitThread::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
-
 //对config进行初始化
 int SysInitThread::initDetectConfig()
 {

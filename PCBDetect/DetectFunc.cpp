@@ -16,12 +16,6 @@ using cv::Size;
 using cv::imwrite;
 
 
-/****************** 配置 ******************/
-
-void DetectFunc::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
-void DetectFunc::setDetectParams(DetectParams *ptr) { params = ptr; }
-
 /***************** 检测 ******************/
 /**
 *功能：使用BRISK算法获取配准点做配准

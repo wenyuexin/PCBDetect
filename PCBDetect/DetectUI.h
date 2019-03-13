@@ -54,8 +54,9 @@ public:
 	DetectUI(QWidget *parent = Q_NULLPTR);
 	~DetectUI();
 
-	void setDetectConfig(Ui::DetectConfig *ptr);
-	void setDetectParams(Ui::DetectParams *ptr);
+	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
+	inline void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
+
 	void initGraphicsView();
 
 private:

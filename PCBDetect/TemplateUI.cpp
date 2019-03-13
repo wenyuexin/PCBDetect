@@ -34,14 +34,6 @@ TemplateUI::~TemplateUI()
 }
 
 
-/****************** 配置 *********************/
-
-//设置参数结构体的指针
-void TemplateUI::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
-void TemplateUI::setDetectParams(DetectParams *ptr) { params = ptr; }
-
-
 /***************** 按键响应 *****************/
 
 //提取

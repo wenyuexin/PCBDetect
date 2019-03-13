@@ -28,16 +28,6 @@ TemplateExtractor::~TemplateExtractor()
 }
 
 
-/******************** ≈‰÷√ *********************/
-
-void TemplateExtractor::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
-void TemplateExtractor::setDetectParams(DetectParams *ptr) { params = ptr; }
-
-void TemplateExtractor::setSampleImages(CvMatArray *ptr) { samples = ptr; }
-
-void TemplateExtractor::setTemplFunc(TemplFunc *ptr) { templFunc = ptr; }
-
 /******************** Ã·»° **********************/
 
 void TemplateExtractor::extract()

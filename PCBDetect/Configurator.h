@@ -40,12 +40,11 @@ namespace Ui {
 		QString TemplDirPath;//模板文件的存储路径
 		QString OutputDirPath;//检测结果存储路径
 		QString ImageFormat; //图像后缀
-		//QSize imageSize; //样本图像的尺寸
-		double imageAspectRatio; //样本图像的宽高比
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
+		double imageAspectRatio; //样本图像的宽高比
 	};
 #endif //STRUCT_DETECT_CONFIG
 
@@ -104,7 +103,7 @@ public:
 	~Configurator();
 
 	static void init(QString filePath);
-	void jsonSetValue(const QString &key, QString &value); //写
+	bool jsonSetValue(const QString &key, QString &value); //写
 	bool jsonReadValue(const QString &key, QString &value); //读QString
 	bool jsonReadValue(const QString &key, int &value); //读int
 	bool jsonReadValue(const QString &key, double &value); //读double

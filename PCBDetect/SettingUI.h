@@ -25,7 +25,8 @@ private:
 public:
 	SettingUI(QWidget *parent = Q_NULLPTR);
 	~SettingUI();
-	void setDetectConfig(Ui::DetectConfig *);
+
+	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
 	void refreshSettingUI();
 
 private:

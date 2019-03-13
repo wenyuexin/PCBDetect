@@ -7,15 +7,10 @@ using cv::Mat;
 using cv::Size;
 using cv::Rect;
 
-/****************** 配置 ******************/
-
-void TemplFunc::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
-void TemplFunc::setDetectParams(DetectParams *ptr) { params = ptr; }
-
 
 /***************** 提取 ******************/
 
+//生成完整尺寸的模板图像
 void TemplFunc::generateBigTempl()
 {
 	Size templSize = Size(params->imageSize.width()*config->nCamera, params->imageSize.height()*config->nPhotographing);

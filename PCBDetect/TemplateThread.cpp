@@ -25,14 +25,6 @@ TemplateThread::~TemplateThread()
 
 /******************** ≈‰÷√ **********************/
 
-void TemplateThread::setTemplateExtractor(TemplateExtractor *ptr) { templExtractor = ptr; }
-
-void TemplateThread::setSampleImages(QImageArray *ptr) { qimages = ptr; }
-
-void TemplateThread::setDetectParams(DetectParams *ptr) { params = ptr; }
-
-void TemplateThread::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
 void TemplateThread::initTemplFunc()
 {
 	templFunc = new TemplFunc;

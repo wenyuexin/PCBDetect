@@ -22,8 +22,8 @@ public:
 	DetectFunc() = default;
 	~DetectFunc() {};
 
-	void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR);
-	void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR);
+	void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
+	void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
 
 	void alignImages(cv::Mat &im1Gray, cv::Mat &im2Gray, cv::Mat &im1Reg, cv::Mat &h, cv::Mat &imMatches);
 	cv::Mat sub_process(cv::Mat &imgOut, cv::Mat &imgOut2);

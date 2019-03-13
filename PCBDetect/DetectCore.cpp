@@ -16,21 +16,6 @@ DetectCore::DetectCore() {}
 DetectCore::~DetectCore() {}
 
 
-/***************** 配置 ******************/
-
-//基础参数配置 - 来自配置文件或参数设置界面
-void DetectCore::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
-//临时变量或临时参数
-void DetectCore::setDetectParams(DetectParams *ptr) { params = ptr; }
-
-//当前正在检测的一行样本（相机组拍摄的一组图）
-void DetectCore::setSampleImages(CvMatVector *ptr) { samples = ptr; }
-
-//检测结果
-void DetectCore::setDetectResult(DetectResult *ptr) { result = ptr; }
-
-
 /***************** 检测 ******************/
 
 void DetectCore::doDetect()

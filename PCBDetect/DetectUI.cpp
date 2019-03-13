@@ -51,13 +51,6 @@ DetectUI::~DetectUI()
 }
 
 
-/******************** ≈‰÷√ **********************/
-
-void DetectUI::setDetectConfig(DetectConfig *ptr) { config = ptr; }
-
-void DetectUI::setDetectParams(DetectParams *ptr) { params = ptr; }
-
-
 /****************** ∞¥º¸œÏ”¶ *******************/
 
 //ºÏ≤‚
