@@ -6,7 +6,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-*.config
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -260,3 +259,9 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+
+# Personal documents that need to be ignored
+*.config
+OpenCV_contrib_x64_Debug_PS.props
+OpenCV_contrib_x64_Release_PS.props
