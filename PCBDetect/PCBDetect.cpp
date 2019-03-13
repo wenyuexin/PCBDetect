@@ -29,6 +29,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	settingUI = new SettingUI;
 	settingUI->setDetectConfig(&config);
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
+	connect(settingUI, SIGNAL(resetDetectSystem()), this, SLOT(do_resetDetectSystem_settingUI()));
 
 	//模板提取界面
 	templateUI = new TemplateUI;
@@ -41,7 +42,6 @@ PCBDetect::PCBDetect(QWidget *parent)
 	detectUI->setDetectConfig(&config);
 	detectUI->setDetectParams(&params);
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
-
 }
 
 PCBDetect::~PCBDetect()
@@ -136,6 +136,14 @@ void PCBDetect::showSettingUI()
 	this->hide(); //隐藏主界面
 }
 
+void PCBDetect::do_resetDetectSystem_settingUI()
+{
+	//检测界面中图像显示的初始化
+	detectUI->initGraphicsView();
+
+	//模板界面中图像显示的初始化
+	templateUI->initGraphicsView();
+}
 
 /***************** 模板提取界面 *****************/
 

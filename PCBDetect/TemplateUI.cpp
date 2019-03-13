@@ -28,7 +28,7 @@ TemplateUI::TemplateUI(QWidget *parent)
 TemplateUI::~TemplateUI()
 {
 	deletePointersInItemArray(); //删除图元矩阵中的指针
-	deletePointersInSampleImages(); //移除场景中已经加载的图元
+	deletePointersInSampleImages(); //删除样本图像矩阵中的指针
 	delete templThread;
 	delete templExtractor;
 }
@@ -53,6 +53,7 @@ void TemplateUI::on_pushButton_clear_clicked()
 {
 	removeItemsFromGraphicsScene(); //移除场景中已经加载的图元
 	deletePointersInItemArray();//删除图元矩阵中的指针
+	deletePointersInSampleImages();//删除图元矩阵中的指针
 	currentRow_show = -1; //显示行号的复位
 	params->currentRow_extract = -1; //提取行号的复位
 	ui.graphicsView->centerOn(0, 0); //垂直滑条复位
@@ -73,9 +74,9 @@ void TemplateUI::initGraphicsView()
 {
 	//基本参数
 	itemSpacing = 3; //图元间距
-	nCamera = config->nCamera; //相机个数
-	nPhotographing = config->nPhotographing; //拍摄次数
-	SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
+	int nCamera = config->nCamera; //相机个数
+	int nPhotographing = config->nPhotographing; //拍摄次数
+	QString SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
 	//QSize imageSize = config->imageSize; //原图尺寸
 
 	//计算总间距
@@ -109,22 +110,10 @@ void TemplateUI::initGraphicsView()
 	}
 
 	//itemArray的初始化
-	itemArray.resize(nPhotographing); //设置大小
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { //行
-		itemArray[iPhotographing].resize(nCamera);
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) { //列
-			itemArray[iPhotographing][iCamera] = Q_NULLPTR;
-		}
-	}
+	initPointersInItemArray();
 
 	//sampleImages的初始化
-	samples.resize(nPhotographing);
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) {
-		samples[iPhotographing].resize(nCamera);
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) {
-			samples[iPhotographing][iCamera] = Q_NULLPTR;
-		}
-	}
+	initPointersInSampleImages();
 
 	//初始化若干用于监视程序运行状态的变量
 	currentRow_show = -1; //显示行号
@@ -150,7 +139,7 @@ void TemplateUI::initGraphicsView()
 void TemplateUI::readSampleImages()
 {
 	//获取对应目录的路径
-	QString dirpath = SampleDirPath + "/" + params->sampleModelNum + "/" + params->sampleBatchNum + "/" + params->sampleNum;
+	QString dirpath = config->SampleDirPath + "/" + params->sampleModelNum + "/" + params->sampleBatchNum + "/" + params->sampleNum;
 
 	//读取目录下的样本图像
 	QDir dir(dirpath);
@@ -174,6 +163,8 @@ void TemplateUI::readSampleImages()
 		int iPhotographing = idxs[0].toInt() - 1; //0 1 ... nPhotographing-1
 		int iCamera = idxs[1].toInt() - 1; //0 1 ... nCamera-1
 		if (iPhotographing != currentRow_show) continue;
+		if (iPhotographing < 0 || iPhotographing >= config->nPhotographing) continue;
+		if (iCamera < 0 || iCamera >= config->nCamera) continue;
 
 		QString filepath = fileList.at(i).absoluteFilePath(); //样本图的路径
 		QImage *img = new QImage(filepath); //读图
@@ -185,7 +176,7 @@ void TemplateUI::readSampleImages()
 //显示相机组拍摄的一组分图（图像显示网格中的一行）
 void TemplateUI::showSampleImages()
 {
-	for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 		QImage scaledImg = (*samples[currentRow_show][iCamera]).scaled(itemSize, Qt::KeepAspectRatio);
 		QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(scaledImg)); //定义图元
 		item->setPos(itemGrid[currentRow_show][iCamera]); //图元的显示位置
@@ -193,7 +184,7 @@ void TemplateUI::showSampleImages()
 	}
 
 	//加载相机组新拍摄的一行图元
-	for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 		scene.addItem(itemArray[currentRow_show][iCamera]);
 	}
 
@@ -204,22 +195,61 @@ void TemplateUI::showSampleImages()
 }
 
 
+/********* 图元矩阵和样本图像矩阵的初始化和删除等操作 ***********/
+
+//初始化图元矩阵中的指针
+void TemplateUI::initPointersInItemArray()
+{
+	if (itemArray.size() > 0) {
+		deletePointersInItemArray();//若执行过init函数，则先delete指针
+	}
+	else {
+		itemArray.resize(config->nPhotographing); //设置大小
+		for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) { //行
+			itemArray[iPhotographing].resize(config->nCamera);
+			for (int iCamera = 0; iCamera < config->nCamera; iCamera++) { //列
+				itemArray[iPhotographing][iCamera] = Q_NULLPTR;
+			}
+		}
+	}
+}
+
+
 //删除图元矩阵中的指针
 void TemplateUI::deletePointersInItemArray()
 {
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) {
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
+		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 			delete itemArray[iPhotographing][iCamera];
 			itemArray[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
 
+
+//初始化样本图像向量中的指针
+void TemplateUI::initPointersInSampleImages()
+{
+	if (samples.size() > 0) {
+		deletePointersInSampleImages();//若执行过init函数，则先delete指针
+	}
+	else {
+		samples.resize(config->nPhotographing);
+		for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) { //行
+			samples[iPhotographing].resize(config->nCamera);
+			for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+				samples[iPhotographing][iCamera] = Q_NULLPTR;
+			}
+		}
+	}
+}
+
+
 //删除样本图像向量中的指针
 void TemplateUI::deletePointersInSampleImages()
 {
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) {
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
+		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
 			delete samples[iPhotographing][iCamera];
 			samples[iPhotographing][iCamera] = Q_NULLPTR;
 		}
@@ -268,7 +298,7 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 //在绘图网格中显示下一行图像
 void TemplateUI::nextRowOfSampleImages()
 {
-	if (currentRow_show + 1 < nPhotographing) { //直接显示新的样本行
+	if (currentRow_show + 1 < config->nPhotographing) { //直接显示新的样本行
 		currentRow_show += 1; //更新显示行号
 		eventCounter += 1; //更新事件计数器
 		qDebug() << "currentRow_show  - " << currentRow_show;
@@ -287,7 +317,7 @@ void TemplateUI::nextRowOfSampleImages()
 			extractTemplateImages(); //提取
 		}
 	}
-	else if (params->currentRow_extract == nPhotographing - 1 && !templThread->isRunning()) {
+	else if (params->currentRow_extract == config->nPhotographing - 1 && !templThread->isRunning()) {
 		qDebug() << "currentRow_show  - " << currentRow_show;
 
 		removeItemsFromGraphicsScene(); //移除场景中的所有图元

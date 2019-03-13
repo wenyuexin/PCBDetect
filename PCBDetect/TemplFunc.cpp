@@ -24,7 +24,7 @@ void TemplFunc::generateBigTempl()
 *输出：显示L型角点位置的坐标，并对所切割的结果图保存，返回mask
 */
 
-cv::Mat TemplFunc::find1(int col, cv::Mat &image) {
+Mat TemplFunc::find1(int col, cv::Mat &image) {
 	int currentCol = col + 1;
 	int currentRow = params->currentRow_extract + 1;
 	int nCamera = config->nCamera;
