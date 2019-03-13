@@ -22,6 +22,7 @@ private:
 	Ui::DetectConfig *config;
 	Ui::DetectParams *params;
 	Ui::CvMatArray *samples;
+	TemplFunc *templFunc;
 	int extractState;
 
 public:
@@ -31,8 +32,9 @@ public:
 	void setSampleImages(Ui::CvMatArray *ptr = Q_NULLPTR);
 	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR);
 	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR);
+	void setTemplFunc(TemplFunc *ptr = Q_NULLPTR);
 
-	void extract(TemplFunc *templFunc);
+	void extract();
 
 Q_SIGNALS:
 	void sig_extractState_extractor(int);

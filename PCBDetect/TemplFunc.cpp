@@ -1,9 +1,27 @@
 #include "TemplFunc.h"
 #include <qDebug>
 
+using Ui::DetectConfig;
+using Ui::DetectParams;
 using cv::Mat;
 using cv::Size;
 using cv::Rect;
+
+/****************** 配置 ******************/
+
+void TemplFunc::setDetectConfig(DetectConfig *ptr) { config = ptr; }
+
+void TemplFunc::setDetectParams(DetectParams *ptr) { params = ptr; }
+
+
+/***************** 提取 ******************/
+
+void TemplFunc::generateBigTempl()
+{
+	Size templSize = Size(params->imageSize.width()*config->nCamera, params->imageSize.height()*config->nPhotographing);
+	big_templ = Mat(templSize, CV_8UC3);
+}
+
 
 /**
 *功能：通过图像匹配找到图像的四个角点的位置，分别为左上，左下，右上，右下,并根据角点位置对图像进行切割（除去边角）
@@ -11,10 +29,15 @@ using cv::Rect;
 *输出：显示L型角点位置的坐标，并对所切割的结果图保存，返回mask
 */
 
-cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
+cv::Mat TemplFunc::find1(int col, cv::Mat &image) {
+	int currentCol = col + 1;
+	int currentRow = params->currentRow_extract + 1;
+	int nCamera = config->nCamera;
+	int nPhotographing = config->nPhotographing;
+
 	shape = Mat::zeros(Size(100, 100), CV_8UC1);//创建一个像素值全为0的图像，位深8位无符号整数，单通道的灰度图
 
-	if (num_cols == 1 && num_rows == 1) { //左上
+	if (currentCol == 1 && currentRow == 1) { //左上
 		for (i = 10; i < 60; i++) {
 			for (j = 10; j < 12; j++) {
 				shape.at<uchar>(i, j) = 255;//访问像素点用at
@@ -40,7 +63,7 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		mask(rect).setTo(255);//制作合适的掩模，矩形区域内像素值为255	
 	}
 
-	if (num_cols == 1 && num_rows == rows) { //左下
+	if (currentCol == 1 && currentRow == nPhotographing) { //左下
 		for (i = 50; i < 100; i++) {
 			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(j, i) = 255;
@@ -70,7 +93,7 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 
 	}
 
-	if (num_cols == cols && num_rows == 1) { //右上
+	if (currentCol == nCamera && currentRow == 1) { //右上
 		for (i = 50; i < 100; i++) {
 			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(i, j) = 255;//访问像素点用at
@@ -100,7 +123,7 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 
 	}
 
-	if (num_cols == cols && num_rows == rows) { //右下角
+	if (currentCol == nCamera && currentRow == nPhotographing) { //右下角
 		for (i = 50; i > 0; i--) {
 			for (j = 50; j < 52; j++) {
 				shape.at<uchar>(i, j) = 255;//访问像素点用at
@@ -124,11 +147,9 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.height = br2.y;
 		mask(rect).setTo(255);
 
-
-
-
 	}
-	if (num_cols == 1 && 1 < num_rows && num_rows < rows)//左边
+
+	if (currentCol == 1 && 1 < currentRow && params->currentRow_extract < nPhotographing)//左边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -137,13 +158,9 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.width = image.cols - lf1.x;
 		rect.height = image.rows;
 		mask(rect).setTo(255);
-
-
-
-
 	}
 
-	if (num_cols == cols && 1 < num_rows && num_rows < rows)//右边
+	if (currentCol == nCamera && 1 < currentRow && params->currentRow_extract < nPhotographing)//右边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -152,10 +169,9 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.width = br1.x;
 		rect.height = image.rows;
 		mask(rect).setTo(255);
-
 	}
 
-	if (num_rows == 1 && 1 < num_cols && num_cols < cols)//上边
+	if (params->currentRow_extract == 1 && 1 < currentCol && currentCol < nCamera)//上边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -164,10 +180,9 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		rect.width = image.cols;
 		rect.height = image.rows - lf1.y;
 		mask(rect).setTo(255);
-
 	}
 
-	if (num_rows == rows && 1 < num_cols && num_cols < cols)//下边
+	if (currentRow == nPhotographing && 1 < currentCol && currentCol < nCamera)//下边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -178,7 +193,7 @@ cv::Mat TemplFunc::find1(int num_cols, int num_rows, cv::Mat &image) {
 		mask(rect).setTo(255);
 	}
 
-	if (1 < num_cols && num_cols < cols && 1 < num_rows && num_rows < rows) {
+	if (1 < currentCol && currentCol < nCamera && 1 < currentRow && currentRow < nPhotographing) {
 		mask = Mat::ones(image.size(), CV_8UC1) * 255;//原始掩模
 	}
 	return mask;

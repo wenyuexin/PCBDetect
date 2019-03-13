@@ -36,21 +36,16 @@ void TemplateExtractor::setDetectParams(DetectParams *ptr) { params = ptr; }
 
 void TemplateExtractor::setSampleImages(CvMatArray *ptr) { samples = ptr; }
 
+void TemplateExtractor::setTemplFunc(TemplFunc *ptr) { templFunc = ptr; }
 
 /******************** 提取 **********************/
 
-void TemplateExtractor::extract(TemplFunc *templFunc)
+void TemplateExtractor::extract()
 {
 	extractState = 0;
 	emit sig_extractState_extractor(extractState);
 
 	//Ui::delay(1000); //提取
-
-	(*templFunc).rows = config->nPhotographing;
-	(*templFunc).cols = config->nCamera;
-
-
-
 
 	string curr_path = config->TemplDirPath.toStdString() + "/";
 	string templ_path = curr_path + params->sampleModelNum.toStdString();//检查模板文件夹中mask文件是否存在
@@ -61,21 +56,25 @@ void TemplateExtractor::extract(TemplFunc *templFunc)
 		_mkdir(mask_path.c_str());
 
 
-	for (int col = 0; col < (*samples)[0].size(); col++) {
-		string temp = templ_path + "/" + std::to_string(params->currentRow_extract + 1) + "_" + std::to_string(col + 1)  + config->ImageFormat.toUpper().toStdString();
+	for (int col = 0; col < config->nCamera; col++) {
+		string temp = templ_path + "/" + std::to_string(params->currentRow_extract + 1) + "_" 
+			+ std::to_string(col + 1)  + config->ImageFormat.toUpper().toStdString();
 		Mat src = (*samples)[params->currentRow_extract][col];
 		cv::imwrite(temp, src);//保存模板图片
-		Mat mask = (*templFunc).find1(col + 1, params->currentRow_extract + 1, src);
+		Mat mask = templFunc->find1(col, src);
 
-		cv::imwrite(mask_path + "/" + std::to_string(params->currentRow_extract + 1) + "_" + std::to_string(col + 1) + "_mask" + config->ImageFormat.toStdString(), mask);
-		Mat roi = templFunc->big_templ(Rect(col*params->imageSize.width(), params->currentRow_extract*params->imageSize.height(), params->imageSize.width(), params->imageSize.height()));
+		cv::imwrite(mask_path + "/" + std::to_string(params->currentRow_extract + 1) + "_" 
+			+ std::to_string(col + 1) + "_mask" + config->ImageFormat.toStdString(), mask);
+		Rect roiRect = Rect(col*params->imageSize.width(), params->currentRow_extract*params->imageSize.height(), 
+			params->imageSize.width(), params->imageSize.height());
+		Mat roi = templFunc->getBigTempl(roiRect);
 		src.copyTo(roi);
 	}
 
 	if (params->currentRow_extract + 1 == config->nPhotographing) {
-		cv::Size sz = templFunc->big_templ.size();
+		cv::Size sz = templFunc->getBigTempl().size();
 		cv::Mat dst;
-		cv::resize(templFunc->big_templ, dst, cv::Size(sz.width*0.25,sz.height*0.25), (0, 0), (0, 0), cv::INTER_LINEAR);
+		cv::resize(templFunc->getBigTempl(), dst, cv::Size(sz.width*0.25,sz.height*0.25), (0, 0), (0, 0), cv::INTER_LINEAR);
 		cv::imwrite(templ_path + "/" + "fullImage_"+std::to_string(sz.width)+"_"+std::to_string(sz.height)+".jpg", dst);
 	}
 

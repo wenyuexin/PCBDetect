@@ -167,7 +167,7 @@ void TemplateUI::readSampleImages()
 	QFileInfoList fileList = dir.entryInfoList();
 	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
 
-	if (params->imageSize.height() <= 0) {
+	if (params->imageSize.width() < 0) {
 		QImage img = QImage(fileList.at(0).absoluteFilePath());//¶ÁÍ¼
 		params->imageSize = img.size();
 		templThread->initTemplFunc();

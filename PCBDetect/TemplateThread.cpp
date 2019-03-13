@@ -36,8 +36,11 @@ void TemplateThread::setDetectConfig(DetectConfig *ptr) { config = ptr; }
 void TemplateThread::initTemplFunc()
 {
 	templFunc = new TemplFunc;
-	Mat temp = Mat(Size(params->imageSize.width()*config->nCamera, params->imageSize.height()*config->nPhotographing), CV_8UC3);
-	templFunc->big_templ = temp;
+	templFunc->setDetectParams(params);
+	templFunc->setDetectConfig(config);
+	templFunc->generateBigTempl();
+
+	templExtractor->setTemplFunc(templFunc);
 }
 
 /******************** 运行 **********************/
@@ -51,14 +54,14 @@ void TemplateThread::run()
 	}
 
 	//转换
-	QImageVector vec = (*qimages)[params->currentRow_extract];
 	double t11 = clock();
+	QImageVector vec = (*qimages)[params->currentRow_extract];
 	convertQImageToCvMat(vec, cvmats[params->currentRow_extract]); //QImage转Mat
 	double t22 = clock();
 	qDebug() << "convert images :" << (t22 - t11) << "ms  ( currentRow_detect -" << params->currentRow_extract << ")";
 
 	//提取
-	templExtractor->extract(templFunc); 
+	templExtractor->extract(); 
 }
 
 
