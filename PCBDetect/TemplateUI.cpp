@@ -56,6 +56,7 @@ void TemplateUI::on_pushButton_clear_clicked()
 	deletePointersInSampleImages();//删除图元矩阵中的指针
 	currentRow_show = -1; //显示行号的复位
 	params->currentRow_extract = -1; //提取行号的复位
+	eventCounter = 0; //事件计数器
 	ui.graphicsView->centerOn(0, 0); //垂直滑条复位
 	ui.label_status->setText(QString::fromLocal8Bit("缓存数据已清空"));
 }
@@ -72,42 +73,8 @@ void TemplateUI::on_pushButton_return_clicked()
 //对绘图控件GraphicsView的初始化设置
 void TemplateUI::initGraphicsView()
 {
-	//基本参数
-	itemSpacing = 3; //图元间距
-	int nCamera = config->nCamera; //相机个数
-	int nPhotographing = config->nPhotographing; //拍摄次数
-	QString SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
-	//QSize imageSize = config->imageSize; //原图尺寸
-
-	//计算总间距
-	QSize totalSpacing; //总间距
-	totalSpacing.setWidth(itemSpacing * (nCamera + 1)); //间距总宽度
-	totalSpacing.setHeight(itemSpacing * (nPhotographing + 1)); //间距总高度
-
-	//计算图元尺寸
-	QSize viewSize = ui.graphicsView->size(); //视图尺寸
-	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
-	//qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
-	qreal itemAspectRatio = config->imageAspectRatio; //宽高比
-	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
-
-	//计算场景尺寸
-	sceneSize = totalSpacing;
-	sceneSize += QSize(itemSize.width()*nCamera, itemSize.height()*nPhotographing);
-	scene.setSceneRect(0, 0, sceneSize.width(), sceneSize.height());
-
-	//生成绘图网点
-	QSize spacingBlock = QSize(itemSpacing, itemSpacing);
-	QSize gridSize = itemSize + spacingBlock;
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { //行
-		QList<QPointF> posList;
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) { //列
-			QPointF pos(itemSpacing, itemSpacing);
-			pos += QPointF(gridSize.width()*iCamera, gridSize.height()*iPhotographing); //(x,y)
-			posList.append(pos);
-		}
-		itemGrid.append(posList);
-	}
+	//初始化图元网格
+	initItemGrid();
 
 	//itemArray的初始化
 	initPointersInItemArray();
@@ -132,6 +99,57 @@ void TemplateUI::initGraphicsView()
 	ui.graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //禁用水平滚动条
 	ui.graphicsView->setScene(&scene); //在视图中添加场景
 	ui.graphicsView->centerOn(sceneSize.width() / 2, 0); //设置垂直滑动条的位置
+}
+
+
+//初始化图元网格
+void TemplateUI::initItemGrid()
+{
+	//基本参数
+	int nCamera = config->nCamera; //相机个数
+	int nPhotographing = config->nPhotographing; //拍摄次数
+	QString SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
+	//QSize imageSize = config->imageSize; //原图尺寸
+
+	//计算总间距
+	QSize totalSpacing; //总间距
+	totalSpacing.setWidth(itemSpacing * (nCamera + 1)); //间距总宽度
+	totalSpacing.setHeight(itemSpacing * (nPhotographing + 1)); //间距总高度
+
+	//计算图元尺寸
+	QSize viewSize = ui.graphicsView->size(); //视图尺寸
+	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
+	//qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
+	qreal itemAspectRatio = config->imageAspectRatio; //宽高比
+	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
+
+	//计算场景尺寸
+	sceneSize = totalSpacing;
+	sceneSize += QSize(itemSize.width()*nCamera, itemSize.height()*nPhotographing);
+	scene.setSceneRect(0, 0, sceneSize.width(), sceneSize.height());
+
+	//生成绘图网点 -- 这里需要修改，不是第一次运行就需要清空itemGrid
+	QSize spacingBlock = QSize(itemSpacing, itemSpacing);
+	QSize gridSize = itemSize + spacingBlock; //每个网格的尺寸
+
+	//判断itemGrid是否执行过初始化
+	if (itemGrid.size() > 0) {
+		/*for each (QList<QPointF> list in itemGrid) {
+			itemGrid.removeAll(list);
+		}*/
+		itemGrid.clear();
+	}
+
+	//初始化赋值
+	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { //行
+		QList<QPointF> posList;
+		for (int iCamera = 0; iCamera < nCamera; iCamera++) { //列
+			QPointF pos(itemSpacing, itemSpacing);
+			pos += QPointF(gridSize.width()*iCamera, gridSize.height()*iPhotographing); //(x,y)
+			posList.append(pos);
+		}
+		itemGrid.append(posList);
+	}
 }
 
 
