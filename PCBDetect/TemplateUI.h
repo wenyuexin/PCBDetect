@@ -22,7 +22,7 @@ private:
 	Ui::DetectConfig *config; //参数配置
 	Ui::DetectParams *params; //临时参数
 
-	int itemSpacing; //图元间距
+	int itemSpacing = 3; //图元间距
 	QSize itemSize; //图元尺寸
 	QGraphicsScene scene; //绘图场景
 	QSize sceneSize; //场景尺寸
@@ -44,10 +44,12 @@ public:
 	void initGraphicsView();
 
 private:
+
 	void readSampleImages();
 	void showSampleImages();
 	void extractTemplateImages();
 
+	void initItemGrid();//初始化图元网格
 	void initPointersInItemArray();//初始化itemArray
 	void deletePointersInItemArray();//删除itemArray中的指针
 	void initPointersInSampleImages();//初始化sampleImages
