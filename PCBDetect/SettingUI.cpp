@@ -86,8 +86,9 @@ void SettingUI::on_pushButton_confirm_clicked()
 	//样本路径
 	QString SampleDirPath = ui.lineEdit_SampleDirPath->text();
 	if (!(QFileInfo(config->SampleDirPath).isDir())) {
+		QString message = QString::fromLocal8Bit("样本路径无效，请重新设置!  \n");
 		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			QString::fromLocal8Bit("样本路径无效，请重新设置!  \nConfigCode: "),
+			message + "ErrorCode: " + QString::number(Ui::Invalid_SampleDirPath),
 			QString::fromLocal8Bit("确定"));
 		return;
 	}
@@ -96,8 +97,9 @@ void SettingUI::on_pushButton_confirm_clicked()
 	//模板路径
 	QString TemplDirPath = ui.lineEdit_TemplDirPath->text();
 	if (!(QFileInfo(config->TemplDirPath).isDir())) {
+		QString message = QString::fromLocal8Bit("模板路径无效，请重新设置!  \n");
 		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			QString::fromLocal8Bit("模板路径无效，请重新设置!  \nConfigCode: "),
+			message + "ErrorCode: " + QString::number(Ui::Invalid_TemplDirPath),
 			QString::fromLocal8Bit("确定"));
 		return;
 	}
@@ -106,8 +108,9 @@ void SettingUI::on_pushButton_confirm_clicked()
 	//输出路径
 	QString OutputDirPath = ui.lineEdit_OutputDirPath->text();
 	if (!(QFileInfo(OutputDirPath).isDir())) {
+		QString message = QString::fromLocal8Bit("输出路径无效，请重新设置!  \n");
 		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			QString::fromLocal8Bit("输出路径无效，请重新设置!  \nConfigCode: "),
+			message + "ErrorCode: " + QString::number(Ui::Invalid_OutputDirPath),
 			QString::fromLocal8Bit("确定"));
 		return;
 	}

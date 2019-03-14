@@ -14,6 +14,7 @@ class SysInitThread :
 
 private:
 	Ui::DetectConfig *config;
+	int bootStatus; //Æô¶¯×´Ì¬
 
 public:
 	SysInitThread();
@@ -25,11 +26,11 @@ protected:
 	void run();
 
 private:
-	int initDetectConfig();
+	bool initDetectConfig();
 
 Q_SIGNALS:
-	void initializeStatus_initThread(QString status);
+	void sysInitStatus_initThread(QString status);
 	void configError_initThread(int code);
-	void initializeFinished_initThread();
+	void sysInitFinished_initThread();
 };
 

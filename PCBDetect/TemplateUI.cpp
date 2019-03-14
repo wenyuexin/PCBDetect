@@ -157,7 +157,8 @@ void TemplateUI::initItemGrid()
 void TemplateUI::readSampleImages()
 {
 	//获取对应目录的路径
-	QString dirpath = config->SampleDirPath + "/" + params->sampleModelNum + "/" + params->sampleBatchNum + "/" + params->sampleNum;
+	QString dirpath = config->SampleDirPath + "/" + params->sampleModelNum + "/" 
+		+ params->sampleBatchNum + "/" + params->sampleNum;
 
 	//读取目录下的样本图像
 	QDir dir(dirpath);
@@ -232,18 +233,17 @@ void TemplateUI::initPointersInItemArray()
 	}
 }
 
-
 //删除图元矩阵中的指针
 void TemplateUI::deletePointersInItemArray()
 {
-	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
-		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < itemArray.size(); iPhotographing++) {
+		int vectorSize = itemArray[iPhotographing].size();
+		for (int iCamera = 0; iCamera < vectorSize; iCamera++) {
 			delete itemArray[iPhotographing][iCamera];
 			itemArray[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
-
 
 //初始化样本图像向量中的指针
 void TemplateUI::initPointersInSampleImages()
@@ -262,12 +262,12 @@ void TemplateUI::initPointersInSampleImages()
 	}
 }
 
-
 //删除样本图像向量中的指针
 void TemplateUI::deletePointersInSampleImages()
 {
-	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
-		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < samples.size(); iPhotographing++) {
+		int vectorSize = samples[iPhotographing].size();
+		for (int iCamera = 0; iCamera < vectorSize; iCamera++) {
 			delete samples[iPhotographing][iCamera];
 			samples[iPhotographing][iCamera] = Q_NULLPTR;
 		}

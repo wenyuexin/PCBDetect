@@ -60,6 +60,7 @@ private:
 	void showSampleImages();
 	void detectSampleImages();
 
+	void initItemGrid();//初始化图元网格
 	void initPointersInItemArray();//初始化itemArray
 	void deletePointersInItemArray();//删除itemArray中的指针
 	void initPointersInSampleImages();//初始化sampleImages
