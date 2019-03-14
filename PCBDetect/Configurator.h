@@ -32,6 +32,7 @@ namespace Ui {
 	enum ImageFormat { BMP, JPG, PNG };
 #endif //IMAGE_FORMAT
 
+
 #ifndef STRUCT_DETECT_CONFIG
 #define STRUCT_DETECT_CONFIG 
 	//参数配置结构体
@@ -48,6 +49,23 @@ namespace Ui {
 	};
 #endif //STRUCT_DETECT_CONFIG
 
+#ifndef ENUM_CONFIG_ERROR_CODE
+#define ENUM_CONFIG_ERROR_CODE 
+	enum ConfigErrorCode {
+		ConfigFileMissing = 100,
+		Invalid_SampleDirPath = 101,
+		Invalid_TemplDirPath = 102,
+		Invalid_OutputDirPath = 103,
+		Invalid_ImageFormat = 104,
+		Invalid_nCamera = 105,
+		Invalid_nPhotographing = 106,
+		Invalid_nBasicUnitInRow = 107,
+		Invalid_nBasicUnitInCol = 108,
+		Invalid_imageAspectRatio = 109
+	};
+#endif //ENUM_CONFIG_ERROR_CODE
+
+
 #ifndef STRUCT_DETECT_PARAMS
 #define STRUCT_DETECT_PARAMS
 	//程序运行期间使用的临时变量或参数
@@ -60,6 +78,7 @@ namespace Ui {
 		int currentRow_extract; //提取行号
 	};
 #endif //STRUCT_DETECT_PARAMS
+
 
 #ifndef TYPE_ITEM_GRID
 #define TYPE_ITEM_GRID 
@@ -103,7 +122,10 @@ public:
 	~Configurator();
 
 	static void init(QString filePath);
-	bool jsonSetValue(const QString &key, QString &value); //写
+
+	bool jsonSetValue(const QString &key, QString &value); //写QString
+	bool jsonSetValue(const QString &key, int &value); //写int
+	bool jsonSetValue(const QString &key, double &value); //写double
 	bool jsonReadValue(const QString &key, QString &value); //读QString
 	bool jsonReadValue(const QString &key, int &value); //读int
 	bool jsonReadValue(const QString &key, double &value); //读double

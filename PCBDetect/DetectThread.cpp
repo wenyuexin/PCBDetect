@@ -65,7 +65,7 @@ void DetectThread::initImageConvertThreads()
 
 void DetectThread::deleteImageConvertThreads()
 {
-	for (int i = 0; i < nThreads; i++) {
+	for (int i = 0; i < threads.size(); i++) {
 		delete threads[i];
 		threads[i] = Q_NULLPTR;
 	}

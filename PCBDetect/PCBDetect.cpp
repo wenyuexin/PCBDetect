@@ -23,7 +23,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 
 	launcher->setDetectConfig(&config); //配置launcher
 	launcher->runInitThread(); //运行初始化线程
-	connect(launcher, SIGNAL(launchFinished_launchUI()), this, SLOT(on_launchFinished_launchUI()));
+	connect(launcher, SIGNAL(launchFinished_launchUI(int)), this, SLOT(on_launchFinished_launchUI(int)));
 
 	//参数设置界面
 	settingUI = new SettingUI;
@@ -55,16 +55,18 @@ PCBDetect::~PCBDetect()
 
 /**************** 启动界面 *****************/
 
-void PCBDetect::on_launchFinished_launchUI()
+void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
 {
-	//检测界面中图像显示的初始化
-	detectUI->initGraphicsView();
-
-	//模板界面中图像显示的初始化
-	templateUI->initGraphicsView();
-
-	//更新参数设置界面的信息
-	settingUI->refreshSettingUI();
+	if (LaunchCode == 0) {
+		detectUI->initGraphicsView();//检测界面中图像显示的初始化
+		templateUI->initGraphicsView();//模板界面中图像显示的初始化
+		settingUI->refreshSettingUI();//更新参数设置界面的信息
+		setPushButtonToEnabled(true);
+	}
+	else {
+		settingUI->refreshSettingUI();//更新参数设置界面的信息
+		setPushButtonToEnabled(false);
+	}
 
 	//关闭初始化界面，显示主界面
 	this->showFullScreen();
@@ -119,6 +121,14 @@ void PCBDetect::on_pushButton_exit2_clicked()
 	eixtDetectSystem();
 }
 
+//设置按键是否可点击
+void PCBDetect::setPushButtonToEnabled(bool code)
+{
+	ui.pushButton_getTempl->setEnabled(code);
+	ui.pushButton_getTempl2->setEnabled(code);
+	ui.pushButton_detect->setEnabled(code);
+	ui.pushButton_detect2->setEnabled(code);
+}
 
 /****************** 设置界面 ******************/
 

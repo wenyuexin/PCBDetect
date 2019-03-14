@@ -27,14 +27,14 @@ public:
 	LaunchUI(QWidget *parent = Q_NULLPTR, QPixmap *background = Q_NULLPTR);
 	~LaunchUI();
 
-	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; } 
+	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
 	void runInitThread(); //ÔËÐÐ
 
 Q_SIGNALS:
-	void launchFinished_launchUI();
+	void launchFinished_launchUI(int LaunchCode);
 
 private Q_SLOTS:
-	void do_updateInitializeStatus_initThread(QString status);
+	void update_sysInitStatus_initThread(QString status);
 	void on_configError_initThread(int ErrorCode);
-	void on_initializeFinished_initThread();
+	void on_sysInitFinished_initThread();
 };

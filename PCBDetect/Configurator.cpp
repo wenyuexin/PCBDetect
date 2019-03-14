@@ -28,12 +28,13 @@ void Configurator::init(QString filePath)
 		pathConfig.insert("OutputDirPath", appDirPath + "/output");
 		pathConfig.insert("SampleDirPath", appDirPath + "/sample");
 		pathConfig.insert("TemplDirPath", appDirPath + "/template");
-		pathConfig.insert("ImgFormat", ".bmp");
+		pathConfig.insert("ImageFormat", ".bmp");
 
-		pathConfig.insert("nCamera", 5);
-		pathConfig.insert("nPhotographing", 8);
-		pathConfig.insert("nBasicUnitInRow", 4);
-		pathConfig.insert("nBasicUnitInCol", 6);
+		pathConfig.insert("nCamera", "5");
+		pathConfig.insert("nPhotographing", "8");
+		pathConfig.insert("nBasicUnitInRow", "4");
+		pathConfig.insert("nBasicUnitInCol", "6");
+		pathConfig.insert("imageAspectRatio", QString::number(4.0 / 3.0, 'g', 7));
 
 		QJsonDocument jsonDocument = QJsonDocument::fromVariant(pathConfig);
 		textStrteam << jsonDocument.toJson();
@@ -41,9 +42,10 @@ void Configurator::init(QString filePath)
 	}
 }
 
-/********************** 单个参数的读写 *************************/
 
-//将参数写入配置文件中
+/************* 将某个参数的写入config文件中 ************/
+
+//将参数写入配置文件中 - QString
 bool Configurator::jsonSetValue(const QString &key, QString &value)
 {
 	QTextStream textStrteam(configFile);
@@ -69,6 +71,21 @@ bool Configurator::jsonSetValue(const QString &key, QString &value)
 	}
 	return false;
 }
+
+//将参数写入配置文件中 - int
+bool Configurator::jsonSetValue(const QString &key, int &value)
+{
+	return jsonSetValue(key, QString::number(value));
+}
+
+//将参数写入配置文件中 - double
+bool Configurator::jsonSetValue(const QString &key, double &value)
+{
+	return jsonSetValue(key, QString::number(value, 'g', 7));
+}
+
+
+/************* 从config文件中读取某个参数 ************/
 
 //从配置文件中读取参数 - QString
 bool Configurator::jsonReadValue(const QString &key, QString &value)

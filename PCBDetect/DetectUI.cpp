@@ -239,8 +239,9 @@ void DetectUI::initPointersInItemArray()
 //删除图元矩阵中的指针
 void DetectUI::deletePointersInItemArray()
 {
-	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
-		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < itemArray.size(); iPhotographing++) {
+		int vectorSize = itemArray[iPhotographing].size();
+		for (int iCamera = 0; iCamera < vectorSize; iCamera++) {
 			delete itemArray[iPhotographing][iCamera];
 			itemArray[iPhotographing][iCamera] = Q_NULLPTR;
 		}
@@ -269,8 +270,9 @@ void DetectUI::initPointersInSampleImages()
 //删除样本图像向量中的指针
 void DetectUI::deletePointersInSampleImages()
 {
-	for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) {
-		for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+	for (int iPhotographing = 0; iPhotographing < samples.size(); iPhotographing++) {
+		int vectorSize = samples[iPhotographing].size();
+		for (int iCamera = 0; iCamera < vectorSize; iCamera++) {
 			delete samples[iPhotographing][iCamera];
 			samples[iPhotographing][iCamera] = Q_NULLPTR;
 		}

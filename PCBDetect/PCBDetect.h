@@ -46,6 +46,8 @@ private:
 	void eixtDetectSystem();
 
 private Q_SLOTS:
+	void setPushButtonToEnabled(bool code);
+
 	void on_pushButton_set_clicked();
 	void on_pushButton_set2_clicked();
 	void on_pushButton_getTempl_clicked();
@@ -55,7 +57,7 @@ private Q_SLOTS:
 	void on_pushButton_exit_clicked();
 	void on_pushButton_exit2_clicked();
 
-	void on_launchFinished_launchUI();
+	void on_launchFinished_launchUI(int LaunchCode);
 	void do_showDetectMainUI_settingUI();
 	void do_resetDetectSystem_settingUI();
 	void do_showDetectMainUI_detectUI();
