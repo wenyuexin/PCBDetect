@@ -31,7 +31,7 @@ private:
 	Ui::DetectParams *params; //临时参数
 	int currentRow_show; //当前正在显示的行
 
-	int itemSpacing; //图元间距
+	int itemSpacing = 3; //图元间距
 	QSize itemSize; //图元尺寸
 	QGraphicsScene scene; //绘图场景
 	QSize sceneSize; //场景尺寸
@@ -54,6 +54,7 @@ public:
 	inline void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
 
 	void initGraphicsView();
+	void resetDetectUI();
 
 private:
 	void readSampleImages();
@@ -73,7 +74,9 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void on_pushButton_start_clicked();
+	void on_pushButton_clear_clicked();
 	void on_pushButton_return_clicked();
+
 	void keyPressEvent(QKeyEvent *event);
 	void nextRowOfSampleImages();
 	void update_detectState_detectCore(int state);

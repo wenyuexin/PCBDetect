@@ -19,6 +19,7 @@ class SettingUI : public QWidget
 private:
 	Ui::SettingUI ui;
 	Ui::DetectConfig *config;
+	Ui::DetectConfig tempConfig;
 	QDoubleValidator doubleValidator;
 	QIntValidator intValidator;
 
@@ -28,22 +29,25 @@ public:
 
 	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
 	void refreshSettingUI();
+	void setPushButtonsToEnabled(bool code);
 
 private:
 	void initSettingUI();
 	void selectDirPath(QString &path);
-	void writeConfigFile(QString &fileName);
+	bool writeConfigFile(QString &fileName);
+	void getConfigFromSettingUI();
+	void setCursorPosition(Ui::DetectConfig::ConfigIndex code);
 
 Q_SIGNALS:
 	void showDetectMainUI();
 	void resetDetectSystem();
+	void enableButtonsOnDetectMainUI_settingUI();
 
 private Q_SLOTS:
 	void on_pushButton_SampleDirPath_clicked();
 	void on_pushButton_TemplDirPath_clicked();
 	void on_pushButton_OutputDirPath_clicked();
 	void on_currentIndexChanged_imageFormat();
-	//void on_currentIndexChanged_aspectRatio();
 
 	void on_pushButton_confirm_clicked();
 	void on_pushButton_return_clicked();

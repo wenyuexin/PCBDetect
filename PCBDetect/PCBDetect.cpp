@@ -30,6 +30,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	settingUI->setDetectConfig(&config);
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
 	connect(settingUI, SIGNAL(resetDetectSystem()), this, SLOT(do_resetDetectSystem_settingUI()));
+	connect(settingUI, SIGNAL(enableButtonsOnDetectMainUI_settingUI()), this, SLOT(do_enableButtonsOnDetectMainUI_settingUI()));
 
 	//模板提取界面
 	templateUI = new TemplateUI;
@@ -57,15 +58,15 @@ PCBDetect::~PCBDetect()
 
 void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
 {
-	if (LaunchCode == 0) {
-		detectUI->initGraphicsView();//检测界面中图像显示的初始化
+	if (!LaunchCode) { //正常启动
+		settingUI->refreshSettingUI();//更新参数设置界面的信息
 		templateUI->initGraphicsView();//模板界面中图像显示的初始化
-		settingUI->refreshSettingUI();//更新参数设置界面的信息
-		setPushButtonToEnabled(true);
+		detectUI->initGraphicsView();//检测界面中图像显示的初始化
+		this->setPushButtonsToEnabled(true);
 	}
-	else {
+	else { //存在错误
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
-		setPushButtonToEnabled(false);
+		this->setPushButtonsToEnabled(false);
 	}
 
 	//关闭初始化界面，显示主界面
@@ -122,7 +123,7 @@ void PCBDetect::on_pushButton_exit2_clicked()
 }
 
 //设置按键是否可点击
-void PCBDetect::setPushButtonToEnabled(bool code)
+void PCBDetect::setPushButtonsToEnabled(bool code)
 {
 	ui.pushButton_getTempl->setEnabled(code);
 	ui.pushButton_getTempl2->setEnabled(code);
@@ -148,11 +149,24 @@ void PCBDetect::showSettingUI()
 
 void PCBDetect::do_resetDetectSystem_settingUI()
 {
-	//检测界面中图像显示的初始化
+	//重置模板提取界面，并初始化其中的图像显示的空间
+	templateUI->resetTemplateUI();
+	templateUI->initGraphicsView();
+
+	//重置检测界面，并初始化其中的图像显示的空间
+	detectUI->resetDetectUI();
 	detectUI->initGraphicsView();
 
-	//模板界面中图像显示的初始化
-	templateUI->initGraphicsView();
+	//将主界面的模板提取按键、检测按键设为可点击
+	this->setPushButtonsToEnabled(true);
+	//将参数设置界面的确认按键、返回按键设为可点击
+	settingUI->setPushButtonsToEnabled(true);
+}
+
+//将模板提取按键、检测按键设为可点击
+void PCBDetect::do_enableButtonsOnDetectMainUI_settingUI()
+{
+	setPushButtonsToEnabled(true);
 }
 
 /***************** 模板提取界面 *****************/

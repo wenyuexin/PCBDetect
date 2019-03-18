@@ -2,6 +2,8 @@
 
 using Ui::DetectConfig;
 
+typedef Ui::DetectConfig::ErrorCode ConfigErrorCode;
+typedef Ui::DetectConfig::ConfigIndex ConfigIndex;
 
 SettingUI::SettingUI(QWidget *parent)
 	: QWidget(parent)
@@ -14,6 +16,7 @@ SettingUI::SettingUI(QWidget *parent)
 	this->setGeometry(screenRect);
 
 	//设置界面初始化
+	this->setFocusPolicy(Qt::ClickFocus);
 	initSettingUI();
 
 	//参数下拉框的槽函数连接
@@ -35,6 +38,8 @@ void SettingUI::initSettingUI()
 	ui.lineEdit_nPhotographing->setValidator(&intValidator);
 	ui.lineEdit_nBasicUnitInRow->setValidator(&intValidator);
 	ui.lineEdit_nBasicUnitInCol->setValidator(&intValidator);
+	ui.lineEdit_ImageAspectRatio_W->setValidator(&intValidator);
+	ui.lineEdit_ImageAspectRatio_H->setValidator(&intValidator);
 }
 
 //更新界面
@@ -44,14 +49,19 @@ void SettingUI::refreshSettingUI()
 	ui.lineEdit_TemplDirPath->setText(config->TemplDirPath);
 	ui.lineEdit_OutputDirPath->setText(config->OutputDirPath);
 
-	QString format = config->ImageFormat;
-	if (format == ".bmp" || format == ".BMP") ui.comboBox_ImageFormat->setCurrentText("    *.bmp");
-	else if (format == ".jpg" || format == ".JPG") ui.comboBox_ImageFormat->setCurrentText("    *.jpg");
+	QString format = config->ImageFormat.toLower();
+	if (format == ".bmp") ui.comboBox_ImageFormat->setCurrentText("    *.bmp");
+	else if (format == ".jpg") ui.comboBox_ImageFormat->setCurrentText("    *.jpg");
+	else if (format == ".png") ui.comboBox_ImageFormat->setCurrentText("    *.png");
+	else if (format == ".tif" || format == ".tiff") ui.comboBox_ImageFormat->setCurrentText("    *.tif");
 
 	ui.lineEdit_nCamera->setText(QString::number(config->nCamera));
 	ui.lineEdit_nPhotographing->setText(QString::number(config->nPhotographing));
 	ui.lineEdit_nBasicUnitInRow->setText(QString::number(config->nBasicUnitInRow));
 	ui.lineEdit_nBasicUnitInCol->setText(QString::number(config->nBasicUnitInCol));
+
+	ui.lineEdit_ImageAspectRatio_W->setText(QString::number(config->ImageAspectRatio_W));
+	ui.lineEdit_ImageAspectRatio_H->setText(QString::number(config->ImageAspectRatio_H));
 }
 
 
@@ -78,89 +88,56 @@ void SettingUI::on_pushButton_OutputDirPath_clicked()
 	ui.lineEdit_OutputDirPath->setText(config->OutputDirPath);
 }
 
-//确认
+//确认键
 void SettingUI::on_pushButton_confirm_clicked()
 {
-	bool sysResetFlag = false; //是否重置检测系统
+	//将参数设置界面的确认按键、返回按键设为不可点击
+	setPushButtonsToEnabled(false);
 
-	//样本路径
-	QString SampleDirPath = ui.lineEdit_SampleDirPath->text();
-	if (!(QFileInfo(config->SampleDirPath).isDir())) {
-		QString message = QString::fromLocal8Bit("样本路径无效，请重新设置!  \n");
-		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			message + "ErrorCode: " + QString::number(Ui::Invalid_SampleDirPath),
-			QString::fromLocal8Bit("确定"));
+	//获取界面上的config参数
+	getConfigFromSettingUI();
+
+	//if (config->unequals(tempConfig) != DetectConfig::Index_None) {
+
+	//检查界面上config的有效性
+	ConfigErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
+	if (code != DetectConfig::ValidConfig) { //参数无效，报错
+		DetectConfig::showMessageBox(this, code);
+		this->setPushButtonsToEnabled(true);
+		ConfigIndex index = DetectConfig::convertCodeToIndex(code);
+		this->setCursorPosition(index);
 		return;
 	}
-	config->SampleDirPath = SampleDirPath;
 
-	//模板路径
-	QString TemplDirPath = ui.lineEdit_TemplDirPath->text();
-	if (!(QFileInfo(config->TemplDirPath).isDir())) {
-		QString message = QString::fromLocal8Bit("模板路径无效，请重新设置!  \n");
-		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			message + "ErrorCode: " + QString::number(Ui::Invalid_TemplDirPath),
-			QString::fromLocal8Bit("确定"));
-		return;
-	}
-	config->TemplDirPath = TemplDirPath;
-	
-	//输出路径
-	QString OutputDirPath = ui.lineEdit_OutputDirPath->text();
-	if (!(QFileInfo(OutputDirPath).isDir())) {
-		QString message = QString::fromLocal8Bit("输出路径无效，请重新设置!  \n");
-		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			message + "ErrorCode: " + QString::number(Ui::Invalid_OutputDirPath),
-			QString::fromLocal8Bit("确定"));
-		return;
-	}
-	config->OutputDirPath = OutputDirPath;
-	
-	//图像格式
-	//config->ImageFormat
+	//设置聚焦位置
+	this->setCursorPosition(DetectConfig::Index_None);
 
-	//相机个数
-	int nCamera = ui.lineEdit_nCamera->text().toInt();
-	if (!sysResetFlag) sysResetFlag = (config->nCamera != nCamera);
-	if (sysResetFlag) config->nCamera = nCamera;
-
-	//拍照次数
-	int nPhotographing = ui.lineEdit_nPhotographing->text().toInt();
-	if (!sysResetFlag) sysResetFlag = (config->nPhotographing != nPhotographing);
-	if (sysResetFlag) config->nPhotographing = nPhotographing;
-
-	//每一行中的基本单元数
-	int nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();
-	config->nBasicUnitInRow = nBasicUnitInRow;
-
-	//每一列中的基本单元数
-	int nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();
-	config->nBasicUnitInCol = nBasicUnitInCol;
-	
-	//样本图像的宽高比
-	//double imageAspectRatio = ui.comboBox_imageAspectRatio->text;
-	//config->imageAspectRatio = imageAspectRatio;
-	double imageAspectRatio_W = ui.lineEdit_imageAspectRatio_W->text().toInt();
-	double imageAspectRatio_H = ui.lineEdit_imageAspectRatio_H->text().toInt();
-	double imageAspectRatio = 1.0 * imageAspectRatio_W / imageAspectRatio_H;
-	if (!sysResetFlag) sysResetFlag = (abs(config->imageAspectRatio - imageAspectRatio) < 1E-5);
-	if (sysResetFlag) config->imageAspectRatio = imageAspectRatio;
-
+	//将临时配置拷贝到config中
+	tempConfig.copyTo(*config);
 
 	//将参数保存到config文件中
 	QString configFileName = ".config";
-	writeConfigFile(configFileName);
+	if (!writeConfigFile(configFileName)) setPushButtonsToEnabled(true);
+	//writeConfigFile(configFileName);
 
-	//判断是否发送重置信号
-	if (sysResetFlag) emit resetDetectSystem();
+	//向主界面发送消息
+	emit enableButtonsOnDetectMainUI_settingUI(); //将主界面上的按键设为可点击
+	if (config->getResetFlag(tempConfig)) emit resetDetectSystem();//判断是否重置检测系统
+	this->setPushButtonsToEnabled(true);
 }
 
-//返回
+//返回键
 void SettingUI::on_pushButton_return_clicked()
 {
 	emit showDetectMainUI();
 }
 
+//设置按键的可点击状态
+void SettingUI::setPushButtonsToEnabled(bool code)
+{
+	ui.pushButton_confirm->setEnabled(code);
+	ui.pushButton_return->setEnabled(code);
+}
 
 /************** comboBox的槽函数 *****************/
 
@@ -169,19 +146,40 @@ void SettingUI::on_currentIndexChanged_imageFormat()
 	switch (ui.comboBox_ImageFormat->currentIndex())
 	{
 	case 0:
-		config->ImageFormat = "";
+		tempConfig.ImageFormat = ""; break;
 	case 1:
-		config->ImageFormat = ".bmp";
+		tempConfig.ImageFormat = ".bmp"; break;
 	case 2:
-		config->ImageFormat = ".jpg";
+		tempConfig.ImageFormat = ".jpg"; break;
+	case 3:
+		tempConfig.ImageFormat = ".png"; break;
+	case 4:
+		tempConfig.ImageFormat = ".tif"; break;
 	default:
 		break;
 	}
 }
 
+void SettingUI::getConfigFromSettingUI()
+{
+	tempConfig.SampleDirPath = ui.lineEdit_SampleDirPath->text(); //样本路径
+	tempConfig.TemplDirPath = ui.lineEdit_TemplDirPath->text(); //模板路径
+	tempConfig.OutputDirPath = ui.lineEdit_OutputDirPath->text();//输出路径
+	tempConfig.nCamera = ui.lineEdit_nCamera->text().toInt();//相机个数
+	tempConfig.nPhotographing = ui.lineEdit_nPhotographing->text().toInt();//拍照次数
+	tempConfig.nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();//每一行中的基本单元数
+	tempConfig.nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();//每一列中的基本单元数
+	tempConfig.ImageAspectRatio_W = ui.lineEdit_ImageAspectRatio_W->text().toInt();//样本图像的宽高比
+	tempConfig.ImageAspectRatio_H = ui.lineEdit_ImageAspectRatio_H->text().toInt();//样本图像的宽高比
+	
+	ConfigErrorCode code = tempConfig.calcImageAspectRatio();
+	if (code != DetectConfig::ValidConfig) 
+		DetectConfig::showMessageBox(this, DetectConfig::Invalid_ImageAspectRatio); 
+}
 
 /****************** 其他 ******************/
 
+//交互式文件夹路径选择
 void SettingUI::selectDirPath(QString &path)
 {
 	QFileDialog *fileDialog = new QFileDialog(this);
@@ -194,9 +192,8 @@ void SettingUI::selectDirPath(QString &path)
 	delete fileDialog;
 }
 
-
 //将参数保存到配置文件中
-void SettingUI::writeConfigFile(QString &fileName)
+bool SettingUI::writeConfigFile(QString &fileName)
 {
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
 	QFile configFile(configFilePath);
@@ -213,7 +210,50 @@ void SettingUI::writeConfigFile(QString &fileName)
 		configurator.jsonSetValue("nPhotographing", QString::number(config->nPhotographing)); //拍照次数
 		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow)); //每一行中的基本单元数
 		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol)); //每一列中的基本单元数
-		configurator.jsonSetValue("imageAspectRatio", QString::number(config->imageAspectRatio)); //样本图像的宽高比
+		configurator.jsonSetValue("ImageAspectRatio_W", QString::number(config->ImageAspectRatio_W)); //样本图像的宽高比
+		configurator.jsonSetValue("ImageAspectRatio_H", QString::number(config->ImageAspectRatio_H)); //样本图像的宽高比
+		configurator.jsonSetValue("ImageAspectRatio", QString::number(config->ImageAspectRatio, 'g', 7)); //样本图像的宽高比
 		configFile.close();
+		return true;
+	}
+	return false;
+}
+
+//设置光标的位置
+void SettingUI::setCursorPosition(ConfigIndex code)
+{
+	switch (code)
+	{
+	case Ui::DetectConfig::Index_All:
+		break;
+	case Ui::DetectConfig::Index_None:
+		//this->setFocusPolicy(Qt::NoFocus);
+		//this->setCursorVisible();
+		//this->unsetCursor();
+		ui.lineEdit_SampleDirPath->setFocus(); 
+		break;
+
+	case Ui::DetectConfig::Index_SampleDirPath:
+		ui.lineEdit_SampleDirPath->setFocus(); break;
+	case Ui::DetectConfig::Index_TemplDirPath:
+		ui.lineEdit_TemplDirPath->setFocus(); break;
+	case Ui::DetectConfig::Index_OutputDirPath:
+		ui.lineEdit_OutputDirPath->setFocus(); break;
+	case Ui::DetectConfig::Index_ImageFormat:
+		break;
+	case Ui::DetectConfig::Index_nCamera:
+		ui.lineEdit_nCamera->setFocus(); break;
+	case Ui::DetectConfig::Index_nPhotographing:
+		ui.lineEdit_nPhotographing->setFocus(); break;
+	case Ui::DetectConfig::Index_nBasicUnitInRow:
+		ui.lineEdit_nBasicUnitInRow->setFocus(); break;
+	case Ui::DetectConfig::Index_nBasicUnitInCol:
+		ui.lineEdit_nBasicUnitInCol->setFocus(); break;
+	case Ui::DetectConfig::Index_ImageAspectRatio_W:
+		ui.lineEdit_ImageAspectRatio_W->setFocus(); break;
+	case Ui::DetectConfig::Index_ImageAspectRatio_H:
+		ui.lineEdit_ImageAspectRatio_H->setFocus(); break;
+	case Ui::DetectConfig::Index_ImageAspectRatio:
+		break;
 	}
 }

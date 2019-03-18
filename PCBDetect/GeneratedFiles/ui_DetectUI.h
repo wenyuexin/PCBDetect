@@ -38,6 +38,7 @@ public:
     QLabel *label_indicator;
     QSpacerItem *horizontalSpacer;
     QLabel *label_result;
+    QPushButton *pushButton_clear;
 
     void setupUi(QWidget *DetectUI)
     {
@@ -94,7 +95,7 @@ public:
         graphicsView->setFrameShape(QFrame::NoFrame);
         pushButton_start = new QPushButton(DetectUI);
         pushButton_start->setObjectName(QStringLiteral("pushButton_start"));
-        pushButton_start->setGeometry(QRect(1220, 350, 112, 40));
+        pushButton_start->setGeometry(QRect(1220, 320, 112, 40));
         sizePolicy.setHeightForWidth(pushButton_start->sizePolicy().hasHeightForWidth());
         pushButton_start->setSizePolicy(sizePolicy);
         QFont font2;
@@ -103,7 +104,7 @@ public:
         pushButton_start->setStyleSheet(QStringLiteral(""));
         pushButton_return = new QPushButton(DetectUI);
         pushButton_return->setObjectName(QStringLiteral("pushButton_return"));
-        pushButton_return->setGeometry(QRect(1220, 420, 112, 40));
+        pushButton_return->setGeometry(QRect(1220, 440, 112, 40));
         sizePolicy.setHeightForWidth(pushButton_return->sizePolicy().hasHeightForWidth());
         pushButton_return->setSizePolicy(sizePolicy);
         pushButton_return->setFont(font2);
@@ -163,6 +164,12 @@ public:
 
         horizontalLayout->addWidget(label_result);
 
+        pushButton_clear = new QPushButton(DetectUI);
+        pushButton_clear->setObjectName(QStringLiteral("pushButton_clear"));
+        pushButton_clear->setGeometry(QRect(1220, 380, 112, 40));
+        sizePolicy.setHeightForWidth(pushButton_clear->sizePolicy().hasHeightForWidth());
+        pushButton_clear->setSizePolicy(sizePolicy);
+        pushButton_clear->setFont(font2);
         layoutWidget->raise();
         label_3->raise();
         label_title->raise();
@@ -173,6 +180,7 @@ public:
         label_status->raise();
         line->raise();
         label->raise();
+        pushButton_clear->raise();
 
         retranslateUi(DetectUI);
 
@@ -191,6 +199,7 @@ public:
         label->setText(QApplication::translate("DetectUI", "\347\272\242\347\202\271\347\262\276\345\267\245", nullptr));
         label_indicator->setText(QApplication::translate("DetectUI", "LED", nullptr));
         label_result->setText(QApplication::translate("DetectUI", "--", nullptr));
+        pushButton_clear->setText(QApplication::translate("DetectUI", "\346\270\205\347\251\272", nullptr));
     } // retranslateUi
 
 };

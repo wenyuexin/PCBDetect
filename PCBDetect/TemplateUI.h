@@ -41,10 +41,11 @@ public:
 	
 	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
 	inline void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
+
 	void initGraphicsView();
+	void resetTemplateUI();
 
 private:
-
 	void readSampleImages();
 	void showSampleImages();
 	void extractTemplateImages();

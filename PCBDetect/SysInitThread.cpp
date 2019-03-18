@@ -1,5 +1,7 @@
 #include "SysInitThread.h"
 
+using Ui::DetectConfig;
+
 
 SysInitThread::SysInitThread()
 {
@@ -43,7 +45,7 @@ bool SysInitThread::initDetectConfig()
 	QFile configFile(configFilePath);
 	if (!configFile.open(QIODevice::ReadOnly)) { //若配置文件不存在，则生成默认的配置文件
 		Configurator::init(configFilePath); 
-		emit configError_initThread(Ui::ConfigFileMissing); return false;
+		emit configError_initThread(DetectConfig::ConfigFileMissing); return false;
 	}
 	else { //从配置文件中读取参数
 		Configurator configurator(&configFile);
@@ -56,20 +58,17 @@ bool SysInitThread::initDetectConfig()
 		configurator.jsonReadValue("nPhotographing", config->nPhotographing);
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol);
-		configurator.jsonReadValue("imageAspectRatio", config->imageAspectRatio);
-
+		configurator.jsonReadValue("ImageAspectRatio_W", config->ImageAspectRatio_W);
+		configurator.jsonReadValue("ImageAspectRatio_H", config->ImageAspectRatio_H);
 		configFile.close();
+		
+		//计算宽高比
+		DetectConfig::ErrorCode code = config->calcImageAspectRatio();
+		if (code != DetectConfig::ValidConfig) { emit configError_initThread(code); return false; }
 
 		//参数有效性判断
-		if (!(QFileInfo(config->OutputDirPath).isDir())) { 
-			emit configError_initThread(Ui::Invalid_SampleDirPath); return false; 
-		}
-		if (!(QFileInfo(config->TemplDirPath).isDir())) { 
-			emit configError_initThread(Ui::Invalid_TemplDirPath); return false;
-		}
-		if (!(QFileInfo(config->SampleDirPath).isDir())) { 
-			emit configError_initThread(Ui::Invalid_OutputDirPath); return false; 
-		}
+		code = config->checkValidity(DetectConfig::Index_All);
+		if (code != DetectConfig::ValidConfig) { emit configError_initThread(code); return false; }
 	}
 
 	emit sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
