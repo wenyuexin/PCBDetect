@@ -1,5 +1,6 @@
 ﻿#include "Configurator.h"
 
+using Ui::DetectConfig;
 
 Configurator::Configurator(QFile *file)
 {
@@ -34,6 +35,8 @@ void Configurator::init(QString filePath)
 		pathConfig.insert("nPhotographing", "8");
 		pathConfig.insert("nBasicUnitInRow", "4");
 		pathConfig.insert("nBasicUnitInCol", "6");
+		pathConfig.insert("ImageAspectRatio_W", "4"); //样本图像的宽高比
+		pathConfig.insert("ImageAspectRatio_H", "3"); //样本图像的宽高比
 		pathConfig.insert("imageAspectRatio", QString::number(4.0 / 3.0, 'g', 7));
 
 		QJsonDocument jsonDocument = QJsonDocument::fromVariant(pathConfig);
@@ -131,7 +134,7 @@ bool Configurator::jsonReadValue(const QString &key, int &value)
 }
 
 
-/******************** 暂时没用 **********************/
+/******************* 暂时没用 ********************/
 
 //获取当前磁盘剩余空间
 quint64 Configurator::getDiskFreeSpace(QString driver) 
@@ -172,7 +175,7 @@ bool Configurator::checkDir(QString dirpath)
 }
 
 
-/******************** 其他 **********************/
+/********************* 其他 **********************/
 
 //非阻塞延迟
 void Ui::delay(unsigned long msec)

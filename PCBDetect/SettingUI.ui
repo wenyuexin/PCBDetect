@@ -616,13 +616,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>150</width>
+        <width>180</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>150</width>
+        <width>160</width>
         <height>35</height>
        </size>
       </property>
@@ -707,7 +707,7 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>150</width>
+        <width>180</width>
         <height>35</height>
        </size>
       </property>
@@ -789,6 +789,39 @@
      </spacer>
     </item>
     <item>
+     <widget class="QLabel" name="label_roiHeight_L_7">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>行</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLineEdit" name="lineEdit_nBasicUnitInRow">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -798,13 +831,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>60</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>60</width>
         <height>35</height>
        </size>
       </property>
@@ -835,6 +868,39 @@
      </spacer>
     </item>
     <item>
+     <widget class="QLabel" name="label_roiHeight_L_8">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>列</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLineEdit" name="lineEdit_nBasicUnitInCol">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -844,13 +910,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>60</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>60</width>
         <height>35</height>
        </size>
       </property>
@@ -968,6 +1034,16 @@
         <string>    *.jpg</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>    *.png</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>    *.tif</string>
+       </property>
+      </item>
      </widget>
     </item>
    </layout>
@@ -1032,7 +1108,7 @@
      </spacer>
     </item>
     <item>
-     <widget class="QLineEdit" name="lineEdit_imageAspectRatio_W">
+     <widget class="QLineEdit" name="lineEdit_ImageAspectRatio_W">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -1100,6 +1176,8 @@
       <property name="font">
        <font>
         <pointsize>16</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -1127,7 +1205,7 @@
      </spacer>
     </item>
     <item>
-     <widget class="QLineEdit" name="lineEdit_imageAspectRatio_H">
+     <widget class="QLineEdit" name="lineEdit_ImageAspectRatio_H">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>

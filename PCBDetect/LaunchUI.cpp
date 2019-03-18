@@ -1,5 +1,7 @@
 #include "LaunchUI.h"
 
+using Ui::DetectConfig;
+
 LaunchUI::LaunchUI(QWidget *parent, QPixmap *pixmap)
 	: QWidget(parent)
 {
@@ -36,36 +38,26 @@ void LaunchUI::runInitThread()
 }
 
 //错误提示
-void LaunchUI::on_configError_initThread(int ErrorCode)
+void LaunchUI::on_configError_initThread(int errorCode)
 {
 	QString message; //提示信息
-	switch (ErrorCode)
+	switch (errorCode)
 	{
-	case Ui::ConfigFileMissing:
-		message = QString::fromLocal8Bit("config文件丢失，已生成默认config文件!  \n")
-			+ QString::fromLocal8Bit("系统即将重新获取配置参数 ...  \n");
-		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			message + "ErrorCode: " + QString::number(ErrorCode),
-			QString::fromLocal8Bit("确定"));
+	case DetectConfig::ConfigFileMissing:
+		DetectConfig::showMessageBox(this, (DetectConfig::ErrorCode) errorCode);
+		Ui::delay(10); //延时
 		initThread->start(); //重启线程
 		break;
-	case Ui::Invalid_SampleDirPath:
-	case Ui::Invalid_TemplDirPath:
-	case Ui::Invalid_OutputDirPath:
-		message = QString::fromLocal8Bit("历史参数错误，请在参数设置界面重新设置!  \n");
-		QMessageBox::warning(this, QString::fromLocal8Bit("提示"),
-			message + "ErrorCode: " + QString::number(ErrorCode),
-			QString::fromLocal8Bit("确定"));
+	default:
+		DetectConfig::showMessageBox(this, (DetectConfig::ErrorCode) errorCode);
 		Ui::delay(10); //延时
 		update_sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
 		Ui::delay(1000); //延时
 		break;
-	default:
-		break;
 	}
 
 	Ui::delay(10); //延时
-	emit launchFinished_launchUI(ErrorCode);
+	emit launchFinished_launchUI(errorCode);
 }
 
 //更新初始化状态

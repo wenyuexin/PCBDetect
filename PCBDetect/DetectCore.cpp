@@ -35,12 +35,13 @@ void DetectCore::doDetect()
 	detectFunc.setDetectConfig(config);
 	detectFunc.setDetectParams(params);
 
+	int currentRow_detect = params->currentRow_detect;
 	for (int i = 0; i < samples->size(); i++) {
 		double t1 = clock();
 
 		//读取模板图片
-		string templPath = config->TemplDirPath.toStdString() + "/" + params->sampleModelNum.toStdString() + "/"
-			+ to_string(params->currentRow_detect + 1) + "_" + std::to_string(i + 1)  + config->ImageFormat.toStdString();
+		string templPath = (config->TemplDirPath + "/" + params->sampleModelNum + "/"
+			+ QString::number(currentRow_detect + 1) + "_" + QString::number(i + 1)  + config->ImageFormat).toStdString();
 		Mat templ_gray = cv::imread(templPath, 0);
 
 		//读取样本图片
