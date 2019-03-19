@@ -27,7 +27,7 @@ public:
 	SettingUI(QWidget *parent = Q_NULLPTR);
 	~SettingUI();
 
-	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
+	inline void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
 	void refreshSettingUI();
 	void setPushButtonsToEnabled(bool code);
 
@@ -36,7 +36,7 @@ private:
 	void selectDirPath(QString &path);
 	bool writeConfigFile(QString &fileName);
 	void getConfigFromSettingUI();
-	void setCursorPosition(Ui::DetectConfig::ConfigIndex code);
+	void setCursorLocation(Ui::DetectConfig::ConfigIndex code);
 
 Q_SIGNALS:
 	void showDetectMainUI();

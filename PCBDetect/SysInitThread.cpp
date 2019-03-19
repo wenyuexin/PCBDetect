@@ -19,7 +19,7 @@ void SysInitThread::run()
 {
 	switch (bootStatus)
 	{
-	case 0: 
+	case 0: //初次执行初始化
 	case 1: //读取参数配置文件，对config进行初始化
 		if (!initDetectConfig()) { bootStatus = 1;  return; }
 	case 2: //其他初始化操作
