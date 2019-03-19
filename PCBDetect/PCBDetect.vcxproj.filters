@@ -75,6 +75,9 @@
     <ClCompile Include="TemplFunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MotionControler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="PCBDetect.h">
@@ -110,6 +113,9 @@
     <QtMoc Include="TemplateExtractor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="MotionControler.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="PCBDetect.ui">
@@ -141,6 +147,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TemplFunc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AMC98C.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
