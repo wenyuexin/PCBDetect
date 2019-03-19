@@ -53,11 +53,12 @@ void LaunchUI::on_configError_initThread(int errorCode)
 		Ui::delay(10); //延时
 		update_sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
 		Ui::delay(1000); //延时
+		emit launchFinished_launchUI(errorCode);
 		break;
 	}
 
-	Ui::delay(10); //延时
-	emit launchFinished_launchUI(errorCode);
+	//Ui::delay(10); //延时
+	//emit launchFinished_launchUI(errorCode);
 }
 
 //更新初始化状态

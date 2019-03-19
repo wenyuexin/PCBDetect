@@ -105,12 +105,12 @@ void SettingUI::on_pushButton_confirm_clicked()
 		DetectConfig::showMessageBox(this, code);
 		this->setPushButtonsToEnabled(true);
 		ConfigIndex index = DetectConfig::convertCodeToIndex(code);
-		this->setCursorPosition(index);
+		this->setCursorLocation(index);
 		return;
 	}
 
 	//设置聚焦位置
-	this->setCursorPosition(DetectConfig::Index_None);
+	this->setCursorLocation(DetectConfig::Index_None);
 
 	//将临时配置拷贝到config中
 	tempConfig.copyTo(*config);
@@ -220,20 +220,20 @@ bool SettingUI::writeConfigFile(QString &fileName)
 }
 
 //设置光标的位置
-void SettingUI::setCursorPosition(ConfigIndex code)
+void SettingUI::setCursorLocation(ConfigIndex code)
 {
+	int textLen;
 	switch (code)
 	{
 	case Ui::DetectConfig::Index_All:
 		break;
 	case Ui::DetectConfig::Index_None:
-		//this->setFocusPolicy(Qt::NoFocus);
-		//this->setCursorVisible();
-		//this->unsetCursor();
 		ui.lineEdit_SampleDirPath->setFocus(); 
+		ui.lineEdit_SampleDirPath->clearFocus();
 		break;
-
 	case Ui::DetectConfig::Index_SampleDirPath:
+		textLen = ui.lineEdit_SampleDirPath->text().length();
+		ui.lineEdit_SampleDirPath->setCursorPosition(textLen);
 		ui.lineEdit_SampleDirPath->setFocus(); break;
 	case Ui::DetectConfig::Index_TemplDirPath:
 		ui.lineEdit_TemplDirPath->setFocus(); break;

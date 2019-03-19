@@ -374,7 +374,9 @@ public:
         label_roiHeight_L_7->setSizePolicy(sizePolicy);
         label_roiHeight_L_7->setMinimumSize(QSize(30, 35));
         label_roiHeight_L_7->setMaximumSize(QSize(30, 35));
-        label_roiHeight_L_7->setFont(font1);
+        QFont font2;
+        font2.setPointSize(15);
+        label_roiHeight_L_7->setFont(font2);
         label_roiHeight_L_7->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_6->addWidget(label_roiHeight_L_7);
@@ -400,7 +402,7 @@ public:
         label_roiHeight_L_8->setSizePolicy(sizePolicy);
         label_roiHeight_L_8->setMinimumSize(QSize(30, 35));
         label_roiHeight_L_8->setMaximumSize(QSize(30, 35));
-        label_roiHeight_L_8->setFont(font1);
+        label_roiHeight_L_8->setFont(font2);
         label_roiHeight_L_8->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_6->addWidget(label_roiHeight_L_8);
@@ -450,8 +452,6 @@ public:
         comboBox_ImageFormat->setSizePolicy(sizePolicy);
         comboBox_ImageFormat->setMinimumSize(QSize(150, 35));
         comboBox_ImageFormat->setMaximumSize(QSize(150, 35));
-        QFont font2;
-        font2.setPointSize(15);
         comboBox_ImageFormat->setFont(font2);
         comboBox_ImageFormat->setLayoutDirection(Qt::LeftToRight);
 
