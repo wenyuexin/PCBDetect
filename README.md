@@ -35,7 +35,7 @@
 | | |  |
 | ImgConvertThread | .h / .cpp | 图像转换线程，管理若干图像类型转换器，<br> 能使实现对一组分图做图像类型转换类型 |
 | ImageConverter | .h / .cpp | 图像类型转换器，启用单独的线程对一个分图做图像类型转换 |
-| | |  |
+|  | |  |
 | TemplateUI | .h / .cpp | 模板提取界面 |
 | TemplateUI | .ui | 模板提取界面的外观设计和控件布局 |
 | TemplateThread | .h / .cpp | 模板提取线程 |
