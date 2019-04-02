@@ -380,7 +380,8 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 }
 
 //拷贝结构体
-void DetectConfig::copyTo(DetectConfig &other) {
+void DetectConfig::copyTo(DetectConfig &other) 
+{
 	other.validFlag = validFlag; //参数有效性
 	other.SampleDirPath = SampleDirPath; //样本文件存储路径
 	other.TemplDirPath = TemplDirPath;//模板文件的存储路径
@@ -396,7 +397,8 @@ void DetectConfig::copyTo(DetectConfig &other) {
 }
 
 //加载默认值
-void DetectConfig::loadDefaultValue() {
+void DetectConfig::loadDefaultValue() 
+{
 	QDir dir(QDir::currentPath());
 	dir.cdUp(); //转到上一级目录
 	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
@@ -417,7 +419,8 @@ void DetectConfig::loadDefaultValue() {
 
 
 //参数报错
-void DetectConfig::showMessageBox(QWidget *parent, DetectConfig::ErrorCode code) {
+void DetectConfig::showMessageBox(QWidget *parent, DetectConfig::ErrorCode code) 
+{
 	QString valueName;
 	if (code == ConfigFileMissing) {
 		QString message = QString::fromLocal8Bit("config文件丢失，已生成默认config文件!  \n")
@@ -454,12 +457,13 @@ void DetectConfig::showMessageBox(QWidget *parent, DetectConfig::ErrorCode code)
 	}
 
 	QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
-		QString::fromLocal8Bit("参数无效，请在参数设置界面重新设置") + valueName + "!    \n"
-		+ "ErrorCode: " + QString::number(code),
+		QString::fromLocal8Bit("参数无效，请在参数设置界面重新设置") + valueName + "!    \n" +
+		"ErrorCode: " + QString::number(code),
 		QString::fromLocal8Bit("确定"));
 }
 
-DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(DetectConfig::ErrorCode code) {
+DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(DetectConfig::ErrorCode code) 
+{
 	switch (code)
 	{
 	case Ui::DetectConfig::ValidConfig:
