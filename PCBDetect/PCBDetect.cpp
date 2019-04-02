@@ -17,13 +17,18 @@ PCBDetect::PCBDetect(QWidget *parent)
 	//图标文件夹的路径
 	IconFolder = QDir::currentPath() + "/Icons";
 
+	//相机控制器
+	adminConfig.MaxCameraNum = 5;
+	cameraControler.setMaxCameraNum(&adminConfig.MaxCameraNum);
+	cameraControler.setCameraNum(&detectConfig.nCamera);
+
 	//启动界面
 	launcher = new LaunchUI(Q_NULLPTR, &(QPixmap(IconFolder + "/screen.png")));
 	launcher->showFullScreen(); //显示launcher
 
 	launcher->setDetectConfig(&detectConfig);
-	//launcher->setAdminConfig(&adminConfig);
-	//launcher->setCameraControler(&cameraControler);
+	launcher->setAdminConfig(&adminConfig);
+	launcher->setCameraControler(&cameraControler);
 	launcher->runInitThread(); //运行初始化线程
 	connect(launcher, SIGNAL(launchFinished_launchUI(int)), this, SLOT(on_launchFinished_launchUI(int)));
 

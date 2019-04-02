@@ -5,7 +5,7 @@ using Ui::DetectConfig;
 
 SysInitThread::SysInitThread()
 {
-	bootStatus = 0; //启动状态
+	bootStatus = 0x00; //启动状态
 }
 
 SysInitThread::~SysInitThread()
@@ -17,15 +17,17 @@ SysInitThread::~SysInitThread()
 
 void SysInitThread::run()
 {
-	switch (bootStatus)
-	{
-	case 0: //初次执行初始化
-	case 1: //读取参数配置文件，对config进行初始化
-		if (!initDetectConfig()) { bootStatus = 1;  return; }
-	case 2: //其他初始化操作
-		Ui::delay(1000);
-	default:
-		break;
+	if (bootStatus == 0x00) {  //初次执行初始化
+		if (!initDetectConfig()) { bootStatus |= 0x10;  return; }
+		if (!initCameraControler()) { bootStatus |= 0x01;  return; }
+	}
+	else if ((bootStatus & 0x10) >> 4 == 0x1) { //DetectConfig初始化异常
+		if (!initDetectConfig()) { bootStatus |= 0x10; return; }
+		else                     { bootStatus &= 0x01; }
+	}
+	else if ((bootStatus & 0x01) == 0x1) { //相机初始化异常
+		if (!initCameraControler()) { bootStatus |= 0x01; return; }
+		else                        { bootStatus &= 0x10; }
 	}
 	
 	//初始化结束
@@ -39,24 +41,37 @@ void SysInitThread::run()
 bool SysInitThread::initDetectConfig()
 {
 	emit sysInitStatus_initThread(QString::fromLocal8Bit("正在获取历史参数配置 ..."));
-	Ui::delay(1200);
+	Ui::delay(1000);
 
-	if (!Configurator::loadConfigFile("/.config", config)) {
+	if (!Configurator::loadConfigFile("/.config", detectConfig)) {
 		emit configError_initThread(DetectConfig::ConfigFileMissing); return false;
 	}
 	else {
 		//计算宽高比
-		DetectConfig::ErrorCode code = config->calcImageAspectRatio();
+		DetectConfig::ErrorCode code = detectConfig->calcImageAspectRatio();
 		if (code != DetectConfig::ValidConfig) { 
 			emit configError_initThread(code); return false; 
 		}
 		//参数有效性判断
-		code = config->checkValidity(DetectConfig::Index_All);
+		code = detectConfig->checkValidity(DetectConfig::Index_All);
 		if (code != DetectConfig::ValidConfig) { 
 			emit configError_initThread(code); return false; 
 		}
 	}
 
-	emit sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
+	emit sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束   "));
+	Ui::delay(1000);
+	return true;
+}
+
+//初始化相机控制器
+bool SysInitThread::initCameraControler()
+{
+	emit sysInitStatus_initThread(QString::fromLocal8Bit("正在初始化相机 ..."));
+	Ui::delay(1000);
+	CameraControler::ErrorCode code = cameraControler->initCameras();
+	if (code != CameraControler::NoError) { emit cameraError_initThread(code); return false; }
+	Ui::delay(1000);
+	emit sysInitStatus_initThread(QString::fromLocal8Bit("相机初始化结束    "));
 	return true;
 }

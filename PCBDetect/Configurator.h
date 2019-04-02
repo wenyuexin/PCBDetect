@@ -84,19 +84,19 @@ namespace Ui {
 
 		//错误代码
 		enum ErrorCode {
-			ValidConfig = 0,
-			ConfigFileMissing = 100,
-			Invalid_SampleDirPath = 101,
-			Invalid_TemplDirPath = 102,
-			Invalid_OutputDirPath = 103,
-			Invalid_ImageFormat = 104,
-			Invalid_nCamera = 105,
-			Invalid_nPhotographing = 106,
-			Invalid_nBasicUnitInRow = 107,
-			Invalid_nBasicUnitInCol = 108,
-			Invalid_ImageAspectRatio_W = 109,
-			Invalid_ImageAspectRatio_H = 110,
-			Invalid_ImageAspectRatio = 111
+			ValidConfig = 0x000,
+			ConfigFileMissing = 0x100,
+			Invalid_SampleDirPath = 0x101,
+			Invalid_TemplDirPath = 0x102,
+			Invalid_OutputDirPath = 0x103,
+			Invalid_ImageFormat = 0x104,
+			Invalid_nCamera = 0x105,
+			Invalid_nPhotographing = 0x106,
+			Invalid_nBasicUnitInRow = 0x107,
+			Invalid_nBasicUnitInCol = 0x108,
+			Invalid_ImageAspectRatio_W = 0x109,
+			Invalid_ImageAspectRatio_H = 0x10A,
+			Invalid_ImageAspectRatio = 0x10B
 		};
 
 	public:

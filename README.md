@@ -1,16 +1,16 @@
 # PCBDetect
 基于Qt5和OpenCV3的PCB缺陷检测系统
 
-**开发环境：**  
+## 开发环境  
 
 * Visual Studio 2017 Professional  
 * Qt 5.11.1  
 * OpenCV contrib 3.4.3
 
-**主要模块：**  
+## 主要模块  
 运动控制、相机控制、人机交互界面（主界面、参数设置界面、模板提取界面、检测界面、序号识别界面等）、核心算法（模板提取算法、缺陷检测算法）、字符识别（OCR）  
 
-**文件说明：**  
+## 文件说明
 
 | 文件 | 类型 | 说明 |
 | :---: | :---: | ----- |
@@ -49,7 +49,21 @@
 | DetectFunc | .h / .cpp | 检测核心的辅助类 |
 |                   |           |                                                              |
 
+## 错误代码  
 
+
+
+| 模块 | 说明 | 代码 |
+| :---:| :---: | ----- |
+| DetectConfig | 用户参数 | 0x100 ~ 0x1FF |
+| AdminConfig | 系统参数 | 0x200 ~ 0x2FF |
+| MotionControler | 运动控制 | 0x300 ~ 0x3FF |
+| CameraControler | 相机控制 | 0x400 ~ 0x4FF |
+| ImgConvertThread <br/>ImageConverter | 图像类型转换 | 0x500 ~ 0x5FF |
+| TemplateUI<br/>TemplateThread<br/>TemplateExtractor<br/>TemplFunc | 模板提取 | 0x600 ~ 0x6FF |
+| DetectUI<br/>DetectThread<br/>DetectCore<br/>DetectFunc | 检测 | 0x700 ~ 0x7FF |
+| SerialNumberUI | 产品序号识别 | 0x800 ~ 0x8FF |
+|  |  |  |
 
 
 
