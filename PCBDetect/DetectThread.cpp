@@ -46,7 +46,7 @@ void DetectThread::convertQImageToCvMat(QImageVector &src, CvMatVector &dst)
 	size_t vectorSize = src.size();
 	dst.resize(vectorSize);
 	for (int i = 0; i < vectorSize; i++) {
-		threads[i]->set(src[i], &(dst[i]), Ui::QImage2Mat);
+		threads[i]->set(src[i], dst[i], ImageConverter::QImage2CvMat);
 		threads[i]->start();
 	}
 	//Ïß³ÌµÈ´ý
@@ -59,7 +59,7 @@ void DetectThread::initImageConvertThreads()
 {
 	threads.resize(nThreads);
 	for (int i = 0; i < nThreads; i++) {
-		threads[i] = new ImgConvertThread();
+		threads[i] = new ImageConverter();
 	}
 }
 

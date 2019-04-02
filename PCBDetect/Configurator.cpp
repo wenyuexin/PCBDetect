@@ -1,20 +1,26 @@
 ﻿#include "Configurator.h"
 
 using Ui::DetectConfig;
+using Ui::DetectParams;
+
+/****************************************************/
+/*                    Configurator                  */
+/****************************************************/
 
 Configurator::Configurator(QFile *file)
 {
 	this->configFile = file;
+	updateKeys();
 }
 
 Configurator::~Configurator()
 {
 }
 
-/********************** 生成默认的参数配置文件 *************************/
+/*************** 生成默认的参数配置文件 **************/
 
 //生成默认的参数配置文件
-void Configurator::init(QString filePath)
+void Configurator::createConfigFile(QString filePath)
 {
 	QFileInfo config(filePath);
 	if (!config.isFile()) { //没有配置文件  则创建文件 ; 生成配置文件
@@ -22,23 +28,7 @@ void Configurator::init(QString filePath)
 		file.open(QIODevice::WriteOnly);
 		QTextStream textStrteam(&file);
 		QVariantMap pathConfig;
-
-		QDir dir(QDir::currentPath());
-		dir.cdUp(); //转到上一级目录
-		QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
-		pathConfig.insert("OutputDirPath", appDirPath + "/output");
-		pathConfig.insert("SampleDirPath", appDirPath + "/sample");
-		pathConfig.insert("TemplDirPath", appDirPath + "/template");
-		pathConfig.insert("ImageFormat", ".bmp");
-
-		pathConfig.insert("nCamera", "5");
-		pathConfig.insert("nPhotographing", "8");
-		pathConfig.insert("nBasicUnitInRow", "4");
-		pathConfig.insert("nBasicUnitInCol", "6");
-		pathConfig.insert("ImageAspectRatio_W", "4"); //样本图像的宽高比
-		pathConfig.insert("ImageAspectRatio_H", "3"); //样本图像的宽高比
-		pathConfig.insert("imageAspectRatio", QString::number(4.0 / 3.0, 'g', 7));
-
+		//pathConfig.insert("###", "###");
 		QJsonDocument jsonDocument = QJsonDocument::fromVariant(pathConfig);
 		textStrteam << jsonDocument.toJson();
 		file.close();
@@ -46,7 +36,7 @@ void Configurator::init(QString filePath)
 }
 
 
-/************* 将某个参数的写入config文件中 ************/
+/*********** 将某个参数的写入config文件中 ************/
 
 //将参数写入配置文件中 - QString
 bool Configurator::jsonSetValue(const QString &key, QString &value)
@@ -61,10 +51,13 @@ bool Configurator::jsonSetValue(const QString &key, QString &value)
 		if (!confDcoument.isNull() || !confDcoument.isEmpty()) {
 			if (confDcoument.isObject()) {
 				QJsonObject obj = confDcoument.object();
-				obj[key] = value;
+				QString encodeKey = encrypt(key); //加密
+				QString encodeValue = encrypt(value); 
+				obj[encodeKey] = encodeValue;
 				QJsonDocument document = QJsonDocument::fromVariant(obj.toVariantMap());
 				configFile->resize(0);
 				textStrteam << document.toJson();
+				updateKeys();//更新秘钥
 				return true;
 			}
 		}
@@ -101,9 +94,19 @@ bool Configurator::jsonReadValue(const QString &key, QString &value)
 		if (!confDcoument.isNull() || !confDcoument.isEmpty()) {
 			if (confDcoument.isObject()) {
 				QJsonObject obj = confDcoument.object();
-				value = obj[key].toString();
+				QString encodeKey = encrypt(key); //加密
+				QString encodeValue = obj[encodeKey].toString();
+				value = decrypt(encodeValue); //解密
+				QByteArray();
 				return true;
-			}
+			} 
+			//else if (confDcoument.isArray()) {
+			//	QJsonObject obj = confDcoument.object();
+			//	QString encodeKey = encrypt(key); //加密
+			//	QString encodeValue = obj[encodeKey].toString();
+			//	value = decrypt(encodeValue); //解密
+			//	return true;
+			//}
 		}
 		else {
 			qDebug() << "文件空";
@@ -133,6 +136,117 @@ bool Configurator::jsonReadValue(const QString &key, int &value)
 	return false;
 }
 
+
+/******************* 加密与解密 ********************/
+
+//修改秘钥
+void Configurator::updateKeys()
+{
+	QFileInfo fileInfo = QFileInfo(*configFile);
+
+	//如果最近的修改时间为空，则使用文件的创建时间
+	if (fileDateTime.isNull() || fileDateTime != fileInfo.lastModified()) {
+		fileDateTime = fileInfo.lastModified();
+		if (fileDateTime.isNull()) fileDateTime = fileInfo.created();
+		keys[0] = fileDateTime.toString("dd").toInt() % 10;
+		keys[1] = fileDateTime.toString("MM").toInt() % 10;
+		keys[2] = fileDateTime.toString("yyyy").toInt() % 10;
+		keys[3] = (keys[1] + keys[2] + 2019) % 10;
+	}
+}
+
+//加密
+QString Configurator::encrypt(QString origin) const
+{
+	QString encodeStr;
+	int len = origin.size();
+	for (int i = 0; i < len; i++) {
+		encodeStr.append(origin.at(i).unicode() ^ keys[i % 4]);
+	}
+	return encodeStr;
+}
+
+QString Configurator::encrypt(const char* origin) const
+{
+	return encrypt(QString(origin));
+}
+
+//解密
+QString Configurator::decrypt(QString origin) const
+{
+	QString encodeStr;
+	int len = origin.size();
+	for (int i = 0; i < len; i++) {
+		encodeStr.append(origin.at(i).unicode() ^ keys[i % 4]);
+	}
+	return encodeStr;
+}
+
+QString Configurator::decrypt(const char* origin) const
+{
+	return decrypt(QString(origin));
+}
+
+//将配置文件中的参数加载到config中
+bool Configurator::loadConfigFile(const QString &fileName, Ui::DetectConfig *config)
+{
+	bool flag = true;
+	QString configFilePath = QDir::currentPath() + "/" + fileName;
+	QFile configFile(configFilePath);
+	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
+		createConfigFile(configFilePath);//创建配置文件
+		config->loadDefaultValue();//加载默认值
+		saveConfigFile(fileName, config);//保存默认config
+		flag = false;
+	}
+	else { //文件存在，并且可以正常读写
+		Configurator configurator(&configFile);
+		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath);
+		configurator.jsonReadValue("SampleDirPath", config->SampleDirPath);
+		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath);
+		configurator.jsonReadValue("ImageFormat", config->ImageFormat);
+
+		configurator.jsonReadValue("nCamera", config->nCamera);
+		configurator.jsonReadValue("nPhotographing", config->nPhotographing);
+		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow);
+		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol);
+		configurator.jsonReadValue("ImageAspectRatio_W", config->ImageAspectRatio_W);
+		configurator.jsonReadValue("ImageAspectRatio_H", config->ImageAspectRatio_H);
+		configFile.close();
+	}
+	return flag;
+}
+
+//将config中的参数保存到配置文件中
+bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config) 
+{
+	bool flag = true;
+	QString configFilePath = QDir::currentPath() + "/" + fileName;
+	QFile configFile(configFilePath);
+	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
+		createConfigFile(configFilePath);
+		DetectConfig defaultConfig;
+		defaultConfig.loadDefaultValue();//加载默认值
+		saveConfigFile(fileName, &defaultConfig);//保存默认config
+		flag = false;
+	}
+	else { //文件存在，并且可以正常读写
+		Configurator configurator(&configFile);
+		configurator.jsonSetValue("SampleDirPath", config->SampleDirPath);//样本文件夹
+		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath);//模板文件夹
+		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath);//输出文件夹
+		configurator.jsonSetValue("ImageFormat", config->ImageFormat);//图像格式
+		configurator.jsonSetValue("nCamera", QString::number(config->nCamera)); //相机个数
+		configurator.jsonSetValue("nPhotographing", QString::number(config->nPhotographing)); //拍照次数
+		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow)); //每一行中的基本单元数
+		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol)); //每一列中的基本单元数
+		configurator.jsonSetValue("ImageAspectRatio_W", QString::number(config->ImageAspectRatio_W)); //样本图像的宽高比
+		configurator.jsonSetValue("ImageAspectRatio_H", QString::number(config->ImageAspectRatio_H)); //样本图像的宽高比
+		configurator.jsonSetValue("ImageAspectRatio", QString::number(config->ImageAspectRatio, 'g', 7)); //样本图像的宽高比
+		configFile.close();
+	}
+	return flag;
+}
 
 /******************* 暂时没用 ********************/
 
@@ -175,7 +289,235 @@ bool Configurator::checkDir(QString dirpath)
 }
 
 
-/********************* 其他 **********************/
+
+/****************************************************/
+/*                   DetectConfig                   */
+/****************************************************/
+
+//参数有效性
+bool DetectConfig::isValid() {
+	if (validFlag == 0) checkValidity(Index_All);
+	return validFlag == 1;
+}
+
+//参数有效性判断
+DetectConfig::ErrorCode DetectConfig::checkValidity(DetectConfig::ConfigIndex index) {
+	ErrorCode code = ValidConfig;
+	if (validFlag == 1) return code;
+	switch (index)
+	{
+	case Index_All:
+	case Index_SampleDirPath:
+		if (!QFileInfo(SampleDirPath).isDir()) code = Invalid_SampleDirPath;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_TemplDirPath:
+		if (!QFileInfo(TemplDirPath).isDir()) code = Invalid_TemplDirPath;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_OutputDirPath:
+		if (!QFileInfo(OutputDirPath).isDir()) code = Invalid_OutputDirPath;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_ImageFormat:
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_nCamera:
+		if (nCamera < 1) code = Invalid_nCamera;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_nPhotographing:
+		if (nPhotographing < 1) code = Invalid_nPhotographing;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_nBasicUnitInRow:
+		if (nBasicUnitInRow < 1) code = Invalid_nBasicUnitInRow;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_nBasicUnitInCol:
+		if (nBasicUnitInCol < 1) code = Invalid_nBasicUnitInCol;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_ImageAspectRatio_W:
+		if (ImageAspectRatio_W < 1) code = Invalid_ImageAspectRatio_W;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_ImageAspectRatio_H:
+		if (ImageAspectRatio_H < 1) code = Invalid_ImageAspectRatio_H;
+		if (code != ValidConfig || index != Index_All) break;
+	case Index_ImageAspectRatio:
+		if (code != ValidConfig || index != Index_All) break;
+	}
+	if (code != ValidConfig) validFlag = -1;
+	else if (index == Index_All) validFlag = 1;
+	return code;
+}
+
+//计算宽高比
+DetectConfig::ErrorCode DetectConfig::calcImageAspectRatio() {
+	ErrorCode code = checkValidity(Index_ImageAspectRatio_W);
+	if (code != ValidConfig) return code;
+	code = checkValidity(Index_ImageAspectRatio_H);
+	if (code != ValidConfig) return code;
+	ImageAspectRatio = 1.0 * ImageAspectRatio_W / ImageAspectRatio_H;
+	return ValidConfig;
+}
+
+//判断是否需要重置系统
+bool DetectConfig::getSystemResetFlag(DetectConfig &other) {
+	if (nCamera != other.nCamera) return true;
+	if (nPhotographing != other.nPhotographing) return true;
+	if (ImageAspectRatio_W != other.ImageAspectRatio_W || ImageAspectRatio_H != other.ImageAspectRatio_H) {
+		if (abs(ImageAspectRatio - other.ImageAspectRatio) < 1E-5) return true;
+	}
+	return false;
+}
+
+//不相等判断
+DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
+	if (SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
+	if (TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
+	if (OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
+	if (ImageFormat != other.ImageFormat) return Index_ImageFormat;
+	if (nCamera != other.nCamera) return Index_nCamera;
+	if (nPhotographing != other.nPhotographing) return Index_nPhotographing;
+	if (nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
+	if (nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
+	if (ImageAspectRatio_W != other.ImageAspectRatio_W) return Index_ImageAspectRatio_W;
+	if (ImageAspectRatio_H != other.ImageAspectRatio_H) return Index_ImageAspectRatio_H;
+	return Index_None;
+}
+
+//拷贝结构体
+void DetectConfig::copyTo(DetectConfig &other) {
+	other.validFlag = validFlag; //参数有效性
+	other.SampleDirPath = SampleDirPath; //样本文件存储路径
+	other.TemplDirPath = TemplDirPath;//模板文件的存储路径
+	other.OutputDirPath = OutputDirPath;//检测结果存储路径
+	other.ImageFormat = ImageFormat; //图像后缀
+	other.nCamera = nCamera; //相机个数
+	other.nPhotographing = nPhotographing; //拍照次数
+	other.nBasicUnitInRow = nBasicUnitInRow; //每一行中的基本单元数
+	other.nBasicUnitInCol = nBasicUnitInCol; //每一列中的基本单元数
+	other.ImageAspectRatio_W = ImageAspectRatio_W; //宽高比中的宽
+	other.ImageAspectRatio_H = ImageAspectRatio_H; //宽高比中的高
+	other.ImageAspectRatio = ImageAspectRatio; //样本图像的宽高比
+}
+
+//加载默认值
+void DetectConfig::loadDefaultValue() {
+	QDir dir(QDir::currentPath());
+	dir.cdUp(); //转到上一级目录
+	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
+
+	validFlag = 0; //参数有效性
+	SampleDirPath = appDirPath + "/sample"; //样本文件存储路径
+	TemplDirPath = appDirPath + "/template";//模板文件的存储路径
+	OutputDirPath = appDirPath + "/output";//检测结果存储路径
+	ImageFormat = ".bmp"; //图像后缀
+	nCamera = 5; //相机个数
+	nPhotographing = 4; //拍照次数
+	nBasicUnitInRow = 4; //每一行中的基本单元数
+	nBasicUnitInCol = 6; //每一列中的基本单元数
+	ImageAspectRatio_W = 4; //宽高比中的宽
+	ImageAspectRatio_H = 3; //宽高比中的高
+	ImageAspectRatio = 4.0 / 3.0; //样本图像的宽高比
+}
+
+
+//参数报错
+void DetectConfig::showMessageBox(QWidget *parent, DetectConfig::ErrorCode code) {
+	QString valueName;
+	if (code == ConfigFileMissing) {
+		QString message = QString::fromLocal8Bit("config文件丢失，已生成默认config文件!  \n")
+			+ QString::fromLocal8Bit("请确认默认参数是否有效 ...  \n");
+		QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
+			message + "ErrorCode: " + QString::number(code),
+			QString::fromLocal8Bit("确定"));
+		return;
+	}
+
+	switch (code)
+	{
+	case Ui::DetectConfig::Invalid_SampleDirPath:
+		valueName = QString::fromLocal8Bit("样本路径"); break;
+	case Ui::DetectConfig::Invalid_TemplDirPath:
+		valueName = QString::fromLocal8Bit("模板路径"); break;
+	case Ui::DetectConfig::Invalid_OutputDirPath:
+		valueName = QString::fromLocal8Bit("输出路径"); break;
+	case Ui::DetectConfig::Invalid_ImageFormat:
+		valueName = QString::fromLocal8Bit("图像格式"); break;
+	case Ui::DetectConfig::Invalid_nCamera:
+		valueName = QString::fromLocal8Bit("相机个数"); break;
+	case Ui::DetectConfig::Invalid_nPhotographing:
+		valueName = QString::fromLocal8Bit("拍摄次数"); break;
+	case Ui::DetectConfig::Invalid_nBasicUnitInRow:
+	case Ui::DetectConfig::Invalid_nBasicUnitInCol:
+		valueName = QString::fromLocal8Bit("基本单元数"); break;
+	case Ui::DetectConfig::Invalid_ImageAspectRatio_W:
+	case Ui::DetectConfig::Invalid_ImageAspectRatio_H:
+	case Ui::DetectConfig::Invalid_ImageAspectRatio:
+		valueName = QString::fromLocal8Bit("图像宽高比"); break;
+	default:
+		valueName = ""; break;
+	}
+
+	QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
+		QString::fromLocal8Bit("参数无效，请在参数设置界面重新设置") + valueName + "!    \n"
+		+ "ErrorCode: " + QString::number(code),
+		QString::fromLocal8Bit("确定"));
+}
+
+DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(DetectConfig::ErrorCode code) {
+	switch (code)
+	{
+	case Ui::DetectConfig::ValidConfig:
+		return Index_None;
+	case Ui::DetectConfig::Invalid_SampleDirPath:
+		return Index_SampleDirPath;
+	case Ui::DetectConfig::Invalid_TemplDirPath:
+		return Index_TemplDirPath;
+	case Ui::DetectConfig::Invalid_OutputDirPath:
+		return Index_OutputDirPath;
+	case Ui::DetectConfig::Invalid_ImageFormat:
+		return Index_ImageFormat;
+	case Ui::DetectConfig::Invalid_nCamera:
+		return Index_nCamera;
+	case Ui::DetectConfig::Invalid_nPhotographing:
+		return Index_nPhotographing;
+	case Ui::DetectConfig::Invalid_nBasicUnitInRow:
+		return Index_nBasicUnitInRow;
+	case Ui::DetectConfig::Invalid_nBasicUnitInCol:
+		return Index_nBasicUnitInCol;
+	case Ui::DetectConfig::Invalid_ImageAspectRatio_W:
+		return Index_ImageAspectRatio_W;
+	case Ui::DetectConfig::Invalid_ImageAspectRatio_H:
+		return Index_ImageAspectRatio_H;
+	case Ui::DetectConfig::Invalid_ImageAspectRatio:
+		return Index_ImageAspectRatio;
+	}
+	return Index_None;
+}
+
+
+
+/****************************************************/
+/*                   DetectParams                   */
+/****************************************************/
+
+//重置产品序号
+void DetectParams::resetSerialNum()
+{
+	QString sampleModelNum = ""; //型号
+	QString sampleBatchNum = ""; //批次号
+	QString sampleNum = ""; //样本编号
+}
+
+//加载默认的运行参数
+void DetectParams::loadDefaultValue()
+{
+	resetSerialNum();
+	imageSize = QSize(-1, -1);
+	int currentRow_detect = -1; //检测行号
+	int currentRow_extract = -1; //提取行号
+}
+
+
+
+/****************************************************/
+/*                   namespace Ui                   */
+/****************************************************/
 
 //非阻塞延迟
 void Ui::delay(unsigned long msec)

@@ -103,9 +103,9 @@ void SettingUI::on_pushButton_confirm_clicked()
 	ConfigErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
 	if (code != DetectConfig::ValidConfig) { //参数无效，报错
 		DetectConfig::showMessageBox(this, code);
-		this->setPushButtonsToEnabled(true);
+		this->setPushButtonsToEnabled(true);//将返回按键设为可点击
 		ConfigIndex index = DetectConfig::convertCodeToIndex(code);
-		this->setCursorLocation(index);
+		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
 		return;
 	}
 
@@ -117,12 +117,14 @@ void SettingUI::on_pushButton_confirm_clicked()
 
 	//将参数保存到config文件中
 	QString configFileName = ".config";
-	if (!writeConfigFile(configFileName)) setPushButtonsToEnabled(true);
+
+	Configurator::saveConfigFile(configFileName, config);
+	//if (!writeConfigFile(configFileName)) setPushButtonsToEnabled(true);
 	//writeConfigFile(configFileName);
 
 	//向主界面发送消息
 	emit enableButtonsOnDetectMainUI_settingUI(); //将主界面上的按键设为可点击
-	if (config->getResetFlag(tempConfig)) emit resetDetectSystem();//判断是否重置检测系统
+	if (config->getSystemResetFlag(tempConfig)) emit resetDetectSystem();//判断是否重置检测系统
 	this->setPushButtonsToEnabled(true);
 }
 
@@ -190,33 +192,6 @@ void SettingUI::selectDirPath(QString &path)
 		path = fileDialog->selectedFiles()[0];
 	}
 	delete fileDialog;
-}
-
-//将参数保存到配置文件中
-bool SettingUI::writeConfigFile(QString &fileName)
-{
-	QString configFilePath = QDir::currentPath() + "/" + fileName;
-	QFile configFile(configFilePath);
-	if (!configFile.open(QIODevice::ReadWrite)) { //判断配置文件是否可读可写
-		Configurator::init(configFilePath);
-	}
-	else {
-		Configurator configurator(&configFile);
-		configurator.jsonSetValue("SampleDirPath", config->SampleDirPath);//样本文件夹
-		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath);//模板文件夹
-		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath);//输出文件夹
-		configurator.jsonSetValue("ImageFormat", config->ImageFormat);//图像格式
-		configurator.jsonSetValue("nCamera", QString::number(config->nCamera)); //相机个数
-		configurator.jsonSetValue("nPhotographing", QString::number(config->nPhotographing)); //拍照次数
-		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow)); //每一行中的基本单元数
-		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol)); //每一列中的基本单元数
-		configurator.jsonSetValue("ImageAspectRatio_W", QString::number(config->ImageAspectRatio_W)); //样本图像的宽高比
-		configurator.jsonSetValue("ImageAspectRatio_H", QString::number(config->ImageAspectRatio_H)); //样本图像的宽高比
-		configurator.jsonSetValue("ImageAspectRatio", QString::number(config->ImageAspectRatio, 'g', 7)); //样本图像的宽高比
-		configFile.close();
-		return true;
-	}
-	return false;
 }
 
 //设置光标的位置

@@ -21,27 +21,36 @@ PCBDetect::PCBDetect(QWidget *parent)
 	launcher = new LaunchUI(Q_NULLPTR, &(QPixmap(IconFolder + "/screen.png")));
 	launcher->showFullScreen(); //显示launcher
 
-	launcher->setDetectConfig(&config); //配置launcher
+	launcher->setDetectConfig(&detectConfig);
+	//launcher->setAdminConfig(&adminConfig);
+	//launcher->setCameraControler(&cameraControler);
 	launcher->runInitThread(); //运行初始化线程
 	connect(launcher, SIGNAL(launchFinished_launchUI(int)), this, SLOT(on_launchFinished_launchUI(int)));
 
 	//参数设置界面
 	settingUI = new SettingUI;
-	settingUI->setDetectConfig(&config);
+	settingUI->setDetectConfig(&detectConfig);
+	//settingUI->setAdminConfig(&adminConfig);
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
 	connect(settingUI, SIGNAL(resetDetectSystem()), this, SLOT(do_resetDetectSystem_settingUI()));
 	connect(settingUI, SIGNAL(enableButtonsOnDetectMainUI_settingUI()), this, SLOT(do_enableButtonsOnDetectMainUI_settingUI()));
 
 	//模板提取界面
 	templateUI = new TemplateUI;
-	templateUI->setDetectConfig(&config);
-	templateUI->setDetectParams(&params);
+	templateUI->setDetectConfig(&detectConfig);
+	templateUI->setDetectParams(&detectParams);
+	templateUI->setMotionControler(&motionControler);
+	templateUI->setCameraControler(&cameraControler);
+	templateUI->doConnect();//信号连接
 	connect(templateUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_templateUI()));
 
 	//检测界面
 	detectUI = new DetectUI;
-	detectUI->setDetectConfig(&config);
-	detectUI->setDetectParams(&params);
+	detectUI->setDetectConfig(&detectConfig);
+	detectUI->setDetectParams(&detectParams);
+	//detectUI->setMotionControler(&motionControler);
+	//detectUI->setCameraControler(&cameraControler);
+	//detectUI->doConnect();//信号连接
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
 }
 
@@ -56,17 +65,19 @@ PCBDetect::~PCBDetect()
 
 /**************** 启动界面 *****************/
 
+//启动结束
 void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
 {
 	if (!LaunchCode) { //正常启动
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
 		templateUI->initGraphicsView();//模板界面中图像显示的初始化
 		detectUI->initGraphicsView();//检测界面中图像显示的初始化
-		this->setPushButtonsToEnabled(true);
+		motionControler.initControler(); //初始化控制器
+		this->setPushButtonsToEnabled(true);//模板提取、检测按键设为可点击
 	}
 	else { //存在错误
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
-		this->setPushButtonsToEnabled(false);
+		this->setPushButtonsToEnabled(false);//模板提取、检测按键设为不可点击
 	}
 
 	//关闭初始化界面，显示主界面

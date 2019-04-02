@@ -4,14 +4,6 @@
 #include "DetectFunc.h"
 
 
-namespace Ui {
-#ifndef TYPE_CV_MAT_VECTOR
-#define TYPE_CV_MAT_VECTOR 
-	typedef std::vector<cv::Mat> CvMatVector;
-#endif //TYPE_CV_MAT_VECTOR
-}
-
-
 //¼ì²âºËÐÄÀà
 class DetectCore : public QObject
 {

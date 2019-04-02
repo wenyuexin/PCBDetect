@@ -148,11 +148,11 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_getTempl">
+  <widget class="QPushButton" name="pushButton_start">
    <property name="geometry">
     <rect>
      <x>1220</x>
-     <y>350</y>
+     <y>390</y>
      <width>112</width>
      <height>40</height>
     </rect>
@@ -169,14 +169,14 @@
     </font>
    </property>
    <property name="text">
-    <string>提取</string>
+    <string>开始</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton_return">
    <property name="geometry">
     <rect>
      <x>1220</x>
-     <y>490</y>
+     <y>470</y>
      <width>112</width>
      <height>40</height>
     </rect>
@@ -201,7 +201,7 @@
     <rect>
      <x>1190</x>
      <y>680</y>
-     <width>171</width>
+     <width>173</width>
      <height>51</height>
     </rect>
    </property>
@@ -239,40 +239,15 @@
     <enum>QFrame::NoFrame</enum>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_clear">
-   <property name="geometry">
-    <rect>
-     <x>1220</x>
-     <y>420</y>
-     <width>112</width>
-     <height>40</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>16</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>清空</string>
-   </property>
-  </widget>
   <zorder>label_3</zorder>
   <zorder>label_title</zorder>
   <zorder>label_logo</zorder>
   <zorder>label</zorder>
-  <zorder>pushButton_getTempl</zorder>
+  <zorder>pushButton_start</zorder>
   <zorder>pushButton_return</zorder>
   <zorder>label_status</zorder>
   <zorder>graphicsView</zorder>
   <zorder>line</zorder>
-  <zorder>pushButton_clear</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

@@ -60,9 +60,6 @@
     <ClCompile Include="DetectCore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImgConvertThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TemplateThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -76,6 +73,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MotionControler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageConverter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImgConvertThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraControler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialNumberUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -104,9 +116,6 @@
     <QtMoc Include="DetectCore.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="ImgConvertThread.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="TemplateThread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -114,6 +123,18 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="MotionControler.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ImageConverter.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ImgConvertThread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CameraControler.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SerialNumberUI.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -133,6 +154,9 @@
     <QtUic Include="LaunchUI.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="SerialNumberUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="PCBDetect.qrc">
@@ -150,6 +174,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AMC98C.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,7 +2,7 @@
 
 #include <QThread>
 #include "Configurator.h"
-#include "ImgConvertThread.h"
+#include "ImageConverter.h"
 #include "DetectCore.h"
 
 
@@ -17,7 +17,7 @@ private:
 	int *currentRow; //当前正在检测的样本行的行号
 	Ui::DetectParams *params;
 	Ui::QImageArray *samples; //正在检测的一行样本
-	std::vector<ImgConvertThread *> threads; //格式转换线程
+	std::vector<ImageConverter *> threads; //格式转换线程
 	int nThreads = 10; //默认相机个数不超过10
 
 public:

@@ -5,25 +5,25 @@
 #include "TemplFunc.h"
 
 
-namespace Ui {
-#ifndef TYPE_CV_MAT_CONTAINER
-#define TYPE_CV_MAT_CONTAINER 
-	typedef std::vector<cv::Mat> CvMatVector;
-	typedef std::vector<CvMatVector> CvMatArray;
-#endif //TYPE_CV_MAT_CONTAINER
-}
-
 //标准模板提取器
 class TemplateExtractor : public QObject
 {
 	Q_OBJECT
 
+public:
+	//提取状态
+	enum ExtractState {
+		InitialState,
+		Start,
+		Finished
+	};
+	
 private:
 	Ui::DetectConfig *config;
 	Ui::DetectParams *params;
 	Ui::CvMatArray *samples;
 	TemplFunc *templFunc;
-	int extractState;
+	ExtractState extractState;
 
 public:
 	TemplateExtractor(QObject *parent = Q_NULLPTR);
@@ -35,8 +35,8 @@ public:
 	void setTemplFunc(TemplFunc *ptr = Q_NULLPTR) { templFunc = ptr; }
 
 	void extract();
-
+	
 Q_SIGNALS:
-	void sig_extractState_extractor(int);
+	void extractState_extractor(int);
 
 };

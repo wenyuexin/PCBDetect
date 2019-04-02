@@ -20,7 +20,7 @@ using cv::imread;
 TemplateExtractor::TemplateExtractor(QObject *parent)
 	: QObject(parent)
 {
-	extractState = -1;
+	extractState = InitialState;
 }
 
 TemplateExtractor::~TemplateExtractor()
@@ -32,8 +32,8 @@ TemplateExtractor::~TemplateExtractor()
 
 void TemplateExtractor::extract()
 {
-	extractState = 0;
-	emit sig_extractState_extractor(extractState);
+	extractState = ExtractState::Start;
+	emit extractState_extractor(extractState);
 
 	//Ui::delay(1000); //提取
 
@@ -45,11 +45,10 @@ void TemplateExtractor::extract()
 	if (0 != _access(mask_path.c_str(), 0))
 		_mkdir(mask_path.c_str());
 
-
 	for (int col = 0; col < config->nCamera; col++) {
 		string temp = templ_path + "/" + std::to_string(params->currentRow_extract + 1) + "_" 
 			+ std::to_string(col + 1)  + config->ImageFormat.toUpper().toStdString();
-		Mat src = (*samples)[params->currentRow_extract][col];
+		Mat src = *((*samples)[params->currentRow_extract][col]);
 		cv::imwrite(temp, src);//保存模板图片
 		Mat mask = templFunc->find1(col, src);
 
@@ -69,6 +68,6 @@ void TemplateExtractor::extract()
 	}
 
 
-	extractState = 1;
-	emit sig_extractState_extractor(extractState);
+	extractState = ExtractState::Finished;
+	emit extractState_extractor(extractState);
 }
