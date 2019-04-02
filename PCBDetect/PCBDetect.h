@@ -8,12 +8,12 @@
 #include "DetectUI.h"
 #include "SettingUI.h"
 #include "TemplateUI.h"
+#include "CameraControler.h"
 #include <QDir>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QRect>
 #include <QTime>
-
 
 
 namespace Ui {
@@ -31,9 +31,12 @@ private:
 	SettingUI *settingUI; //参数设置界面
 	TemplateUI *templateUI; //模板提取界面
 	DetectUI *detectUI; //检测界面
+	MotionControler motionControler;//运动控制器
+	CameraControler cameraControler;//相机控制器
 	QString IconFolder; //图标文件夹
-	Ui::DetectConfig config; //参数配置
-	Ui::DetectParams params; //临时变量
+	Ui::AdminConfig adminConfig; //管理员参数
+	Ui::DetectConfig detectConfig; //参数配置
+	Ui::DetectParams detectParams; //临时变量
 
 public:
 	PCBDetect(QWidget *parent = Q_NULLPTR);

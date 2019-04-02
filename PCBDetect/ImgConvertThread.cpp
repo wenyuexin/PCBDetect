@@ -1,115 +1,141 @@
 #include "ImgConvertThread.h"
 
-using cv::Mat;
-using Ui::CvtCode;
+using Ui::QImageVector;
+using Ui::QPixmapVector;
+using Ui::CvMatVector;
 
 
 ImgConvertThread::ImgConvertThread(QObject *parent)
 	: QThread(parent)
 {
+	initImageConverters();
 }
 
 ImgConvertThread::~ImgConvertThread()
 {
+	deleteImageConverters();
 }
 
-
-/**************** 配置线程 *****************/
-
-void ImgConvertThread::set(QImage *src, Mat *dst, Ui::CvtCode code)
-{
-	this->qimage = src;
-	this->cvmat = dst;
-	this->code = code;
-	this->qpixmap = Q_NULLPTR;
-}
-
-void ImgConvertThread::set(QPixmap *src, Mat *dst, Ui::CvtCode code)
-{
-	this->qpixmap = src;
-	this->cvmat = dst;
-	this->code = code;
-	this->qimage = Q_NULLPTR;
-}
-
-/**************** 执行线程 *****************/
 
 void ImgConvertThread::run()
 {
-	switch (code)
+	qDebug() << "ImgConvertThread -> start ( currentRow -" << *currentRow << ")";
+	clock_t t1 = clock();
+
+	if (*currentRow < 0) { qDebug() << "Warning: ImgConvertThread: currentRow < 0"; return; }
+	if (cvmats->size() < 1 || (cvmats->at(*currentRow)).size() < 1) { 
+		qDebug() << "warning: invalid size of cvmats"; return; 
+	}
+	if ((cvmats->at(*currentRow))[0]->size().width < 1) {
+		qDebug() << "warning: invalid imageSize"; return;
+	}
+
+	switch (cvtCode)
 	{
-	case Ui::QImage2Mat:
-		*cvmat = QImageToCvMat(*qimage, true);
-		break;
-	case Ui::QPixmap2Mat:
-		*cvmat = QPixmapToCvMat(*qpixmap, true);
-		break;
+	case ImageConverter::QImage2CvMat:
+		convertQImageToCvMat(qimages->at(*currentRow), cvmats->at(*currentRow)); break;
+	case ImageConverter::QPixmap2CvMat:
+		convertQPixmapToCvMat(qpixmaps->at(*currentRow), cvmats->at(*currentRow)); break;
+	case ImageConverter::CvMat2QImage:
+		convertCvMatToQImage(cvmats->at(*currentRow), qimages->at(*currentRow)); break;
+	case ImageConverter::CvMat2QPixmap:
+		convertCvMatToQPixmap(cvmats->at(*currentRow), qpixmaps->at(*currentRow)); break;
 	default:
 		break;
 	}
+
+	clock_t t2 = clock();
+	qDebug() << "ImgConvertThread: " << (t2-t1) << "ms ( currentRow -" << *currentRow << ")";
+
+	emit convertFinished_convertThread();
 }
 
 
-/*********** Qt至opencv的图像格式转换 *************/
+/************* 图像转换器的初始化、delete操作 ***************/
 
-Mat ImgConvertThread::QImageToCvMat(const QImage &inImage, bool inCloneImageData)
+void ImgConvertThread::initImageConverters()
 {
-	switch (inImage.format())
-	{
-		// 8-bit, 4 channel
-	case QImage::Format_ARGB32:
-	case QImage::Format_ARGB32_Premultiplied:
-	{
-		cv::Mat  mat(inImage.height(), inImage.width(),
-			CV_8UC4,
-			const_cast<uchar*>(inImage.bits()),
-			static_cast<size_t>(inImage.bytesPerLine())
-		);
-		return (inCloneImageData ? mat.clone() : mat);
+	converters.resize(ConvertersNum);
+	for (int i = 0; i < ConvertersNum; i++) {
+		converters[i] = new ImageConverter();
 	}
-
-	// 8-bit, 3 channel
-	case QImage::Format_RGB32:
-	case QImage::Format_RGB888:
-	{
-		if (!inCloneImageData) {
-			qWarning() << "QImageToCvMat() - Conversion requires cloning because we use a temporary QImage";
-		}
-
-		QImage swapped = inImage;
-		if (inImage.format() == QImage::Format_RGB32) {
-			swapped = swapped.convertToFormat(QImage::Format_RGB888);
-		}
-
-		swapped = swapped.rgbSwapped();
-		return cv::Mat(swapped.height(), swapped.width(),
-			CV_8UC3,
-			const_cast<uchar*>(swapped.bits()),
-			static_cast<size_t>(swapped.bytesPerLine())
-		).clone();
-	}
-
-	// 8-bit, 1 channel
-	case QImage::Format_Indexed8:
-	{
-		cv::Mat  mat(inImage.height(), inImage.width(),
-			CV_8UC1,
-			const_cast<uchar*>(inImage.bits()),
-			static_cast<size_t>(inImage.bytesPerLine())
-		);
-		return (inCloneImageData ? mat.clone() : mat);
-	}
-
-	default:
-		qWarning() << "QImageToCvMat() - QImage format not handled in switch:" << inImage.format();
-		break;
-	}
-	return cv::Mat();
 }
 
-
-Mat ImgConvertThread::QPixmapToCvMat(const QPixmap &inPixmap, bool inCloneImageData)
+void ImgConvertThread::deleteImageConverters()
 {
-	return QImageToCvMat(inPixmap.toImage(), inCloneImageData);
+	for (int i = 0; i < converters.size(); i++) {
+		delete converters[i];
+		converters[i] = Q_NULLPTR;
+	}
 }
 
+
+/**************** 图像格式转换 *****************/
+
+//QImage转cv::Mat
+void ImgConvertThread::convertQImageToCvMat(const QImageVector &src, CvMatVector &dst)
+{
+	//开启转换线程
+	size_t srcSize = src.size();
+	dst.resize(srcSize);
+	for (int i = 0; i < srcSize; i++) {
+		dst[i] = new cv::Mat; //分配内存
+		converters[i]->set(src[i], dst[i], ImageConverter::QImage2CvMat);
+		converters[i]->start(); //开始转换
+	}
+	//线程等待
+	for (int i = 0; i < srcSize; i++) {
+		converters[i]->wait();
+	}
+}
+
+//QPixmap转cv::Mat
+void ImgConvertThread::convertQPixmapToCvMat(const QPixmapVector &src, CvMatVector &dst)
+{
+	//开启转换线程
+	size_t srcSize = src.size();
+	dst.resize(srcSize);
+	for (int i = 0; i < srcSize; i++) {
+		dst[i] = new cv::Mat; //分配内存
+		converters[i]->set(src[i], dst[i], ImageConverter::QPixmap2CvMat);//配置转换器
+		converters[i]->start(); //开始转换
+	}
+	//线程等待
+	for (int i = 0; i < srcSize; i++) {
+		converters[i]->wait();
+	}
+}
+
+//cv::Mat转QImage
+void ImgConvertThread::convertCvMatToQImage(const CvMatVector &src, QImageVector &dst)
+{
+	//开启转换线程
+	size_t srcSize = src.size();
+	dst.resize(srcSize);
+	for (int i = 0; i < srcSize; i++) {
+		dst[i] = new QImage; //分配内存
+		converters[i]->set(src[i], dst[i], ImageConverter::CvMat2QImage);
+		converters[i]->start(); //开始转换
+	}
+	//线程等待
+	for (int i = 0; i < srcSize; i++) {
+		converters[i]->wait();
+	}
+}
+
+//cv::Mat转QPixmap
+void ImgConvertThread::convertCvMatToQPixmap(const CvMatVector &src, QPixmapVector &dst)
+{
+	//开启转换线程
+	size_t srcSize = src.size();
+	dst.resize(srcSize);
+	for (int i = 0; i < srcSize; i++) {
+		dst[i] = new QPixmap; //分配内存
+		converters[i]->set(src[i], dst[i], ImageConverter::CvMat2QPixmap);//配置转换器
+		converters[i]->start(); //开始转换
+	}
+	//线程等待
+	for (int i = 0; i < srcSize; i++) {
+		converters[i]->wait();
+	}
+}

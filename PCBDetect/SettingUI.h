@@ -34,7 +34,6 @@ public:
 private:
 	void initSettingUI();
 	void selectDirPath(QString &path);
-	bool writeConfigFile(QString &fileName);
 	void getConfigFromSettingUI();
 	void setCursorLocation(Ui::DetectConfig::ConfigIndex code);
 

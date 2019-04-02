@@ -27,11 +27,10 @@ public:
     QLabel *label_3;
     QLabel *label_logo;
     QLabel *label;
-    QPushButton *pushButton_getTempl;
+    QPushButton *pushButton_start;
     QPushButton *pushButton_return;
     QLabel *label_status;
     QGraphicsView *graphicsView;
-    QPushButton *pushButton_clear;
 
     void setupUi(QWidget *TemplateUI)
     {
@@ -90,23 +89,23 @@ public:
         label->setFont(font2);
         label->setStyleSheet(QString::fromUtf8("font: 19pt \"\346\245\267\344\275\223\";"));
         label->setAlignment(Qt::AlignCenter);
-        pushButton_getTempl = new QPushButton(TemplateUI);
-        pushButton_getTempl->setObjectName(QStringLiteral("pushButton_getTempl"));
-        pushButton_getTempl->setGeometry(QRect(1220, 350, 112, 40));
-        sizePolicy.setHeightForWidth(pushButton_getTempl->sizePolicy().hasHeightForWidth());
-        pushButton_getTempl->setSizePolicy(sizePolicy);
+        pushButton_start = new QPushButton(TemplateUI);
+        pushButton_start->setObjectName(QStringLiteral("pushButton_start"));
+        pushButton_start->setGeometry(QRect(1220, 390, 112, 40));
+        sizePolicy.setHeightForWidth(pushButton_start->sizePolicy().hasHeightForWidth());
+        pushButton_start->setSizePolicy(sizePolicy);
         QFont font3;
         font3.setPointSize(16);
-        pushButton_getTempl->setFont(font3);
+        pushButton_start->setFont(font3);
         pushButton_return = new QPushButton(TemplateUI);
         pushButton_return->setObjectName(QStringLiteral("pushButton_return"));
-        pushButton_return->setGeometry(QRect(1220, 490, 112, 40));
+        pushButton_return->setGeometry(QRect(1220, 470, 112, 40));
         sizePolicy.setHeightForWidth(pushButton_return->sizePolicy().hasHeightForWidth());
         pushButton_return->setSizePolicy(sizePolicy);
         pushButton_return->setFont(font3);
         label_status = new QLabel(TemplateUI);
         label_status->setObjectName(QStringLiteral("label_status"));
-        label_status->setGeometry(QRect(1190, 680, 171, 51));
+        label_status->setGeometry(QRect(1190, 680, 173, 51));
         QFont font4;
         font4.setPointSize(15);
         label_status->setFont(font4);
@@ -118,22 +117,15 @@ public:
         graphicsView->setGeometry(QRect(0, 40, 1181, 731));
         graphicsView->setStyleSheet(QStringLiteral("background-color: rgb(250, 250, 250);"));
         graphicsView->setFrameShape(QFrame::NoFrame);
-        pushButton_clear = new QPushButton(TemplateUI);
-        pushButton_clear->setObjectName(QStringLiteral("pushButton_clear"));
-        pushButton_clear->setGeometry(QRect(1220, 420, 112, 40));
-        sizePolicy.setHeightForWidth(pushButton_clear->sizePolicy().hasHeightForWidth());
-        pushButton_clear->setSizePolicy(sizePolicy);
-        pushButton_clear->setFont(font3);
         label_3->raise();
         label_title->raise();
         label_logo->raise();
         label->raise();
-        pushButton_getTempl->raise();
+        pushButton_start->raise();
         pushButton_return->raise();
         label_status->raise();
         graphicsView->raise();
         line->raise();
-        pushButton_clear->raise();
 
         retranslateUi(TemplateUI);
 
@@ -147,10 +139,9 @@ public:
         label_3->setText(QString());
         label_logo->setText(QString());
         label->setText(QApplication::translate("TemplateUI", "\347\272\242\347\202\271\347\262\276\345\267\245", nullptr));
-        pushButton_getTempl->setText(QApplication::translate("TemplateUI", "\346\217\220\345\217\226", nullptr));
+        pushButton_start->setText(QApplication::translate("TemplateUI", "\345\274\200\345\247\213", nullptr));
         pushButton_return->setText(QApplication::translate("TemplateUI", "\350\277\224\345\233\236", nullptr));
         label_status->setText(QApplication::translate("TemplateUI", "\347\212\266\346\200\201\346\240\217", nullptr));
-        pushButton_clear->setText(QApplication::translate("TemplateUI", "\346\270\205\347\251\272", nullptr));
     } // retranslateUi
 
 };

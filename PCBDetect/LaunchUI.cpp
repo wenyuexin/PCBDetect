@@ -40,25 +40,11 @@ void LaunchUI::runInitThread()
 //错误提示
 void LaunchUI::on_configError_initThread(int errorCode)
 {
-	QString message; //提示信息
-	switch (errorCode)
-	{
-	case DetectConfig::ConfigFileMissing:
-		DetectConfig::showMessageBox(this, (DetectConfig::ErrorCode) errorCode);
-		Ui::delay(10); //延时
-		initThread->start(); //重启线程
-		break;
-	default:
-		DetectConfig::showMessageBox(this, (DetectConfig::ErrorCode) errorCode);
-		Ui::delay(10); //延时
-		update_sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
-		Ui::delay(1000); //延时
-		emit launchFinished_launchUI(errorCode);
-		break;
-	}
-
-	//Ui::delay(10); //延时
-	//emit launchFinished_launchUI(errorCode);
+	DetectConfig::showMessageBox(this, (DetectConfig::ErrorCode) errorCode);
+	Ui::delay(10); //延时
+	update_sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
+	Ui::delay(1000); //延时
+	emit launchFinished_launchUI(errorCode);
 }
 
 //更新初始化状态

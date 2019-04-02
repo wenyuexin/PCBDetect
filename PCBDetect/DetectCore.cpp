@@ -45,7 +45,7 @@ void DetectCore::doDetect()
 		Mat templ_gray = cv::imread(templPath, 0);
 
 		//¶ÁÈ¡Ñù±¾Í¼Æ¬
-		Mat samp = (*samples)[i];
+		Mat samp = *((*samples)[i]);
 		Mat samp_gray;
 		cvtColor(samp, samp_gray, CV_BGR2GRAY);
 
