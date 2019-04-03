@@ -62,8 +62,9 @@ private Q_SLOTS:
 
 	void on_launchFinished_launchUI(int LaunchCode);
 	void do_showDetectMainUI_settingUI();
-	void do_resetDetectSystem_settingUI();
+	void do_resetDetectSystem_settingUI(int);
 	void do_enableButtonsOnDetectMainUI_settingUI();
+	void do_checkSystemWorkingState_settingUI();
 	void do_showDetectMainUI_detectUI();
 	void do_showDetectMainUI_templateUI();
 };

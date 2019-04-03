@@ -37,7 +37,7 @@ private:
 Q_SIGNALS:
 	void sysInitStatus_initThread(QString status);
 	void configError_initThread(int ErrorCode);
-	void cameraError_initThread(int ErrorCode);
+	void cameraError_initThread();
 	void sysInitFinished_initThread();
 };
 

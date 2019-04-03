@@ -39,8 +39,9 @@ private:
 
 Q_SIGNALS:
 	void showDetectMainUI();
-	void resetDetectSystem();
+	void resetDetectSystem_settingUI(int);
 	void enableButtonsOnDetectMainUI_settingUI();
+	void checkSystemWorkingState_settingUI();
 
 private Q_SLOTS:
 	void on_pushButton_SampleDirPath_clicked();

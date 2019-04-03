@@ -21,7 +21,6 @@ SettingUI::SettingUI(QWidget *parent)
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imageFormat()));
-	//connect(ui.comboBox_imageAspectRatio, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_aspectRatio()));
 }
 
 SettingUI::~SettingUI()
@@ -97,11 +96,9 @@ void SettingUI::on_pushButton_confirm_clicked()
 	//获取界面上的config参数
 	getConfigFromSettingUI();
 
-	//if (config->unequals(tempConfig) != DetectConfig::Index_None) {
-
 	//检查界面上config的有效性
 	ConfigErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
-	if (code != DetectConfig::ValidConfig) { //参数无效，报错
+	if (code != DetectConfig::ValidConfig) { //参数无效则报错
 		DetectConfig::showMessageBox(this, code);
 		this->setPushButtonsToEnabled(true);//将返回按键设为可点击
 		ConfigIndex index = DetectConfig::convertCodeToIndex(code);
@@ -112,19 +109,23 @@ void SettingUI::on_pushButton_confirm_clicked()
 	//设置聚焦位置
 	this->setCursorLocation(DetectConfig::Index_None);
 
+	//判断是否重置检测系统
+	int resetCode = config->getSystemResetCode(tempConfig);
+
 	//将临时配置拷贝到config中
 	tempConfig.copyTo(*config);
 
-	//将参数保存到config文件中
-	QString configFileName = ".config";
+	//重置系统
+	emit resetDetectSystem_settingUI(resetCode); //判断是否重置检测系统
 
+	//将参数保存到config文件中
+	QString configFileName = ".user.config";
 	Configurator::saveConfigFile(configFileName, config);
-	//if (!writeConfigFile(configFileName)) setPushButtonsToEnabled(true);
-	//writeConfigFile(configFileName);
 
 	//向主界面发送消息
-	emit enableButtonsOnDetectMainUI_settingUI(); //将主界面上的按键设为可点击
-	if (config->getSystemResetFlag(tempConfig)) emit resetDetectSystem();//判断是否重置检测系统
+	emit checkSystemWorkingState_settingUI(); //检查系统的工作状态
+
+	//将本界面上的按键设为可点击
 	this->setPushButtonsToEnabled(true);
 }
 
@@ -162,6 +163,7 @@ void SettingUI::on_currentIndexChanged_imageFormat()
 	}
 }
 
+//从设置界面上获取参数
 void SettingUI::getConfigFromSettingUI()
 {
 	tempConfig.SampleDirPath = ui.lineEdit_SampleDirPath->text(); //样本路径

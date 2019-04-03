@@ -1,7 +1,7 @@
 #include "PCBDetect.h"
 
 using Ui::DetectConfig;
-
+using Ui::AdminConfig;
 
 PCBDetect::PCBDetect(QWidget *parent)
 	: QMainWindow(parent)
@@ -37,9 +37,10 @@ PCBDetect::PCBDetect(QWidget *parent)
 	settingUI->setDetectConfig(&detectConfig);
 	//settingUI->setAdminConfig(&adminConfig);
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
-	connect(settingUI, SIGNAL(resetDetectSystem()), this, SLOT(do_resetDetectSystem_settingUI()));
+	connect(settingUI, SIGNAL(resetDetectSystem_settingUI(int)), this, SLOT(do_resetDetectSystem_settingUI(int)));
 	connect(settingUI, SIGNAL(enableButtonsOnDetectMainUI_settingUI()), this, SLOT(do_enableButtonsOnDetectMainUI_settingUI()));
-
+	connect(settingUI, SIGNAL(checkSystemWorkingState_settingUI()), this, SLOT(do_checkSystemWorkingState_settingUI()));
+	
 	//模板提取界面
 	templateUI = new TemplateUI;
 	templateUI->setDetectConfig(&detectConfig);
@@ -163,18 +164,31 @@ void PCBDetect::showSettingUI()
 	this->hide(); //隐藏主界面
 }
 
-void PCBDetect::do_resetDetectSystem_settingUI()
+void PCBDetect::do_resetDetectSystem_settingUI(int code)
 {
 	//重置模板提取界面，并初始化其中的图像显示的空间
-	templateUI->resetTemplateUI();
-	templateUI->initGraphicsView();
+	if (code & 0b1000 == 0b1000) {
+		templateUI->resetTemplateUI();
+		templateUI->initGraphicsView();
+	}
 
 	//重置检测界面，并初始化其中的图像显示的空间
-	detectUI->resetDetectUI();
-	detectUI->initGraphicsView();
+	if (code & 0b0100 == 0b0100) {
+		detectUI->resetDetectUI();
+		detectUI->initGraphicsView();
+	}
+
+	//重新初始化相机
+	CameraControler::ErrorCode cameraErrorCode;
+	if (code & 0b0001 == 0b0001) {
+		cameraControler.start();
+		while (cameraControler.isRunning()) Ui::delay(50);
+		cameraControler.showMessageBox(this);
+	}
 
 	//将主界面的模板提取按键、检测按键设为可点击
-	this->setPushButtonsToEnabled(true);
+	if (cameraErrorCode == CameraControler::NoError)
+		this->setPushButtonsToEnabled(true);
 	//将参数设置界面的确认按键、返回按键设为可点击
 	settingUI->setPushButtonsToEnabled(true);
 }
@@ -182,7 +196,36 @@ void PCBDetect::do_resetDetectSystem_settingUI()
 //将模板提取按键、检测按键设为可点击
 void PCBDetect::do_enableButtonsOnDetectMainUI_settingUI()
 {
-	setPushButtonsToEnabled(true);
+	this->setPushButtonsToEnabled(true);
+}
+
+//检查系统的工作状态
+void PCBDetect::do_checkSystemWorkingState_settingUI()
+{
+	bool enableButtonsOnMainUI = true;
+
+	//检查用户参数
+	if (!detectConfig.isValid()) {
+		DetectConfig::showMessageBox(settingUI, detectConfig.getErrorCode());
+		enableButtonsOnMainUI = false;
+	}
+
+	//检查系统参数
+	if (enableButtonsOnMainUI && !adminConfig.isValid()) {
+		AdminConfig::showMessageBox(settingUI, adminConfig.getErrorCode());
+		enableButtonsOnMainUI = false;
+	}
+
+	//检查相机
+	if (enableButtonsOnMainUI && cameraControler.getErrorCode() != CameraControler::NoError) {
+		cameraControler.showMessageBox(settingUI);
+		enableButtonsOnMainUI = false;
+	}
+
+	//判断是否要启用主界面上的模板提取和检测按键
+	if (enableButtonsOnMainUI) { //系统正常
+		this->setPushButtonsToEnabled(true);
+	}
 }
 
 /***************** 模板提取界面 *****************/

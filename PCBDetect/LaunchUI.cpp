@@ -35,7 +35,7 @@ void LaunchUI::runInitThread()
 	//初始化线程的信号连接
 	connect(initThread, SIGNAL(sysInitStatus_initThread(QString)), this, SLOT(update_sysInitStatus_initThread(QString)));
 	connect(initThread, SIGNAL(configError_initThread(int)), this, SLOT(on_configError_initThread(int)));
-	connect(initThread, SIGNAL(cameraError_initThread(int)), this, SLOT(on_cameraError_initThread(int)));
+	connect(initThread, SIGNAL(cameraError_initThread()), this, SLOT(on_cameraError_initThread()));
 	connect(initThread, SIGNAL(sysInitFinished_initThread()), this, SLOT(on_sysInitFinished_initThread()));
 
 	//启动线程
@@ -53,16 +53,16 @@ void LaunchUI::on_configError_initThread(int errorCode)
 }
 
 //相机的的初始化错误提示
-void LaunchUI::on_cameraError_initThread(int errorCode)
+void LaunchUI::on_cameraError_initThread()
 {
-	CameraControler::showMessageBox(this, (CameraControler::ErrorCode) errorCode);
+	cameraControler->showMessageBox(this); //弹窗警告
 	Ui::delay(10); //延时
-	update_sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
-	Ui::delay(1000); //延时
-	emit launchFinished_launchUI(errorCode);
+	update_sysInitStatus_initThread(QString::fromLocal8Bit("相机初始化结束    "));
+	Ui::delay(600); //延时
+	emit launchFinished_launchUI(cameraControler->getErrorCode());
 }
 
-//更新初始化状态
+//更新启动界面上的初始化状态
 void LaunchUI::update_sysInitStatus_initThread(QString status)
 {
 	QString time = QDateTime::currentDateTime().toString("hh:mm:ss ");

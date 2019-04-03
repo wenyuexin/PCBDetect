@@ -43,13 +43,13 @@ bool SysInitThread::initDetectConfig()
 	emit sysInitStatus_initThread(QString::fromLocal8Bit("正在获取历史参数配置 ..."));
 	Ui::delay(1000);
 
-	if (!Configurator::loadConfigFile("/.config", detectConfig)) {
+	if (!Configurator::loadConfigFile("/.user.config", detectConfig)) {
 		emit configError_initThread(DetectConfig::ConfigFileMissing); return false;
 	}
 	else {
 		//计算宽高比
 		DetectConfig::ErrorCode code = detectConfig->calcImageAspectRatio();
-		if (code != DetectConfig::ValidConfig) { 
+		if (code != DetectConfig::ValidValue) {
 			emit configError_initThread(code); return false; 
 		}
 		//参数有效性判断
@@ -60,7 +60,7 @@ bool SysInitThread::initDetectConfig()
 	}
 
 	emit sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束   "));
-	Ui::delay(1000);
+	Ui::delay(500);
 	return true;
 }
 
@@ -69,9 +69,13 @@ bool SysInitThread::initCameraControler()
 {
 	emit sysInitStatus_initThread(QString::fromLocal8Bit("正在初始化相机 ..."));
 	Ui::delay(1000);
-	CameraControler::ErrorCode code = cameraControler->initCameras();
-	if (code != CameraControler::NoError) { emit cameraError_initThread(code); return false; }
-	Ui::delay(1000);
+	cameraControler->setOperation(CameraControler::InitCameras);
+	cameraControler->start(); //启动线程
+	cameraControler->wait(); //线程等待
+	if (cameraControler->getErrorCode() != CameraControler::NoError) { 
+		emit cameraError_initThread(); return false; 
+	}
+	Ui::delay(600);
 	emit sysInitStatus_initThread(QString::fromLocal8Bit("相机初始化结束    "));
 	return true;
 }

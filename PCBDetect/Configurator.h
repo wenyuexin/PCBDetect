@@ -35,23 +35,11 @@ namespace Ui {
 #endif //IMAGE_FORMAT
 
 
-#ifndef STRUCT_ADMIN_CONFIG
-#define STRUCT_ADMIN_CONFIG 
-	struct AdminConfig {
-		double MaxMotionStroke; //机械结构的最大运动行程
-		int MaxCameraNum; //可用相机的总数
-		int MaxPhotographingNum; //最大拍照次数
-	};
-#endif //STRUCT_ADMIN_CONFIG
-
-
-#ifndef STRUCT_DETECT_CONFIG
-#define STRUCT_DETECT_CONFIG
+#ifndef CLASS_DETECT_CONFIG
+#define CLASS_DETECT_CONFIG
 	//参数配置结构体
-	class DetectConfig {
-	private:
-		int validFlag = 0;//1所有参数有效 -1检测到存在无效参数 0未检测或已检测的部分参数都有效
-
+	class DetectConfig 
+	{
 	public:
 		QString SampleDirPath; //样本文件存储路径
 		QString TemplDirPath;//模板文件的存储路径
@@ -85,35 +73,86 @@ namespace Ui {
 		//错误代码
 		enum ErrorCode {
 			ValidConfig = 0x000,
-			ConfigFileMissing = 0x100,
-			Invalid_SampleDirPath = 0x101,
-			Invalid_TemplDirPath = 0x102,
-			Invalid_OutputDirPath = 0x103,
-			Invalid_ImageFormat = 0x104,
-			Invalid_nCamera = 0x105,
-			Invalid_nPhotographing = 0x106,
-			Invalid_nBasicUnitInRow = 0x107,
-			Invalid_nBasicUnitInCol = 0x108,
-			Invalid_ImageAspectRatio_W = 0x109,
-			Invalid_ImageAspectRatio_H = 0x10A,
-			Invalid_ImageAspectRatio = 0x10B
+			ValidValue = 0x000,
+			Uncheck = 0x100,
+			ConfigFileMissing = 0x101,
+			Invalid_SampleDirPath = 0x102,
+			Invalid_TemplDirPath = 0x103,
+			Invalid_OutputDirPath = 0x104,
+			Invalid_ImageFormat = 0x105,
+			Invalid_nCamera = 0x106,
+			Invalid_nPhotographing = 0x107,
+			Invalid_nBasicUnitInRow = 0x108,
+			Invalid_nBasicUnitInCol = 0x109,
+			Invalid_ImageAspectRatio_W = 0x10A,
+			Invalid_ImageAspectRatio_H = 0x10B,
+			Invalid_ImageAspectRatio = 0x10C
 		};
+
+	private:
+		ErrorCode errorCode = Uncheck;
 
 	public:
 		DetectConfig() = default;
 		~DetectConfig() = default;
 
-		bool isValid();
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
+		bool isValid();
+		inline void resetErrorCode() { errorCode = Uncheck; }
+		inline ErrorCode getErrorCode() { return errorCode; }
+
 		ErrorCode calcImageAspectRatio();
-		bool getSystemResetFlag(DetectConfig &other);
+		int getSystemResetCode(DetectConfig &newConfig);
 		ConfigIndex unequals(DetectConfig &other);
-		void copyTo(DetectConfig &other);
+		void copyTo(DetectConfig &dst);
 		void loadDefaultValue();
-		static void showMessageBox(QWidget *parent, ErrorCode code);
+
 		static ConfigIndex convertCodeToIndex(ErrorCode code);
+		static void showMessageBox(QWidget *parent, ErrorCode code);
 	};
-#endif //STRUCT_DETECT_CONFIG
+#endif //CLASS_DETECT_CONFIG
+
+
+#ifndef CLASS_ADMIN_CONFIG
+#define CLASS_ADMIN_CONFIG 
+	class AdminConfig 
+	{
+	public:
+		double MaxMotionStroke; //机械结构的最大运动行程
+		int MaxCameraNum; //可用相机的总数
+		int MaxPhotographingNum; //最大拍照次数
+
+		enum ConfigIndex {
+			Index_All,
+			Index_None,
+			Index_MaxMotionStroke,
+			Index_MaxCameraNum
+		};
+
+		//错误代码
+		enum ErrorCode {
+			ValidConfig = 0x000,
+			Uncheck = 0x200,
+			ConfigFileMissing = 0x201,
+			Invalid_MaxMotionStroke = 0x202,
+			Invalid_MaxCameraNum = 0x203
+		};
+
+	private:
+		ErrorCode errorCode = Uncheck;
+
+	public:
+		AdminConfig() = default;
+		~AdminConfig() = default;
+
+		ErrorCode checkValidity(ConfigIndex index = Index_All);
+		bool isValid();
+		inline ErrorCode getErrorCode() { return errorCode; }
+
+		static ConfigIndex convertCodeToIndex(ErrorCode code);
+		static void showMessageBox(QWidget *parent, ErrorCode code);
+	};
+#endif //CLASS_ADMIN_CONFIG
 
 
 #ifndef STRUCT_DETECT_PARAMS

@@ -41,6 +41,6 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void update_sysInitStatus_initThread(QString status);
 	void on_configError_initThread(int ErrorCode);
-	void on_cameraError_initThread(int ErrorCode);
+	void on_cameraError_initThread();
 	void on_sysInitFinished_initThread();
 };
