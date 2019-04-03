@@ -47,7 +47,8 @@ void TemplateUI::doConnect()
 	connect(motionControler, SIGNAL(moveForwardFinished_motion()), this, SLOT(on_moveForwardFinished_motion()));
 	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion(int)));
 	//相机控制
-	connect(cameraControler, SIGNAL(takePhotosFinished_camera()), this, SLOT(on_takePhotosFinished_camera()));
+	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
+	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
 	//转换线程
 	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()));
 }
@@ -562,8 +563,13 @@ void TemplateUI::on_resetControlerFinished_motion(int caller)
 
 /******************** 相机控制 ********************/
 
+//相机初始化结束
+void TemplateUI::on_initCamerasFinished_camera(int)
+{
+}
+
 //相机拍摄结束
-void TemplateUI::on_takePhotosFinished_camera()
+void TemplateUI::on_takePhotosFinished_camera(int)
 {
 	//初始化若干变量
 	if (detectParams->imageSize.width() <= 0) {

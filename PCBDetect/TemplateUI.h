@@ -89,7 +89,8 @@ private Q_SLOTS:
 
 	void on_moveForwardFinished_motion();
 	void on_resetControlerFinished_motion(int);
-	void on_takePhotosFinished_camera();
+	void on_initCamerasFinished_camera(int);
+	void on_takePhotosFinished_camera(int);
 	void on_convertFinished_convertThread();
 
 	void mouseDoubleClickEvent(QMouseEvent *event);

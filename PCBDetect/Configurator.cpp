@@ -1,6 +1,7 @@
 ﻿#include "Configurator.h"
 
 using Ui::DetectConfig;
+using Ui::AdminConfig;
 using Ui::DetectParams;
 
 /****************************************************/
@@ -190,14 +191,14 @@ QString Configurator::decrypt(const char* origin) const
 //将配置文件中的参数加载到config中
 bool Configurator::loadConfigFile(const QString &fileName, Ui::DetectConfig *config)
 {
-	bool flag = true;
+	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
 	QFile configFile(configFilePath);
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
 		createConfigFile(configFilePath);//创建配置文件
 		config->loadDefaultValue();//加载默认值
 		saveConfigFile(fileName, config);//保存默认config
-		flag = false;
+		success = false;
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
@@ -214,7 +215,7 @@ bool Configurator::loadConfigFile(const QString &fileName, Ui::DetectConfig *con
 		configurator.jsonReadValue("ImageAspectRatio_H", config->ImageAspectRatio_H);
 		configFile.close();
 	}
-	return flag;
+	return success;
 }
 
 //将config中的参数保存到配置文件中
@@ -247,6 +248,7 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 	}
 	return flag;
 }
+
 
 /******************* 暂时没用 ********************/
 
@@ -294,74 +296,85 @@ bool Configurator::checkDir(QString dirpath)
 /*                   DetectConfig                   */
 /****************************************************/
 
-//参数有效性
-bool DetectConfig::isValid() {
-	if (validFlag == 0) checkValidity(Index_All);
-	return validFlag == 1;
-}
+//参数有效性检查
+DetectConfig::ErrorCode DetectConfig::checkValidity(DetectConfig::ConfigIndex index) 
+{
+	if (errorCode == ValidConfig) return errorCode;
 
-//参数有效性判断
-DetectConfig::ErrorCode DetectConfig::checkValidity(DetectConfig::ConfigIndex index) {
-	ErrorCode code = ValidConfig;
-	if (validFlag == 1) return code;
+	DetectConfig::ErrorCode code = Uncheck;
 	switch (index)
 	{
 	case Index_All:
 	case Index_SampleDirPath:
 		if (!QFileInfo(SampleDirPath).isDir()) code = Invalid_SampleDirPath;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_TemplDirPath:
 		if (!QFileInfo(TemplDirPath).isDir()) code = Invalid_TemplDirPath;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_OutputDirPath:
 		if (!QFileInfo(OutputDirPath).isDir()) code = Invalid_OutputDirPath;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_ImageFormat:
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_nCamera:
 		if (nCamera < 1) code = Invalid_nCamera;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_nPhotographing:
 		if (nPhotographing < 1) code = Invalid_nPhotographing;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_nBasicUnitInRow:
 		if (nBasicUnitInRow < 1) code = Invalid_nBasicUnitInRow;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_nBasicUnitInCol:
 		if (nBasicUnitInCol < 1) code = Invalid_nBasicUnitInCol;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_ImageAspectRatio_W:
 		if (ImageAspectRatio_W < 1) code = Invalid_ImageAspectRatio_W;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_ImageAspectRatio_H:
 		if (ImageAspectRatio_H < 1) code = Invalid_ImageAspectRatio_H;
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	case Index_ImageAspectRatio:
-		if (code != ValidConfig || index != Index_All) break;
+		if (code != Uncheck || index != Index_All) break;
 	}
-	if (code != ValidConfig) validFlag = -1;
-	else if (index == Index_All) validFlag = 1;
+
+	if (code == Uncheck) code = ValidConfig;
+	if (code != ValidConfig || index == Index_All) errorCode = code;
 	return code;
+}
+
+//判断参数是否有效
+bool DetectConfig::isValid() {
+	if (errorCode == DetectConfig::Uncheck)
+		checkValidity(Index_All);
+	return errorCode == ValidConfig;
 }
 
 //计算宽高比
 DetectConfig::ErrorCode DetectConfig::calcImageAspectRatio() {
 	ErrorCode code = checkValidity(Index_ImageAspectRatio_W);
-	if (code != ValidConfig) return code;
+	if (code != ValidValue) return errorCode = code;
 	code = checkValidity(Index_ImageAspectRatio_H);
-	if (code != ValidConfig) return code;
+	if (code != ValidValue) return errorCode = code;
 	ImageAspectRatio = 1.0 * ImageAspectRatio_W / ImageAspectRatio_H;
-	return ValidConfig;
+	return ValidValue;
 }
 
-//判断是否需要重置系统
-bool DetectConfig::getSystemResetFlag(DetectConfig &other) {
-	if (nCamera != other.nCamera) return true;
-	if (nPhotographing != other.nPhotographing) return true;
-	if (ImageAspectRatio_W != other.ImageAspectRatio_W || ImageAspectRatio_H != other.ImageAspectRatio_H) {
-		if (abs(ImageAspectRatio - other.ImageAspectRatio) < 1E-5) return true;
+//功能：判断是否需要重置系统
+//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
+//      0b1234 第1位置位，则表示重置模板提取模块
+//             第2位置位，则表示重置检测模块
+//             第3位置位，则表示重置运动结构
+//             第4位置位，则表示重置相机
+int DetectConfig::getSystemResetCode(DetectConfig &newConfig) {
+	int resetCode = 0b0000;
+	if (nCamera != newConfig.nCamera) resetCode |= 0x1100;
+	if (nPhotographing != newConfig.nPhotographing) resetCode |= 0x1100;
+	if (ImageAspectRatio_W != newConfig.ImageAspectRatio_W || ImageAspectRatio_H != newConfig.ImageAspectRatio_H) {
+		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) < 1E-5) resetCode |= 0x1100;
 	}
-	return false;
+	if (nCamera > newConfig.nCamera) resetCode |= 0x0001;
+	return resetCode;
 }
 
 //不相等判断
@@ -382,7 +395,7 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 //拷贝结构体
 void DetectConfig::copyTo(DetectConfig &other) 
 {
-	other.validFlag = validFlag; //参数有效性
+	other.errorCode = errorCode; //参数有效性
 	other.SampleDirPath = SampleDirPath; //样本文件存储路径
 	other.TemplDirPath = TemplDirPath;//模板文件的存储路径
 	other.OutputDirPath = OutputDirPath;//检测结果存储路径
@@ -403,7 +416,7 @@ void DetectConfig::loadDefaultValue()
 	dir.cdUp(); //转到上一级目录
 	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
 
-	validFlag = 0; //参数有效性
+	errorCode = Uncheck; //参数有效性
 	SampleDirPath = appDirPath + "/sample"; //样本文件存储路径
 	TemplDirPath = appDirPath + "/template";//模板文件的存储路径
 	OutputDirPath = appDirPath + "/output";//检测结果存储路径
@@ -423,10 +436,10 @@ void DetectConfig::showMessageBox(QWidget *parent, DetectConfig::ErrorCode code)
 {
 	QString valueName;
 	if (code == ConfigFileMissing) {
-		QString message = QString::fromLocal8Bit("config文件丢失，已生成默认config文件!  \n")
-			+ QString::fromLocal8Bit("请确认默认参数是否有效 ...  \n");
+		QString message = QString::fromLocal8Bit(".user.config文件丢失，已生成默认文件!    \n")
+			+ QString::fromLocal8Bit("请在参数设置界面确认参数是否有效 ...   \n");
 		QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
-			message + "ErrorCode: " + QString::number(code),
+			message + "Config: User: ErrorCode: " + QString::number(code),
 			QString::fromLocal8Bit("确定"));
 		return;
 	}
@@ -457,11 +470,12 @@ void DetectConfig::showMessageBox(QWidget *parent, DetectConfig::ErrorCode code)
 	}
 
 	QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
-		QString::fromLocal8Bit("参数无效，请在参数设置界面重新设置") + valueName + "!    \n" +
-		"ErrorCode: " + QString::number(code),
+		QString::fromLocal8Bit("参数无效，请在参数设置界面重新设置") + valueName + "!        \n" +
+		"Config: User: ErrorCode: " + QString::number(code),
 		QString::fromLocal8Bit("确定"));
 }
 
+//将错误代码转为参数索引
 DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(DetectConfig::ErrorCode code) 
 {
 	switch (code)
@@ -494,6 +508,70 @@ DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(DetectConfig::ErrorCo
 	return Index_None;
 }
 
+
+
+/****************************************************/
+/*                   AdminConfig                    */
+/****************************************************/
+
+//参数有效性检查
+AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index)
+{
+	if (errorCode == ValidConfig) return errorCode;
+
+	AdminConfig::ErrorCode code = Uncheck;
+	switch (index)
+	{
+	case Index_All:
+	case Index_MaxMotionStroke:
+		if (MaxMotionStroke <= 0) errorCode = Invalid_MaxMotionStroke;
+		if (code != Uncheck || index != Index_All) break;
+	case Index_MaxCameraNum:
+		if (MaxCameraNum <= 0) errorCode = Invalid_MaxCameraNum;
+		if (code != Uncheck || index != Index_All) break;
+	}
+
+	if (code == Uncheck) code = ValidConfig;
+	if (code != ValidConfig || index == Index_All) errorCode = code;
+	return code;
+}
+
+//判断参数是否有效
+bool AdminConfig::isValid() 
+{
+	if (errorCode == AdminConfig::Uncheck)
+		checkValidity(Index_All);
+	return errorCode == ValidConfig;
+}
+
+//弹窗报错
+void AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
+{
+	QString valueName;
+	if (code == AdminConfig::ConfigFileMissing) {
+		QString message = QString::fromLocal8Bit(".admin.config文件丢失，已生成默认文件!  \n")
+			+ QString::fromLocal8Bit("请联系管理员确认参数是否有效 ...  \n");
+		QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
+			message + "Config: Admin: ErrorCode: " + QString::number(code),
+			QString::fromLocal8Bit("确定"));
+		return;
+	}
+
+	switch (code)
+	{
+	case Ui::AdminConfig::Invalid_MaxMotionStroke:
+		valueName = QString::fromLocal8Bit("机械结构最大行程"); break;
+	case Ui::AdminConfig::Invalid_MaxCameraNum:
+		valueName = QString::fromLocal8Bit("可用相机总数"); break;
+	default:
+		valueName = ""; break;
+	}
+
+	QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
+		QString::fromLocal8Bit("参数无效，请联系管理员重新设置") + valueName + "!        \n" +
+		"Config: Admin: ErrorCode: " + QString::number(code),
+		QString::fromLocal8Bit("确定"));
+}
 
 
 /****************************************************/
