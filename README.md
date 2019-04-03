@@ -17,31 +17,30 @@
 | PCBDetect | .h / .cpp | 程序主界面 |
 | PCBDetect | .ui | 程序主界面的外观设计和控件布局 |
 | PCBDetect | .qrc | Qt界面的资源配置文件 |
-|  |  |  |
+| - |  |  |
 | Configurator | .h / .cpp | 参数配置器，用于实现对参数配置文件的读写，<br>同时内部定义了参数类DetectConfig和AdminConfig等 |
 | LaunchUI | .h / .cpp | 启动界面 |
 | LaunchUI | .ui | 启动界面的外观设计和控件布局 |
 | SysInitThread | .h / .cpp | 系统初始化线程，启动过程中在后台执行初始化操作 |
 | SettingUI | .h / .cpp | 参数设置界面 |
 | SettingUI | .ui | 参数设置界面的外观设计和控件布局 |
-|  |  |  |
+| - |  |  |
 | MotionControler | .h / .cpp | 运动控制模块，用于向控制板发送控制指令，<br/>进而控制机械运动结构的相关动作（初始化、前进、归零、复位） |
 | AMC98C | .h | 用于和控制板通信的若干内容 |
 | CameraControler | .h / .cpp | 相机控制器，用于控制相机的相关动作（初始化、拍照） |
-| Camera | .h / .cpp | 相机类 |
-|  |  |  |
+| - |  |  |
 | SerialNumberUI | .h / .cpp | 产品序号识别界面，内部集成OCR模块，用于识别产品序号 |
 | SerialNumberUI | .ui | 产品序号识别界面的外观设计和控件布局 |
-| | |  |
+| - |  |  |
 | ImgConvertThread | .h / .cpp | 图像转换线程，管理若干图像类型转换器，<br> 能使实现对一组分图做图像类型转换类型 |
 | ImageConverter | .h / .cpp | 图像类型转换器，启用单独的线程对一个分图做图像类型转换 |
-|  | |  |
+| - |  |  |
 | TemplateUI | .h / .cpp | 模板提取界面 |
 | TemplateUI | .ui | 模板提取界面的外观设计和控件布局 |
 | TemplateThread | .h / .cpp | 模板提取线程 |
 | TemplateExtractor | .h / .cpp | 模板提取器 |
 | TemplFunc | .h / .cpp |  模板提取器的辅助类 |
-|  |  |  |
+| - |  |  |
 | DetectUI | .h / .cpp | 检测界面 |
 | DetectUI | .ui | 检测界面的外观设计和控件布局 |
 | DetectThread | .h / .cpp | 检测线程 |
