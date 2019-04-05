@@ -6,10 +6,10 @@
 #include <map>
 #include <iterator>
 
-namespace PCB {
+
+namespace pcb {
 	class CameraControler;
 }
-
 
 //Ïà»ú¿ØÖÆÆ÷
 class CameraControler : public QThread

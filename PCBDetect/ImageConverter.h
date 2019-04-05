@@ -8,6 +8,10 @@
 #include <qthread.h>
 
 
+namespace pcb {
+	class ImageConverter;
+}
+
 //图像格式转换线程
 class ImageConverter : public QThread
 {

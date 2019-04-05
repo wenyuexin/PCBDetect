@@ -12,7 +12,7 @@
 #include <QKeyEvent>
 
 
-namespace Ui {
+namespace pcb {
 	class TemplateUI;
 }
 

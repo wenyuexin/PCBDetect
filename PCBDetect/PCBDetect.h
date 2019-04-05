@@ -16,7 +16,7 @@
 #include <QTime>
 
 
-namespace Ui {
+namespace pcb {
 	class PCBRecheck;
 }
 

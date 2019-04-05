@@ -8,7 +8,8 @@
 #include <QDesktopWidget>
 #include <QRegExpValidator>
 
-namespace Ui {
+
+namespace pcb {
 	class SettingUI;
 }
 
@@ -21,10 +22,10 @@ private:
 	Ui::SettingUI ui;
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectConfig tempConfig; //临时的用户参数类
-	const QString configFileName = ".user.config";
+	const QString configFileName = ".user.config";//配置文件的文件名
 
-	PassWordUI passWordUI;
-	AdminSettingUI adminSettingUI;
+	PassWordUI passWordUI; //系统设置登录界面
+	AdminSettingUI adminSettingUI; //系统设置界面
 	pcb::AdminConfig *adminConfig; //系统参数
 
 public:
@@ -34,8 +35,8 @@ public:
 	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
 	inline void setAdminConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
 
-	void refreshSettingUI();
-	void setPushButtonsToEnabled(bool code);
+	void refreshSettingUI(); //更新设置界面
+	void setPushButtonsToEnabled(bool code); //按键设置
 
 private:
 	void initSettingUI();

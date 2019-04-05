@@ -7,6 +7,11 @@
 #include <QMouseEvent>
 #include <QGraphicsScene>
 
+namespace pcb {
+	class SerialNumberUI;
+}
+
+//产品序号识别界面
 class SerialNumberUI : public QWidget
 {
 	Q_OBJECT

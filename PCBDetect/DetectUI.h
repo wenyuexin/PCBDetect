@@ -14,10 +14,6 @@
 
 
 //ºÏ≤‚ΩÁ√Ê
-namespace Ui {
-	class DetectUI;
-}
-
 class DetectUI : public QWidget
 {
 	Q_OBJECT

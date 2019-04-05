@@ -4,6 +4,12 @@
 #include <QWidget>
 #include <QMessageBox>
 
+
+namespace pcb {
+	class PassWordUI;
+}
+
+//系统设置登录界面
 class PassWordUI : public QWidget
 {
 	Q_OBJECT

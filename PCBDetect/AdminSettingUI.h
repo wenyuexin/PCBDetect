@@ -13,8 +13,9 @@ class AdminSettingUI : public QWidget
 
 private:
 	Ui::AdminSettingUI ui;
-	pcb::AdminConfig *adminConfig;
-	const QString configFileName= ".admin.config";
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig tempConfig; //临时的系统参数类
+	const QString configFileName= ".admin.config";//配置文件的文件名
 
 public:
 	AdminSettingUI(QWidget *parent = Q_NULLPTR);
@@ -22,12 +23,15 @@ public:
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	void refreshAdminSettingUI(); //更新界面上的参数
+	void setPushButtonsToEnabled(bool code); //按键设置
 
 private:
 	void initSettingUI();
+	void getConfigFromAdminSettingUI();
 
 Q_SIGNALS:
 	void showSettingUI_adminSettingUI();
+	void resetDetectSystem_settingUI(int);
 
 private Q_SLOTS:
 	void on_pushButton_confirm_clicked();

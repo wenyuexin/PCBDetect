@@ -10,6 +10,10 @@
 //#endif
 
 
+namespace pcb {
+	class ImageConverter;
+}
+
 //ÔË¶¯¿ØÖÆÆ÷
 class MotionControler : public QObject
 {
