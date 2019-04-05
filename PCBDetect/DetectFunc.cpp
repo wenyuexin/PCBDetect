@@ -1,8 +1,8 @@
 #include "DetectFunc.h"
 
 
-using Ui::DetectConfig;
-using Ui::DetectParams;
+using pcb::DetectConfig;
+using pcb::DetectParams;
 using std::vector;
 using std::string;
 using std::to_string;

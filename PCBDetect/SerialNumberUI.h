@@ -13,9 +13,9 @@ class SerialNumberUI : public QWidget
 
 private:
 	Ui::SerialNumberUI ui;
-	Ui::DetectParams *params; //运行时的临时参数
-	Ui::CvMatArray *cvmatSamples; //用于检测的样本图
-	Ui::QPixmapArray *qpixmapSamples; //用于显示的样本图
+	pcb::DetectParams *params; //运行时的临时参数
+	pcb::CvMatArray *cvmatSamples; //用于检测的样本图
+	pcb::QPixmapArray *qpixmapSamples; //用于显示的样本图
 	int gridRowIdx; //点击的分图在第几列
 	int gridColIdx; //点击的分图在第几行
 	
@@ -35,9 +35,9 @@ public:
 	SerialNumberUI(QWidget *parent = Q_NULLPTR);
 	~SerialNumberUI();
 
-	inline void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
-	inline void setCvMatArray(Ui::CvMatArray *ptr = Q_NULLPTR) { cvmatSamples = ptr; }
-	inline void setQPixmapArray(Ui::QPixmapArray *ptr = Q_NULLPTR) { qpixmapSamples = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	inline void setCvMatArray(pcb::CvMatArray *ptr = Q_NULLPTR) { cvmatSamples = ptr; }
+	inline void setQPixmapArray(pcb::QPixmapArray *ptr = Q_NULLPTR) { qpixmapSamples = ptr; }
 	inline void setGridIndex(int row, int col) { gridRowIdx = row; gridColIdx = col; }
 
 	void showSampleImage(int gridRowIdx, int gridColIdx);

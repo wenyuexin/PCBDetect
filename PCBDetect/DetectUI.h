@@ -27,31 +27,31 @@ private:
 	QString IconFolder; //图标文件夹
 	QPixmap lightOnIcon; //亮灯图标 red
 	QPixmap lightOffIcon; //灭灯图标 grey
-	Ui::DetectConfig *config; //参数配置
-	Ui::DetectParams *params; //临时参数
+	pcb::DetectConfig *config; //参数配置
+	pcb::DetectParams *params; //临时参数
 	int currentRow_show; //当前正在显示的行
 
 	int itemSpacing = 3; //图元间距
 	QSize itemSize; //图元尺寸
 	QGraphicsScene scene; //绘图场景
 	QSize sceneSize; //场景尺寸
-	Ui::ItemGrid itemGrid; //绘图网点
-	Ui::ItemArray itemArray; //场景中的图元阵列
+	pcb::ItemGrid itemGrid; //绘图网点
+	pcb::ItemArray itemArray; //场景中的图元阵列
 
 	bool isStarted; //系统是否处于已启动的状态
 	int eventCounter; //事件计数器
 	DetectThread *detectThread; //检测线程
 	DetectCore *detectCore; //检测核心类
-	Ui::QImageArray samples; //当前样本
-	Ui::DetectResult detectResult; //检测结果
+	pcb::QImageArray samples; //当前样本
+	pcb::DetectResult detectResult; //检测结果
 	int detectState; //检测状态
 
 public:
 	DetectUI(QWidget *parent = Q_NULLPTR);
 	~DetectUI();
 
-	inline void setDetectConfig(Ui::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
-	inline void setDetectParams(Ui::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
+	inline void setDetectParams(pcb::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
 
 	void initGraphicsView();
 	void resetDetectUI();

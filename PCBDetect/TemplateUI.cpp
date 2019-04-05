@@ -1,7 +1,7 @@
 #include "TemplateUI.h"
 
-using Ui::DetectConfig;
-using Ui::DetectParams;
+using pcb::DetectConfig;
+using pcb::DetectParams;
 using cv::Mat;
 
 
@@ -97,6 +97,7 @@ void TemplateUI::initGraphicsView()
 //重置模板提取界面
 void TemplateUI::resetTemplateUI()
 {
+	ui.label_status->setText(""); //清空状态栏
 	removeItemsFromGraphicsScene(); //移除场景中已经加载的图元
 	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
 	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
@@ -112,7 +113,7 @@ void TemplateUI::resetTemplateUI()
 /********* 图元矩阵和样本图像矩阵的初始化和删除等操作 ***********/
 
 //初始化图元网格
-void TemplateUI::initItemGrid(Ui::ItemGrid &grid)
+void TemplateUI::initItemGrid(pcb::ItemGrid &grid)
 {
 	//基本参数
 	int nCamera = detectConfig->nCamera; //相机个数
@@ -159,7 +160,7 @@ void TemplateUI::initItemGrid(Ui::ItemGrid &grid)
 }
 
 //初始化图元矩阵中的指针 - ItemArray
-void TemplateUI::initPointersInItemArray(Ui::ItemArray &items)
+void TemplateUI::initPointersInItemArray(pcb::ItemArray &items)
 {
 	if (items.size() > 0) {
 		deletePointersInItemArray(items);//若执行过init函数，则先delete指针
@@ -176,7 +177,7 @@ void TemplateUI::initPointersInItemArray(Ui::ItemArray &items)
 }
 
 //删除图元矩阵中的指针 - ItemArray
-void TemplateUI::deletePointersInItemArray(Ui::ItemArray &items)
+void TemplateUI::deletePointersInItemArray(pcb::ItemArray &items)
 {
 	for (int iPhotographing = 0; iPhotographing < items.size(); iPhotographing++) {
 		int vectorSize = items[iPhotographing].size();
@@ -189,7 +190,7 @@ void TemplateUI::deletePointersInItemArray(Ui::ItemArray &items)
 
 
 //初始化样本图像向量中的指针 - CvMatArray
-void TemplateUI::initPointersInCvMatArray(Ui::CvMatArray &cvmats)
+void TemplateUI::initPointersInCvMatArray(pcb::CvMatArray &cvmats)
 {
 	if (cvmats.size() > 0) {
 		deletePointersInCvMatArray(cvmats);//若执行过init函数，则先delete指针
@@ -206,7 +207,7 @@ void TemplateUI::initPointersInCvMatArray(Ui::CvMatArray &cvmats)
 }
 
 //删除样本图像向量中的指针 - CvMatArray
-void TemplateUI::deletePointersInCvMatArray(Ui::CvMatArray &cvmats)
+void TemplateUI::deletePointersInCvMatArray(pcb::CvMatArray &cvmats)
 {
 	for (int iPhotographing = 0; iPhotographing < cvmats.size(); iPhotographing++) {
 		int vectorSize = cvmats[iPhotographing].size();
@@ -219,7 +220,7 @@ void TemplateUI::deletePointersInCvMatArray(Ui::CvMatArray &cvmats)
 
 
 //初始化样本图像向量中的指针 - QPixmapArray
-void TemplateUI::initPointersInQPixmapArray(Ui::QPixmapArray &qpixmaps)
+void TemplateUI::initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 {
 	if (qpixmaps.size() > 0) {
 		deletePointersInQPixmapArray(qpixmaps);//若执行过init函数，则先delete指针
@@ -236,7 +237,7 @@ void TemplateUI::initPointersInQPixmapArray(Ui::QPixmapArray &qpixmaps)
 }
 
 //删除样本图像向量中的指针 - QPixmapArray
-void TemplateUI::deletePointersInQPixmapArray(Ui::QPixmapArray &qpixmaps)
+void TemplateUI::deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 {
 	for (int iPhotographing = 0; iPhotographing < qpixmaps.size(); iPhotographing++) {
 		int vectorSize = qpixmaps[iPhotographing].size();
@@ -503,9 +504,9 @@ void TemplateUI::mouseDoubleClickEvent(QMouseEvent *event)
 	
 	if (true && gridRowIdx <= currentRow_show) {
 		serialNumberUI.showSampleImage(gridRowIdx, gridColIdx);
-		Ui::delay(3);//延迟
+		pcb::delay(3);//延迟
 		serialNumberUI.showFullScreen();//显示序号识别界面
-		Ui::delay(10);//延迟
+		pcb::delay(10);//延迟
 		this->hide();
 	}
 
@@ -515,7 +516,7 @@ void TemplateUI::mouseDoubleClickEvent(QMouseEvent *event)
 void TemplateUI::on_switchImage_serialNumberUI()
 {
 	this->showFullScreen();
-	Ui::delay(10);//延迟
+	pcb::delay(10);//延迟
 	serialNumberUI.hide();
 }
 
@@ -553,7 +554,7 @@ void TemplateUI::on_resetControlerFinished_motion(int caller)
 	switch (caller)
 	{
 	case 1: //TemplateUI::on_pushButton_start_clicked()
-		Ui::delay(10);
+		pcb::delay(10);
 		motionControler->moveForward(); //运动结构前进
 		break;
 	default:
@@ -604,7 +605,7 @@ void TemplateUI::on_convertFinished_convertThread()
 	qDebug() << "showSampleImages: " << (t2 - t1) << "ms ( currentRow =" << currentRow_show << ")";
 
 	//显示结束后之前驱动机械结构运动
-	Ui::delay(10); //延迟
+	pcb::delay(10); //延迟
 	if (currentRow_show + 1 < detectConfig->nPhotographing)
 		motionControler->moveForward(); //运动结构前进
 	else
@@ -657,7 +658,7 @@ void TemplateUI::update_extractState_extractor(int state)
 		qApp->processEvents();
 
 		//检查是否有未处理的事件
-		while (templThread->isRunning()) Ui::delay(50); //等待线程结束
+		while (templThread->isRunning()) pcb::delay(50); //等待线程结束
 		if (detectParams->currentRow_extract == detectConfig->nPhotographing - 1) { //当前PCB提取结束
 			ui.pushButton_start->setEnabled(true); //启用开始按键
 			ui.pushButton_return->setEnabled(true); //启用返回按键

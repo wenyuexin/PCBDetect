@@ -1,11 +1,11 @@
 #include "DetectCore.h"
 #include <exception>
 
-using Ui::CvMatVector;
-using Ui::DetectConfig;
-using Ui::DetectParams;
-using Ui::DetectResult;
-using Ui::QImageVector;
+using pcb::CvMatVector;
+using pcb::DetectConfig;
+using pcb::DetectParams;
+using pcb::DetectResult;
+using pcb::QImageVector;
 using cv::Mat;
 using std::string;
 using std::to_string;
@@ -29,7 +29,7 @@ void DetectCore::doDetect()
 	detectState = 1;
 	emit sig_detectState_detectCore(detectState);
 
-	//Ui::delay(1000); //Ö´ÐÐ¼ì²â
+	//pcb::delay(1000); //Ö´ÐÐ¼ì²â
 	// ...
 	DetectFunc detectFunc;
 	detectFunc.setDetectConfig(config);

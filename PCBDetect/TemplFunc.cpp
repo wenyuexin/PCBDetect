@@ -1,8 +1,8 @@
 #include "TemplFunc.h"
 #include <qDebug>
 
-using Ui::DetectConfig;
-using Ui::DetectParams;
+using pcb::DetectConfig;
+using pcb::DetectParams;
 using cv::Mat;
 using cv::Size;
 using cv::Rect;

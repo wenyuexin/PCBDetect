@@ -1,8 +1,8 @@
 #include "ImgConvertThread.h"
 
-using Ui::QImageVector;
-using Ui::QPixmapVector;
-using Ui::CvMatVector;
+using pcb::QImageVector;
+using pcb::QPixmapVector;
+using pcb::CvMatVector;
 
 
 ImgConvertThread::ImgConvertThread(QObject *parent)

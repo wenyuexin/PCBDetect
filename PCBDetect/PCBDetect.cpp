@@ -1,7 +1,7 @@
 #include "PCBDetect.h"
 
-using Ui::DetectConfig;
-using Ui::AdminConfig;
+using pcb::DetectConfig;
+using pcb::AdminConfig;
 
 PCBDetect::PCBDetect(QWidget *parent)
 	: QMainWindow(parent)
@@ -12,7 +12,6 @@ PCBDetect::PCBDetect(QWidget *parent)
 	QDesktopWidget* desktop = QApplication::desktop();
 	QRect screenRect = desktop->screenGeometry(1);
 	this->setGeometry(screenRect);
-	this->showFullScreen(); //全屏
 
 	//图标文件夹的路径
 	IconFolder = QDir::currentPath() + "/Icons";
@@ -35,7 +34,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	//参数设置界面
 	settingUI = new SettingUI;
 	settingUI->setDetectConfig(&detectConfig);
-	//settingUI->setAdminConfig(&adminConfig);
+	settingUI->setAdminConfig(&adminConfig);
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
 	connect(settingUI, SIGNAL(resetDetectSystem_settingUI(int)), this, SLOT(do_resetDetectSystem_settingUI(int)));
 	connect(settingUI, SIGNAL(enableButtonsOnDetectMainUI_settingUI()), this, SLOT(do_enableButtonsOnDetectMainUI_settingUI()));
@@ -88,7 +87,7 @@ void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
 
 	//关闭初始化界面，显示主界面
 	this->showFullScreen();
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	launcher->close();
 }
 
@@ -153,14 +152,14 @@ void PCBDetect::setPushButtonsToEnabled(bool code)
 void PCBDetect::do_showDetectMainUI_settingUI()
 {
 	this->showFullScreen(); //显示主界面
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	settingUI->hide(); //隐藏设置界面
 }
 
 void PCBDetect::showSettingUI()
 {
 	settingUI->showFullScreen(); //显示设置界面
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	this->hide(); //隐藏主界面
 }
 
@@ -182,15 +181,13 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 	CameraControler::ErrorCode cameraErrorCode;
 	if (code & 0b0001 == 0b0001) {
 		cameraControler.start();
-		while (cameraControler.isRunning()) Ui::delay(50);
-		cameraControler.showMessageBox(this);
+		while (cameraControler.isRunning()) pcb::delay(50);
+		cameraControler.showMessageBox(settingUI);
 	}
 
 	//将主界面的模板提取按键、检测按键设为可点击
-	if (cameraErrorCode == CameraControler::NoError)
+	if (cameraControler.getErrorCode() == CameraControler::NoError)
 		this->setPushButtonsToEnabled(true);
-	//将参数设置界面的确认按键、返回按键设为可点击
-	settingUI->setPushButtonsToEnabled(true);
 }
 
 //将模板提取按键、检测按键设为可点击
@@ -206,13 +203,13 @@ void PCBDetect::do_checkSystemWorkingState_settingUI()
 
 	//检查用户参数
 	if (!detectConfig.isValid()) {
-		DetectConfig::showMessageBox(settingUI, detectConfig.getErrorCode());
+		detectConfig.showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}
 
 	//检查系统参数
 	if (enableButtonsOnMainUI && !adminConfig.isValid()) {
-		AdminConfig::showMessageBox(settingUI, adminConfig.getErrorCode());
+		adminConfig.showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}
 
@@ -233,14 +230,14 @@ void PCBDetect::do_checkSystemWorkingState_settingUI()
 void PCBDetect::do_showDetectMainUI_templateUI()
 {
 	this->showFullScreen(); //显示主界面
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	templateUI->hide(); //隐藏模板提取界面
 }
 
 void PCBDetect::showTemplateUI()
 {
 	templateUI->showFullScreen(); //显示模板提取界面
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	this->hide(); //隐藏主界面
 }
 
@@ -250,14 +247,14 @@ void PCBDetect::showTemplateUI()
 void PCBDetect::do_showDetectMainUI_detectUI()
 {
 	this->showFullScreen(); //显示主界面
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	detectUI->hide(); //隐藏检测界面
 }
 
 void PCBDetect::showDetectUI()
 {
 	detectUI->showFullScreen(); //显示检测界面
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	this->hide(); //隐藏主界面
 }
 

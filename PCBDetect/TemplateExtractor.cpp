@@ -1,10 +1,10 @@
 #include "TemplateExtractor.h"
 
 
-using Ui::DetectConfig;
-using Ui::DetectParams;
-using Ui::CvMatVector;
-using Ui::CvMatArray;
+using pcb::DetectConfig;
+using pcb::DetectParams;
+using pcb::CvMatVector;
+using pcb::CvMatArray;
 using std::vector;
 using std::string;
 using cv::Mat;
@@ -35,7 +35,7 @@ void TemplateExtractor::extract()
 	extractState = ExtractState::Start;
 	emit extractState_extractor(extractState);
 
-	//Ui::delay(1000); //提取
+	//pcb::delay(1000); //提取
 
 	string curr_path = config->TemplDirPath.toStdString() + "/";
 	string templ_path = curr_path + params->sampleModelNum.toStdString();//检查模板文件夹中mask文件是否存在

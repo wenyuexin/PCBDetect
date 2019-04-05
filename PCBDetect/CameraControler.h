@@ -6,6 +6,11 @@
 #include <map>
 #include <iterator>
 
+namespace PCB {
+	class CameraControler;
+}
+
+
 //相机控制器
 class CameraControler : public QThread
 {
@@ -26,7 +31,7 @@ public:
 	};
 
 private:
-	Ui::CvMatArray *cvmatSamples; //用于检测的样本图
+	pcb::CvMatArray *cvmatSamples; //用于检测的样本图
 	int *currentRow; //当前行号
 	int *nCamera; //当前使用的相机个数
 	int *MaxCameraNum; //可使用的相机总数
@@ -41,7 +46,7 @@ public:
 	CameraControler(QThread *parent = Q_NULLPTR);
 	~CameraControler();
 
-	inline void setCvMatSamples(Ui::CvMatArray *ptr) { cvmatSamples = ptr; }
+	inline void setCvMatSamples(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setCurrentRow(int *row) { currentRow = row;  }
 	inline void setCameraNum(int *num) { nCamera = num; }
 	inline void setMaxCameraNum(int *num) { MaxCameraNum = num; }
@@ -55,7 +60,7 @@ public:
 	inline bool checkCameraState(int index) { return cameraState[index]; }
 
 	inline ErrorCode getErrorCode() { return errorCode; } //获取当前的错误代码
-	void showMessageBox(QWidget *parent); //弹窗警告
+	bool showMessageBox(QWidget *parent); //弹窗警告
 
 protected:
 	void run();
