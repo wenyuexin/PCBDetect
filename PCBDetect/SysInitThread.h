@@ -5,7 +5,8 @@
 #include "CameraControler.h"
 #include <windows.h>
 
-namespace PCB {
+
+namespace pcb {
 	class SysInitThread;
 }
 

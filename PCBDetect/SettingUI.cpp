@@ -41,7 +41,6 @@ SettingUI::~SettingUI()
 
 void SettingUI::initSettingUI()
 {
-	//按键设置
 	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
 	this->setPushButtonsToEnabled(false);
 	this->setPushButtonsToEnabled(true);
@@ -166,7 +165,7 @@ void SettingUI::setPushButtonsToEnabled(bool code)
 	ui.pushButton_admin->setEnabled(code);//系统设置
 }
 
-/************** comboBox的槽函数 *****************/
+/************** 获取界面上的参数 *****************/
 
 void SettingUI::on_currentIndexChanged_imageFormat()
 {

@@ -10,7 +10,7 @@
 #include <QDir>
 #include <QTime>
 
-namespace Ui {
+namespace pcb {
 	class LaunchUI;
 }
 

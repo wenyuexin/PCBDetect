@@ -21,6 +21,10 @@ AdminSettingUI::~AdminSettingUI()
 
 void AdminSettingUI::initSettingUI()
 {
+	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
+	this->setPushButtonsToEnabled(false);
+	this->setPushButtonsToEnabled(true);
+
 	//限制参数的输入范围
 	QIntValidator intValidator;
 	ui.lineEdit_MaxMotionStroke->setValidator(&intValidator);
@@ -42,6 +46,9 @@ void AdminSettingUI::refreshAdminSettingUI()
 //确认
 void AdminSettingUI::on_pushButton_confirm_clicked()
 {
+	//获取界面上的config参数
+	getConfigFromAdminSettingUI();
+
 	bool k1, k2, k3;
 	double MaxS =( ui.lineEdit_MaxMotionStroke->text()).toDouble(&k1);
 	int CamerN = (ui.lineEdit_MaxCameraNum->text()).toInt(&k2);
@@ -64,4 +71,19 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 void AdminSettingUI::on_pushButton_return_clicked()
 {
 	emit showSettingUI_adminSettingUI();
+}
+
+//设置按键的可点击状态
+void AdminSettingUI::setPushButtonsToEnabled(bool code)
+{
+	ui.pushButton_confirm->setEnabled(code);//确认
+	ui.pushButton_return->setEnabled(code);//返回
+}
+
+
+/**************** 获取界面上的参数 ****************/
+
+void AdminSettingUI::getConfigFromAdminSettingUI()
+{
+
 }
