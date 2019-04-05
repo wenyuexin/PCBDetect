@@ -16,14 +16,14 @@ class MotionControler : public QObject
 	Q_OBJECT
 
 private:
-	Ui::DetectConfig *config;
+	pcb::DetectConfig *config;
 	int callerOfResetControler; //复位的调用函数的标识
 
 public:
 	MotionControler(QObject *parent = Q_NULLPTR);
 	~MotionControler();
 
-	//inline void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; } 
+	//inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { config = ptr; } 
 
 	void initControler(); //初始化
 	void moveForward(); //前进

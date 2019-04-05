@@ -84,6 +84,7 @@ public:
     QLabel *label_roiHeight_L_6;
     QSpacerItem *horizontalSpacer_12;
     QLineEdit *lineEdit_ImageAspectRatio_H;
+    QPushButton *pushButton_admin;
 
     void setupUi(QWidget *SettingUI)
     {
@@ -121,21 +122,21 @@ public:
         line->setFrameShadow(QFrame::Sunken);
         pushButton_return = new QPushButton(SettingUI);
         pushButton_return->setObjectName(QStringLiteral("pushButton_return"));
-        pushButton_return->setGeometry(QRect(800, 710, 112, 40));
+        pushButton_return->setGeometry(QRect(640, 710, 120, 40));
         sizePolicy.setHeightForWidth(pushButton_return->sizePolicy().hasHeightForWidth());
         pushButton_return->setSizePolicy(sizePolicy);
         QFont font1;
-        font1.setPointSize(16);
+        font1.setPointSize(17);
         pushButton_return->setFont(font1);
         pushButton_confirm = new QPushButton(SettingUI);
         pushButton_confirm->setObjectName(QStringLiteral("pushButton_confirm"));
-        pushButton_confirm->setGeometry(QRect(510, 710, 112, 40));
+        pushButton_confirm->setGeometry(QRect(430, 710, 120, 40));
         sizePolicy.setHeightForWidth(pushButton_confirm->sizePolicy().hasHeightForWidth());
         pushButton_confirm->setSizePolicy(sizePolicy);
         pushButton_confirm->setFont(font1);
         layoutWidget = new QWidget(SettingUI);
         layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(130, 110, 482, 37));
+        layoutWidget->setGeometry(QRect(70, 90, 482, 37));
         horizontalLayout = new QHBoxLayout(layoutWidget);
         horizontalLayout->setSpacing(6);
         horizontalLayout->setContentsMargins(11, 11, 11, 11);
@@ -147,7 +148,9 @@ public:
         label_path_L->setSizePolicy(sizePolicy);
         label_path_L->setMinimumSize(QSize(90, 35));
         label_path_L->setMaximumSize(QSize(90, 35));
-        label_path_L->setFont(font1);
+        QFont font2;
+        font2.setPointSize(16);
+        label_path_L->setFont(font2);
         label_path_L->setAlignment(Qt::AlignCenter);
 
         horizontalLayout->addWidget(label_path_L);
@@ -162,7 +165,7 @@ public:
         lineEdit_SampleDirPath->setSizePolicy(sizePolicy);
         lineEdit_SampleDirPath->setMinimumSize(QSize(300, 35));
         lineEdit_SampleDirPath->setMaximumSize(QSize(160, 35));
-        lineEdit_SampleDirPath->setFont(font1);
+        lineEdit_SampleDirPath->setFont(font2);
         lineEdit_SampleDirPath->setAlignment(Qt::AlignCenter);
 
         horizontalLayout->addWidget(lineEdit_SampleDirPath);
@@ -177,13 +180,13 @@ public:
         pushButton_SampleDirPath->setSizePolicy(sizePolicy);
         pushButton_SampleDirPath->setMinimumSize(QSize(60, 35));
         pushButton_SampleDirPath->setMaximumSize(QSize(60, 35));
-        pushButton_SampleDirPath->setFont(font1);
+        pushButton_SampleDirPath->setFont(font2);
 
         horizontalLayout->addWidget(pushButton_SampleDirPath);
 
         layoutWidget_2 = new QWidget(SettingUI);
         layoutWidget_2->setObjectName(QStringLiteral("layoutWidget_2"));
-        layoutWidget_2->setGeometry(QRect(130, 170, 482, 37));
+        layoutWidget_2->setGeometry(QRect(70, 150, 482, 37));
         horizontalLayout_2 = new QHBoxLayout(layoutWidget_2);
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setContentsMargins(11, 11, 11, 11);
@@ -195,7 +198,7 @@ public:
         label_path_L_2->setSizePolicy(sizePolicy);
         label_path_L_2->setMinimumSize(QSize(90, 35));
         label_path_L_2->setMaximumSize(QSize(90, 35));
-        label_path_L_2->setFont(font1);
+        label_path_L_2->setFont(font2);
         label_path_L_2->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_2->addWidget(label_path_L_2);
@@ -210,7 +213,7 @@ public:
         lineEdit_TemplDirPath->setSizePolicy(sizePolicy);
         lineEdit_TemplDirPath->setMinimumSize(QSize(300, 35));
         lineEdit_TemplDirPath->setMaximumSize(QSize(160, 35));
-        lineEdit_TemplDirPath->setFont(font1);
+        lineEdit_TemplDirPath->setFont(font2);
         lineEdit_TemplDirPath->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_2->addWidget(lineEdit_TemplDirPath);
@@ -225,13 +228,13 @@ public:
         pushButton_TemplDirPath->setSizePolicy(sizePolicy);
         pushButton_TemplDirPath->setMinimumSize(QSize(60, 35));
         pushButton_TemplDirPath->setMaximumSize(QSize(60, 35));
-        pushButton_TemplDirPath->setFont(font1);
+        pushButton_TemplDirPath->setFont(font2);
 
         horizontalLayout_2->addWidget(pushButton_TemplDirPath);
 
         layoutWidget_3 = new QWidget(SettingUI);
         layoutWidget_3->setObjectName(QStringLiteral("layoutWidget_3"));
-        layoutWidget_3->setGeometry(QRect(130, 230, 482, 37));
+        layoutWidget_3->setGeometry(QRect(70, 210, 482, 37));
         horizontalLayout_3 = new QHBoxLayout(layoutWidget_3);
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setContentsMargins(11, 11, 11, 11);
@@ -243,7 +246,7 @@ public:
         label_path_L_3->setSizePolicy(sizePolicy);
         label_path_L_3->setMinimumSize(QSize(90, 35));
         label_path_L_3->setMaximumSize(QSize(90, 35));
-        label_path_L_3->setFont(font1);
+        label_path_L_3->setFont(font2);
         label_path_L_3->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_3->addWidget(label_path_L_3);
@@ -258,7 +261,7 @@ public:
         lineEdit_OutputDirPath->setSizePolicy(sizePolicy);
         lineEdit_OutputDirPath->setMinimumSize(QSize(300, 35));
         lineEdit_OutputDirPath->setMaximumSize(QSize(160, 35));
-        lineEdit_OutputDirPath->setFont(font1);
+        lineEdit_OutputDirPath->setFont(font2);
         lineEdit_OutputDirPath->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_3->addWidget(lineEdit_OutputDirPath);
@@ -273,13 +276,13 @@ public:
         pushButton_OutputDirPath->setSizePolicy(sizePolicy);
         pushButton_OutputDirPath->setMinimumSize(QSize(60, 35));
         pushButton_OutputDirPath->setMaximumSize(QSize(60, 35));
-        pushButton_OutputDirPath->setFont(font1);
+        pushButton_OutputDirPath->setFont(font2);
 
         horizontalLayout_3->addWidget(pushButton_OutputDirPath);
 
         layoutWidget_4 = new QWidget(SettingUI);
         layoutWidget_4->setObjectName(QStringLiteral("layoutWidget_4"));
-        layoutWidget_4->setGeometry(QRect(120, 300, 311, 37));
+        layoutWidget_4->setGeometry(QRect(60, 280, 311, 37));
         horizontalLayout_4 = new QHBoxLayout(layoutWidget_4);
         horizontalLayout_4->setSpacing(6);
         horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -291,7 +294,7 @@ public:
         label_roiHeight_L->setSizePolicy(sizePolicy);
         label_roiHeight_L->setMinimumSize(QSize(90, 35));
         label_roiHeight_L->setMaximumSize(QSize(90, 35));
-        label_roiHeight_L->setFont(font1);
+        label_roiHeight_L->setFont(font2);
         label_roiHeight_L->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_4->addWidget(label_roiHeight_L);
@@ -306,14 +309,14 @@ public:
         lineEdit_nCamera->setSizePolicy(sizePolicy);
         lineEdit_nCamera->setMinimumSize(QSize(180, 35));
         lineEdit_nCamera->setMaximumSize(QSize(160, 35));
-        lineEdit_nCamera->setFont(font1);
+        lineEdit_nCamera->setFont(font2);
         lineEdit_nCamera->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_4->addWidget(lineEdit_nCamera);
 
         layoutWidget_5 = new QWidget(SettingUI);
         layoutWidget_5->setObjectName(QStringLiteral("layoutWidget_5"));
-        layoutWidget_5->setGeometry(QRect(120, 360, 311, 37));
+        layoutWidget_5->setGeometry(QRect(60, 340, 311, 37));
         horizontalLayout_5 = new QHBoxLayout(layoutWidget_5);
         horizontalLayout_5->setSpacing(6);
         horizontalLayout_5->setContentsMargins(11, 11, 11, 11);
@@ -325,7 +328,7 @@ public:
         label_roiHeight_L_2->setSizePolicy(sizePolicy);
         label_roiHeight_L_2->setMinimumSize(QSize(90, 35));
         label_roiHeight_L_2->setMaximumSize(QSize(90, 35));
-        label_roiHeight_L_2->setFont(font1);
+        label_roiHeight_L_2->setFont(font2);
         label_roiHeight_L_2->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_5->addWidget(label_roiHeight_L_2);
@@ -340,14 +343,14 @@ public:
         lineEdit_nPhotographing->setSizePolicy(sizePolicy);
         lineEdit_nPhotographing->setMinimumSize(QSize(180, 35));
         lineEdit_nPhotographing->setMaximumSize(QSize(150, 35));
-        lineEdit_nPhotographing->setFont(font1);
+        lineEdit_nPhotographing->setFont(font2);
         lineEdit_nPhotographing->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_5->addWidget(lineEdit_nPhotographing);
 
         layoutWidget_6 = new QWidget(SettingUI);
         layoutWidget_6->setObjectName(QStringLiteral("layoutWidget_6"));
-        layoutWidget_6->setGeometry(QRect(120, 420, 341, 37));
+        layoutWidget_6->setGeometry(QRect(60, 400, 348, 37));
         horizontalLayout_6 = new QHBoxLayout(layoutWidget_6);
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setContentsMargins(11, 11, 11, 11);
@@ -359,7 +362,7 @@ public:
         label_roiHeight_L_3->setSizePolicy(sizePolicy);
         label_roiHeight_L_3->setMinimumSize(QSize(120, 35));
         label_roiHeight_L_3->setMaximumSize(QSize(120, 35));
-        label_roiHeight_L_3->setFont(font1);
+        label_roiHeight_L_3->setFont(font2);
         label_roiHeight_L_3->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_6->addWidget(label_roiHeight_L_3);
@@ -374,9 +377,9 @@ public:
         label_roiHeight_L_7->setSizePolicy(sizePolicy);
         label_roiHeight_L_7->setMinimumSize(QSize(30, 35));
         label_roiHeight_L_7->setMaximumSize(QSize(30, 35));
-        QFont font2;
-        font2.setPointSize(15);
-        label_roiHeight_L_7->setFont(font2);
+        QFont font3;
+        font3.setPointSize(15);
+        label_roiHeight_L_7->setFont(font3);
         label_roiHeight_L_7->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_6->addWidget(label_roiHeight_L_7);
@@ -387,7 +390,7 @@ public:
         lineEdit_nBasicUnitInRow->setSizePolicy(sizePolicy);
         lineEdit_nBasicUnitInRow->setMinimumSize(QSize(60, 35));
         lineEdit_nBasicUnitInRow->setMaximumSize(QSize(60, 35));
-        lineEdit_nBasicUnitInRow->setFont(font1);
+        lineEdit_nBasicUnitInRow->setFont(font2);
         lineEdit_nBasicUnitInRow->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_6->addWidget(lineEdit_nBasicUnitInRow);
@@ -402,7 +405,7 @@ public:
         label_roiHeight_L_8->setSizePolicy(sizePolicy);
         label_roiHeight_L_8->setMinimumSize(QSize(30, 35));
         label_roiHeight_L_8->setMaximumSize(QSize(30, 35));
-        label_roiHeight_L_8->setFont(font2);
+        label_roiHeight_L_8->setFont(font3);
         label_roiHeight_L_8->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_6->addWidget(label_roiHeight_L_8);
@@ -413,14 +416,14 @@ public:
         lineEdit_nBasicUnitInCol->setSizePolicy(sizePolicy);
         lineEdit_nBasicUnitInCol->setMinimumSize(QSize(60, 35));
         lineEdit_nBasicUnitInCol->setMaximumSize(QSize(60, 35));
-        lineEdit_nBasicUnitInCol->setFont(font1);
+        lineEdit_nBasicUnitInCol->setFont(font2);
         lineEdit_nBasicUnitInCol->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_6->addWidget(lineEdit_nBasicUnitInCol);
 
         layoutWidget_7 = new QWidget(SettingUI);
         layoutWidget_7->setObjectName(QStringLiteral("layoutWidget_7"));
-        layoutWidget_7->setGeometry(QRect(120, 490, 311, 37));
+        layoutWidget_7->setGeometry(QRect(60, 470, 311, 37));
         horizontalLayout_7 = new QHBoxLayout(layoutWidget_7);
         horizontalLayout_7->setSpacing(6);
         horizontalLayout_7->setContentsMargins(11, 11, 11, 11);
@@ -432,7 +435,7 @@ public:
         label_roiHeight_L_4->setSizePolicy(sizePolicy);
         label_roiHeight_L_4->setMinimumSize(QSize(90, 35));
         label_roiHeight_L_4->setMaximumSize(QSize(90, 35));
-        label_roiHeight_L_4->setFont(font1);
+        label_roiHeight_L_4->setFont(font2);
         label_roiHeight_L_4->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_7->addWidget(label_roiHeight_L_4);
@@ -452,14 +455,14 @@ public:
         comboBox_ImageFormat->setSizePolicy(sizePolicy);
         comboBox_ImageFormat->setMinimumSize(QSize(150, 35));
         comboBox_ImageFormat->setMaximumSize(QSize(150, 35));
-        comboBox_ImageFormat->setFont(font2);
+        comboBox_ImageFormat->setFont(font3);
         comboBox_ImageFormat->setLayoutDirection(Qt::LeftToRight);
 
         horizontalLayout_7->addWidget(comboBox_ImageFormat);
 
         layoutWidget_8 = new QWidget(SettingUI);
         layoutWidget_8->setObjectName(QStringLiteral("layoutWidget_8"));
-        layoutWidget_8->setGeometry(QRect(110, 550, 321, 37));
+        layoutWidget_8->setGeometry(QRect(60, 530, 321, 37));
         horizontalLayout_8 = new QHBoxLayout(layoutWidget_8);
         horizontalLayout_8->setSpacing(6);
         horizontalLayout_8->setContentsMargins(11, 11, 11, 11);
@@ -471,7 +474,7 @@ public:
         label_roiHeight_L_5->setSizePolicy(sizePolicy);
         label_roiHeight_L_5->setMinimumSize(QSize(120, 35));
         label_roiHeight_L_5->setMaximumSize(QSize(120, 35));
-        label_roiHeight_L_5->setFont(font1);
+        label_roiHeight_L_5->setFont(font2);
         label_roiHeight_L_5->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_8->addWidget(label_roiHeight_L_5);
@@ -486,7 +489,7 @@ public:
         lineEdit_ImageAspectRatio_W->setSizePolicy(sizePolicy);
         lineEdit_ImageAspectRatio_W->setMinimumSize(QSize(60, 35));
         lineEdit_ImageAspectRatio_W->setMaximumSize(QSize(60, 35));
-        lineEdit_ImageAspectRatio_W->setFont(font1);
+        lineEdit_ImageAspectRatio_W->setFont(font2);
         lineEdit_ImageAspectRatio_W->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_8->addWidget(lineEdit_ImageAspectRatio_W);
@@ -501,11 +504,11 @@ public:
         label_roiHeight_L_6->setSizePolicy(sizePolicy);
         label_roiHeight_L_6->setMinimumSize(QSize(8, 35));
         label_roiHeight_L_6->setMaximumSize(QSize(8, 35));
-        QFont font3;
-        font3.setPointSize(16);
-        font3.setBold(true);
-        font3.setWeight(75);
-        label_roiHeight_L_6->setFont(font3);
+        QFont font4;
+        font4.setPointSize(16);
+        font4.setBold(true);
+        font4.setWeight(75);
+        label_roiHeight_L_6->setFont(font4);
         label_roiHeight_L_6->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_8->addWidget(label_roiHeight_L_6);
@@ -520,11 +523,17 @@ public:
         lineEdit_ImageAspectRatio_H->setSizePolicy(sizePolicy);
         lineEdit_ImageAspectRatio_H->setMinimumSize(QSize(60, 35));
         lineEdit_ImageAspectRatio_H->setMaximumSize(QSize(60, 35));
-        lineEdit_ImageAspectRatio_H->setFont(font1);
+        lineEdit_ImageAspectRatio_H->setFont(font2);
         lineEdit_ImageAspectRatio_H->setAlignment(Qt::AlignCenter);
 
         horizontalLayout_8->addWidget(lineEdit_ImageAspectRatio_H);
 
+        pushButton_admin = new QPushButton(SettingUI);
+        pushButton_admin->setObjectName(QStringLiteral("pushButton_admin"));
+        pushButton_admin->setGeometry(QRect(850, 710, 120, 40));
+        sizePolicy.setHeightForWidth(pushButton_admin->sizePolicy().hasHeightForWidth());
+        pushButton_admin->setSizePolicy(sizePolicy);
+        pushButton_admin->setFont(font1);
         label_3->raise();
         label_title->raise();
         line->raise();
@@ -538,6 +547,7 @@ public:
         layoutWidget_6->raise();
         layoutWidget_7->raise();
         layoutWidget_8->raise();
+        pushButton_admin->raise();
 
         retranslateUi(SettingUI);
 
@@ -572,6 +582,7 @@ public:
         label_roiHeight_L_5->setText(QApplication::translate("SettingUI", "\345\233\276\345\203\217\345\256\275\351\253\230\346\257\224", nullptr));
         label_roiHeight_L_6->setText(QApplication::translate("SettingUI", ":", nullptr));
         lineEdit_ImageAspectRatio_H->setText(QString());
+        pushButton_admin->setText(QApplication::translate("SettingUI", "\347\263\273\347\273\237\350\256\276\347\275\256", nullptr));
     } // retranslateUi
 
 };

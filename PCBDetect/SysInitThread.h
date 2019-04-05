@@ -5,7 +5,9 @@
 #include "CameraControler.h"
 #include <windows.h>
 
-using Ui::DetectConfig;
+namespace PCB {
+	class SysInitThread;
+}
 
 //初始化线程
 class SysInitThread :
@@ -14,8 +16,8 @@ class SysInitThread :
 	Q_OBJECT
 
 private:
-	Ui::DetectConfig *detectConfig; //用户参数配置
-	Ui::AdminConfig *adminConfig; //系统参数配置
+	pcb::DetectConfig *detectConfig; //用户参数配置
+	pcb::AdminConfig *adminConfig; //系统参数配置
 	CameraControler *cameraControler; //相机控制器
 	int bootStatus; //启动状态
 
@@ -23,8 +25,8 @@ public:
 	SysInitThread();
 	~SysInitThread();
 
-	inline void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
-	inline void setAdminConfig(Ui::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
 	inline void setCameraControler(CameraControler *ptr = Q_NULLPTR) { cameraControler = ptr; }
 
 protected:
@@ -36,7 +38,7 @@ private:
 
 Q_SIGNALS:
 	void sysInitStatus_initThread(QString status);
-	void configError_initThread(int ErrorCode);
+	void configError_initThread();
 	void cameraError_initThread();
 	void sysInitFinished_initThread();
 };

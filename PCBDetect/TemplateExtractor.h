@@ -19,9 +19,9 @@ public:
 	};
 	
 private:
-	Ui::DetectConfig *config;
-	Ui::DetectParams *params;
-	Ui::CvMatArray *samples;
+	pcb::DetectConfig *config;
+	pcb::DetectParams *params;
+	pcb::CvMatArray *samples;
 	TemplFunc *templFunc;
 	ExtractState extractState;
 
@@ -29,9 +29,9 @@ public:
 	TemplateExtractor(QObject *parent = Q_NULLPTR);
 	~TemplateExtractor();
 
-	void setSampleImages(Ui::CvMatArray *ptr = Q_NULLPTR) { samples = ptr; }
-	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
-	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	void setSampleImages(pcb::CvMatArray *ptr = Q_NULLPTR) { samples = ptr; }
+	void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
+	void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
 	void setTemplFunc(TemplFunc *ptr = Q_NULLPTR) { templFunc = ptr; }
 
 	void extract();

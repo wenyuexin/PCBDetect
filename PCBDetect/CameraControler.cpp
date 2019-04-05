@@ -95,17 +95,17 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 //设置设备号
 CameraControler::ErrorCode CameraControler::resetDeviceIndex(std::vector<int> iv)
 {
-	//int old_num = *MaxCameraNum;
-	//*MaxCameraNum = nDevice;
-	//for (int i = 0; i < old_num; i++)
-	//	cameraList[i].release();
+	deviceIndex = iv;
+	for (int i = 0; i < cameraList.size(); i++) {
+		cameraList[i].release();
+	}
 	return initCameras();
 }
 
 //参数报错
-void CameraControler::showMessageBox(QWidget *parent)
+bool CameraControler::showMessageBox(QWidget *parent)
 {
-	if (errorCode == CameraControler::NoError) return;
+	if (errorCode == CameraControler::NoError) return false;
 
 	QString warningMessage;
 	switch (errorCode)
@@ -125,4 +125,5 @@ void CameraControler::showMessageBox(QWidget *parent)
 		warningMessage + "    \n" +
 		"CameraControler: ErrorCode: " + QString::number(errorCode),
 		QString::fromLocal8Bit("确定"));
+	return true;
 }

@@ -1,12 +1,12 @@
 #include "DetectThread.h"
 
-using Ui::CvMatVector;
-using Ui::DetectConfig;
-using Ui::DetectParams;
-using Ui::DetectResult;
-using Ui::QPixmapVector;
-using Ui::QImageVector;
-using Ui::QImageArray;
+using pcb::CvMatVector;
+using pcb::DetectConfig;
+using pcb::DetectParams;
+using pcb::DetectResult;
+using pcb::QPixmapVector;
+using pcb::QImageVector;
+using pcb::QImageArray;
 
 
 DetectThread::DetectThread()

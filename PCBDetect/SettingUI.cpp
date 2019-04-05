@@ -1,9 +1,7 @@
 #include "SettingUI.h"
 
-using Ui::DetectConfig;
+using pcb::DetectConfig;
 
-typedef Ui::DetectConfig::ErrorCode ConfigErrorCode;
-typedef Ui::DetectConfig::ConfigIndex ConfigIndex;
 
 SettingUI::SettingUI(QWidget *parent)
 	: QWidget(parent)
@@ -21,6 +19,17 @@ SettingUI::SettingUI(QWidget *parent)
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imageFormat()));
+
+	//系统参数设置的登录界面
+	passWordUI.setWindowFlags(passWordUI.windowFlags() | Qt::Dialog);
+	passWordUI.setWindowModality(Qt::ApplicationModal);
+
+	connect(&passWordUI, SIGNAL(showAdminSettingUI_pswdUI()), this, SLOT(do_showAdminSettingUI_pswdUI()));
+	connect(&passWordUI, SIGNAL(closePassWordUI_pswdUI()), this, SLOT(on_closePassWordUI_pswdUI()));
+
+	//系统参数设置界面
+	adminSettingUI.setAdminConfig(adminConfig);
+	connect(&adminSettingUI, SIGNAL(showSettingUI_adminSettingUI()), this, SLOT(do_showSettingUI_adminSettingUI()));
 }
 
 SettingUI::~SettingUI()
@@ -32,7 +41,13 @@ SettingUI::~SettingUI()
 
 void SettingUI::initSettingUI()
 {
+	//按键设置
+	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
+	this->setPushButtonsToEnabled(false);
+	this->setPushButtonsToEnabled(true);
+
 	//限制参数的输入范围
+	QIntValidator intValidator;
 	ui.lineEdit_nCamera->setValidator(&intValidator);
 	ui.lineEdit_nPhotographing->setValidator(&intValidator);
 	ui.lineEdit_nBasicUnitInRow->setValidator(&intValidator);
@@ -44,23 +59,23 @@ void SettingUI::initSettingUI()
 //更新界面
 void SettingUI::refreshSettingUI()
 {
-	ui.lineEdit_SampleDirPath->setText(config->SampleDirPath);
-	ui.lineEdit_TemplDirPath->setText(config->TemplDirPath);
-	ui.lineEdit_OutputDirPath->setText(config->OutputDirPath);
+	ui.lineEdit_SampleDirPath->setText(detectConfig->SampleDirPath);
+	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
+	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
 
-	QString format = config->ImageFormat.toLower();
+	QString format = detectConfig->ImageFormat.toLower();
 	if (format == ".bmp") ui.comboBox_ImageFormat->setCurrentText("    *.bmp");
 	else if (format == ".jpg") ui.comboBox_ImageFormat->setCurrentText("    *.jpg");
 	else if (format == ".png") ui.comboBox_ImageFormat->setCurrentText("    *.png");
 	else if (format == ".tif" || format == ".tiff") ui.comboBox_ImageFormat->setCurrentText("    *.tif");
 
-	ui.lineEdit_nCamera->setText(QString::number(config->nCamera));
-	ui.lineEdit_nPhotographing->setText(QString::number(config->nPhotographing));
-	ui.lineEdit_nBasicUnitInRow->setText(QString::number(config->nBasicUnitInRow));
-	ui.lineEdit_nBasicUnitInCol->setText(QString::number(config->nBasicUnitInCol));
+	ui.lineEdit_nCamera->setText(QString::number(detectConfig->nCamera));
+	ui.lineEdit_nPhotographing->setText(QString::number(detectConfig->nPhotographing));
+	ui.lineEdit_nBasicUnitInRow->setText(QString::number(detectConfig->nBasicUnitInRow));
+	ui.lineEdit_nBasicUnitInCol->setText(QString::number(detectConfig->nBasicUnitInCol));
 
-	ui.lineEdit_ImageAspectRatio_W->setText(QString::number(config->ImageAspectRatio_W));
-	ui.lineEdit_ImageAspectRatio_H->setText(QString::number(config->ImageAspectRatio_H));
+	ui.lineEdit_ImageAspectRatio_W->setText(QString::number(detectConfig->ImageAspectRatio_W));
+	ui.lineEdit_ImageAspectRatio_H->setText(QString::number(detectConfig->ImageAspectRatio_H));
 }
 
 
@@ -69,22 +84,22 @@ void SettingUI::refreshSettingUI()
 //选择样本文件夹的路径
 void SettingUI::on_pushButton_SampleDirPath_clicked()
 {
-	selectDirPath(config->SampleDirPath);
-	ui.lineEdit_SampleDirPath->setText(config->SampleDirPath);
+	selectDirPath(detectConfig->SampleDirPath);
+	ui.lineEdit_SampleDirPath->setText(detectConfig->SampleDirPath);
 }
 
 //选择模板文件夹的路径
 void SettingUI::on_pushButton_TemplDirPath_clicked()
 {
-	selectDirPath(config->TemplDirPath);
-	ui.lineEdit_TemplDirPath->setText(config->TemplDirPath);
+	selectDirPath(detectConfig->TemplDirPath);
+	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
 }
 
 //选择输出文件夹的路径
 void SettingUI::on_pushButton_OutputDirPath_clicked()
 {
-	selectDirPath(config->OutputDirPath);
-	ui.lineEdit_OutputDirPath->setText(config->OutputDirPath);
+	selectDirPath(detectConfig->OutputDirPath);
+	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
 }
 
 //确认键
@@ -97,11 +112,11 @@ void SettingUI::on_pushButton_confirm_clicked()
 	getConfigFromSettingUI();
 
 	//检查界面上config的有效性
-	ConfigErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
+	DetectConfig::ErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
 	if (code != DetectConfig::ValidConfig) { //参数无效则报错
-		DetectConfig::showMessageBox(this, code);
-		this->setPushButtonsToEnabled(true);//将返回按键设为可点击
-		ConfigIndex index = DetectConfig::convertCodeToIndex(code);
+		tempConfig.showMessageBox(this);
+		this->setPushButtonsToEnabled(true);//将按键设为可点击
+		DetectConfig::ConfigIndex index = DetectConfig::convertCodeToIndex(code);
 		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
 		return;
 	}
@@ -110,17 +125,16 @@ void SettingUI::on_pushButton_confirm_clicked()
 	this->setCursorLocation(DetectConfig::Index_None);
 
 	//判断是否重置检测系统
-	int resetCode = config->getSystemResetCode(tempConfig);
+	int resetCode = detectConfig->getSystemResetCode(tempConfig);
 
 	//将临时配置拷贝到config中
-	tempConfig.copyTo(*config);
+	tempConfig.copyTo(detectConfig);
 
 	//重置系统
 	emit resetDetectSystem_settingUI(resetCode); //判断是否重置检测系统
 
 	//将参数保存到config文件中
-	QString configFileName = ".user.config";
-	Configurator::saveConfigFile(configFileName, config);
+	pcb::Configurator::saveConfigFile(configFileName, detectConfig);
 
 	//向主界面发送消息
 	emit checkSystemWorkingState_settingUI(); //检查系统的工作状态
@@ -135,11 +149,21 @@ void SettingUI::on_pushButton_return_clicked()
 	emit showDetectMainUI();
 }
 
+//系统参数设置
+void SettingUI::on_pushButton_admin_clicked()
+{
+	//设置窗口始终置顶
+	passWordUI.show();
+	//设置按键
+	this->setPushButtonsToEnabled(false);
+}
+
 //设置按键的可点击状态
 void SettingUI::setPushButtonsToEnabled(bool code)
 {
-	ui.pushButton_confirm->setEnabled(code);
-	ui.pushButton_return->setEnabled(code);
+	ui.pushButton_confirm->setEnabled(code);//确认
+	ui.pushButton_return->setEnabled(code);//返回
+	ui.pushButton_admin->setEnabled(code);//系统设置
 }
 
 /************** comboBox的槽函数 *****************/
@@ -166,6 +190,8 @@ void SettingUI::on_currentIndexChanged_imageFormat()
 //从设置界面上获取参数
 void SettingUI::getConfigFromSettingUI()
 {
+	tempConfig.resetErrorCode(); //重置错误代码
+
 	tempConfig.SampleDirPath = ui.lineEdit_SampleDirPath->text(); //样本路径
 	tempConfig.TemplDirPath = ui.lineEdit_TemplDirPath->text(); //模板路径
 	tempConfig.OutputDirPath = ui.lineEdit_OutputDirPath->text();//输出路径
@@ -176,9 +202,9 @@ void SettingUI::getConfigFromSettingUI()
 	tempConfig.ImageAspectRatio_W = ui.lineEdit_ImageAspectRatio_W->text().toInt();//样本图像的宽高比
 	tempConfig.ImageAspectRatio_H = ui.lineEdit_ImageAspectRatio_H->text().toInt();//样本图像的宽高比
 	
-	ConfigErrorCode code = tempConfig.calcImageAspectRatio();
+	DetectConfig::ErrorCode code = tempConfig.calcImageAspectRatio();
 	if (code != DetectConfig::ValidConfig) 
-		DetectConfig::showMessageBox(this, DetectConfig::Invalid_ImageAspectRatio); 
+		detectConfig->showMessageBox(this, code); 
 }
 
 /****************** 其他 ******************/
@@ -197,40 +223,71 @@ void SettingUI::selectDirPath(QString &path)
 }
 
 //设置光标的位置
-void SettingUI::setCursorLocation(ConfigIndex code)
+void SettingUI::setCursorLocation(DetectConfig::ConfigIndex code)
 {
 	int textLen;
 	switch (code)
 	{
-	case Ui::DetectConfig::Index_All:
+	case pcb::DetectConfig::Index_All:
 		break;
-	case Ui::DetectConfig::Index_None:
+	case pcb::DetectConfig::Index_None:
 		ui.lineEdit_SampleDirPath->setFocus(); 
 		ui.lineEdit_SampleDirPath->clearFocus();
 		break;
-	case Ui::DetectConfig::Index_SampleDirPath:
+	case pcb::DetectConfig::Index_SampleDirPath:
 		textLen = ui.lineEdit_SampleDirPath->text().length();
 		ui.lineEdit_SampleDirPath->setCursorPosition(textLen);
 		ui.lineEdit_SampleDirPath->setFocus(); break;
-	case Ui::DetectConfig::Index_TemplDirPath:
+	case pcb::DetectConfig::Index_TemplDirPath:
 		ui.lineEdit_TemplDirPath->setFocus(); break;
-	case Ui::DetectConfig::Index_OutputDirPath:
+	case pcb::DetectConfig::Index_OutputDirPath:
 		ui.lineEdit_OutputDirPath->setFocus(); break;
-	case Ui::DetectConfig::Index_ImageFormat:
+	case pcb::DetectConfig::Index_ImageFormat:
 		break;
-	case Ui::DetectConfig::Index_nCamera:
+	case pcb::DetectConfig::Index_nCamera:
 		ui.lineEdit_nCamera->setFocus(); break;
-	case Ui::DetectConfig::Index_nPhotographing:
+	case pcb::DetectConfig::Index_nPhotographing:
 		ui.lineEdit_nPhotographing->setFocus(); break;
-	case Ui::DetectConfig::Index_nBasicUnitInRow:
+	case pcb::DetectConfig::Index_nBasicUnitInRow:
 		ui.lineEdit_nBasicUnitInRow->setFocus(); break;
-	case Ui::DetectConfig::Index_nBasicUnitInCol:
+	case pcb::DetectConfig::Index_nBasicUnitInCol:
 		ui.lineEdit_nBasicUnitInCol->setFocus(); break;
-	case Ui::DetectConfig::Index_ImageAspectRatio_W:
+	case pcb::DetectConfig::Index_ImageAspectRatio_W:
 		ui.lineEdit_ImageAspectRatio_W->setFocus(); break;
-	case Ui::DetectConfig::Index_ImageAspectRatio_H:
+	case pcb::DetectConfig::Index_ImageAspectRatio_H:
 		ui.lineEdit_ImageAspectRatio_H->setFocus(); break;
-	case Ui::DetectConfig::Index_ImageAspectRatio:
+	case pcb::DetectConfig::Index_ImageAspectRatio:
 		break;
 	}
+}
+
+
+/****************** 系统参数登录界面 *******************/
+
+void SettingUI::on_closePassWordUI_pswdUI()
+{
+	//将系统参数按键设为可点击
+	this->setPushButtonsToEnabled(true);//设置按键
+}
+
+//显示系统参数设置界面
+void SettingUI::do_showAdminSettingUI_pswdUI()
+{
+	adminSettingUI.setAdminConfig(adminConfig);
+	adminSettingUI.refreshAdminSettingUI();
+	pcb::delay(10);
+	adminSettingUI.showFullScreen();
+	pcb::delay(10);
+	this->hide(); //隐藏参数设置界面
+	this->setPushButtonsToEnabled(true);//设置按键
+}
+
+/****************** 系统参数设置界面 *******************/
+
+//由系统参数设置界面返回参数设置界面
+void SettingUI::do_showSettingUI_adminSettingUI()
+{
+	this->showFullScreen();
+	pcb::delay(10);
+	adminSettingUI.hide();
 }

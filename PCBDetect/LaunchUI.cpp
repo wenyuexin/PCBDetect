@@ -1,6 +1,6 @@
 #include "LaunchUI.h"
 
-using Ui::DetectConfig;
+using pcb::DetectConfig;
 
 LaunchUI::LaunchUI(QWidget *parent, QPixmap *pixmap)
 	: QWidget(parent)
@@ -34,7 +34,7 @@ void LaunchUI::runInitThread()
 
 	//初始化线程的信号连接
 	connect(initThread, SIGNAL(sysInitStatus_initThread(QString)), this, SLOT(update_sysInitStatus_initThread(QString)));
-	connect(initThread, SIGNAL(configError_initThread(int)), this, SLOT(on_configError_initThread(int)));
+	connect(initThread, SIGNAL(configError_initThread()), this, SLOT(on_configError_initThread()));
 	connect(initThread, SIGNAL(cameraError_initThread()), this, SLOT(on_cameraError_initThread()));
 	connect(initThread, SIGNAL(sysInitFinished_initThread()), this, SLOT(on_sysInitFinished_initThread()));
 
@@ -43,22 +43,22 @@ void LaunchUI::runInitThread()
 }
 
 //用户参数的初始化错误提示
-void LaunchUI::on_configError_initThread(int errorCode)
+void LaunchUI::on_configError_initThread()
 {
-	DetectConfig::showMessageBox(this, (DetectConfig::ErrorCode) errorCode);
-	Ui::delay(10); //延时
+	detectConfig->showMessageBox(this);
+	pcb::delay(10); //延时
 	update_sysInitStatus_initThread(QString::fromLocal8Bit("历史参数配置获取结束  "));
-	Ui::delay(1000); //延时
-	emit launchFinished_launchUI(errorCode);
+	pcb::delay(1000); //延时
+	emit launchFinished_launchUI(detectConfig->getErrorCode());
 }
 
 //相机的的初始化错误提示
 void LaunchUI::on_cameraError_initThread()
 {
 	cameraControler->showMessageBox(this); //弹窗警告
-	Ui::delay(10); //延时
+	pcb::delay(10); //延时
 	update_sysInitStatus_initThread(QString::fromLocal8Bit("相机初始化结束    "));
-	Ui::delay(600); //延时
+	pcb::delay(600); //延时
 	emit launchFinished_launchUI(cameraControler->getErrorCode());
 }
 
@@ -74,6 +74,6 @@ void LaunchUI::update_sysInitStatus_initThread(QString status)
 void LaunchUI::on_sysInitFinished_initThread()
 {
 	update_sysInitStatus_initThread(QString::fromLocal8Bit("初始化结束,系统已启动  "));
-	Ui::delay(1000); //延时
+	pcb::delay(1000); //延时
 	emit launchFinished_launchUI(0);
 }

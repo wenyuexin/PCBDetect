@@ -10,8 +10,8 @@
 class TemplFunc {
 
 private:
-	Ui::DetectConfig* config;
-	Ui::DetectParams* params;
+	pcb::DetectConfig* config;
+	pcb::DetectParams* params;
 
 	cv::Point minloc, maxloc;//最小值位置，最大值位置，
 	int i, j;
@@ -23,8 +23,8 @@ public:
 	TemplFunc() = default;
 	~TemplFunc(){};
 
-	void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
-	void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
+	void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
 
 	void generateBigTempl();
 	cv::Mat find1(int currentCol, cv::Mat &image);

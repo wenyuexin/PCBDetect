@@ -87,6 +87,12 @@
     <ClCompile Include="SerialNumberUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AdminSettingUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PassWordUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="PCBDetect.h">
@@ -134,6 +140,12 @@
     <QtMoc Include="SerialNumberUI.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="AdminSettingUI.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="PassWordUI.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="PCBDetect.ui">
@@ -152,6 +164,12 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="SerialNumberUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="AdminSettingUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="PassWordUI.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

@@ -34,9 +34,9 @@ private:
 	MotionControler motionControler;//运动控制器
 	CameraControler cameraControler;//相机控制器
 	QString IconFolder; //图标文件夹
-	Ui::AdminConfig adminConfig; //管理员参数
-	Ui::DetectConfig detectConfig; //参数配置
-	Ui::DetectParams detectParams; //临时变量
+	pcb::AdminConfig adminConfig; //系统参数
+	pcb::DetectConfig detectConfig; //用户参数
+	pcb::DetectParams detectParams; //临时变量
 
 public:
 	PCBDetect(QWidget *parent = Q_NULLPTR);

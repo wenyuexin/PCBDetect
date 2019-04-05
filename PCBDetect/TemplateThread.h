@@ -13,10 +13,10 @@ class TemplateThread : public QThread
 
 private:
 	TemplateExtractor *templExtractor;
-	Ui::DetectConfig *config;
-	Ui::DetectParams *params;
-	Ui::QImageArray *qimages;
-	Ui::CvMatArray cvmats;
+	pcb::DetectConfig *config;
+	pcb::DetectParams *params;
+	pcb::QImageArray *qimages;
+	pcb::CvMatArray cvmats;
 	TemplFunc *templFunc = Q_NULLPTR;
 
 	std::vector<ImageConverter *> threads; //格式转换线程
@@ -28,9 +28,9 @@ public:
 	~TemplateThread();
 
 	inline void setTemplateExtractor(TemplateExtractor *ptr = Q_NULLPTR) { templExtractor = ptr; }
-	inline void setSampleImages(Ui::QImageArray *ptr = Q_NULLPTR) { qimages = ptr; }
-	inline void setDetectParams(Ui::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
-	inline void setDetectConfig(Ui::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
+	inline void setSampleImages(pcb::QImageArray *ptr = Q_NULLPTR) { qimages = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
 
 	void initTemplFunc();
 

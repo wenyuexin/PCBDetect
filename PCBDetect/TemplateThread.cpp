@@ -1,11 +1,11 @@
 #include "TemplateThread.h"
 
-using Ui::DetectConfig;
-using Ui::QImageVector;
-using Ui::CvMatVector;
-using Ui::CvMatArray;
-using Ui::QImageArray;
-using Ui::DetectParams;
+using pcb::DetectConfig;
+using pcb::QImageVector;
+using pcb::CvMatVector;
+using pcb::CvMatArray;
+using pcb::QImageArray;
+using pcb::DetectParams;
 using cv::Size;
 using cv::Mat;
 

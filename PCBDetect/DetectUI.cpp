@@ -1,8 +1,8 @@
 #include "DetectUI.h"
 #include <time.h>
 
-using Ui::DetectConfig;
-using Ui::DetectParams;
+using pcb::DetectConfig;
+using pcb::DetectParams;
 
 
 DetectUI::DetectUI(QWidget *parent)
@@ -418,7 +418,7 @@ void DetectUI::update_detectState_detectCore(int state)
 		qApp->processEvents();
 
 		//检查是否有未处理的事件
-		while (detectThread->isRunning()) Ui::delay(100);
+		while (detectThread->isRunning()) pcb::delay(100);
 		if (isStarted && eventCounter > 0) detectSampleImages();
 	}
 }

@@ -18,12 +18,12 @@ class ImgConvertThread : public QThread
 	Q_OBJECT
 
 private:
-	//Ui::DetectConfig *config;
-	//Ui::DetectParams *params;
+	//pcb::DetectConfig *config;
+	//pcb::DetectParams *params;
 
-	Ui::CvMatArray *cvmats = Q_NULLPTR;
-	Ui::QPixmapArray *qpixmaps = Q_NULLPTR;
-	Ui::QImageArray *qimages = Q_NULLPTR;
+	pcb::CvMatArray *cvmats = Q_NULLPTR;
+	pcb::QPixmapArray *qpixmaps = Q_NULLPTR;
+	pcb::QImageArray *qimages = Q_NULLPTR;
 
 	std::vector<ImageConverter *> converters; //格式转换线程
 	int ConvertersNum = 15; //转换线程的总数不超过15
@@ -34,12 +34,12 @@ public:
 	ImgConvertThread(QObject *parent = Q_NULLPTR);
 	~ImgConvertThread();
 
-	//inline void setDetectParams(Ui::DetectParams *ptr) { params = ptr; }
-	//inline void setDetectConfig(Ui::DetectConfig *ptr) { config = ptr; }
+	//inline void setDetectParams(pcb::DetectParams *ptr) { params = ptr; }
+	//inline void setDetectConfig(pcb::DetectConfig *ptr) { config = ptr; }
 
-	inline void setQImages(Ui::QImageArray *ptr) { qimages = ptr; }
-	inline void setQPixmaps(Ui::QPixmapArray *ptr) { qpixmaps = ptr; }
-	inline void setCvMats(Ui::CvMatArray *ptr) { cvmats = ptr; }
+	inline void setQImages(pcb::QImageArray *ptr) { qimages = ptr; }
+	inline void setQPixmaps(pcb::QPixmapArray *ptr) { qpixmaps = ptr; }
+	inline void setCvMats(pcb::CvMatArray *ptr) { cvmats = ptr; }
 	inline void setCvtCode(ImageConverter::CvtCode code) { cvtCode = code; }
 	inline void setCurrentRow(int *row) { currentRow = row; }
 
@@ -47,10 +47,10 @@ private:
 	void initImageConverters();
 	void deleteImageConverters();
 
-	void convertQImageToCvMat(const Ui::QImageVector &src, Ui::CvMatVector &dst);
-	void convertQPixmapToCvMat(const Ui::QPixmapVector &src, Ui::CvMatVector &dst);
-	void convertCvMatToQImage(const Ui::CvMatVector &src, Ui::QImageVector &dst);
-	void convertCvMatToQPixmap(const Ui::CvMatVector &src, Ui::QPixmapVector &dst);
+	void convertQImageToCvMat(const pcb::QImageVector &src, pcb::CvMatVector &dst);
+	void convertQPixmapToCvMat(const pcb::QPixmapVector &src, pcb::CvMatVector &dst);
+	void convertCvMatToQImage(const pcb::CvMatVector &src, pcb::QImageVector &dst);
+	void convertCvMatToQPixmap(const pcb::CvMatVector &src, pcb::QPixmapVector &dst);
 
 protected:
 	void run();
