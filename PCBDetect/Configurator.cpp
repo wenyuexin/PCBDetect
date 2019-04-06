@@ -10,11 +10,32 @@ using pcb::DetectParams;
 /*                   DetectConfig                   */
 /****************************************************/
 
+//加载默认值
+void DetectConfig::loadDefaultValue() 
+{
+	QDir dir(QDir::currentPath());
+	dir.cdUp(); //转到上一级目录
+	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
+
+	this->errorCode = Uncheck; //错误代码
+	this->SampleDirPath = appDirPath + "/sample"; //样本文件存储路径
+	this->TemplDirPath = appDirPath + "/template";//模板文件的存储路径
+	this->OutputDirPath = appDirPath + "/output";//检测结果存储路径
+	this->ImageFormat = ".bmp"; //图像后缀
+	this->nCamera = 5; //相机个数
+	this->nPhotographing = 4; //拍照次数
+	this->nBasicUnitInRow = 4; //每一行中的基本单元数
+	this->nBasicUnitInCol = 6; //每一列中的基本单元数
+	this->ImageAspectRatio_W = 4; //宽高比中的宽
+	this->ImageAspectRatio_H = 3; //宽高比中的高
+	this->ImageAspectRatio = 4.0 / 3.0; //样本图像的宽高比
+}
+
 //参数有效性检查
 DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
 {
-	if (errorCode == ValidConfig)
-		return errorCode;
+	if (this->errorCode == ValidConfig)
+		return this->errorCode;
 
 	ErrorCode code = Uncheck;
 	switch (index)
@@ -62,97 +83,49 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
 	}
 
 	if (code == Uncheck) code = ValidConfig;
-	if (code != ValidConfig || index == Index_All) errorCode = code;
+	if (code != ValidConfig || index == Index_All) this->errorCode = code;
 	return code;
 }
 
 //判断参数是否有效
 bool DetectConfig::isValid() {
-	if (errorCode == DetectConfig::Uncheck)
+	if (this->errorCode == DetectConfig::Uncheck)
 		checkValidity(Index_All);
-	return errorCode == ValidConfig;
+	return this->errorCode == ValidConfig;
 }
 
-//计算宽高比
-DetectConfig::ErrorCode DetectConfig::calcImageAspectRatio() {
-	ErrorCode code = checkValidity(Index_ImageAspectRatio_W);
-	if (code != ValidValue) return errorCode = code;
-	code = checkValidity(Index_ImageAspectRatio_H);
-	if (code != ValidValue) return errorCode = code;
-	ImageAspectRatio = 1.0 * ImageAspectRatio_W / ImageAspectRatio_H;
-	return ValidValue;
-}
-
-//功能：判断是否需要重置系统
-//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
-//      0b1234 第1位置位，则表示重置模板提取模块
-//             第2位置位，则表示重置检测模块
-//             第3位置位，则表示重置运动结构
-//             第4位置位，则表示重置相机
-int DetectConfig::getSystemResetCode(DetectConfig &newConfig) {
-	int resetCode = 0b0000;
-	if (nCamera != newConfig.nCamera) resetCode |= 0x1100;
-	if (nPhotographing != newConfig.nPhotographing) resetCode |= 0x1100;
-	if (ImageAspectRatio_W != newConfig.ImageAspectRatio_W || ImageAspectRatio_H != newConfig.ImageAspectRatio_H) {
-		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) < 1E-5) resetCode |= 0x1100;
+//将错误代码转为参数索引
+DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code) 
+{
+	switch (code)
+	{
+	case pcb::DetectConfig::ValidConfig:
+		return Index_None;
+	case pcb::DetectConfig::Invalid_SampleDirPath:
+		return Index_SampleDirPath;
+	case pcb::DetectConfig::Invalid_TemplDirPath:
+		return Index_TemplDirPath;
+	case pcb::DetectConfig::Invalid_OutputDirPath:
+		return Index_OutputDirPath;
+	case pcb::DetectConfig::Invalid_ImageFormat:
+		return Index_ImageFormat;
+	case pcb::DetectConfig::Invalid_nCamera:
+		return Index_nCamera;
+	case pcb::DetectConfig::Invalid_nPhotographing:
+		return Index_nPhotographing;
+	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
+		return Index_nBasicUnitInRow;
+	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
+		return Index_nBasicUnitInCol;
+	case pcb::DetectConfig::Invalid_ImageAspectRatio_W:
+		return Index_ImageAspectRatio_W;
+	case pcb::DetectConfig::Invalid_ImageAspectRatio_H:
+		return Index_ImageAspectRatio_H;
+	case pcb::DetectConfig::Invalid_ImageAspectRatio:
+		return Index_ImageAspectRatio;
 	}
-	if (nCamera > newConfig.nCamera) resetCode |= 0x0001;
-	return resetCode;
-}
-
-//不相等判断
-DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
-	if (SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
-	if (TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
-	if (OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
-	if (ImageFormat != other.ImageFormat) return Index_ImageFormat;
-	if (nCamera != other.nCamera) return Index_nCamera;
-	if (nPhotographing != other.nPhotographing) return Index_nPhotographing;
-	if (nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
-	if (nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
-	if (ImageAspectRatio_W != other.ImageAspectRatio_W) return Index_ImageAspectRatio_W;
-	if (ImageAspectRatio_H != other.ImageAspectRatio_H) return Index_ImageAspectRatio_H;
 	return Index_None;
 }
-
-//拷贝结构体
-void DetectConfig::copyTo(DetectConfig *other) 
-{
-	other->errorCode = errorCode; //参数有效性
-	other->SampleDirPath = SampleDirPath; //样本文件存储路径
-	other->TemplDirPath = TemplDirPath;//模板文件的存储路径
-	other->OutputDirPath = OutputDirPath;//检测结果存储路径
-	other->ImageFormat = ImageFormat; //图像后缀
-	other->nCamera = nCamera; //相机个数
-	other->nPhotographing = nPhotographing; //拍照次数
-	other->nBasicUnitInRow = nBasicUnitInRow; //每一行中的基本单元数
-	other->nBasicUnitInCol = nBasicUnitInCol; //每一列中的基本单元数
-	other->ImageAspectRatio_W = ImageAspectRatio_W; //宽高比中的宽
-	other->ImageAspectRatio_H = ImageAspectRatio_H; //宽高比中的高
-	other->ImageAspectRatio = ImageAspectRatio; //样本图像的宽高比
-}
-
-//加载默认值
-void DetectConfig::loadDefaultValue() 
-{
-	QDir dir(QDir::currentPath());
-	dir.cdUp(); //转到上一级目录
-	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
-
-	errorCode = Uncheck; //参数有效性
-	SampleDirPath = appDirPath + "/sample"; //样本文件存储路径
-	TemplDirPath = appDirPath + "/template";//模板文件的存储路径
-	OutputDirPath = appDirPath + "/output";//检测结果存储路径
-	ImageFormat = ".bmp"; //图像后缀
-	nCamera = 5; //相机个数
-	nPhotographing = 4; //拍照次数
-	nBasicUnitInRow = 4; //每一行中的基本单元数
-	nBasicUnitInCol = 6; //每一列中的基本单元数
-	ImageAspectRatio_W = 4; //宽高比中的宽
-	ImageAspectRatio_H = 3; //宽高比中的高
-	ImageAspectRatio = 4.0 / 3.0; //样本图像的宽高比
-}
-
 
 //参数报错
 bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
@@ -202,37 +175,63 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	return true;
 }
 
-//将错误代码转为参数索引
-DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code) 
-{
-	switch (code)
-	{
-	case pcb::DetectConfig::ValidConfig:
-		return Index_None;
-	case pcb::DetectConfig::Invalid_SampleDirPath:
-		return Index_SampleDirPath;
-	case pcb::DetectConfig::Invalid_TemplDirPath:
-		return Index_TemplDirPath;
-	case pcb::DetectConfig::Invalid_OutputDirPath:
-		return Index_OutputDirPath;
-	case pcb::DetectConfig::Invalid_ImageFormat:
-		return Index_ImageFormat;
-	case pcb::DetectConfig::Invalid_nCamera:
-		return Index_nCamera;
-	case pcb::DetectConfig::Invalid_nPhotographing:
-		return Index_nPhotographing;
-	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
-		return Index_nBasicUnitInRow;
-	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
-		return Index_nBasicUnitInCol;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_W:
-		return Index_ImageAspectRatio_W;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_H:
-		return Index_ImageAspectRatio_H;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio:
-		return Index_ImageAspectRatio;
-	}
+//计算宽高比
+DetectConfig::ErrorCode DetectConfig::calcImageAspectRatio() {
+	ErrorCode code = checkValidity(Index_ImageAspectRatio_W);
+	if (code != ValidValue) return this->errorCode = code;
+	code = checkValidity(Index_ImageAspectRatio_H);
+	if (code != ValidValue) return this->errorCode = code;
+	ImageAspectRatio = 1.0 * ImageAspectRatio_W / ImageAspectRatio_H;
+	return ValidValue;
+}
+
+//不相等判断
+DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
+	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
+	if (this->TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
+	if (this->OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
+	if (this->ImageFormat != other.ImageFormat) return Index_ImageFormat;
+	if (this->nCamera != other.nCamera) return Index_nCamera;
+	if (this->nPhotographing != other.nPhotographing) return Index_nPhotographing;
+	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
+	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
+	if (this->ImageAspectRatio_W != other.ImageAspectRatio_W) return Index_ImageAspectRatio_W;
+	if (this->ImageAspectRatio_H != other.ImageAspectRatio_H) return Index_ImageAspectRatio_H;
 	return Index_None;
+}
+
+//功能：获取系统重置代码
+//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
+//      0b1234 第1位置位，则表示重置模板提取模块
+//             第2位置位，则表示重置检测模块
+//             第3位置位，则表示重置运动结构
+//             第4位置位，则表示重置相机
+int DetectConfig::getSystemResetCode(DetectConfig &newConfig) {
+	int resetCode = 0b0000;
+	if (nCamera != newConfig.nCamera) resetCode |= 0x1100;
+	if (nPhotographing != newConfig.nPhotographing) resetCode |= 0x1100;
+	if (ImageAspectRatio_W != newConfig.ImageAspectRatio_W || ImageAspectRatio_H != newConfig.ImageAspectRatio_H) {
+		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) < 1E-5) resetCode |= 0x1100;
+	}
+	if (nCamera > newConfig.nCamera) resetCode |= 0x0001;
+	return resetCode;
+}
+
+//拷贝结构体
+void DetectConfig::copyTo(DetectConfig *dst) 
+{
+	dst->errorCode = this->errorCode; //参数有效性
+	dst->SampleDirPath = this->SampleDirPath; //样本文件存储路径
+	dst->TemplDirPath = this->TemplDirPath;//模板文件的存储路径
+	dst->OutputDirPath = this->OutputDirPath;//检测结果存储路径
+	dst->ImageFormat = this->ImageFormat; //图像后缀
+	dst->nCamera = this->nCamera; //相机个数
+	dst->nPhotographing = this->nPhotographing; //拍照次数
+	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
+	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
+	dst->ImageAspectRatio_W = this->ImageAspectRatio_W; //宽高比中的宽
+	dst->ImageAspectRatio_H = this->ImageAspectRatio_H; //宽高比中的高
+	dst->ImageAspectRatio = this->ImageAspectRatio; //样本图像的宽高比
 }
 
 
@@ -240,6 +239,14 @@ DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code)
 /****************************************************/
 /*                   AdminConfig                    */
 /****************************************************/
+
+//加载默认参数
+void AdminConfig::loadDefaultValue()
+{
+	this->errorCode = Uncheck; //错误代码
+	this->MaxMotionStroke = 80*5; //机械结构的最大运动行程
+	this->MaxCameraNum = 5; //可用相机的总数
+}
 
 //参数有效性检查
 AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index)
@@ -269,6 +276,21 @@ bool AdminConfig::isValid()
 	if (errorCode == AdminConfig::Uncheck)
 		checkValidity(Index_All);
 	return errorCode == ValidConfig;
+}
+
+//错误代码转参数索引
+AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
+{
+	switch (code)
+	{
+		case pcb::AdminConfig::ValidConfig:
+			return Index_None;
+		case  pcb::AdminConfig::Invalid_MaxMotionStroke,
+			return Index_MaxMotionStroke;
+		case pcb::AdminConfig::Invalid_MaxCameraNum,
+			return Index_MaxCameraNum;
+	}
+	return Index_None;
 }
 
 //弹窗报错
@@ -302,6 +324,40 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 		"Config: Admin: ErrorCode: " + QString::number(tempCode),
 		QString::fromLocal8Bit("确定"));
 	return true;
+}
+
+//不相等判断
+AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
+{
+	if (this->MaxMotionStroke != other.MaxMotionStroke) return Index_MaxMotionStroke;
+	if (this->MaxCameraNum != other.MaxCameraNum) return Index_MaxCameraNum;
+	return Index_None;
+}
+
+//功能：获取系统重置代码
+//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
+//      0b1234 第1位置位，则表示重置模板提取模块
+//             第2位置位，则表示重置检测模块
+//             第3位置位，则表示重置运动结构
+//             第4位置位，则表示重置相机
+int getSystemResetCode(AdminConfig &newConfig)
+{
+	int resetCode = 0b0000;
+
+	//重置运动结构模块
+	if (this->MaxMotionStroke != newConfig.MaxMotionStroke) resetCode |= 0x0010;
+	//重置相机模块
+	if (this->MaxCameraNum != newConfig.MaxCameraNum) resetCode |= 0x0001;
+	
+	return resetCode;
+}
+
+//拷贝结构体
+void copyTo(AdminConfig *dst)
+{
+	dst->errorCode = this->errorCode;
+	dst->MaxMotionStroke = this->MaxMotionStroke;
+	dst->MaxCameraNum = this->MaxCameraNum;
 }
 
 
@@ -493,7 +549,7 @@ QString Configurator::decrypt(const char* origin) const
 
 /****************** 配置类的读写 ********************/
 
-//将配置文件中的参数加载到config中
+//将配置文件中的参数加载到DetectConfig中
 bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 {
 	bool success = true;
@@ -523,10 +579,10 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 	return success;
 }
 
-//将config中的参数保存到配置文件中
+//将 DetectConfig 中的参数保存到配置文件中
 bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 {
-	bool flag = true;
+	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
 	QFile configFile(configFilePath);
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
@@ -534,7 +590,7 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 		DetectConfig defaultConfig;
 		defaultConfig.loadDefaultValue();//加载默认值
 		saveConfigFile(fileName, &defaultConfig);//保存默认config
-		flag = false;
+		success = false;
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
@@ -551,17 +607,50 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonSetValue("ImageAspectRatio", QString::number(config->ImageAspectRatio, 'g', 7)); //样本图像的宽高比
 		configFile.close();
 	}
-	return flag;
+	return success;
 }
 
+//将配置文件中的参数加载到 AdminConfig 中
 bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 {
-	return true;
+	bool success = true;
+	QString configFilePath = QDir::currentPath() + "/" + fileName;
+	QFile configFile(configFilePath);
+	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
+		createConfigFile(configFilePath);//创建配置文件
+		config->loadDefaultValue();//加载默认值
+		saveConfigFile(fileName, config);//保存默认config
+		success = false;
+	}
+	else { //文件存在，并且可以正常读写
+		Configurator configurator(&configFile);
+		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke);
+		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum);
+		configFile.close();
+	}
+	return success;
 }
 
+//将 AdminConfig 中的参数保存到配置文件中
 bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 {
-	return true;
+	bool success = true;
+	QString configFilePath = QDir::currentPath() + "/" + fileName;
+	QFile configFile(configFilePath);
+	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
+		createConfigFile(configFilePath);
+		DetectConfig defaultConfig;
+		defaultConfig.loadDefaultValue();//加载默认值
+		saveConfigFile(fileName, &defaultConfig);//保存默认config
+		success = false;
+	}
+	else { //文件存在，并且可以正常读写
+		Configurator configurator(&configFile);
+		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke);
+		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum);
+		configFile.close();
+	}
+	return success;
 }
 
 /******************* 暂时没用 ********************/
