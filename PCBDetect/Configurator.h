@@ -83,8 +83,12 @@ namespace pcb
 		QString TemplDirPath;//模板文件的存储路径
 		QString OutputDirPath;//检测结果存储路径
 		QString ImageFormat; //图像后缀
+
+		int ActualProductSize_W;//产品实际宽度
+		int ActualProductSize_H;//产品实际高度
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
+		
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
 		double ImageAspectRatio; //样本图像的宽高比
@@ -134,19 +138,19 @@ namespace pcb
 	public:
 		DetectConfig() = default;
 		~DetectConfig() = default;
+		void loadDefaultValue(); //加载默认参数
 
-		bool isValid();
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
+		bool isValid();
 		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
 		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转索引
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
 		ErrorCode calcImageAspectRatio(); //计算宽高比
-		int getSystemResetCode(DetectConfig &newConfig); //获取系统重置代码
 		ConfigIndex unequals(DetectConfig &other); //不等性判断
+		int getSystemResetCode(DetectConfig &newConfig); //获取系统重置代码
 		void copyTo(DetectConfig *dst); //拷贝参数
-		void loadDefaultValue(); //加载默认参数
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 	};
 #endif //CLASS_DETECT_CONFIG
 
@@ -157,15 +161,19 @@ namespace pcb
 	class AdminConfig 
 	{
 	public:
-		double MaxMotionStroke; //机械结构的最大运动行程
+		int MaxMotionStroke; //机械结构的最大运动行程
 		int MaxCameraNum; //可用相机的总数
-		int MaxPhotographingNum; //最大拍照次数
+		//int MaxPhotographingNum; //最大拍照次数
+		int PixelsNumPerUnitLength; //单位长度内的像素个数
+		double ImageOverlappingRate; //分图重叠率
 
 		enum ConfigIndex {
 			Index_All,
 			Index_None,
 			Index_MaxMotionStroke,
-			Index_MaxCameraNum
+			Index_MaxCameraNum,
+			Index_PixelsNumPerUnitLength，
+			Index_ImageOverlappingRate
 		};
 
 		//错误代码
@@ -175,7 +183,9 @@ namespace pcb
 			ConfigFileMissing = 0x201,
 			Invalid_MaxMotionStroke = 0x202,
 			Invalid_MaxCameraNum = 0x203,
-			Default = 0x1FF
+			Invalid_PixelsNumPerUnitLength = 0x204,
+			Invalid_ImageOverlappingRate = 0x205,
+			Default = 0x2FF
 		};
 
 	private:
@@ -184,13 +194,18 @@ namespace pcb
 	public:
 		AdminConfig() = default;
 		~AdminConfig() = default;
+		void loadDefaultValue(); //加载默认参数
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
 		bool isValid();
-		inline ErrorCode getErrorCode() { return errorCode; }
+		inline void resetErrorCode() { errorCode = Uncheck; }
+		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
+		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转参数索引
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
-		static ConfigIndex convertCodeToIndex(ErrorCode code);
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default);
+		ConfigIndex unequals(AdminConfig &other); //不等性判断
+		int getSystemResetCode(AdminConfig &newConfig); //获取系统重置代码
+		void copyTo(AdminConfig *dst); //拷贝参数
 	};
 #endif //CLASS_ADMIN_CONFIG
 
@@ -250,6 +265,9 @@ namespace pcb
 		QSize imageSize; //样本图像的原始尺寸
 		int currentRow_detect; //检测行号
 		int currentRow_extract; //提取行号
+
+		int nCamera; //相机个数
+		int nPhotographing; //拍照次数
 
 	public:
 		DetectParams() = default;

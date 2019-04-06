@@ -49,6 +49,38 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 	//获取界面上的config参数
 	getConfigFromAdminSettingUI();
 
+	//检查界面上config的有效性
+	AdminConfig::ErrorCode code = tempConfig.checkValidity(AdminConfig::Index_All);
+	if (code != AdminConfig::ValidConfig) { //参数无效则报错
+		tempConfig.showMessageBox(this);
+		this->setPushButtonsToEnabled(true);//将按键设为可点击
+		AdminConfig::ConfigIndex index = AdminConfig::convertCodeToIndex(code);
+		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
+		return;
+	}
+
+	//设置聚焦位置
+	this->setCursorLocation(AdminConfig::Index_None);
+
+	//判断是否重置检测系统
+	int resetCode = detectConfig->getSystemResetCode(tempConfig);
+
+	//将临时配置拷贝到config中
+	tempConfig.copyTo(adminConfig);
+
+	//重置系统
+	emit resetDetectSystem_settingUI(resetCode); //判断是否重置检测系统
+
+	//将参数保存到config文件中
+	pcb::Configurator::saveConfigFile(configFileName, adminConfig);
+
+	//向主界面发送消息
+	emit checkSystemWorkingState_settingUI(); //检查系统的工作状态
+
+	//将本界面上的按键设为可点击
+	this->setPushButtonsToEnabled(true);
+
+	/*******/
 	bool k1, k2, k3;
 	double MaxS =( ui.lineEdit_MaxMotionStroke->text()).toDouble(&k1);
 	int CamerN = (ui.lineEdit_MaxCameraNum->text()).toInt(&k2);
@@ -85,5 +117,6 @@ void AdminSettingUI::setPushButtonsToEnabled(bool code)
 
 void AdminSettingUI::getConfigFromAdminSettingUI()
 {
-
+	tempConfig.MaxMotionStroke = ui.lineEdit_MaxMotionStroke->text().toInt();
+	tempConfig.MaxCameraNum = ui.lineEdit_MaxCameraNum->text().toInt();
 }
