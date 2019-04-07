@@ -26,12 +26,14 @@ public:
 	void setPushButtonsToEnabled(bool code); //∞¥º¸…Ë÷√
 
 private:
-	void initSettingUI();
+	void initAdminSettingUI();
 	void getConfigFromAdminSettingUI();
+	void setCursorLocation(pcb::AdminConfig::ConfigIndex code);
 
 Q_SIGNALS:
-	void showSettingUI_adminSettingUI();
-	void resetDetectSystem_settingUI(int);
+	void showSettingUI_adminUI();
+	void resetDetectSystem_adminUI(int);
+	void checkSystemWorkingState_adminUI();
 
 private Q_SLOTS:
 	void on_pushButton_confirm_clicked();

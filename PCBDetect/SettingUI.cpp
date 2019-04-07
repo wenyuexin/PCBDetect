@@ -1,7 +1,7 @@
 #include "SettingUI.h"
 
 using pcb::DetectConfig;
-
+using pcb::Configurator;
 
 SettingUI::SettingUI(QWidget *parent)
 	: QWidget(parent)
@@ -18,18 +18,19 @@ SettingUI::SettingUI(QWidget *parent)
 	initSettingUI();
 
 	//参数下拉框的槽函数连接
-	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imageFormat()));
+	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
 
 	//系统参数设置的登录界面
 	passWordUI.setWindowFlags(passWordUI.windowFlags() | Qt::Dialog);
 	passWordUI.setWindowModality(Qt::ApplicationModal);
-
 	connect(&passWordUI, SIGNAL(showAdminSettingUI_pswdUI()), this, SLOT(do_showAdminSettingUI_pswdUI()));
 	connect(&passWordUI, SIGNAL(closePassWordUI_pswdUI()), this, SLOT(on_closePassWordUI_pswdUI()));
 
 	//系统参数设置界面
 	adminSettingUI.setAdminConfig(adminConfig);
-	connect(&adminSettingUI, SIGNAL(showSettingUI_adminSettingUI()), this, SLOT(do_showSettingUI_adminSettingUI()));
+	connect(&adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
+	connect(&adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
+	connect(&adminSettingUI, SIGNAL(checkSystemWorkingState_adminUI()), this, SLOT(do_checkSystemWorkingState_adminUI()));
 }
 
 SettingUI::~SettingUI()
@@ -37,7 +38,7 @@ SettingUI::~SettingUI()
 }
 
 
-/************* 界面的设置、输入 **************/
+/************* 界面的设置、输入、更新 **************/
 
 void SettingUI::initSettingUI()
 {
@@ -75,150 +76,6 @@ void SettingUI::refreshSettingUI()
 
 	ui.lineEdit_ImageAspectRatio_W->setText(QString::number(detectConfig->ImageAspectRatio_W));
 	ui.lineEdit_ImageAspectRatio_H->setText(QString::number(detectConfig->ImageAspectRatio_H));
-}
-
-
-/***************** 按键响应 *****************/
-
-//选择样本文件夹的路径
-void SettingUI::on_pushButton_SampleDirPath_clicked()
-{
-	selectDirPath(detectConfig->SampleDirPath);
-	ui.lineEdit_SampleDirPath->setText(detectConfig->SampleDirPath);
-}
-
-//选择模板文件夹的路径
-void SettingUI::on_pushButton_TemplDirPath_clicked()
-{
-	selectDirPath(detectConfig->TemplDirPath);
-	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
-}
-
-//选择输出文件夹的路径
-void SettingUI::on_pushButton_OutputDirPath_clicked()
-{
-	selectDirPath(detectConfig->OutputDirPath);
-	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
-}
-
-//确认键
-void SettingUI::on_pushButton_confirm_clicked()
-{
-	//将参数设置界面的确认按键、返回按键设为不可点击
-	setPushButtonsToEnabled(false);
-
-	//获取界面上的config参数
-	getConfigFromSettingUI();
-
-	//检查界面上config的有效性
-	DetectConfig::ErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
-	if (code != DetectConfig::ValidConfig) { //参数无效则报错
-		tempConfig.showMessageBox(this);
-		this->setPushButtonsToEnabled(true);//将按键设为可点击
-		DetectConfig::ConfigIndex index = DetectConfig::convertCodeToIndex(code);
-		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
-		return;
-	}
-
-	//设置聚焦位置
-	this->setCursorLocation(DetectConfig::Index_None);
-
-	//判断是否重置检测系统
-	int resetCode = detectConfig->getSystemResetCode(tempConfig);
-
-	//将临时配置拷贝到config中
-	tempConfig.copyTo(detectConfig);
-
-	//重置系统
-	emit resetDetectSystem_settingUI(resetCode); //判断是否重置检测系统
-
-	//将参数保存到config文件中
-	pcb::Configurator::saveConfigFile(configFileName, detectConfig);
-
-	//向主界面发送消息
-	emit checkSystemWorkingState_settingUI(); //检查系统的工作状态
-
-	//将本界面上的按键设为可点击
-	this->setPushButtonsToEnabled(true);
-}
-
-//返回键
-void SettingUI::on_pushButton_return_clicked()
-{
-	emit showDetectMainUI();
-}
-
-//系统参数设置
-void SettingUI::on_pushButton_admin_clicked()
-{
-	//设置窗口始终置顶
-	passWordUI.show();
-	//设置按键
-	this->setPushButtonsToEnabled(false);
-}
-
-//设置按键的可点击状态
-void SettingUI::setPushButtonsToEnabled(bool code)
-{
-	ui.pushButton_confirm->setEnabled(code);//确认
-	ui.pushButton_return->setEnabled(code);//返回
-	ui.pushButton_admin->setEnabled(code);//系统设置
-}
-
-/************** 获取界面上的参数 *****************/
-
-void SettingUI::on_currentIndexChanged_imageFormat()
-{
-	switch (ui.comboBox_ImageFormat->currentIndex())
-	{
-	case 0:
-		tempConfig.ImageFormat = ""; break;
-	case 1:
-		tempConfig.ImageFormat = ".bmp"; break;
-	case 2:
-		tempConfig.ImageFormat = ".jpg"; break;
-	case 3:
-		tempConfig.ImageFormat = ".png"; break;
-	case 4:
-		tempConfig.ImageFormat = ".tif"; break;
-	default:
-		break;
-	}
-}
-
-//从设置界面上获取参数
-void SettingUI::getConfigFromSettingUI()
-{
-	tempConfig.resetErrorCode(); //重置错误代码
-
-	tempConfig.SampleDirPath = ui.lineEdit_SampleDirPath->text(); //样本路径
-	tempConfig.TemplDirPath = ui.lineEdit_TemplDirPath->text(); //模板路径
-	tempConfig.OutputDirPath = ui.lineEdit_OutputDirPath->text();//输出路径
-	tempConfig.nCamera = ui.lineEdit_nCamera->text().toInt();//相机个数
-	tempConfig.nPhotographing = ui.lineEdit_nPhotographing->text().toInt();//拍照次数
-	tempConfig.nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();//每一行中的基本单元数
-	tempConfig.nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();//每一列中的基本单元数
-	tempConfig.ImageAspectRatio_W = ui.lineEdit_ImageAspectRatio_W->text().toInt();//样本图像的宽高比
-	tempConfig.ImageAspectRatio_H = ui.lineEdit_ImageAspectRatio_H->text().toInt();//样本图像的宽高比
-	
-	DetectConfig::ErrorCode code = tempConfig.calcImageAspectRatio();
-	if (code != DetectConfig::ValidConfig) 
-		detectConfig->showMessageBox(this, code); 
-}
-
-/****************** 其他 ******************/
-
-//交互式文件夹路径选择
-void SettingUI::selectDirPath(QString &path)
-{
-	QFileDialog *fileDialog = new QFileDialog(this);
-	fileDialog->setWindowTitle(QString::fromLocal8Bit("请选择存储路径")); //设置文件保存对话框的标题
-	fileDialog->setFileMode(QFileDialog::Directory); //设置文件对话框弹出的时候显示文件夹
-	fileDialog->setViewMode(QFileDialog::Detail); //文件以详细的形式显示，显示文件名，大小，创建日期等信息
-	if (fileDialog->exec() == QDialog::DialogCode::Accepted) { //选择路径
-		path = fileDialog->selectedFiles()[0];
-	}
-	delete fileDialog;
 }
 
 //设置光标的位置
@@ -261,6 +118,135 @@ void SettingUI::setCursorLocation(DetectConfig::ConfigIndex code)
 }
 
 
+/***************** 按键响应 *****************/
+
+//选择样本文件夹的路径
+void SettingUI::on_pushButton_SampleDirPath_clicked()
+{
+	detectConfig->SampleDirPath = pcb::selectDirPath();
+	ui.lineEdit_SampleDirPath->setText(detectConfig->SampleDirPath);
+}
+
+//选择模板文件夹的路径
+void SettingUI::on_pushButton_TemplDirPath_clicked()
+{
+	detectConfig->TemplDirPath = pcb::selectDirPath();
+	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
+}
+
+//选择输出文件夹的路径
+void SettingUI::on_pushButton_OutputDirPath_clicked()
+{
+	detectConfig->OutputDirPath = pcb::selectDirPath();
+	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
+}
+
+//确认键
+void SettingUI::on_pushButton_confirm_clicked()
+{
+	//将参数设置界面的确认按键、返回按键设为不可点击
+	setPushButtonsToEnabled(false);
+
+	//获取界面上的config参数
+	getConfigFromSettingUI();
+
+	//检查界面上config的有效性
+	DetectConfig::ErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
+	if (code != DetectConfig::ValidConfig) { //参数无效则报错
+		tempConfig.showMessageBox(this); //弹窗警告
+		this->setPushButtonsToEnabled(true);//将按键设为可点击
+		DetectConfig::ConfigIndex index = DetectConfig::convertCodeToIndex(code);
+		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
+		return;
+	}
+
+	//设置聚焦位置
+	this->setCursorLocation(DetectConfig::Index_None);
+
+	//判断是否重置检测系统
+	int resetCode = detectConfig->getSystemResetCode(tempConfig);
+
+	//将临时配置拷贝到detectConfig中
+	tempConfig.copyTo(detectConfig);
+
+	//重置系统
+	emit resetDetectSystem_adminUI(resetCode); //判断是否重置检测系统
+
+	//将参数保存到配置文件中
+	Configurator::saveConfigFile(configFileName, detectConfig);
+
+	//向主界面发送消息
+	emit checkSystemWorkingState_adminUI(); //检查系统的工作状态
+
+	//将本界面上的按键设为可点击
+	this->setPushButtonsToEnabled(true);
+}
+
+//返回键
+void SettingUI::on_pushButton_return_clicked()
+{
+	emit showDetectMainUI();
+}
+
+//系统参数设置
+void SettingUI::on_pushButton_admin_clicked()
+{
+	//设置窗口始终置顶
+	passWordUI.show();
+	//设置按键
+	this->setPushButtonsToEnabled(false);
+}
+
+//设置按键的可点击状态
+void SettingUI::setPushButtonsToEnabled(bool code)
+{
+	ui.pushButton_confirm->setEnabled(code);//确认
+	ui.pushButton_return->setEnabled(code);//返回
+	ui.pushButton_admin->setEnabled(code);//系统设置
+}
+
+/************** 获取界面上的参数 *****************/
+
+void SettingUI::on_currentIndexChanged_imgFormat()
+{
+	switch (ui.comboBox_ImageFormat->currentIndex())
+	{
+	case 0:
+		tempConfig.ImageFormat = ""; break;
+	case 1:
+		tempConfig.ImageFormat = ".bmp"; break;
+	case 2:
+		tempConfig.ImageFormat = ".jpg"; break;
+	case 3:
+		tempConfig.ImageFormat = ".png"; break;
+	case 4:
+		tempConfig.ImageFormat = ".tif"; break;
+	default:
+		break;
+	}
+}
+
+//从设置界面上获取参数
+void SettingUI::getConfigFromSettingUI()
+{
+	tempConfig.resetErrorCode(); //重置错误代码
+
+	tempConfig.SampleDirPath = ui.lineEdit_SampleDirPath->text(); //样本路径
+	tempConfig.TemplDirPath = ui.lineEdit_TemplDirPath->text(); //模板路径
+	tempConfig.OutputDirPath = ui.lineEdit_OutputDirPath->text();//输出路径
+	tempConfig.nCamera = ui.lineEdit_nCamera->text().toInt();//相机个数
+	tempConfig.nPhotographing = ui.lineEdit_nPhotographing->text().toInt();//拍照次数
+	tempConfig.nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();//每一行中的基本单元数
+	tempConfig.nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();//每一列中的基本单元数
+	tempConfig.ImageAspectRatio_W = ui.lineEdit_ImageAspectRatio_W->text().toInt();//样本图像的宽高比
+	tempConfig.ImageAspectRatio_H = ui.lineEdit_ImageAspectRatio_H->text().toInt();//样本图像的宽高比
+	
+	DetectConfig::ErrorCode code = tempConfig.calcImageAspectRatio();
+	if (code != DetectConfig::ValidConfig) 
+		detectConfig->showMessageBox(this, code); 
+}
+
+
 /****************** 系统参数登录界面 *******************/
 
 void SettingUI::on_closePassWordUI_pswdUI()
@@ -281,6 +267,7 @@ void SettingUI::do_showAdminSettingUI_pswdUI()
 	this->setPushButtonsToEnabled(true);//设置按键
 }
 
+
 /****************** 系统参数设置界面 *******************/
 
 //由系统参数设置界面返回参数设置界面
@@ -289,4 +276,16 @@ void SettingUI::do_showSettingUI_adminSettingUI()
 	this->showFullScreen();
 	pcb::delay(10);
 	adminSettingUI.hide();
+}
+
+//转发由系统设置界面发出的重置信号
+void SettingUI::do_resetDetectSystem_adminUI(int code)
+{
+	emit resetDetectSystem_settingUI(code);
+}
+
+//转发由系统设置界面发出的系统状态检查信号
+void SettingUI::do_checkSystemWorkingState_adminUI()
+{
+	emit checkSystemWorkingState_settingUI(code);
 }
