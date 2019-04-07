@@ -66,6 +66,7 @@ namespace pcb
 	typedef std::vector<QPixmapVector> QPixmapArray;
 #endif //TYPE_QPIXMAP_CONTAINER
 
+
 #ifndef STRUCT_DETECT_RESULT
 #define STRUCT_DETECT_RESULT 
 	struct DetectResult { //检测结果
@@ -85,12 +86,8 @@ namespace pcb
 		QString TemplDirPath;//模板文件的存储路径
 		QString OutputDirPath;//检测结果存储路径
 		QString ImageFormat; //图像后缀
-
 		int ActualProductSize_W;//产品实际宽度
 		int ActualProductSize_H;//产品实际高度
-		int nCamera; //相机个数
-		int nPhotographing; //拍照次数
-		
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
 		double ImageAspectRatio; //样本图像的宽高比
@@ -105,8 +102,8 @@ namespace pcb
 			Index_TemplDirPath,
 			Index_OutputDirPath,
 			Index_ImageFormat,
-			Index_nCamera,
-			Index_nPhotographing,
+			Index_ActualProductSize_W;
+		    Index_ActualProductSize_H;
 			Index_nBasicUnitInRow,
 			Index_nBasicUnitInCol,
 			Index_ImageAspectRatio_W,
@@ -124,8 +121,8 @@ namespace pcb
 			Invalid_TemplDirPath = 0x103,
 			Invalid_OutputDirPath = 0x104,
 			Invalid_ImageFormat = 0x105,
-			Invalid_nCamera = 0x106,
-			Invalid_nPhotographing = 0x107,
+			Index_ActualProductSize_W = 0x106,
+		    Index_ActualProductSize_H = 0x107,
 			Invalid_nBasicUnitInRow = 0x108,
 			Invalid_nBasicUnitInCol = 0x109,
 			Invalid_ImageAspectRatio_W = 0x10A,
@@ -267,7 +264,6 @@ namespace pcb
 		QSize imageSize; //样本图像的原始尺寸
 		int currentRow_detect; //检测行号
 		int currentRow_extract; //提取行号
-
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
 
@@ -277,6 +273,7 @@ namespace pcb
 
 		void resetSerialNum();
 		void loadDefaultValue();
+		void updateGridSize(DetectConfig *detectConfig, AdminConfig *adminConfig);
 	};
 #endif //STRUCT_DETECT_PARAMS
 }

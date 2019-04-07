@@ -31,9 +31,8 @@ private:
 	SettingUI *settingUI; //参数设置界面
 	TemplateUI *templateUI; //模板提取界面
 	DetectUI *detectUI; //检测界面
-	MotionControler motionControler;//运动控制器
-	CameraControler cameraControler;//相机控制器
-	QString IconFolder; //图标文件夹
+	MotionControler *motionControler;//运动控制器
+	CameraControler *cameraControler;//相机控制器
 	pcb::AdminConfig adminConfig; //系统参数
 	pcb::DetectConfig detectConfig; //用户参数
 	pcb::DetectParams detectParams; //临时变量

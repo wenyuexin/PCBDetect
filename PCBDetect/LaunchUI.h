@@ -27,7 +27,7 @@ private:
 	SysInitThread *initThread; //系统初始化线程
 
 public:
-	LaunchUI(QWidget *parent = Q_NULLPTR, QPixmap *background = Q_NULLPTR);
+	LaunchUI(QWidget *parent = Q_NULLPTR);
 	~LaunchUI();
 
 	inline void setDetectConfig(pcb::DetectConfig* ptr = Q_NULLPTR) { detectConfig = ptr; }
@@ -40,7 +40,8 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void update_sysInitStatus_initThread(QString status);
-	void on_configError_initThread();
+	void on_detectConfigError_initThread();
+	void on_adminConfigError_initThread();
 	void on_cameraError_initThread();
 	void on_sysInitFinished_initThread();
 };

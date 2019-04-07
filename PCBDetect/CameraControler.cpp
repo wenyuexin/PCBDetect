@@ -51,7 +51,7 @@ CameraControler::ErrorCode CameraControler::initCameras()
 		for (int i = 0; i < *nCamera; i++) { //添加相机
 			cameraList.push_back(cv::VideoCapture(i));
 			cameraState[i] = cameraList[i].isOpened(); //判断相机是否能打开
-			if (!cameraState[i]) errorCode = CameraControler::CameraInitFailed;
+			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
 		}
 	}
 	else { //使用设定的设备号初始化
@@ -61,7 +61,7 @@ CameraControler::ErrorCode CameraControler::initCameras()
 		for (int i = 0; i < deviceIndex.size(); i++) { //添加相机
 			cameraList.push_back(cv::VideoCapture(deviceIndex[i]));
 			cameraState[i] = cameraList[i].isOpened(); //判断相机是否能打开
-			if (!cameraState[i]) errorCode = CameraControler::CameraInitFailed;
+			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
 		}
 	}
 	return errorCode;
@@ -114,7 +114,7 @@ bool CameraControler::showMessageBox(QWidget *parent)
 		warningMessage = QString::fromLocal8Bit("相机状态未确认！"); break;
 	case CameraControler::InvalidCameraNum:
 		warningMessage = QString::fromLocal8Bit("当前调用的相机个数无效！"); break;
-	case CameraControler::CameraInitFailed:
+	case CameraControler::InitFailed:
 		warningMessage = QString::fromLocal8Bit("相机初始化失败！     \n");
 		warningMessage += "CameraState: " + cameraStatusMapToString(); break;
 	default:
