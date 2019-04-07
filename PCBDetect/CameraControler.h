@@ -17,16 +17,18 @@ class CameraControler : public QThread
 	Q_OBJECT
 
 public:
+	//相机的相关操作
 	enum Operation {
 		NoOperation,
 		InitCameras,
 		TakePhoto
 	};
 
+	//相机的错误代码
 	enum ErrorCode {
 		NoError = 0x000,
 		Uncheck = 0x400,
-		CameraInitFailed = 0x401,
+		InitFailed = 0x401,
 		InvalidCameraNum = 0x402
 	};
 

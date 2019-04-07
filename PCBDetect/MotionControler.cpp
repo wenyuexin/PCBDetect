@@ -3,6 +3,11 @@
 MotionControler::MotionControler(QObject *parent)
 	: QObject(parent)
 {
+	detectConfig = Q_NULLPTR;
+	adminConfig = Q_NULLPTR;
+	callerOfResetControler = 0; //复位的调用函数的标识
+	errorCode = Uncheck; //控制器的错误码
+	operation = NoOperation;//操作指令
 }
 
 MotionControler::~MotionControler()
@@ -124,4 +129,41 @@ void MotionControler::on_returnToZero_finished()
 void MotionControler::on_resetControler_finished()
 {
 	emit resetControlerFinished_motion(callerOfResetControler);
+}
+
+/******************* 其他 ******************/
+
+//弹窗警告
+bool MotionControler::showMessageBox(QWidget *parent)
+{
+	if (errorCode == MotionControler::NoError) return false;
+
+	Uncheck = 0x300,
+	InitFailed = 0x301,
+	moveForwardFailed = 0x302,
+	returnToZeroFailed = 0x303,
+	resetControler = 0x304
+
+	QString warningMessage;
+	switch (errorCode)
+	{
+	case MotionControler::Uncheck:
+		warningMessage = pcb::chinese("运动结构的状态未确认！"); break;
+	case MotionControler::InitFailed:
+		warningMessage = pcb::chinese("运动结构初始化失败！  "); break;
+	case MotionControler::moveForwardFailed:
+		warningMessage = pcb::chinese("运动结构前进失败！    "); break;
+	case MotionControler::returnToZeroFailed:
+		warningMessage = pcb::chinese("运动机构归零失败！    "); break;
+	case MotionControler::esetControler:
+		warningMessage = pcb::chinese("运动机构复位失败！    "); break;
+	default:
+		warningMessage = pcb::chinese("未知错误！"); break;
+	}
+
+	QMessageBox::warning(parent, pcb::chinese("警告"),
+		warningMessage + "    \n" +
+		"MotionControler: ErrorCode: " + QString::number(errorCode),
+		pcb::chinese("确定"));
+	return true;
 }

@@ -13,21 +13,23 @@ PCBDetect::PCBDetect(QWidget *parent)
 	QRect screenRect = desktop->screenGeometry(1);
 	this->setGeometry(screenRect);
 
-	//图标文件夹的路径
-	IconFolder = QDir::currentPath() + "/Icons";
+	//运动控制器
+	motionControler = new MotionControler;//运动控制器
+	motionControler->setDetectConfig(&detectConfig);
+	motionControler->setAdminConfig(&adminConfig);
 
 	//相机控制器
-	adminConfig.MaxCameraNum = 5;
-	cameraControler.setMaxCameraNum(&adminConfig.MaxCameraNum);
-	cameraControler.setCameraNum(&detectConfig.nCamera);
+	cameraControler = new CameraControler;
+	cameraControler->setMaxCameraNum(&adminConfig.MaxCameraNum);
+	cameraControler->setCameraNum(&detectConfig.nCamera);
 
 	//启动界面
-	launcher = new LaunchUI(Q_NULLPTR, &(QPixmap(IconFolder + "/screen.png")));
+	launcher = new LaunchUI;
 	launcher->showFullScreen(); //显示launcher
 
 	launcher->setDetectConfig(&detectConfig);
 	launcher->setAdminConfig(&adminConfig);
-	launcher->setCameraControler(&cameraControler);
+	launcher->setCameraControler(cameraControler);
 	launcher->runInitThread(); //运行初始化线程
 	connect(launcher, SIGNAL(launchFinished_launchUI(int)), this, SLOT(on_launchFinished_launchUI(int)));
 
@@ -44,8 +46,8 @@ PCBDetect::PCBDetect(QWidget *parent)
 	templateUI = new TemplateUI;
 	templateUI->setDetectConfig(&detectConfig);
 	templateUI->setDetectParams(&detectParams);
-	templateUI->setMotionControler(&motionControler);
-	templateUI->setCameraControler(&cameraControler);
+	templateUI->setMotionControler(motionControler);
+	templateUI->setCameraControler(cameraControler);
 	templateUI->doConnect();//信号连接
 	connect(templateUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_templateUI()));
 
@@ -53,8 +55,8 @@ PCBDetect::PCBDetect(QWidget *parent)
 	detectUI = new DetectUI;
 	detectUI->setDetectConfig(&detectConfig);
 	detectUI->setDetectParams(&detectParams);
-	//detectUI->setMotionControler(&motionControler);
-	//detectUI->setCameraControler(&cameraControler);
+	//detectUI->setMotionControler(motionControler);
+	//detectUI->setCameraControler(cameraControler);
 	//detectUI->doConnect();//信号连接
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
 }
@@ -65,6 +67,8 @@ PCBDetect::~PCBDetect()
 	delete settingUI;
 	delete templateUI;
 	delete detectUI;
+	delete motionControler;
+	delete cameraControler;
 }
 
 
@@ -77,7 +81,7 @@ void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
 		templateUI->initGraphicsView();//模板界面中图像显示的初始化
 		detectUI->initGraphicsView();//检测界面中图像显示的初始化
-		motionControler.initControler(); //初始化控制器
+		motionControler->initControler(); //初始化控制器
 		this->setPushButtonsToEnabled(true);//模板提取、检测按键设为可点击
 	}
 	else { //存在错误
@@ -177,16 +181,24 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 		detectUI->initGraphicsView();
 	}
 
+	//重新初始化运动控制模块
+	if (code & 0b0010 == 0b0010) {
+		motionControler->start();
+		while (motionControler->isRunning()) pcb::delay(50);
+		motionControler->showMessageBox(settingUI);
+	}
+
 	//重新初始化相机
-	CameraControler::ErrorCode cameraErrorCode;
 	if (code & 0b0001 == 0b0001) {
-		cameraControler.start();
-		while (cameraControler.isRunning()) pcb::delay(50);
-		cameraControler.showMessageBox(settingUI);
+		cameraControler->start();
+		while (cameraControler->isRunning()) pcb::delay(50);
+		cameraControler->showMessageBox(settingUI);
 	}
 
 	//将主界面的模板提取按键、检测按键设为可点击
-	if (cameraControler.getErrorCode() == CameraControler::NoError)
+	if (cameraControler->getErrorCode() == CameraControler::NoError &&
+		motionControler->getErrorCode() == MotionControler::NoError)
+		//若各个模块的状态正常，则设置按键
 		this->setPushButtonsToEnabled(true);
 }
 

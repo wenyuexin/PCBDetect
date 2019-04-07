@@ -26,20 +26,22 @@ public:
 	SysInitThread();
 	~SysInitThread();
 
-	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
-	inline void setAdminConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
-	inline void setCameraControler(CameraControler *ptr = Q_NULLPTR) { cameraControler = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 
 protected:
 	void run();
 
 private:
 	bool initDetectConfig();
+	bool initAdminConfig();
 	bool initCameraControler();
 
 Q_SIGNALS:
 	void sysInitStatus_initThread(QString status);
-	void configError_initThread();
+	void detectConfigError_initThread();
+	void adminConfigError_initThread();
 	void cameraError_initThread();
 	void sysInitFinished_initThread();
 };

@@ -22,8 +22,8 @@ void DetectConfig::loadDefaultValue()
 	this->TemplDirPath = appDirPath + "/template";//模板文件的存储路径
 	this->OutputDirPath = appDirPath + "/output";//检测结果存储路径
 	this->ImageFormat = ".bmp"; //图像后缀
-	this->nCamera = 5; //相机个数
-	this->nPhotographing = 4; //拍照次数
+	this->ActualProductSize_W = 500;//产品实际宽度
+	this->ActualProductSize_H = 600;//产品实际高度
 	this->nBasicUnitInRow = 4; //每一行中的基本单元数
 	this->nBasicUnitInCol = 6; //每一列中的基本单元数
 	this->ImageAspectRatio_W = 4; //宽高比中的宽
@@ -135,43 +135,43 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 
 	QString valueName;
 	if (tempCode == ConfigFileMissing) {
-		QString message = QString::fromLocal8Bit(".user.config文件丢失，已生成默认文件!    \n")
-			+ QString::fromLocal8Bit("请在参数设置界面确认参数是否有效 ...   \n");
-		QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
+		QString message = pcb::chinese(".user.config文件丢失，已生成默认文件!    \n")
+			+ pcb::chinese("请在参数设置界面确认参数是否有效 ...   \n");
+		QMessageBox::warning(parent, pcb::chinese("警告"),
 			message + "Config: User: ErrorCode: " + QString::number(tempCode),
-			QString::fromLocal8Bit("确定"));
+			pcb::chinese("确定"));
 		return true;
 	}
 
 	switch (tempCode)
 	{
 	case pcb::DetectConfig::Invalid_SampleDirPath:
-		valueName = QString::fromLocal8Bit("样本路径"); break;
+		valueName = pcb::chinese("样本路径"); break;
 	case pcb::DetectConfig::Invalid_TemplDirPath:
-		valueName = QString::fromLocal8Bit("模板路径"); break;
+		valueName = pcb::chinese("模板路径"); break;
 	case pcb::DetectConfig::Invalid_OutputDirPath:
-		valueName = QString::fromLocal8Bit("输出路径"); break;
+		valueName = pcb::chinese("输出路径"); break;
 	case pcb::DetectConfig::Invalid_ImageFormat:
-		valueName = QString::fromLocal8Bit("图像格式"); break;
+		valueName = pcb::chinese("图像格式"); break;
 	case pcb::DetectConfig::Invalid_nCamera:
-		valueName = QString::fromLocal8Bit("相机个数"); break;
+		valueName = pcb::chinese("相机个数"); break;
 	case pcb::DetectConfig::Invalid_nPhotographing:
-		valueName = QString::fromLocal8Bit("拍摄次数"); break;
+		valueName = pcb::chinese("拍摄次数"); break;
 	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
 	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
-		valueName = QString::fromLocal8Bit("基本单元数"); break;
+		valueName = pcb::chinese("基本单元数"); break;
 	case pcb::DetectConfig::Invalid_ImageAspectRatio_W:
 	case pcb::DetectConfig::Invalid_ImageAspectRatio_H:
 	case pcb::DetectConfig::Invalid_ImageAspectRatio:
-		valueName = QString::fromLocal8Bit("图像宽高比"); break;
+		valueName = pcb::chinese("图像宽高比"); break;
 	default:
 		valueName = ""; break;
 	}
 
-	QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
-		QString::fromLocal8Bit("参数无效，请在参数设置界面重新设置") + valueName + "!        \n" +
+	QMessageBox::warning(parent, pcb::chinese("警告"),
+		pcb::chinese("参数无效，请在参数设置界面重新设置") + valueName + "!        \n" +
 		"Config: User: ErrorCode: " + QString::number(tempCode),
-		QString::fromLocal8Bit("确定"));
+		pcb::chinese("确定"));
 	return true;
 }
 
@@ -320,32 +320,32 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 
 	QString valueName;
 	if (tempCode == AdminConfig::ConfigFileMissing) {
-		QString message = QString::fromLocal8Bit(".admin.config文件丢失，已生成默认文件!  \n")
-			+ QString::fromLocal8Bit("请联系管理员确认参数是否有效 ...  \n");
-		QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
+		QString message = pcb::chinese(".admin.config文件丢失，已生成默认文件!  \n")
+			+ pcb::chinese("请联系管理员确认参数是否有效 ...  \n");
+		QMessageBox::warning(parent, pcb::chinese("警告"),
 			message + "Config: Admin: ErrorCode: " + QString::number(tempCode),
-			QString::fromLocal8Bit("确定"));
+			pcb::chinese("确定"));
 		return true;
 	}
 
 	switch (code)
 	{
 	case pcb::AdminConfig::Invalid_MaxMotionStroke:
-		valueName = QString::fromLocal8Bit("机械结构最大行程"); break;
+		valueName = pcb::chinese("机械结构最大行程"); break;
 	case pcb::AdminConfig::Invalid_MaxCameraNum:
-		valueName = QString::fromLocal8Bit("可用相机总数"); break;
+		valueName = pcb::chinese("可用相机总数"); break;
 	case pcb::AdminConfig::Invalid_ImageResolutionRatio:
-		valueName = QString::fromLocal8Bit("图像分辨率"); break;
+		valueName = pcb::chinese("图像分辨率"); break;
 	case pcb::AdminConfig::Invalid_ImageOverlappingRate:
-		valueName = QString::fromLocal8Bit("分图重叠率"); break;
+		valueName = pcb::chinese("分图重叠率"); break;
 	default:
 		valueName = ""; break;
 	}
 
-	QMessageBox::warning(parent, QString::fromLocal8Bit("警告"),
-		QString::fromLocal8Bit("参数无效，请联系管理员重新设置") + valueName + "!        \n" +
+	QMessageBox::warning(parent, pcb::chinese("警告"),
+		pcb::chinese("参数无效，请联系管理员重新设置") + valueName + "!        \n" +
 		"Config: Admin: ErrorCode: " + QString::number(tempCode),
-		QString::fromLocal8Bit("确定"));
+		pcb::chinese("确定"));
 	return true;
 }
 
@@ -589,8 +589,8 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath);
 		configurator.jsonReadValue("ImageFormat", config->ImageFormat);
 
-		configurator.jsonReadValue("nCamera", config->nCamera);
-		configurator.jsonReadValue("nPhotographing", config->nPhotographing);
+		configurator.jsonReadValue("ActualProductSize_W", config->ActualProductSize_W);
+		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H);
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol);
 		configurator.jsonReadValue("ImageAspectRatio_W", config->ImageAspectRatio_W);
@@ -619,8 +619,8 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath);//模板文件夹
 		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath);//输出文件夹
 		configurator.jsonSetValue("ImageFormat", config->ImageFormat);//图像格式
-		configurator.jsonSetValue("nCamera", QString::number(config->nCamera)); //相机个数
-		configurator.jsonSetValue("nPhotographing", QString::number(config->nPhotographing)); //拍照次数
+		configurator.jsonSetValue("ActualProductSize_W", QString::number(config->ActualProductSize_W));//产品实际宽度
+		configurator.jsonSetValue("ActualProductSize_H", QString::number(config->ActualProductSize_H));//产品实际高度
 		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow)); //每一行中的基本单元数
 		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol)); //每一列中的基本单元数
 		configurator.jsonSetValue("ImageAspectRatio_W", QString::number(config->ImageAspectRatio_W)); //样本图像的宽高比
@@ -739,6 +739,16 @@ void DetectParams::loadDefaultValue()
 	imageSize = QSize(-1, -1);
 	int currentRow_detect = -1; //检测行号
 	int currentRow_extract = -1; //提取行号
+}
+
+//计算nCamera、nPhotographing
+void DetectParams::updateGridSize(DetectConfig *detectConfig, AdminConfig *adminConfig)
+{
+	int overlap = adminConfig->ImageOverlappingRate; //图像重叠率
+	int nW = detectConfig->ActualProductSize_W / adminConfig->ImageResolutionRatio;
+	this->nCamera = (nW - overlap) / (1 - overlap);
+	int nH = detectConfig->ActualProductSize_H / adminConfig->ImageResolutionRatio;
+	this->nPhotographing = (nH - overlap) / (1 - overlap);
 }
 
 
