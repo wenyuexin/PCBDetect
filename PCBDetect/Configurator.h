@@ -35,7 +35,7 @@ namespace pcb
 
 #ifndef IMAGE_FORMAT
 #define IMAGE_FORMAT
-	enum ImageFormat { BMP, JPG, PNG, TIFF };
+	enum ImageFormat { Unknown, BMP, JPG, PNG, TIF };
 #endif //IMAGE_FORMAT
 
 #ifndef TYPE_ITEM_GRID
@@ -82,17 +82,14 @@ namespace pcb
 	class DetectConfig 
 	{
 	public:
-		QString SampleDirPath; //样本文件存储路径
-		QString TemplDirPath;//模板文件的存储路径
+		QString SampleDirPath;//样本文件存储路径
+		QString TemplDirPath; //模板文件的存储路径
 		QString OutputDirPath;//检测结果存储路径
 		QString ImageFormat; //图像后缀
-		int ActualProductSize_W;//产品实际宽度
-		int ActualProductSize_H;//产品实际高度
+		int ActualProductSize_W;//产品实际宽度,单位mm
+		int ActualProductSize_H;//产品实际高度,单位mm
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
-		double ImageAspectRatio; //样本图像的宽高比
-		int ImageAspectRatio_W; //宽高比中的宽
-		int ImageAspectRatio_H; //宽高比中的高
 
 		//参数索引
 		enum ConfigIndex {
@@ -106,9 +103,6 @@ namespace pcb
 		    Index_ActualProductSize_H;
 			Index_nBasicUnitInRow,
 			Index_nBasicUnitInCol,
-			Index_ImageAspectRatio_W,
-			Index_ImageAspectRatio_H,
-			Index_ImageAspectRatio
 		};
 
 		//错误代码
@@ -125,9 +119,6 @@ namespace pcb
 		    Index_ActualProductSize_H = 0x107,
 			Invalid_nBasicUnitInRow = 0x108,
 			Invalid_nBasicUnitInCol = 0x109,
-			Invalid_ImageAspectRatio_W = 0x10A,
-			Invalid_ImageAspectRatio_H = 0x10B,
-			Invalid_ImageAspectRatio = 0x10C,
 			Default = 0x1FF
 		};
 
@@ -146,7 +137,6 @@ namespace pcb
 		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转索引
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
-		ErrorCode calcImageAspectRatio(); //计算宽高比
 		ConfigIndex unequals(DetectConfig &other); //不等性判断
 		int getSystemResetCode(DetectConfig &newConfig); //获取系统重置代码
 		void copyTo(DetectConfig *dst); //拷贝参数
@@ -162,28 +152,37 @@ namespace pcb
 	public:
 		int MaxMotionStroke; //机械结构的最大运动行程
 		int MaxCameraNum; //可用相机的总数
-		//int MaxPhotographingNum; //最大拍照次数
-		int ImageResolutionRatio; //图像分辨率 pix/mm
+		int PixelsNumPerUnitLength; //图像分辨率 pix/mm
 		double ImageOverlappingRate; //分图重叠率
+		int ImageSize_W; //图像宽度
+		int ImageSize_H; //图像高度
+		double ImageAspectRatio; //图像宽高比
 
 		enum ConfigIndex {
 			Index_All,
 			Index_None,
 			Index_MaxMotionStroke,
 			Index_MaxCameraNum,
-			Index_ImageResolutionRatio,
-			Index_ImageOverlappingRate
+			Index_PixelsNumPerUnitLength,
+			Index_ImageOverlappingRate,
+			Index_ImageSize_W,
+			Index_ImageSize_H,
+			Index_ImageAspectRatio
 		};
 
 		//错误代码
 		enum ErrorCode {
 			ValidConfig = 0x000,
+			ValidValue = 0x000,
 			Uncheck = 0x200,
 			ConfigFileMissing = 0x201,
 			Invalid_MaxMotionStroke = 0x202,
 			Invalid_MaxCameraNum = 0x203,
-			Invalid_ImageResolutionRatio = 0x204,
+			Invalid_PixelsNumPerUnitLength = 0x204,
 			Invalid_ImageOverlappingRate = 0x205,
+			Invalid_ImageSize_W = 0x206,
+			Invalid_ImageSize_H = 0x207,
+			Invalid_ImageAspectRatio = 0x208,
 			Default = 0x2FF
 		};
 
@@ -202,6 +201,7 @@ namespace pcb
 		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转参数索引
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
+		ErrorCode calcImageAspectRatio(); //计算宽高比
 		ConfigIndex unequals(AdminConfig &other); //不等性判断
 		int getSystemResetCode(AdminConfig &newConfig); //获取系统重置代码
 		void copyTo(AdminConfig *dst); //拷贝参数
@@ -233,10 +233,10 @@ namespace pcb
 		bool jsonReadValue(const QString &key, int &value); //读int
 		bool jsonReadValue(const QString &key, double &value); //读double
 
-		static bool saveConfigFile(const QString &fileName, DetectConfig *config);
 		static bool loadConfigFile(const QString &fileName, DetectConfig *config);
-		static bool saveConfigFile(const QString &fileName, AdminConfig *config);
+		static bool saveConfigFile(const QString &fileName, DetectConfig *config);
 		static bool loadConfigFile(const QString &fileName, AdminConfig *config);
+		static bool saveConfigFile(const QString &fileName, AdminConfig *config);
 
 		quint64 getDiskFreeSpace(QString driver);
 		bool checkDir(QString dirpath);
@@ -261,11 +261,20 @@ namespace pcb
 		QString sampleModelNum; //型号
 		QString sampleBatchNum; //批次号
 		QString sampleNum; //样本编号
-		QSize imageSize; //样本图像的原始尺寸
 		int currentRow_detect; //检测行号
 		int currentRow_extract; //提取行号
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
+
+		enum ErrorCode {
+			ValidParams = 0x000,
+			Uncheck = 0x300,
+			Invalid_nCamera = 0x301,
+			Default = 0x3FF
+		};
+
+	private:
+		ErrorCode errorCode = Uncheck;
 
 	public:
 		DetectParams() = default;
@@ -273,7 +282,8 @@ namespace pcb
 
 		void resetSerialNum();
 		void loadDefaultValue();
-		void updateGridSize(DetectConfig *detectConfig, AdminConfig *adminConfig);
+		int updateGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig);
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 	};
 #endif //STRUCT_DETECT_PARAMS
 }

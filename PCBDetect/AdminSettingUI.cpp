@@ -33,8 +33,10 @@ void AdminSettingUI::initAdminSettingUI()
 	ui.lineEdit_MaxMotionStroke->setValidator(&intValidator);
 	ui.lineEdit_MaxCameraNum->setValidator(&intValidator);
 	//ui.lineEdit_MaxPhotographingNum->setValidator(&intValidator);
-	ui.lineEdit_ImageResolutionRatio->setValidator(&intValidator);
+	ui.lineEdit_PixelsNumPerUnitLength->setValidator(&intValidator);
 	ui.lineEdit_ImageOverlappingRate->setValidator(&doubleValidator);
+	ui.lineEdit_ImageSize_W->setValidator(&intValidator);
+	ui.lineEdit_ImageSize_H->setValidator(&intValidator);
 }
 
 //更新界面
@@ -42,9 +44,10 @@ void AdminSettingUI::refreshAdminSettingUI()
 {
 	ui.lineEdit_MaxMotionStroke->setText(QString::number(adminConfig->MaxMotionStroke));
 	ui.lineEdit_MaxCameraNum->setText(QString::number(adminConfig->MaxCameraNum));
-	//ui.lineEdit_MaxPhotographingNum->setText(QString::number(adminConfig->MaxPhotographingNum));
-	ui.lineEdit_ImageResolutionRatio->setText(QString::number(adminConfig->ImageResolutionRatio));
+	ui.lineEdit_PixelsNumPerUnitLength->setText(QString::number(adminConfig->PixelsNumPerUnitLength));
 	ui.lineEdit_ImageOverlappingRate->setText(QString::number(adminConfig->ImageOverlappingRate));
+	ui.lineEdit_ImageSize_W->setText(QString::number(adminConfig->ImageSize_W));
+	ui.lineEdit_ImageSize_H->setText(QString::number(adminConfig->ImageSize_H));
 }
 
 
@@ -70,12 +73,13 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 	this->setCursorLocation(AdminConfig::Index_None);
 
 	//判断是否重置检测系统
-	int resetCode = detectConfig->getSystemResetCode(tempConfig);
+	int resetCode = adminConfig->getSystemResetCode(tempConfig);
 
 	//将临时配置拷贝到config中
 	tempConfig.copyTo(adminConfig);
 
 	//重置系统
+	resetCode |= detectParams->updateGridSize(adminConfig, tempConfig);
 	emit resetDetectSystem_adminUI(resetCode); //判断是否重置检测系统
 
 	//将参数保存到config文件中
@@ -83,6 +87,7 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 
 	//向主界面发送消息
 	emit checkSystemWorkingState_adminUI(); //检查系统的工作状态
+	pcb::delay(100);
 
 	//将本界面上的按键设为可点击
 	this->setPushButtonsToEnabled(true);
@@ -104,12 +109,45 @@ void AdminSettingUI::setPushButtonsToEnabled(bool code)
 
 /**************** 获取界面上的参数 ****************/
 
+//从界面获取config参数
 void AdminSettingUI::getConfigFromAdminSettingUI()
 {
 	tempConfig.MaxMotionStroke = ui.lineEdit_MaxMotionStroke->text().toInt();
 	tempConfig.MaxCameraNum = ui.lineEdit_MaxCameraNum->text().toInt();
-	tempConfig.ImageResolutionRatio = ui.lineEdit_ImageResolutionRatio->text().toInt();
+	tempConfig.PixelsNumPerUnitLength = ui.lineEdit_PixelsNumPerUnitLength->text().toInt();
 	tempConfig.ImageOverlappingRate = ui.lineEdit_ImageOverlappingRate->text().toDouble();
+	tempConfig.ImageSize_W = ui.lineEdit_ImageSize_W->text().toInt();
+	tempConfig.ImageSize_H = ui.lineEdit_ImageSize_H->text().toInt();
+
+	AdminConfig::ErrorCode code = tempConfig.calcImageAspectRatio();
+	if (code != AdminConfig::ValidConfig) 
+		adminConfig->showMessageBox(this, code); 
 }
 
-void setCursorLocation(pcb::AdminConfig::ConfigIndex code);
+//设置界面上光标的位置
+void setCursorLocation(pcb::AdminConfig::ConfigIndex code)
+{
+	int MaxMotionStroke; //机械结构的最大运动行程
+		int MaxCameraNum; //可用相机的总数
+		int PixelsNumPerUnitLength; //图像分辨率 pix/mm
+		double ImageOverlappingRate; //分图重叠率
+		int ImageSize_W; //图像宽度
+		int ImageSize_H; //图像高度
+		double ImageAspectRatio; //图像宽高比
+
+	switch (code)
+	{
+	case pcb::DetectConfig::MaxMotionStroke:
+		ui.lineEdit_MaxMotionStroke->setFocus(); break;
+	case pcb::DetectConfig::MaxCameraNum:
+		ui.lineEdit_MaxCameraNum->setFocus(); break;
+	case pcb::DetectConfig::PixelsNumPerUnitLength:
+		ui.lineEdit_PixelsNumPerUnitLength->setFocus(); break;
+	case pcb::DetectConfig::ImageOverlappingRate:
+		ui.lineEdit_ImageOverlappingRate->setFocus(); break;
+	case pcb::DetectConfig::Index_ImageSize_W:
+		ui.lineEdit_ImageSize_W->setFocus(); break;
+	case pcb::DetectConfig::Index_ImageSize_H:
+		ui.lineEdit_ImageSize_H->setFocus(); break;
+	}
+}

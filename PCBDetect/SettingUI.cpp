@@ -48,12 +48,10 @@ void SettingUI::initSettingUI()
 
 	//限制参数的输入范围
 	QIntValidator intValidator;
-	ui.lineEdit_nCamera->setValidator(&intValidator);
-	ui.lineEdit_nPhotographing->setValidator(&intValidator);
+	ui.lineEdit_ActualProductSize_W->setValidator(&intValidator);
+	ui.lineEdit_ActualProductSize_H->setValidator(&intValidator);
 	ui.lineEdit_nBasicUnitInRow->setValidator(&intValidator);
 	ui.lineEdit_nBasicUnitInCol->setValidator(&intValidator);
-	ui.lineEdit_ImageAspectRatio_W->setValidator(&intValidator);
-	ui.lineEdit_ImageAspectRatio_H->setValidator(&intValidator);
 }
 
 //更新界面
@@ -69,13 +67,10 @@ void SettingUI::refreshSettingUI()
 	else if (format == ".png") ui.comboBox_ImageFormat->setCurrentText("    *.png");
 	else if (format == ".tif" || format == ".tiff") ui.comboBox_ImageFormat->setCurrentText("    *.tif");
 
-	ui.lineEdit_nCamera->setText(QString::number(detectConfig->nCamera));
-	ui.lineEdit_nPhotographing->setText(QString::number(detectConfig->nPhotographing));
+	ui.lineEdit_ActualProductSize_W->setText(QString::number(detectConfig->ActualProductSize_W));
+	ui.lineEdit_ActualProductSize_H->setText(QString::number(detectConfig->ActualProductSize_H));
 	ui.lineEdit_nBasicUnitInRow->setText(QString::number(detectConfig->nBasicUnitInRow));
 	ui.lineEdit_nBasicUnitInCol->setText(QString::number(detectConfig->nBasicUnitInCol));
-
-	ui.lineEdit_ImageAspectRatio_W->setText(QString::number(detectConfig->ImageAspectRatio_W));
-	ui.lineEdit_ImageAspectRatio_H->setText(QString::number(detectConfig->ImageAspectRatio_H));
 }
 
 //设置光标的位置
@@ -100,20 +95,14 @@ void SettingUI::setCursorLocation(DetectConfig::ConfigIndex code)
 		ui.lineEdit_OutputDirPath->setFocus(); break;
 	case pcb::DetectConfig::Index_ImageFormat:
 		break;
-	case pcb::DetectConfig::Index_nCamera:
-		ui.lineEdit_nCamera->setFocus(); break;
-	case pcb::DetectConfig::Index_nPhotographing:
-		ui.lineEdit_nPhotographing->setFocus(); break;
+	case pcb::DetectConfig::Index_ActualProductSize_W:
+		ui.lineEdit_ActualProductSize_W->setFocus(); break;
+	case pcb::DetectConfig::Index_ActualProductSize_H:
+		ui.lineEdit_ActualProductSize_H->setFocus(); break;
 	case pcb::DetectConfig::Index_nBasicUnitInRow:
 		ui.lineEdit_nBasicUnitInRow->setFocus(); break;
 	case pcb::DetectConfig::Index_nBasicUnitInCol:
 		ui.lineEdit_nBasicUnitInCol->setFocus(); break;
-	case pcb::DetectConfig::Index_ImageAspectRatio_W:
-		ui.lineEdit_ImageAspectRatio_W->setFocus(); break;
-	case pcb::DetectConfig::Index_ImageAspectRatio_H:
-		ui.lineEdit_ImageAspectRatio_H->setFocus(); break;
-	case pcb::DetectConfig::Index_ImageAspectRatio:
-		break;
 	}
 }
 
@@ -145,7 +134,7 @@ void SettingUI::on_pushButton_OutputDirPath_clicked()
 void SettingUI::on_pushButton_confirm_clicked()
 {
 	//将参数设置界面的确认按键、返回按键设为不可点击
-	setPushButtonsToEnabled(false);
+	this->setPushButtonsToEnabled(false);
 
 	//获取界面上的config参数
 	getConfigFromSettingUI();
@@ -164,20 +153,22 @@ void SettingUI::on_pushButton_confirm_clicked()
 	this->setCursorLocation(DetectConfig::Index_None);
 
 	//判断是否重置检测系统
-	int resetCode = detectConfig->getSystemResetCode(tempConfig);
+	int resetCode = detectConfig->getSystemResetCode(tempConfig); 
 
 	//将临时配置拷贝到detectConfig中
 	tempConfig.copyTo(detectConfig);
 
 	//重置系统
-	emit resetDetectSystem_adminUI(resetCode); //判断是否重置检测系统
+	resetCode |= detectParams->updateGridSize(adminConfig, tempConfig);
+	emit resetDetectSystem_settingUI(resetCode); //判断是否重置检测系统
 
 	//将参数保存到配置文件中
 	Configurator::saveConfigFile(configFileName, detectConfig);
 
 	//向主界面发送消息
-	emit checkSystemWorkingState_adminUI(); //检查系统的工作状态
-
+	emit checkSystemWorkingState_settingUI(); //检查系统的工作状态
+	pcb::delay(100);
+	
 	//将本界面上的按键设为可点击
 	this->setPushButtonsToEnabled(true);
 }
@@ -209,17 +200,17 @@ void SettingUI::setPushButtonsToEnabled(bool code)
 
 void SettingUI::on_currentIndexChanged_imgFormat()
 {
-	switch (ui.comboBox_ImageFormat->currentIndex())
+	switch ((pcb::ImageFormat) ui.comboBox_ImageFormat->currentIndex())
 	{
-	case 0:
+	case pcb::ImageFormat::Unknown:
 		tempConfig.ImageFormat = ""; break;
-	case 1:
+	case pcb::ImageFormat::BMP:
 		tempConfig.ImageFormat = ".bmp"; break;
-	case 2:
+	case pcb::ImageFormat::JPG:
 		tempConfig.ImageFormat = ".jpg"; break;
-	case 3:
+	case pcb::ImageFormat::PNG:
 		tempConfig.ImageFormat = ".png"; break;
-	case 4:
+	case pcb::ImageFormat::TIF:
 		tempConfig.ImageFormat = ".tif"; break;
 	default:
 		break;
@@ -234,16 +225,11 @@ void SettingUI::getConfigFromSettingUI()
 	tempConfig.SampleDirPath = ui.lineEdit_SampleDirPath->text(); //样本路径
 	tempConfig.TemplDirPath = ui.lineEdit_TemplDirPath->text(); //模板路径
 	tempConfig.OutputDirPath = ui.lineEdit_OutputDirPath->text();//输出路径
-	tempConfig.nCamera = ui.lineEdit_nCamera->text().toInt();//相机个数
-	tempConfig.nPhotographing = ui.lineEdit_nPhotographing->text().toInt();//拍照次数
+
+	tempConfig.ActualProductSize_W = ui.lineEdit_ActualProductSize_W->text().toInt();
+	tempConfig.ActualProductSize_H = ui.lineEdit_ActualProductSize_H->text().toInt();
 	tempConfig.nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();//每一行中的基本单元数
 	tempConfig.nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();//每一列中的基本单元数
-	tempConfig.ImageAspectRatio_W = ui.lineEdit_ImageAspectRatio_W->text().toInt();//样本图像的宽高比
-	tempConfig.ImageAspectRatio_H = ui.lineEdit_ImageAspectRatio_H->text().toInt();//样本图像的宽高比
-	
-	DetectConfig::ErrorCode code = tempConfig.calcImageAspectRatio();
-	if (code != DetectConfig::ValidConfig) 
-		detectConfig->showMessageBox(this, code); 
 }
 
 

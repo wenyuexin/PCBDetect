@@ -20,6 +20,8 @@ class SettingUI : public QWidget
 
 private:
 	Ui::SettingUI ui;
+	pcb::DetectParams *detectParams;//运行参数
+
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectConfig tempConfig; //临时的用户参数类
 	const QString configFileName = ".user.config";//配置文件的文件名
@@ -32,8 +34,9 @@ public:
 	SettingUI(QWidget *parent = Q_NULLPTR);
 	~SettingUI();
 
-	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
 	inline void setAdminConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
 
 	void refreshSettingUI(); //更新设置界面
 	void setPushButtonsToEnabled(bool code); //按键设置

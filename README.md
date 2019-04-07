@@ -53,15 +53,16 @@
 
 
 | 模块 | 说明 | 代码 |
-| :---:| :---: | ----- |
+| :---:| :---: | :---: |
 | DetectConfig | 用户参数 | 0x100 ~ 0x1FF |
 | AdminConfig | 系统参数 | 0x200 ~ 0x2FF |
-| MotionControler | 运动控制 | 0x300 ~ 0x3FF |
-| CameraControler | 相机控制 | 0x400 ~ 0x4FF |
-| ImgConvertThread <br/>ImageConverter | 图像类型转换 | 0x500 ~ 0x5FF |
-| TemplateUI<br/>TemplateThread<br/>TemplateExtractor<br/>TemplFunc | 模板提取 | 0x600 ~ 0x6FF |
-| DetectUI<br/>DetectThread<br/>DetectCore<br/>DetectFunc | 检测 | 0x700 ~ 0x7FF |
-| SerialNumberUI | 产品序号识别 | 0x800 ~ 0x8FF |
+| DetectParams | 运行参数 | 0x300 ~ 0x3FF |
+| MotionControler | 运动控制 | 0x400 ~ 0x4FF |
+| CameraControler | 相机控制 | 0x500 ~ 0x5FF |
+| ImgConvertThread <br/>ImageConverter | 图像类型转换 | 0x600 ~ 0x6FF |
+| TemplateUI<br/>TemplateThread<br/>TemplateExtractor<br/>TemplFunc | 模板提取 | 0x700 ~ 0x7FF |
+| DetectUI<br/>DetectThread<br/>DetectCore<br/>DetectFunc | 检测 | 0x800 ~ 0x8FF |
+| SerialNumberUI | 产品序号识别 | 0x900 ~ 0x9FF |
 |  |  |  |
 
 

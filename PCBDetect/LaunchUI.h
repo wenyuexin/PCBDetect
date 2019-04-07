@@ -21,8 +21,9 @@ class LaunchUI : public QWidget
 
 private:
 	Ui::LaunchUI ui;
-	pcb::DetectConfig *detectConfig; //用户参数配置
-	pcb::AdminConfig *adminConfig; //系统参数配置
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig *detectConfig; //用户参数
+	pcb::DetectParams *detectParams; //运行参数
 	CameraControler *cameraControler; //相机控制器
 	SysInitThread *initThread; //系统初始化线程
 

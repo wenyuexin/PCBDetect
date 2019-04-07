@@ -34,8 +34,9 @@ protected:
 	void run();
 
 private:
-	bool initDetectConfig();
 	bool initAdminConfig();
+	bool initDetectConfig();
+	bool initDetectParams();
 	bool initCameraControler();
 
 Q_SIGNALS:
