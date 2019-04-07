@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 
 #include "opencv2/opencv.hpp"
 #include <QFile>
@@ -28,7 +28,9 @@ namespace pcb
 {
 #ifndef PCB_FUNCTIONS
 #define PCB_FUNCTIONS
-	void delay(unsigned long msec);
+	void delay(unsigned long msec);//·Ç×èÈûÑÓ³Ù
+	inline QString chinese(const QByteArray &str) { return  QString::fromLocal8Bit(str); }
+	QString selectDirPath(QString windowTitle = chinese("ÇëÑ¡ÔñÂ·¾¶"));//½»»¥Ê½ÎÄ¼ş¼ĞÂ·¾¶Ñ¡Ôñ
 #endif //PCB_FUNCTIONS
 
 #ifndef IMAGE_FORMAT
@@ -66,7 +68,7 @@ namespace pcb
 
 #ifndef STRUCT_DETECT_RESULT
 #define STRUCT_DETECT_RESULT 
-	struct DetectResult { //æ£€æµ‹ç»“æœ
+	struct DetectResult { //¼ì²â½á¹û
 
 	};
 #endif //STRUCT_DETECT_RESULT
@@ -75,27 +77,27 @@ namespace pcb
 
 #ifndef CLASS_DETECT_CONFIG
 #define CLASS_DETECT_CONFIG
-	//ç”¨æˆ·å‚æ•°ç±»
+	//ÓÃ»§²ÎÊıÀà
 	class DetectConfig 
 	{
 	public:
-		QString SampleDirPath; //æ ·æœ¬æ–‡ä»¶å­˜å‚¨è·¯å¾„
-		QString TemplDirPath;//æ¨¡æ¿æ–‡ä»¶çš„å­˜å‚¨è·¯å¾„
-		QString OutputDirPath;//æ£€æµ‹ç»“æœå­˜å‚¨è·¯å¾„
-		QString ImageFormat; //å›¾åƒåç¼€
+		QString SampleDirPath; //Ñù±¾ÎÄ¼ş´æ´¢Â·¾¶
+		QString TemplDirPath;//Ä£°åÎÄ¼şµÄ´æ´¢Â·¾¶
+		QString OutputDirPath;//¼ì²â½á¹û´æ´¢Â·¾¶
+		QString ImageFormat; //Í¼Ïñºó×º
 
-		int ActualProductSize_W;//äº§å“å®é™…å®½åº¦
-		int ActualProductSize_H;//äº§å“å®é™…é«˜åº¦
-		int nCamera; //ç›¸æœºä¸ªæ•°
-		int nPhotographing; //æ‹ç…§æ¬¡æ•°
+		int ActualProductSize_W;//²úÆ·Êµ¼Ê¿í¶È
+		int ActualProductSize_H;//²úÆ·Êµ¼Ê¸ß¶È
+		int nCamera; //Ïà»ú¸öÊı
+		int nPhotographing; //ÅÄÕÕ´ÎÊı
 		
-		int nBasicUnitInRow; //æ¯ä¸€è¡Œä¸­çš„åŸºæœ¬å•å…ƒæ•°
-		int nBasicUnitInCol; //æ¯ä¸€åˆ—ä¸­çš„åŸºæœ¬å•å…ƒæ•°
-		double ImageAspectRatio; //æ ·æœ¬å›¾åƒçš„å®½é«˜æ¯”
-		int ImageAspectRatio_W; //å®½é«˜æ¯”ä¸­çš„å®½
-		int ImageAspectRatio_H; //å®½é«˜æ¯”ä¸­çš„é«˜
+		int nBasicUnitInRow; //Ã¿Ò»ĞĞÖĞµÄ»ù±¾µ¥ÔªÊı
+		int nBasicUnitInCol; //Ã¿Ò»ÁĞÖĞµÄ»ù±¾µ¥ÔªÊı
+		double ImageAspectRatio; //Ñù±¾Í¼ÏñµÄ¿í¸ß±È
+		int ImageAspectRatio_W; //¿í¸ß±ÈÖĞµÄ¿í
+		int ImageAspectRatio_H; //¿í¸ß±ÈÖĞµÄ¸ß
 
-		//å‚æ•°ç´¢å¼•
+		//²ÎÊıË÷Òı
 		enum ConfigIndex {
 			Index_All,
 			Index_None,
@@ -112,7 +114,7 @@ namespace pcb
 			Index_ImageAspectRatio
 		};
 
-		//é”™è¯¯ä»£ç 
+		//´íÎó´úÂë
 		enum ErrorCode {
 			ValidConfig = 0x000,
 			ValidValue = 0x000,
@@ -138,52 +140,52 @@ namespace pcb
 	public:
 		DetectConfig() = default;
 		~DetectConfig() = default;
-		void loadDefaultValue(); //åŠ è½½é»˜è®¤å‚æ•°
+		void loadDefaultValue(); //¼ÓÔØÄ¬ÈÏ²ÎÊı
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
 		bool isValid();
 		inline void resetErrorCode() { errorCode = Uncheck; }
-		inline ErrorCode getErrorCode() { return errorCode; } //è·å–é”™è¯¯ä»£ç 
-		static ConfigIndex convertCodeToIndex(ErrorCode code); //é”™è¯¯ä»£ç è½¬ç´¢å¼•
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //å¼¹çª—è­¦å‘Š
+		inline ErrorCode getErrorCode() { return errorCode; } //»ñÈ¡´íÎó´úÂë
+		static ConfigIndex convertCodeToIndex(ErrorCode code); //´íÎó´úÂë×ªË÷Òı
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //µ¯´°¾¯¸æ
 
-		ErrorCode calcImageAspectRatio(); //è®¡ç®—å®½é«˜æ¯”
-		ConfigIndex unequals(DetectConfig &other); //ä¸ç­‰æ€§åˆ¤æ–­
-		int getSystemResetCode(DetectConfig &newConfig); //è·å–ç³»ç»Ÿé‡ç½®ä»£ç 
-		void copyTo(DetectConfig *dst); //æ‹·è´å‚æ•°
+		ErrorCode calcImageAspectRatio(); //¼ÆËã¿í¸ß±È
+		ConfigIndex unequals(DetectConfig &other); //²»µÈĞÔÅĞ¶Ï
+		int getSystemResetCode(DetectConfig &newConfig); //»ñÈ¡ÏµÍ³ÖØÖÃ´úÂë
+		void copyTo(DetectConfig *dst); //¿½±´²ÎÊı
 	};
 #endif //CLASS_DETECT_CONFIG
 
 
 #ifndef CLASS_ADMIN_CONFIG
 #define CLASS_ADMIN_CONFIG 
-	//ç³»ç»Ÿå‚æ•°ç±»
+	//ÏµÍ³²ÎÊıÀà
 	class AdminConfig 
 	{
 	public:
-		int MaxMotionStroke; //æœºæ¢°ç»“æ„çš„æœ€å¤§è¿åŠ¨è¡Œç¨‹
-		int MaxCameraNum; //å¯ç”¨ç›¸æœºçš„æ€»æ•°
-		//int MaxPhotographingNum; //æœ€å¤§æ‹ç…§æ¬¡æ•°
-		int PixelsNumPerUnitLength; //å•ä½é•¿åº¦å†…çš„åƒç´ ä¸ªæ•°
-		double ImageOverlappingRate; //åˆ†å›¾é‡å ç‡
+		int MaxMotionStroke; //»úĞµ½á¹¹µÄ×î´óÔË¶¯ĞĞ³Ì
+		int MaxCameraNum; //¿ÉÓÃÏà»úµÄ×ÜÊı
+		//int MaxPhotographingNum; //×î´óÅÄÕÕ´ÎÊı
+		int ImageResolutionRatio; //Í¼Ïñ·Ö±æÂÊ pix/mm
+		double ImageOverlappingRate; //·ÖÍ¼ÖØµşÂÊ
 
 		enum ConfigIndex {
 			Index_All,
 			Index_None,
 			Index_MaxMotionStroke,
 			Index_MaxCameraNum,
-			Index_PixelsNumPerUnitLengthï¼Œ
+			Index_ImageResolutionRatio,
 			Index_ImageOverlappingRate
 		};
 
-		//é”™è¯¯ä»£ç 
+		//´íÎó´úÂë
 		enum ErrorCode {
 			ValidConfig = 0x000,
 			Uncheck = 0x200,
 			ConfigFileMissing = 0x201,
 			Invalid_MaxMotionStroke = 0x202,
 			Invalid_MaxCameraNum = 0x203,
-			Invalid_PixelsNumPerUnitLength = 0x204,
+			Invalid_ImageResolutionRatio = 0x204,
 			Invalid_ImageOverlappingRate = 0x205,
 			Default = 0x2FF
 		};
@@ -194,32 +196,32 @@ namespace pcb
 	public:
 		AdminConfig() = default;
 		~AdminConfig() = default;
-		void loadDefaultValue(); //åŠ è½½é»˜è®¤å‚æ•°
+		void loadDefaultValue(); //¼ÓÔØÄ¬ÈÏ²ÎÊı
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
 		bool isValid();
 		inline void resetErrorCode() { errorCode = Uncheck; }
-		inline ErrorCode getErrorCode() { return errorCode; } //è·å–é”™è¯¯ä»£ç 
-		static ConfigIndex convertCodeToIndex(ErrorCode code); //é”™è¯¯ä»£ç è½¬å‚æ•°ç´¢å¼•
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //å¼¹çª—è­¦å‘Š
+		inline ErrorCode getErrorCode() { return errorCode; } //»ñÈ¡´íÎó´úÂë
+		static ConfigIndex convertCodeToIndex(ErrorCode code); //´íÎó´úÂë×ª²ÎÊıË÷Òı
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //µ¯´°¾¯¸æ
 
-		ConfigIndex unequals(AdminConfig &other); //ä¸ç­‰æ€§åˆ¤æ–­
-		int getSystemResetCode(AdminConfig &newConfig); //è·å–ç³»ç»Ÿé‡ç½®ä»£ç 
-		void copyTo(AdminConfig *dst); //æ‹·è´å‚æ•°
+		ConfigIndex unequals(AdminConfig &other); //²»µÈĞÔÅĞ¶Ï
+		int getSystemResetCode(AdminConfig &newConfig); //»ñÈ¡ÏµÍ³ÖØÖÃ´úÂë
+		void copyTo(AdminConfig *dst); //¿½±´²ÎÊı
 	};
 #endif //CLASS_ADMIN_CONFIG
 
 
 #ifndef CLASS_CONFIGURATOR
 #define CLASS_CONFIGURATOR 
-	//å‚æ•°é…ç½®å™¨ï¼š
-	//ç”¨äºå®Œæˆå‚æ•°ç±»å’Œå‚æ•°é…ç½®æ–‡ä»¶ä¹‹é—´çš„è¯»å†™æ“ä½œ
+	//²ÎÊıÅäÖÃÆ÷£º
+	//ÓÃÓÚÍê³É²ÎÊıÀàºÍ²ÎÊıÅäÖÃÎÄ¼şÖ®¼äµÄ¶ÁĞ´²Ù×÷
 	class Configurator
 	{
 	private:
 		QFile *configFile;
 		QDateTime fileDateTime;
-		int keys[4]; //ç§˜é’¥
+		int keys[4]; //ÃØÔ¿
 
 	public:
 		Configurator(QFile *file = Q_NULLPTR);
@@ -227,12 +229,12 @@ namespace pcb
 
 		static void createConfigFile(QString filePath);
 
-		bool jsonSetValue(const QString &key, QString &value); //å†™QString
-		bool jsonSetValue(const QString &key, int &value); //å†™int
-		bool jsonSetValue(const QString &key, double &value); //å†™double
-		bool jsonReadValue(const QString &key, QString &value); //è¯»QString
-		bool jsonReadValue(const QString &key, int &value); //è¯»int
-		bool jsonReadValue(const QString &key, double &value); //è¯»double
+		bool jsonSetValue(const QString &key, QString &value); //Ğ´QString
+		bool jsonSetValue(const QString &key, int &value); //Ğ´int
+		bool jsonSetValue(const QString &key, double &value); //Ğ´double
+		bool jsonReadValue(const QString &key, QString &value); //¶ÁQString
+		bool jsonReadValue(const QString &key, int &value); //¶Áint
+		bool jsonReadValue(const QString &key, double &value); //¶Ádouble
 
 		static bool saveConfigFile(const QString &fileName, DetectConfig *config);
 		static bool loadConfigFile(const QString &fileName, DetectConfig *config);
@@ -255,19 +257,19 @@ namespace pcb
 
 #ifndef STRUCT_DETECT_PARAMS
 #define STRUCT_DETECT_PARAMS
-	//ç¨‹åºè¿è¡ŒæœŸé—´ä½¿ç”¨çš„ä¸´æ—¶å˜é‡æˆ–å‚æ•°
+	//³ÌĞòÔËĞĞÆÚ¼äÊ¹ÓÃµÄÁÙÊ±±äÁ¿»ò²ÎÊı
 	class DetectParams 
 	{
 	public:
-		QString sampleModelNum; //å‹å·
-		QString sampleBatchNum; //æ‰¹æ¬¡å·
-		QString sampleNum; //æ ·æœ¬ç¼–å·
-		QSize imageSize; //æ ·æœ¬å›¾åƒçš„åŸå§‹å°ºå¯¸
-		int currentRow_detect; //æ£€æµ‹è¡Œå·
-		int currentRow_extract; //æå–è¡Œå·
+		QString sampleModelNum; //ĞÍºÅ
+		QString sampleBatchNum; //Åú´ÎºÅ
+		QString sampleNum; //Ñù±¾±àºÅ
+		QSize imageSize; //Ñù±¾Í¼ÏñµÄÔ­Ê¼³ß´ç
+		int currentRow_detect; //¼ì²âĞĞºÅ
+		int currentRow_extract; //ÌáÈ¡ĞĞºÅ
 
-		int nCamera; //ç›¸æœºä¸ªæ•°
-		int nPhotographing; //æ‹ç…§æ¬¡æ•°
+		int nCamera; //Ïà»ú¸öÊı
+		int nPhotographing; //ÅÄÕÕ´ÎÊı
 
 	public:
 		DetectParams() = default;
