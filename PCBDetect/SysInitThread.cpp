@@ -23,9 +23,10 @@ SysInitThread::~SysInitThread()
 void SysInitThread::run()
 {
 	if (bootStatus == 0x0000) {  //初次执行初始化
-		if (!initDetectConfig()) { bootStatus |= 0x1000;  return; }
-		if (!initAdminConfig()) { bootStatus |= 0x0100;  return; }
-		if (!initCameraControler()) { bootStatus |= 0x0001;  return; }
+		if (!initAdminConfig()) { bootStatus |= 0x0100; return; }
+		if (!initDetectConfig()) { bootStatus |= 0x1000; return; }
+		if (!initDetectParams()) { bootStatus |= 0x1100; return; }
+		if (!initCameraControler()) { bootStatus |= 0x0001; return; }
 	}
 	else if (!((bootStatus & 0xF000) >> 12)) { //detectConfig初始化异常
 		if (!initDetectConfig()) { bootStatus |= 0x1000; return; }
@@ -47,6 +48,34 @@ void SysInitThread::run()
 
 /****************** 初始化 ********************/
 
+//对adminConfig进行初始化
+bool SysInitThread::initAdminConfig()
+{
+	emit sysInitStatus_initThread(pcb::chinese("正在获取系统参数 ..."));
+	pcb::delay(1000);
+
+	if (!Configurator::loadConfigFile("/.admin.config", adminConfig)) {
+		emit adminConfigError_initThread(); return false;
+	}
+	else {
+		AdminConfig::ErrorCode code;//错误代码
+		//计算宽高比
+		code = adminConfig->calcImageAspectRatio();
+		if (code != AdminConfig::ValidValue) {
+			emit adminConfigError_initThread(); return false; 
+		}
+		//参数有效性判断
+		code = adminConfig->checkValidity(AdminConfig::Index_All);
+		if (code != AdminConfig::ValidConfig) { 
+			emit adminConfigError_initThread(); return false; 
+		}
+	}
+
+	emit sysInitStatus_initThread(pcb::chinese("系统参数获取结束   "));
+	pcb::delay(500);
+	return true;
+}
+
 //对DetectConfig进行初始化
 bool SysInitThread::initDetectConfig()
 {
@@ -57,12 +86,7 @@ bool SysInitThread::initDetectConfig()
 		emit detectConfigError_initThread(); return false;
 	}
 	else {
-		DetectConfig::ErrorCode code;
-		//计算宽高比
-		code = detectConfig->calcImageAspectRatio();
-		if (code != DetectConfig::ValidValue) {
-			emit detectConfigError_initThread(); return false; 
-		}
+		DetectConfig::ErrorCode code;//错误代码
 		//参数有效性判断
 		code = detectConfig->checkValidity(DetectConfig::Index_All);
 		if (code != DetectConfig::ValidConfig) { 
@@ -75,27 +99,10 @@ bool SysInitThread::initDetectConfig()
 	return true;
 }
 
-//对adminConfig进行初始化
-bool SysInitThread::initAdminConfig()
+//对DetectParams进行初始化
+bool SysInitThread::initDetectParams()
 {
-	emit sysInitStatus_initThread(pcb::chinese("正在获取系统参数 ..."));
-	pcb::delay(1000);
-
-	if (!Configurator::loadConfigFile("/.admin.config", adminConfig)) {
-		emit adminConfigError_initThread(); return false;
-	}
-	else {
-		//参数有效性判断
-		AdminConfig::ErrorCode code;//错误代码
-		code = adminConfig->checkValidity(AdminConfig::Index_All);
-		if (code != AdminConfig::ValidConfig) { 
-			emit adminConfigError_initThread(); return false; 
-		}
-	}
-
-	emit sysInitStatus_initThread(pcb::chinese("系统参数获取结束   "));
-	pcb::delay(500);
-	return true;
+	detectParams->updateGridSize();
 }
 
 //初始化相机控制器

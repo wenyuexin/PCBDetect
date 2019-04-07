@@ -26,9 +26,6 @@ void DetectConfig::loadDefaultValue()
 	this->ActualProductSize_H = 600;//产品实际高度
 	this->nBasicUnitInRow = 4; //每一行中的基本单元数
 	this->nBasicUnitInCol = 6; //每一列中的基本单元数
-	this->ImageAspectRatio_W = 4; //宽高比中的宽
-	this->ImageAspectRatio_H = 3; //宽高比中的高
-	this->ImageAspectRatio = 4.0 / 3.0; //样本图像的宽高比
 }
 
 //参数有效性检查
@@ -70,16 +67,6 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
 		if (nBasicUnitInCol < 1)
 			code = Invalid_nBasicUnitInCol;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_ImageAspectRatio_W:
-		if (ImageAspectRatio_W < 1)
-			code = Invalid_ImageAspectRatio_W;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_ImageAspectRatio_H:
-		if (ImageAspectRatio_H < 1)
-			code = Invalid_ImageAspectRatio_H;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_ImageAspectRatio:
-		if (code != Uncheck || index != Index_All) break;
 	}
 
 	if (code == Uncheck) code = ValidConfig;
@@ -117,12 +104,6 @@ DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code)
 		return Index_nBasicUnitInRow;
 	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
 		return Index_nBasicUnitInCol;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_W:
-		return Index_ImageAspectRatio_W;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_H:
-		return Index_ImageAspectRatio_H;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio:
-		return Index_ImageAspectRatio;
 	}
 	return Index_None;
 }
@@ -160,10 +141,6 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
 	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
 		valueName = pcb::chinese("基本单元数"); break;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_W:
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_H:
-	case pcb::DetectConfig::Invalid_ImageAspectRatio:
-		valueName = pcb::chinese("图像宽高比"); break;
 	default:
 		valueName = ""; break;
 	}
@@ -173,16 +150,6 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 		"Config: User: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;
-}
-
-//计算宽高比
-DetectConfig::ErrorCode DetectConfig::calcImageAspectRatio() {
-	ErrorCode code = checkValidity(Index_ImageAspectRatio_W);
-	if (code != ValidValue) return this->errorCode = code;
-	code = checkValidity(Index_ImageAspectRatio_H);
-	if (code != ValidValue) return this->errorCode = code;
-	ImageAspectRatio = 1.0 * ImageAspectRatio_W / ImageAspectRatio_H;
-	return ValidValue;
 }
 
 //不相等判断
@@ -195,8 +162,6 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 	if (this->nPhotographing != other.nPhotographing) return Index_nPhotographing;
 	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
 	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
-	if (this->ImageAspectRatio_W != other.ImageAspectRatio_W) return Index_ImageAspectRatio_W;
-	if (this->ImageAspectRatio_H != other.ImageAspectRatio_H) return Index_ImageAspectRatio_H;
 	return Index_None;
 }
 
@@ -206,14 +171,14 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 //             第2位置位，则表示重置检测模块
 //             第3位置位，则表示重置运动结构
 //             第4位置位，则表示重置相机
-int DetectConfig::getSystemResetCode(DetectConfig &newConfig) {
+int DetectConfig::getSystemResetCode(DetectConfig &newConfig) 
+{
 	int resetCode = 0b0000;
-	if (nCamera != newConfig.nCamera) resetCode |= 0x1100;
-	if (nPhotographing != newConfig.nPhotographing) resetCode |= 0x1100;
-	if (ImageAspectRatio_W != newConfig.ImageAspectRatio_W || ImageAspectRatio_H != newConfig.ImageAspectRatio_H) {
-		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) < 1E-5) resetCode |= 0x1100;
+	if (ActualProductSize_W != newConfig.ActualProductSize_W || 
+		ActualProductSize_H != newConfig.ActualProductSize_H) 
+	{
+		//resetCode |= 0b1100;
 	}
-	if (nCamera > newConfig.nCamera) resetCode |= 0x0001;
 	return resetCode;
 }
 
@@ -246,38 +211,49 @@ void AdminConfig::loadDefaultValue()
 	this->errorCode = Uncheck; //错误代码
 	this->MaxMotionStroke = 80*5; //机械结构的最大运动行程
 	this->MaxCameraNum = 5; //可用相机的总数
-	this->ImageResolutionRatio = 40; //图像分辨率
+	this->PixelsNumPerUnitLength = 40; //单位长度内的像素个数
 	this->ImageOverlappingRate = 0.05; //分图重叠率
+	this->ImageSize_W = 4; //宽高比中的宽
+	this->ImageSize_H = 3; //宽高比中的高
+	this->ImageAspectRatio = 4.0 / 3.0; //样本图像的宽高比
 }
 
 //参数有效性检查
 AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index)
 {
-	if (errorCode == ValidConfig) return errorCode;
+	if (errorCode == ValidConfig) 
+		return this->errorCode;
 
 	AdminConfig::ErrorCode code = Uncheck;
 	switch (index)
 	{
-	case Index_All:
-	case Index_MaxMotionStroke:
-		if (MaxMotionStroke <= 0) {
-			errorCode = Invalid_MaxMotionStroke;
-		}
+	case pcb::AdminConfig::Index_All:
+	case pcb::AdminConfig::Index_MaxMotionStroke:
+		if (MaxMotionStroke <= 0) 
+			code = Invalid_MaxMotionStroke;
 		if (code != Uncheck || index != Index_All) break;
-	case Index_MaxCameraNum:
-		if (MaxCameraNum <= 0) {
-			errorCode = Invalid_MaxCameraNum;
-		}
+	case pcb::AdminConfig::Index_MaxCameraNum:
+		if (MaxCameraNum <= 0) 
+			code = Invalid_MaxCameraNum;
 		if (code != Uncheck || index != Index_All) break;
-	case Index_ImageResolutionRatio:
-		if (ImageResolutionRatio < 0) {
-			errorCode = Invalid_ImageResolutionRatio;
-		}
+	case pcb::AdminConfig::Index_PixelsNumPerUnitLength:
+		if (PixelsNumPerUnitLength <= 0) 
+			code = Invalid_PixelsNumPerUnitLength;
 		if (code != Uncheck || index != Index_All) break;
-	case Index_ImageOverlappingRate:
-		if (ImageOverlappingRate <= 0 || ImageOverlappingRate >= 1) {
-			errorCode = Invalid_ImageOverlappingRate;
-		}
+	case pcb::AdminConfig::Index_ImageOverlappingRate:
+		if (ImageOverlappingRate <= 0 || ImageOverlappingRate >= 1) 
+			code = Invalid_ImageOverlappingRate;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::AdminConfig::Index_ImageSize_W:
+		if (ImageSize_W <= 0)
+			code = Invalid_ImageSize_W;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::AdminConfig::Index_ImageSize_H:
+		if (ImageSize_H <= 0)
+			code = Invalid_ImageSize_H;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::AdminConfig::Index_ImageAspectRatio:
+		if (code != Uncheck || index != Index_All) break;
 	}
 
 	if (code == Uncheck) code = ValidConfig;
@@ -300,14 +276,20 @@ AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
 	{
 		case pcb::AdminConfig::ValidConfig:
 			return Index_None;
-		case  pcb::AdminConfig::Invalid_MaxMotionStroke,
+		case pcb::AdminConfig::Invalid_MaxMotionStroke:
 			return Index_MaxMotionStroke;
-		case pcb::AdminConfig::Invalid_MaxCameraNum,
+		case pcb::AdminConfig::Invalid_MaxCameraNum:
 			return Index_MaxCameraNum;
-		case pcb::AdminConfig::Invalid_ImageResolutionRatio:
-			return Index_ImageResolutionRatio;
+		case pcb::AdminConfig::Invalid_PixelsNumPerUnitLength:
+			return Index_PixelsNumPerUnitLength;
 		case pcb::AdminConfig::Invalid_ImageOverlappingRate:
 			return Index_ImageOverlappingRate;
+		case pcb::AdminConfig::Invalid_ImageAspectRatio_W:
+			return Index_ImageAspectRatio_W;
+		case pcb::AdminConfig::Invalid_ImageAspectRatio_H:
+			return Index_ImageAspectRatio_H;
+		case pcb::AdminConfig::Invalid_ImageAspectRatio:
+			return Index_ImageAspectRatio;
 	}
 	return Index_None;
 }
@@ -331,13 +313,17 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 	switch (code)
 	{
 	case pcb::AdminConfig::Invalid_MaxMotionStroke:
-		valueName = pcb::chinese("机械结构最大行程"); break;
+		valueName = pcb::chinese(" 机械结构最大行程 "); break;
 	case pcb::AdminConfig::Invalid_MaxCameraNum:
-		valueName = pcb::chinese("可用相机总数"); break;
+		valueName = pcb::chinese(" 可用相机总数 "); break;
 	case pcb::AdminConfig::Invalid_ImageResolutionRatio:
-		valueName = pcb::chinese("图像分辨率"); break;
+		valueName = pcb::chinese(" 单位长度的像素个数 "); break;
 	case pcb::AdminConfig::Invalid_ImageOverlappingRate:
-		valueName = pcb::chinese("分图重叠率"); break;
+		valueName = pcb::chinese(" 分图重叠率 "); break;
+	case pcb::DetectConfig::Invalid_ImageAspectRatio_W:
+	case pcb::DetectConfig::Invalid_ImageAspectRatio_H:
+	case pcb::DetectConfig::Invalid_ImageAspectRatio:
+		valueName = pcb::chinese(" 图像尺寸 "); break;
 	default:
 		valueName = ""; break;
 	}
@@ -349,6 +335,16 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 	return true;
 }
 
+//计算宽高比
+AdminConfig::ErrorCode AdminConfig::calcImageAspectRatio() {
+	ErrorCode code = checkValidity(Index_ImageSize_W);
+	if (code != ValidValue) return code;
+	code = checkValidity(Index_ImageSize_H);
+	if (code != ValidValue) return code;
+	ImageAspectRatio = 1.0 * ImageSize_W / ImageSize_H;
+	return ValidValue;
+}
+
 //不相等判断
 AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 {
@@ -356,6 +352,8 @@ AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 	if (this->MaxCameraNum != other.MaxCameraNum) return Index_MaxCameraNum;
 	if (this->ImageResolutionRatio != other.ImageResolutionRatio) return Index_ImageResolutionRatio;
 	if (this->ImageOverlappingRate != other.ImageOverlappingRate) return Index_ImageOverlappingRate;
+	if (this->ImageSize_W != other.ImageSize_W) return Index_ImageSize_W;
+	if (this->ImageSize_H != other.ImageSize_H) return Index_ImageSize_H;
 	return Index_None;
 }
 
@@ -367,14 +365,16 @@ AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 //             第4位置位，则表示重置相机
 int AdminConfig::getSystemResetCode(AdminConfig &newConfig)
 {
-	int resetCode = 0b0000;
+	int resetCode = 0b0000;//重置代码
 
+	//重置模板提取、检测界面
+	if (ImageSize_W != newConfig.ImageSize_W || ImageSize_H != newConfig.ImageSize_H)
+		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) > 1E-6) resetCode |= 0x1100;
 	//重置运动结构模块
 	if (this->MaxMotionStroke != newConfig.MaxMotionStroke) resetCode |= 0x0010;
-	if (this->ImageResolutionRatio != newConfig.ImageResolutionRatio) resetCode |= 0x0010;
-	if (this->ImageOverlappingRate != newConfig.ImageOverlappingRate) resetCode |= 0x0010;
 	//重置相机模块
 	if (this->MaxCameraNum != newConfig.MaxCameraNum) resetCode |= 0x0001;
+
 	return resetCode;
 }
 
@@ -384,8 +384,11 @@ void AdminConfig::copyTo(AdminConfig *dst)
 	dst->errorCode = this->errorCode;
 	dst->MaxMotionStroke = this->MaxMotionStroke;
 	dst->MaxCameraNum = this->MaxCameraNum;
-	dst->ImageResolutionRatio = this->ImageResolutionRatio;
+	dst->PixelsNumPerUnitLength = this->PixelsNumPerUnitLength;
 	dst->ImageOverlappingRate = this->ImageOverlappingRate;
+	dst->ImageSize_W = this->ImageSize_W;
+	dst->ImageSize_H = this->ImageSize_H;
+	dst->ImageAspectRatio = this->ImageAspectRatio;
 }
 
 
@@ -593,8 +596,6 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H);
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol);
-		configurator.jsonReadValue("ImageAspectRatio_W", config->ImageAspectRatio_W);
-		configurator.jsonReadValue("ImageAspectRatio_H", config->ImageAspectRatio_H);
 		configFile.close();
 	}
 	return success;
@@ -619,20 +620,18 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath);//模板文件夹
 		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath);//输出文件夹
 		configurator.jsonSetValue("ImageFormat", config->ImageFormat);//图像格式
+
 		configurator.jsonSetValue("ActualProductSize_W", QString::number(config->ActualProductSize_W));//产品实际宽度
 		configurator.jsonSetValue("ActualProductSize_H", QString::number(config->ActualProductSize_H));//产品实际高度
 		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow)); //每一行中的基本单元数
 		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol)); //每一列中的基本单元数
-		configurator.jsonSetValue("ImageAspectRatio_W", QString::number(config->ImageAspectRatio_W)); //样本图像的宽高比
-		configurator.jsonSetValue("ImageAspectRatio_H", QString::number(config->ImageAspectRatio_H)); //样本图像的宽高比
-		configurator.jsonSetValue("ImageAspectRatio", QString::number(config->ImageAspectRatio, 'g', 7)); //样本图像的宽高比
 		configFile.close();
 	}
 	return success;
 }
 
 //将配置文件中的参数加载到 AdminConfig 中
-bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
+bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 {
 	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
@@ -647,15 +646,17 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 		Configurator configurator(&configFile);
 		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke);
 		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum);
-		configurator.jsonReadValue("ImageResolutionRatio", config->ImageResolutionRatio);
+		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength);
 		configurator.jsonReadValue("ImageOverlappingRate", config->ImageOverlappingRate);
+		configurator.jsonReadValue("ImageSize_W", config->ImageSize_W);
+		configurator.jsonReadValue("ImageSize_H", config->ImageSize_H);
 		configFile.close();
 	}
 	return success;
 }
 
 //将 AdminConfig 中的参数保存到配置文件中
-bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
+bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 {
 	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
@@ -671,8 +672,10 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 		Configurator configurator(&configFile);
 		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke);
 		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum);
-		configurator.jsonSetValue("ImageResolutionRatio", config->ImageResolutionRatio);
+		configurator.jsonSetValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength);
 		configurator.jsonSetValue("ImageOverlappingRate", config->ImageOverlappingRate);
+		configurator.jsonSetValue("ImageSize_W", config->ImageSize_W);
+		configurator.jsonSetValue("ImageSize_H", config->ImageSize_H);
 		configFile.close();
 	}
 	return success;
@@ -742,13 +745,29 @@ void DetectParams::loadDefaultValue()
 }
 
 //计算nCamera、nPhotographing
-void DetectParams::updateGridSize(DetectConfig *detectConfig, AdminConfig *adminConfig)
+int DetectParams::updateGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig)
 {
+	int resetCode = 0b0000; //系统重置代码
+	int nCamera_old = nCamera;
+	int nPhotographing_old = nPhotographing;
+
+	//计算需要开启的相机个数
 	int overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 	int nW = detectConfig->ActualProductSize_W / adminConfig->ImageResolutionRatio;
+	nw /= adminConfig->ImageSize_W;
 	this->nCamera = (nW - overlap) / (1 - overlap);
+
+	//计算拍摄次数
 	int nH = detectConfig->ActualProductSize_H / adminConfig->ImageResolutionRatio;
+	nH /= adminConfig->ImageSize_H;
 	this->nPhotographing = (nH - overlap) / (1 - overlap);
+
+	//判断是否需要重置系统
+	if (this->nCamera != nCamera_old)
+		resetCode |= 0b1101;
+	if (this->nPhotographing != nPhotographing_old)
+		resetCode |= 0b1100;
+	return resetCode;
 }
 
 
