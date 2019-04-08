@@ -17,13 +17,18 @@
 | PCBDetect | .h / .cpp | 程序主界面 |
 | PCBDetect | .ui | 程序主界面的外观设计和控件布局 |
 | PCBDetect | .qrc | Qt界面的资源配置文件 |
-| - |  |  |
 | Configurator | .h / .cpp | 参数配置器，用于实现对参数配置文件的读写，<br>同时内部定义了参数类DetectConfig和AdminConfig等 |
+| - |  |  |
 | LaunchUI | .h / .cpp | 启动界面 |
 | LaunchUI | .ui | 启动界面的外观设计和控件布局 |
 | SysInitThread | .h / .cpp | 系统初始化线程，启动过程中在后台执行初始化操作 |
+|  |  |  |
 | SettingUI | .h / .cpp | 参数设置界面 |
 | SettingUI | .ui | 参数设置界面的外观设计和控件布局 |
+| PassWordUI | .h / .cpp | 系统参数登录界面 |
+| PassWordUI | .ui | 系统参数登录界面的外观设计和控件布局 |
+| AdminSettingUI | .h / .cpp | 系统参数设置界面 |
+| AdminSettingUI | .ui | 系统参数设置界面的外观设计和控件布局 |
 | - |  |  |
 | MotionControler | .h / .cpp | 运动控制模块，用于向控制板发送控制指令，<br/>进而控制机械运动结构的相关动作（初始化、前进、归零、复位） |
 | AMC98C | .h | 用于和控制板通信的若干内容 |
@@ -54,8 +59,8 @@
 
 | 模块 | 说明 | 代码 |
 | :---:| :---: | :---: |
-| DetectConfig | 用户参数 | 0x100 ~ 0x1FF |
-| AdminConfig | 系统参数 | 0x200 ~ 0x2FF |
+| AdminConfig | 系统参数 | 0x100 ~ 0x1FF |
+| DetectConfig | 用户参数 | 0x200 ~ 0x2FF |
 | DetectParams | 运行参数 | 0x300 ~ 0x3FF |
 | MotionControler | 运动控制 | 0x400 ~ 0x4FF |
 | CameraControler | 相机控制 | 0x500 ~ 0x5FF |
