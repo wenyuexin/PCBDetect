@@ -7,7 +7,7 @@ MotionControler::MotionControler(QObject *parent)
 	adminConfig = Q_NULLPTR;
 	callerOfResetControler = 0; //复位的调用函数的标识
 	errorCode = Uncheck; //控制器的错误码
-	operation = NoOperation;//操作指令
+	running = false; //操作是否正在运行
 }
 
 MotionControler::~MotionControler()
@@ -20,6 +20,10 @@ MotionControler::~MotionControler()
 //初始化，下载参数
 void MotionControler::initControler()
 {
+	QMutexLocker locker(&mutex);
+	if (running) return;
+	else running = true;
+
 	////0控制器类型
 	//AMC98_KZQSet(0, 0, _T("4"));
 	////1设置
@@ -65,11 +69,22 @@ void MotionControler::initControler()
 	//AMC98_AddParamPC2CNC(243, 1);//需要复位的电机 1要X复位 3要XY复位 0不要复位
 	//AMC98_AddParamPC2CNC(60000, 3);//保存数据
 	//AMC98_ParamPC2CNC();//放在最后面
+
+	//用于临时测试
+	pcb::delay(1000);
+	//running = false;
+	//emit initControlerFinished_motion();
+
+	on_initControler_finished();
 }
 
 //运动结构前进
 void MotionControler::moveForward()
 {
+	QMutexLocker locker(&mutex);
+	if (running) return;
+	running = true;
+
 	//void (MotionControler::*funcPtr)();
 	//funcPtr = &MotionControler::on_moveForward_finished;
 	//AMC98_Connect((HWND)(&funcPtr), 0);
@@ -81,6 +96,10 @@ void MotionControler::moveForward()
 //运动结构归零
 void MotionControler::returnToZero()
 {
+	QMutexLocker locker(&mutex);
+	if (running) return;
+	running = true;
+
 	//void (MotionControler::*funcPtr)();
 	//funcPtr = &MotionControler::on_returnToZero_finished;
 	//AMC98_Connect((HWND)(&funcPtr), 0);
@@ -95,6 +114,10 @@ void MotionControler::returnToZero()
  */
 void MotionControler::resetControler(int caller)
 {
+	QMutexLocker locker(&mutex);
+	if (running) return;
+	running = true;
+
 	callerOfResetControler  = caller;
 
 	//void (MotionControler::*funcPtr)();
@@ -105,57 +128,70 @@ void MotionControler::resetControler(int caller)
 	//AMC98_Comand(1, NULL);
 }
 
-/**************** 发送结束信号 *******************/
 
-//初始化
+/************ 判断操作状态、发送结束信号 *************/
+
+//判断当前是否有正在运行的操作
+bool MotionControler::isRunning()
+{ 
+	QMutexLocker locker(&mutex);
+	return running; 
+}
+
+//发送初始化结束的信号
 void MotionControler::on_initControler_finished()
 {
+	//QMutexLocker locker(&mutex);
+	errorCode = NoError;
+	running = false;
 	emit initControlerFinished_motion();
 }
 
-//运动结构前进
+//发送运动结构前进结束的信号
 void MotionControler::on_moveForward_finished()
 {
+	QMutexLocker locker(&mutex);
+	running = false;
 	emit moveForwardFinished_motion();
 }
 
-//运动结构归零
+//发送运动结构归零结束的信号
 void MotionControler::on_returnToZero_finished()
 {
+	QMutexLocker locker(&mutex);
+	running = false;
 	emit returnToZeroFinished_motion();
 }
 
-//运动结构复位
+//发送运动结构复位结束的信号
 void MotionControler::on_resetControler_finished()
 {
+	QMutexLocker locker(&mutex);
+	running = false;
 	emit resetControlerFinished_motion(callerOfResetControler);
 }
+
 
 /******************* 其他 ******************/
 
 //弹窗警告
-bool MotionControler::showMessageBox(QWidget *parent)
+bool MotionControler::showMessageBox(QWidget *parent, ErrorCode code)
 {
-	if (errorCode == MotionControler::NoError) return false;
-
-	Uncheck = 0x300,
-	InitFailed = 0x301,
-	moveForwardFailed = 0x302,
-	returnToZeroFailed = 0x303,
-	resetControler = 0x304
+	ErrorCode tempCode = (code == Default) ? errorCode : code;
+	if (tempCode == MotionControler::NoError) return false;
 
 	QString warningMessage;
-	switch (errorCode)
+	switch (tempCode)
 	{
 	case MotionControler::Uncheck:
-		warningMessage = pcb::chinese("运动结构的状态未确认！"); break;
+		warningMessage = pcb::chinese("未确认运动结构的工作状态！"); break;
 	case MotionControler::InitFailed:
 		warningMessage = pcb::chinese("运动结构初始化失败！  "); break;
-	case MotionControler::moveForwardFailed:
+	case MotionControler::MoveForwardFailed:
 		warningMessage = pcb::chinese("运动结构前进失败！    "); break;
-	case MotionControler::returnToZeroFailed:
+	case MotionControler::ReturnToZeroFailed:
 		warningMessage = pcb::chinese("运动机构归零失败！    "); break;
-	case MotionControler::esetControler:
+	case MotionControler::ResetControlerFailed:
 		warningMessage = pcb::chinese("运动机构复位失败！    "); break;
 	default:
 		warningMessage = pcb::chinese("未知错误！"); break;
@@ -163,7 +199,7 @@ bool MotionControler::showMessageBox(QWidget *parent)
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
 		warningMessage + "    \n" +
-		"MotionControler: ErrorCode: " + QString::number(errorCode),
+		"MotionControler: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;
 }

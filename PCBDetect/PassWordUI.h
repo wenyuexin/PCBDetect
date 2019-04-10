@@ -5,10 +5,6 @@
 #include <QMessageBox>
 
 
-namespace pcb {
-	class PassWordUI;
-}
-
 //系统设置登录界面
 class PassWordUI : public QWidget
 {
@@ -20,7 +16,7 @@ public:
 
 private:
 	Ui::PassWordUI ui;
-	const QString PASS_WORD = "HongDian123456";
+	const QString PASS_WORD = "hongdian123456";
 
 Q_SIGNALS:
 	void showAdminSettingUI_pswdUI();

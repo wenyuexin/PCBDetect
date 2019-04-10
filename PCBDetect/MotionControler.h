@@ -1,6 +1,10 @@
 #pragma once
-#include <QObject>
+
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
+#include <QObject>
+#include <QThread>
+#include <QMutex> 
 //#include "AMC98C.h"
 
 //#ifdef _DEBUG
@@ -10,54 +14,49 @@
 //#endif
 
 
-namespace pcb {
-	class ImageConverter;
-}
-
 //运动控制器
 class MotionControler : public QObject
 {
 	Q_OBJECT
 
 public:
-	//运动结构的相关操作
-	enum Operation {
-		NoOperation,
-		InitCameras,
-		TakePhoto
-	};
-
 	//运动结构的错误代码
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x300,
-		InitFailed = 0x301,
-		moveForwardFailed = 0x302,
-		returnToZeroFailed = 0x303,
-		resetControler = 0x304
+		Uncheck = 0x400,
+		InitFailed = 0x401,
+		MoveForwardFailed = 0x402,
+		ReturnToZeroFailed = 0x403,
+		ResetControlerFailed = 0x404,
+		Default
 	};
 
+	const int MaxRuntime = 5000; //单位ms
+
 private:
-	pcb::DetectConfig *detectConfig;
-	pcb::AdminConfig *adminConfig;
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig *detectConfig; //用户参数
 	int callerOfResetControler; //复位的调用函数的标识
+	bool running; //操作是否正在运行
 	ErrorCode errorCode; //控制器的错误码
-	Operation operation;//操作指令
+	QMutex mutex; //线程锁
 
 public:
 	MotionControler(QObject *parent = Q_NULLPTR);
 	~MotionControler();
 
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; } 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } 
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; } 
 
 	void initControler(); //初始化
 	void moveForward(); //前进
 	void returnToZero(); //归零
 	void resetControler(int caller); //复位
+	bool isRunning(); //判断当前是否有正在运行的操作
 
+	inline bool isReady() { return errorCode == NoError; }
 	inline ErrorCode getErrorCode() { return errorCode; } //获取当前的错误代码
-	bool showMessageBox(QWidget *parent); //弹窗警告
+	bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
 private:
 	void on_initControler_finished();

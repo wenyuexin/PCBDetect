@@ -2,8 +2,9 @@
 
 #include <QThread>
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "ImageConverter.h"
-#include "DetectCore.h"
+#include "DefectDetecter.h"
 
 
 class DetectThread :
@@ -12,7 +13,7 @@ class DetectThread :
 	Q_OBJECT
 
 private:
-	DetectCore *detectCore; //检测核心
+	DefectDetecter *detectCore; //检测核心
 
 	int *currentRow; //当前正在检测的样本行的行号
 	pcb::DetectParams *params;
@@ -24,7 +25,7 @@ public:
 	DetectThread();
 	~DetectThread();
 
-	inline void setDetectCore(DetectCore* ptr = Q_NULLPTR) { detectCore = ptr; }
+	inline void setDefectDetecter(DefectDetecter* ptr = Q_NULLPTR) { detectCore = ptr; }
 	inline void setSampleImages(pcb::QImageArray* ptr = Q_NULLPTR) { samples = ptr; }
 	inline void setDetectParams(pcb::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
 

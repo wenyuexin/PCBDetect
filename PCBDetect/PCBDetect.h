@@ -5,9 +5,11 @@
 #include "LaunchUI.h"
 #include "SysInitThread.h"
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "DetectUI.h"
 #include "SettingUI.h"
 #include "TemplateUI.h"
+#include "MotionControler.h"
 #include "CameraControler.h"
 #include <QDir>
 #include <QApplication>
@@ -16,9 +18,19 @@
 #include <QTime>
 
 
-namespace pcb {
-	class PCBRecheck;
-}
+#ifndef STRUCT_DETECT_SYSTEM_UI
+#define STRUCT_DETECT_SYSTEM_UI 
+	//检测系统的主要模块
+	struct DetectSystemModules {
+		LaunchUI *launcher; //启动界面
+		SettingUI *settingUI; //参数设置界面
+		TemplateUI *templateUI; //模板提取界面
+		DetectUI *detectUI; //检测界面
+		MotionControler *motionControler;//运动控制器
+		CameraControler *cameraControler;//相机控制器
+	};
+#endif //STRUCT_DETECT_SYSTEM_UI
+
 
 //检测系统的主界面
 class PCBDetect : public QMainWindow
@@ -47,7 +59,11 @@ private:
 	void showTemplateUI();
 	void eixtDetectSystem();
 
+Q_SIGNALS:
+	void resetDetectSystemFinished_mainUI();
+
 private Q_SLOTS:
+	void keyPressEvent(QKeyEvent *event);
 	void setPushButtonsToEnabled(bool code);
 
 	void on_pushButton_set_clicked();
@@ -63,7 +79,7 @@ private Q_SLOTS:
 	void do_showDetectMainUI_settingUI();
 	void do_resetDetectSystem_settingUI(int);
 	void do_enableButtonsOnDetectMainUI_settingUI();
-	void do_checkSystemWorkingState_settingUI();
+	void do_checkSystemState_settingUI();
 	void do_showDetectMainUI_detectUI();
 	void do_showDetectMainUI_templateUI();
 };

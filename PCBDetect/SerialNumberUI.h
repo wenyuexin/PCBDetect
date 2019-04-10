@@ -2,14 +2,12 @@
 
 #include "ui_SerialNumberUI.h"
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include <QWidget>
 #include <QDesktopWidget>
 #include <QMouseEvent>
 #include <QGraphicsScene>
 
-namespace pcb {
-	class SerialNumberUI;
-}
 
 //产品序号识别界面
 class SerialNumberUI : public QWidget

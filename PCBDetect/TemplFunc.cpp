@@ -13,7 +13,8 @@ using cv::Rect;
 //生成完整尺寸的模板图像
 void TemplFunc::generateBigTempl()
 {
-	Size templSize = Size(params->imageSize.width()*config->nCamera, params->imageSize.height()*config->nPhotographing);
+	Size templSize = Size(adminConfig->ImageSize_W*detectParams->nCamera, 
+		adminConfig->ImageSize_H*detectParams->nPhotographing);
 	big_templ = Mat(templSize, CV_8UC3);
 }
 
@@ -26,9 +27,9 @@ void TemplFunc::generateBigTempl()
 
 Mat TemplFunc::find1(int col, cv::Mat &image) {
 	int currentCol = col + 1;
-	int currentRow = params->currentRow_extract + 1;
-	int nCamera = config->nCamera;
-	int nPhotographing = config->nPhotographing;
+	int currentRow = detectParams->currentRow_extract + 1;
+	int nCamera = detectParams->nCamera;
+	int nPhotographing = detectParams->nPhotographing;
 
 	shape = Mat::zeros(Size(100, 100), CV_8UC1);//创建一个像素值全为0的图像，位深8位无符号整数，单通道的灰度图
 
@@ -144,7 +145,7 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 
 	}
 
-	if (currentCol == 1 && 1 < currentRow && params->currentRow_extract < nPhotographing)//左边
+	if (currentCol == 1 && 1 < currentRow && detectParams->currentRow_extract < nPhotographing)//左边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -155,7 +156,7 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 		mask(rect).setTo(255);
 	}
 
-	if (currentCol == nCamera && 1 < currentRow && params->currentRow_extract < nPhotographing)//右边
+	if (currentCol == nCamera && 1 < currentRow && detectParams->currentRow_extract < nPhotographing)//右边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -166,7 +167,7 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 		mask(rect).setTo(255);
 	}
 
-	if (params->currentRow_extract == 1 && 1 < currentCol && currentCol < nCamera)//上边
+	if (detectParams->currentRow_extract == 1 && 1 < currentCol && currentCol < nCamera)//上边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;

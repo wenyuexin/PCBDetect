@@ -1,6 +1,7 @@
 #pragma once
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include <string>
 #include "direct.h"
 #include <io.h>
@@ -10,8 +11,9 @@
 class TemplFunc {
 
 private:
-	pcb::DetectConfig* config;
-	pcb::DetectParams* params;
+	pcb::AdminConfig* adminConfig;
+	pcb::DetectConfig* detectConfig;
+	pcb::DetectParams* detectParams;
 
 	cv::Point minloc, maxloc;//最小值位置，最大值位置，
 	int i, j;
@@ -23,8 +25,9 @@ public:
 	TemplFunc() = default;
 	~TemplFunc(){};
 
-	void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
-	void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	inline void setDetectConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
 
 	void generateBigTempl();
 	cv::Mat find1(int currentCol, cv::Mat &image);

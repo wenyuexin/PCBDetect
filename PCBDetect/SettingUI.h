@@ -3,15 +3,12 @@
 #include <QWidget>
 #include "ui_SettingUI.h"
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "PassWordUI.h" 
 #include "AdminSettingUI.h"
 #include <QDesktopWidget>
 #include <QRegExpValidator>
 
-
-namespace pcb {
-	class SettingUI;
-}
 
 //参数设置界面
 class SettingUI : public QWidget
@@ -26,24 +23,25 @@ private:
 	pcb::DetectConfig tempConfig; //临时的用户参数类
 	const QString configFileName = ".user.config";//配置文件的文件名
 
+	pcb::AdminConfig *adminConfig; //系统参数
 	PassWordUI passWordUI; //系统设置登录界面
 	AdminSettingUI adminSettingUI; //系统设置界面
-	pcb::AdminConfig *adminConfig; //系统参数
+	int sysResetCode = 0b00000000;
 
 public:
 	SettingUI(QWidget *parent = Q_NULLPTR);
 	~SettingUI();
 
-	inline void setAdminConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
+	void doConnect(); //信号连接
 	void refreshSettingUI(); //更新设置界面
 	void setPushButtonsToEnabled(bool code); //按键设置
 
 private:
 	void initSettingUI();
-	void selectDirPath(QString &path);
 	void getConfigFromSettingUI();
 	void setCursorLocation(pcb::DetectConfig::ConfigIndex code);
 
@@ -51,7 +49,7 @@ Q_SIGNALS:
 	void showDetectMainUI();
 	void resetDetectSystem_settingUI(int);
 	void enableButtonsOnDetectMainUI_settingUI();
-	void checkSystemWorkingState_settingUI();
+	void checkSystemState_settingUI();
 
 private Q_SLOTS:
 	void on_pushButton_SampleDirPath_clicked();

@@ -12,10 +12,6 @@
 #include <QKeyEvent>
 
 
-namespace pcb {
-	class TemplateUI;
-}
-
 //模板提取界面
 class TemplateUI : public QWidget
 {
@@ -24,8 +20,9 @@ class TemplateUI : public QWidget
 private:
 	Ui::TemplateUI ui;
 	SerialNumberUI serialNumberUI; //产品序号识别界面
-	pcb::DetectConfig *detectConfig; //参数配置
-	pcb::DetectParams *detectParams; //临时参数
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig *detectConfig; //用户参数
+	pcb::DetectParams *detectParams; //运行参数
 	MotionControler *motionControler; //运动控制器
 	CameraControler *cameraControler; //相机控制器
 
@@ -49,6 +46,7 @@ public:
 	TemplateUI(QWidget *parent = Q_NULLPTR);
 	~TemplateUI();
 	
+	inline void setAdminConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
 	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
 	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
 	inline void setMotionControler(MotionControler *ptr = Q_NULLPTR) { motionControler = ptr; }

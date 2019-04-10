@@ -2,6 +2,7 @@
 #include <QObject>
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "TemplFunc.h"
 
 
@@ -19,8 +20,9 @@ public:
 	};
 	
 private:
-	pcb::DetectConfig *config;
-	pcb::DetectParams *params;
+	pcb::AdminConfig *adminConfig;
+	pcb::DetectConfig *detectConfig;
+	pcb::DetectParams *detectParams;
 	pcb::CvMatArray *samples;
 	TemplFunc *templFunc;
 	ExtractState extractState;
@@ -30,8 +32,9 @@ public:
 	~TemplateExtractor();
 
 	void setSampleImages(pcb::CvMatArray *ptr = Q_NULLPTR) { samples = ptr; }
-	void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
-	void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
+	void setDetectConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
+	void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
+	void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
 	void setTemplFunc(TemplFunc *ptr = Q_NULLPTR) { templFunc = ptr; }
 
 	void extract();

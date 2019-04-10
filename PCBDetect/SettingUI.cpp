@@ -1,7 +1,10 @@
 #include "SettingUI.h"
 
+using pcb::AdminConfig;
 using pcb::DetectConfig;
+using pcb::DetectParams;
 using pcb::Configurator;
+
 
 SettingUI::SettingUI(QWidget *parent)
 	: QWidget(parent)
@@ -14,8 +17,12 @@ SettingUI::SettingUI(QWidget *parent)
 	this->setGeometry(screenRect);
 
 	//设置界面初始化
-	this->setFocusPolicy(Qt::ClickFocus);
-	initSettingUI();
+	this->initSettingUI();
+
+	//成员变量初始化
+	detectParams = Q_NULLPTR;//运行参数
+	detectConfig = Q_NULLPTR; //用户参数
+	adminConfig = Q_NULLPTR; //系统参数
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
@@ -25,23 +32,33 @@ SettingUI::SettingUI(QWidget *parent)
 	passWordUI.setWindowModality(Qt::ApplicationModal);
 	connect(&passWordUI, SIGNAL(showAdminSettingUI_pswdUI()), this, SLOT(do_showAdminSettingUI_pswdUI()));
 	connect(&passWordUI, SIGNAL(closePassWordUI_pswdUI()), this, SLOT(on_closePassWordUI_pswdUI()));
-
-	//系统参数设置界面
-	adminSettingUI.setAdminConfig(adminConfig);
-	connect(&adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
-	connect(&adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
-	connect(&adminSettingUI, SIGNAL(checkSystemWorkingState_adminUI()), this, SLOT(do_checkSystemWorkingState_adminUI()));
 }
 
 SettingUI::~SettingUI()
 {
 }
 
+void SettingUI::doConnect()
+{
+	//系统参数设置界面
+	adminSettingUI.setAdminConfig(adminConfig);
+	adminSettingUI.setDetectConfig(detectConfig);
+	adminSettingUI.setDetectParams(detectParams);
+	connect(&adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
+	connect(&adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
+	connect(&adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
+}
 
 /************* 界面的设置、输入、更新 **************/
 
 void SettingUI::initSettingUI()
 {
+	//设置聚焦策略
+	this->setFocusPolicy(Qt::ClickFocus);
+
+	//设置光标
+	this->setCursorLocation(DetectConfig::Index_None);
+
 	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
 	this->setPushButtonsToEnabled(false);
 	this->setPushButtonsToEnabled(true);
@@ -80,11 +97,9 @@ void SettingUI::setCursorLocation(DetectConfig::ConfigIndex code)
 	switch (code)
 	{
 	case pcb::DetectConfig::Index_All:
-		break;
 	case pcb::DetectConfig::Index_None:
 		ui.lineEdit_SampleDirPath->setFocus(); 
-		ui.lineEdit_SampleDirPath->clearFocus();
-		break;
+		ui.lineEdit_SampleDirPath->clearFocus(); break;
 	case pcb::DetectConfig::Index_SampleDirPath:
 		textLen = ui.lineEdit_SampleDirPath->text().length();
 		ui.lineEdit_SampleDirPath->setCursorPosition(textLen);
@@ -112,21 +127,21 @@ void SettingUI::setCursorLocation(DetectConfig::ConfigIndex code)
 //选择样本文件夹的路径
 void SettingUI::on_pushButton_SampleDirPath_clicked()
 {
-	detectConfig->SampleDirPath = pcb::selectDirPath();
+	detectConfig->SampleDirPath = pcb::selectDirPath(this);
 	ui.lineEdit_SampleDirPath->setText(detectConfig->SampleDirPath);
 }
 
 //选择模板文件夹的路径
 void SettingUI::on_pushButton_TemplDirPath_clicked()
 {
-	detectConfig->TemplDirPath = pcb::selectDirPath();
+	detectConfig->TemplDirPath = pcb::selectDirPath(this);
 	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
 }
 
 //选择输出文件夹的路径
 void SettingUI::on_pushButton_OutputDirPath_clicked()
 {
-	detectConfig->OutputDirPath = pcb::selectDirPath();
+	detectConfig->OutputDirPath = pcb::selectDirPath(this);
 	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
 }
 
@@ -152,22 +167,34 @@ void SettingUI::on_pushButton_confirm_clicked()
 	//设置聚焦位置
 	this->setCursorLocation(DetectConfig::Index_None);
 
-	//判断是否重置检测系统
-	int resetCode = detectConfig->getSystemResetCode(tempConfig); 
+	//判断参数是否已经修改
+	if (detectConfig->unequals(tempConfig) != DetectConfig::Index_None) {
+		//判断是否重置检测系统
+		sysResetCode |= detectConfig->getSystemResetCode(tempConfig);
+		//将临时配置拷贝到detectConfig中
+		tempConfig.copyTo(detectConfig);
+		//将参数保存到配置文件中
+		Configurator::saveConfigFile(configFileName, detectConfig);
 
-	//将临时配置拷贝到detectConfig中
-	tempConfig.copyTo(detectConfig);
+		//更新运行参数
+		sysResetCode |= detectParams->updateGridSize(adminConfig, detectConfig);
+		if (!detectParams->isValid()) detectParams->showMessageBox(this);
 
-	//重置系统
-	resetCode |= detectParams->updateGridSize(adminConfig, tempConfig);
-	emit resetDetectSystem_settingUI(resetCode); //判断是否重置检测系统
-
-	//将参数保存到配置文件中
-	Configurator::saveConfigFile(configFileName, detectConfig);
+		//判断是否重置检测系统
+		if (adminConfig->isValid() && detectConfig->isValid() && detectParams->isValid())
+			emit resetDetectSystem_settingUI(sysResetCode);
+	}
+	else if (detectConfig->getErrorCode() != tempConfig.getErrorCode()) {
+		//将临时配置拷贝到用户参数对象中
+		tempConfig.copyTo(detectConfig);
+		//将参数保存到配置文件中
+		Configurator::saveConfigFile(configFileName, detectConfig);
+	}
+		
 
 	//向主界面发送消息
-	emit checkSystemWorkingState_settingUI(); //检查系统的工作状态
-	pcb::delay(100);
+	emit checkSystemState_settingUI(); //检查系统的工作状态
+	pcb::delay(10);
 	
 	//将本界面上的按键设为可点击
 	this->setPushButtonsToEnabled(true);
@@ -177,6 +204,10 @@ void SettingUI::on_pushButton_confirm_clicked()
 void SettingUI::on_pushButton_return_clicked()
 {
 	emit showDetectMainUI();
+	//如果界面上的系统参数无效，而adminConfig有效，则显示adminConfig
+	if (!tempConfig.isValid() && detectConfig->isValid()) {
+		this->refreshSettingUI();
+	}
 }
 
 //系统参数设置
@@ -257,8 +288,9 @@ void SettingUI::do_showAdminSettingUI_pswdUI()
 /****************** 系统参数设置界面 *******************/
 
 //由系统参数设置界面返回参数设置界面
-void SettingUI::do_showSettingUI_adminSettingUI()
+void SettingUI::do_showSettingUI_adminUI()
 {
+	this->setCursorLocation(DetectConfig::Index_None);
 	this->showFullScreen();
 	pcb::delay(10);
 	adminSettingUI.hide();
@@ -273,5 +305,10 @@ void SettingUI::do_resetDetectSystem_adminUI(int code)
 //转发由系统设置界面发出的系统状态检查信号
 void SettingUI::do_checkSystemWorkingState_adminUI()
 {
-	emit checkSystemWorkingState_settingUI(code);
+	if (adminConfig->isValid() && detectConfig->isValid() && detectParams->isValid()) {
+		emit checkSystemState_settingUI();
+		pcb::delay(10);
+	}
+	else {
+	}
 }

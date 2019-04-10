@@ -1,4 +1,4 @@
-#include "DetectCore.h"
+#include "DefectDetecter.h"
 #include <exception>
 
 using pcb::CvMatVector;
@@ -8,17 +8,16 @@ using pcb::DetectResult;
 using pcb::QImageVector;
 using cv::Mat;
 using std::string;
-using std::to_string;
 
 
-DetectCore::DetectCore() {}
+DefectDetecter::DefectDetecter() {}
 
-DetectCore::~DetectCore() {}
+DefectDetecter::~DefectDetecter() {}
 
 
 /***************** 检测 ******************/
 
-void DetectCore::doDetect()
+void DefectDetecter::doDetect()
 {
 	double t1 = clock();
 
@@ -32,16 +31,17 @@ void DetectCore::doDetect()
 	//pcb::delay(1000); //执行检测
 	// ...
 	DetectFunc detectFunc;
-	detectFunc.setDetectConfig(config);
-	detectFunc.setDetectParams(params);
+	detectFunc.setDetectConfig(detectConfig);
+	detectFunc.setDetectParams(detectParams);
 
-	int currentRow_detect = params->currentRow_detect;
+	int currentRow_detect = detectParams->currentRow_detect;
 	for (int i = 0; i < samples->size(); i++) {
 		double t1 = clock();
 
 		//读取模板图片
-		string templPath = (config->TemplDirPath + "/" + params->sampleModelNum + "/"
-			+ QString::number(currentRow_detect + 1) + "_" + QString::number(i + 1)  + config->ImageFormat).toStdString();
+		string templPath = (detectConfig->TemplDirPath + "/" + detectParams->sampleModelNum + "/"
+			+ QString::number(currentRow_detect + 1) + "_" + QString::number(i + 1)  
+			+ detectConfig->ImageFormat).toStdString();
 		Mat templ_gray = cv::imread(templPath, 0);
 
 		//读取样本图片
@@ -77,8 +77,8 @@ void DetectCore::doDetect()
 
 			//预处理
 			Mat diff = detectFunc.sub_process(templ_gray_reg, samp_gray_reg);
-			string mask_path = config->TemplDirPath.toStdString() + "/" + params->sampleModelNum.toStdString()
-				+ "/mask/" + to_string(params->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_mask" + config->ImageFormat.toStdString();
+			string mask_path = detectConfig->TemplDirPath.toStdString() + "/" + detectParams->sampleModelNum.toStdString()
+				+ "/mask/" + std::to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_mask" + detectConfig->ImageFormat.toStdString();
 			Mat roi_mask = cv::imread(mask_path, 0);
 			cv::bitwise_and(diff, roi_mask, diff);
 
@@ -92,21 +92,21 @@ void DetectCore::doDetect()
 			detectFunc.markDefect(diff, samp_gray_reg, templ_bw_reg, templ_gray_reg, defectNum, i);
 			qDebug() << endl;
 		}catch (std::exception e) {
-			qDebug() << params->currentRow_detect + 1 << "_" << i + 1 << "_" <<
+			qDebug() << detectParams->currentRow_detect + 1 << "_" << i + 1 << "_" <<
 				QString::fromLocal8Bit("出现异常");
 		}	
 	}
-	if (params->currentRow_detect + 1 == config->nPhotographing)
+	if (detectParams->currentRow_detect + 1 == detectParams->nPhotographing)
 		defectNum = 0;
 
 
 
-	QString s = config->TemplDirPath;
+	QString s = detectConfig->TemplDirPath;
 
 	//检测结束
 	detectState = 2;
 	emit sig_detectState_detectCore(detectState);
 
 	double t2 = clock();
-	qDebug() << "detectSampleImages :" << (t2 - t1) << "ms  ( currentRow_detect -" << params->currentRow_detect << ")";
+	qDebug() << "detectSampleImages :" << (t2 - t1) << "ms  ( currentRow_detect -" << detectParams->currentRow_detect << ")";
 }

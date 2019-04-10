@@ -116,8 +116,8 @@ void TemplateUI::resetTemplateUI()
 void TemplateUI::initItemGrid(pcb::ItemGrid &grid)
 {
 	//基本参数
-	int nCamera = detectConfig->nCamera; //相机个数
-	int nPhotographing = detectConfig->nPhotographing; //拍摄次数
+	int nCamera = detectParams->nCamera; //相机个数
+	int nPhotographing = detectParams->nPhotographing; //拍摄次数
 	QString SampleDirPath = detectConfig->SampleDirPath; //sample文件夹的路径 
 	//QSize imageSize = config->imageSize; //原图尺寸
 
@@ -130,7 +130,7 @@ void TemplateUI::initItemGrid(pcb::ItemGrid &grid)
 	QSize viewSize = ui.graphicsView->size(); //视图尺寸
 	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
 	//qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
-	qreal itemAspectRatio = detectConfig->ImageAspectRatio; //宽高比
+	qreal itemAspectRatio = adminConfig->ImageAspectRatio; //宽高比
 	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
 
 	//计算场景尺寸
@@ -166,10 +166,10 @@ void TemplateUI::initPointersInItemArray(pcb::ItemArray &items)
 		deletePointersInItemArray(items);//若执行过init函数，则先delete指针
 	}
 	else {
-		items.resize(detectConfig->nPhotographing); //设置大小
-		for (int iPhotographing = 0; iPhotographing < detectConfig->nPhotographing; iPhotographing++) { //行
-			items[iPhotographing].resize(detectConfig->nCamera);
-			for (int iCamera = 0; iCamera < detectConfig->nCamera; iCamera++) { //列
+		items.resize(detectParams->nPhotographing); //设置大小
+		for (int iPhotographing = 0; iPhotographing < detectParams->nPhotographing; iPhotographing++) { //行
+			items[iPhotographing].resize(detectParams->nCamera);
+			for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) { //列
 				items[iPhotographing][iCamera] = Q_NULLPTR;
 			}
 		}
@@ -196,10 +196,10 @@ void TemplateUI::initPointersInCvMatArray(pcb::CvMatArray &cvmats)
 		deletePointersInCvMatArray(cvmats);//若执行过init函数，则先delete指针
 	}
 	else {
-		cvmats.resize(detectConfig->nPhotographing);
-		for (int iPhotographing = 0; iPhotographing < detectConfig->nPhotographing; iPhotographing++) { //行
-			cvmats[iPhotographing].resize(detectConfig->nCamera);
-			for (int iCamera = 0; iCamera < detectConfig->nCamera; iCamera++) {
+		cvmats.resize(detectParams->nPhotographing);
+		for (int iPhotographing = 0; iPhotographing < detectParams->nPhotographing; iPhotographing++) { //行
+			cvmats[iPhotographing].resize(detectParams->nCamera);
+			for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 				cvmats[iPhotographing][iCamera] = Q_NULLPTR;
 			}
 		}
@@ -226,10 +226,10 @@ void TemplateUI::initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 		deletePointersInQPixmapArray(qpixmaps);//若执行过init函数，则先delete指针
 	}
 	else {
-		qpixmaps.resize(detectConfig->nPhotographing);
-		for (int iPhotographing = 0; iPhotographing < detectConfig->nPhotographing; iPhotographing++) { //行
-			qpixmaps[iPhotographing].resize(detectConfig->nCamera);
-			for (int iCamera = 0; iCamera < detectConfig->nCamera; iCamera++) {
+		qpixmaps.resize(detectParams->nPhotographing);
+		for (int iPhotographing = 0; iPhotographing < detectParams->nPhotographing; iPhotographing++) { //行
+			qpixmaps[iPhotographing].resize(detectParams->nCamera);
+			for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 				qpixmaps[iPhotographing][iCamera] = Q_NULLPTR;
 			}
 		}
@@ -313,11 +313,11 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Down:
 		qDebug() << "===== Down";
-		if (detectParams->currentRow_extract == detectConfig->nPhotographing - 1 && !templThread->isRunning())
+		if (detectParams->currentRow_extract == detectParams->nPhotographing - 1 && !templThread->isRunning())
 			resetTemplateUI();//重置模板提取子模块
 
 		//!imgConvertThread.isRunning()
-		if (currentRow_show + 1 < detectConfig->nPhotographing && true) { //直接显示新的样本行
+		if (currentRow_show + 1 < detectParams->nPhotographing && true) { //直接显示新的样本行
 			currentRow_show += 1; //更新显示行号
 			qDebug() << "currentRow_show  - " << currentRow_show;
 
@@ -342,7 +342,7 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 //在绘图网格中显示下一行图像
 void TemplateUI::nextRowOfSampleImages()
 {
-	if (currentRow_show + 1 < detectConfig->nPhotographing) { //直接显示新的样本行
+	if (currentRow_show + 1 < detectParams->nPhotographing) { //直接显示新的样本行
 		currentRow_show += 1; //更新显示行号
 		eventCounter += 1; //更新事件计数器
 		qDebug() << "currentRow_show  - " << currentRow_show;
@@ -361,7 +361,7 @@ void TemplateUI::nextRowOfSampleImages()
 			extractTemplateImages(); //提取
 		}
 	}
-	else if (detectParams->currentRow_extract == detectConfig->nPhotographing - 1 && !templThread->isRunning()) {
+	else if (detectParams->currentRow_extract == detectParams->nPhotographing - 1 && !templThread->isRunning()) {
 		qDebug() << "currentRow_show  - " << currentRow_show;
 
 		resetTemplateUI();//重置模板提取子模块
@@ -372,7 +372,7 @@ void TemplateUI::nextRowOfSampleImages()
 //在绘图网格中显示下一行图像
 void TemplateUI::nextRowOfSampleImages2()
 {
-	if (currentRow_show + 1 < detectConfig->nPhotographing) { //直接显示新的样本行
+	if (currentRow_show + 1 < detectParams->nPhotographing) { //直接显示新的样本行
 		currentRow_show += 1; //更新显示行号
 		eventCounter += 1; //更新事件计数器
 		qDebug() << "currentRow_show  - " << currentRow_show;
@@ -391,7 +391,7 @@ void TemplateUI::nextRowOfSampleImages2()
 			extractTemplateImages(); //提取
 		}
 	}
-	else if (detectParams->currentRow_extract == detectConfig->nPhotographing - 1 && !templThread->isRunning()) {
+	else if (detectParams->currentRow_extract == detectParams->nPhotographing - 1 && !templThread->isRunning()) {
 		qDebug() << "currentRow_show  - " << currentRow_show;
 
 		resetTemplateUI();//重置模板提取子模块
@@ -424,11 +424,11 @@ void TemplateUI::readSampleImages2()
 	QFileInfoList fileList = dir.entryInfoList();
 	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
 
-	if (detectParams->imageSize.width() < 0) { //小于0说明imageSize未初始化
-		QImage img = QImage(fileList.at(0).absoluteFilePath());//读图
-		detectParams->imageSize = img.size();
-		templThread->initTemplFunc();
-	}
+	//if (adminConfig->ImageSize_W < 0) { //小于0说明imageSize未初始化
+	//	QImage img = QImage(fileList.at(0).absoluteFilePath());//读图
+	//	detectParams->imageSize = img.size();
+	//	templThread->initTemplFunc();
+	//}
 
 	//读取并储存图像 - 从硬盘上读图 (用于临时调试)
 	for (int i = 0; i < fileList.size(); i++) {
@@ -439,8 +439,8 @@ void TemplateUI::readSampleImages2()
 		int iPhotographing = idxs[0].toInt() - 1; //0 1 ... nPhotographing-1
 		int iCamera = idxs[1].toInt() - 1; //0 1 ... nCamera-1
 		if (iPhotographing != currentRow_show) continue;
-		if (iPhotographing < 0 || iPhotographing >= detectConfig->nPhotographing) continue;
-		if (iCamera < 0 || iCamera >= detectConfig->nCamera) continue;
+		if (iPhotographing < 0 || iPhotographing >= detectParams->nPhotographing) continue;
+		if (iCamera < 0 || iCamera >= detectParams->nCamera) continue;
 
 		QString filepath = fileList.at(i).absoluteFilePath(); //样本图的路径
 		cv::Mat img = cv::imread(filepath.toStdString(), cv::IMREAD_COLOR);
@@ -458,7 +458,7 @@ void TemplateUI::readSampleImages2()
 //显示相机组拍摄的一组分图（图像显示网格中的一行）
 void TemplateUI::showSampleImages()
 {
-	for (int iCamera = 0; iCamera < detectConfig->nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 		QPixmap scaledImg = (*qpixmapSamples[currentRow_show][iCamera]).scaled(itemSize, Qt::KeepAspectRatio);
 		QGraphicsPixmapItem* item = new QGraphicsPixmapItem(scaledImg); //定义图元
 		item->setPos(itemGrid[currentRow_show][iCamera]); //图元的显示位置
@@ -466,7 +466,7 @@ void TemplateUI::showSampleImages()
 	}
 
 	//加载相机组新拍摄的一行图元
-	for (int iCamera = 0; iCamera < detectConfig->nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 		scene.addItem(itemArray[currentRow_show][iCamera]);
 	}
 
@@ -536,7 +536,7 @@ void TemplateUI::on_recognizeFinished_serialNumberUI()
 void TemplateUI::on_moveForwardFinished_motion()
 {
 	//调用相机进行拍照
-	if (currentRow_show + 1 < detectConfig->nPhotographing) {
+	if (currentRow_show + 1 < detectParams->nPhotographing) {
 		currentRow_show += 1; //更新显示行号
 
 		ui.label_status->setText(QString::fromLocal8Bit("正在拍摄第") +
@@ -573,11 +573,13 @@ void TemplateUI::on_initCamerasFinished_camera(int)
 void TemplateUI::on_takePhotosFinished_camera(int)
 {
 	//初始化若干变量
-	if (detectParams->imageSize.width() <= 0) {
-		cv::Size size = cvmatSamples[0][0]->size();
-		detectParams->imageSize = QSize(size.width, size.height);
-		templThread->initTemplFunc();
-	}
+	//if (detectParams->imageSize.width() <= 0) {
+	//	cv::Size size = cvmatSamples[0][0]->size();
+	//	detectParams->imageSize = QSize(size.width, size.height);
+	//	templThread->initTemplFunc();
+	//}
+
+	templThread->initTemplFunc();
 
 	//调用图像类型转换线程
 	imgConvertThread.start();
@@ -606,7 +608,7 @@ void TemplateUI::on_convertFinished_convertThread()
 
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
-	if (currentRow_show + 1 < detectConfig->nPhotographing)
+	if (currentRow_show + 1 < detectParams->nPhotographing)
 		motionControler->moveForward(); //运动结构前进
 	else
 		motionControler->resetControler(3); //当前PCB拍完则复位
@@ -659,7 +661,7 @@ void TemplateUI::update_extractState_extractor(int state)
 
 		//检查是否有未处理的事件
 		while (templThread->isRunning()) pcb::delay(50); //等待线程结束
-		if (detectParams->currentRow_extract == detectConfig->nPhotographing - 1) { //当前PCB提取结束
+		if (detectParams->currentRow_extract == detectParams->nPhotographing - 1) { //当前PCB提取结束
 			ui.pushButton_start->setEnabled(true); //启用开始按键
 			ui.pushButton_return->setEnabled(true); //启用返回按键
 		}

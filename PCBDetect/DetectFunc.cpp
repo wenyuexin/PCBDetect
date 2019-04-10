@@ -225,13 +225,13 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
 	if (contours.size() == 0)
 		return;
-	string batch_path = (config->OutputDirPath).toStdString() + "\\" + params->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
+	string batch_path = (detectConfig->OutputDirPath).toStdString() + "\\" + detectParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
 	if (0 != _access(batch_path.c_str(), 0))
 		_mkdir(batch_path.c_str());
-	string num_path = batch_path + "\\" + params->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
+	string num_path = batch_path + "\\" + detectParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
 	if (0 != _access(num_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(num_path.c_str());
-	string out_path = num_path + "\\" + params->sampleNum.toStdString();//检查编号文件夹是否存在
+	string out_path = num_path + "\\" + detectParams->sampleNum.toStdString();//检查编号文件夹是否存在
 	if (0 != _access(out_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(out_path.c_str());
 
@@ -354,12 +354,12 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 
 			rectangle(imgSeg, rect1, CV_RGB(255, 0, 0), 2);
 			defectNum++;//增加缺陷计数
-			pos_x = (params->imageSize).width()*currentCol + pos_x;//缺陷在整体图像中的横坐标
-			pos_y = (params->imageSize).height()*params->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
+			pos_x = adminConfig->ImageSize_W*currentCol + pos_x;//缺陷在整体图像中的横坐标
+			pos_y = adminConfig->ImageSize_H*detectParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
 
 			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + detectConfig->ImageFormat.toStdString(), diffSeg);
 			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + detectConfig->ImageFormat.toStdString(), templSeg);
-			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + config->ImageFormat.toStdString(), imgSeg);
+			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + detectConfig->ImageFormat.toStdString(), imgSeg);
 
 		}
 	}

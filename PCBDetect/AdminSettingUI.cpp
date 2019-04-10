@@ -1,6 +1,9 @@
 #include "AdminSettingUI.h"
 
 using pcb::Configurator;
+using pcb::AdminConfig;
+using pcb::DetectConfig;
+using pcb::DetectParams;
 
 
 AdminSettingUI::AdminSettingUI(QWidget *parent)
@@ -13,6 +16,11 @@ AdminSettingUI::AdminSettingUI(QWidget *parent)
 	QRect screenRect = desktop->screenGeometry(1);
 	this->setGeometry(screenRect);
 
+	//变量初始化
+	adminConfig = Q_NULLPTR; //系统参数
+	detectConfig = Q_NULLPTR; //用户参数
+	detectParams = Q_NULLPTR; //运行参数
+
 	//一些初始化操作
 	this->initAdminSettingUI();
 }
@@ -23,6 +31,9 @@ AdminSettingUI::~AdminSettingUI()
 
 void AdminSettingUI::initAdminSettingUI()
 {
+	//设置光标
+	this->setCursorLocation(AdminConfig::Index_None);
+
 	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
 	this->setPushButtonsToEnabled(false);
 	this->setPushButtonsToEnabled(true);
@@ -32,7 +43,6 @@ void AdminSettingUI::initAdminSettingUI()
 	QDoubleValidator doubleValidator;
 	ui.lineEdit_MaxMotionStroke->setValidator(&intValidator);
 	ui.lineEdit_MaxCameraNum->setValidator(&intValidator);
-	//ui.lineEdit_MaxPhotographingNum->setValidator(&intValidator);
 	ui.lineEdit_PixelsNumPerUnitLength->setValidator(&intValidator);
 	ui.lineEdit_ImageOverlappingRate->setValidator(&doubleValidator);
 	ui.lineEdit_ImageSize_W->setValidator(&intValidator);
@@ -65,30 +75,32 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 		tempConfig.showMessageBox(this);
 		this->setPushButtonsToEnabled(true);//将按键设为可点击
 		AdminConfig::ConfigIndex index = AdminConfig::convertCodeToIndex(code);
-		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
+		this->setCursorLocation(index); //将光标定位到无效参数的输入框上
 		return;
 	}
 
 	//设置聚焦位置
 	this->setCursorLocation(AdminConfig::Index_None);
 
-	//判断是否重置检测系统
-	int resetCode = adminConfig->getSystemResetCode(tempConfig);
-
-	//将临时配置拷贝到config中
-	tempConfig.copyTo(adminConfig);
-
-	//重置系统
-	resetCode |= detectParams->updateGridSize(adminConfig, tempConfig);
-	emit resetDetectSystem_adminUI(resetCode); //判断是否重置检测系统
-
-	//将参数保存到config文件中
-	Configurator::saveConfigFile(configFileName, adminConfig);
-
-	//向主界面发送消息
-	emit checkSystemWorkingState_adminUI(); //检查系统的工作状态
-	pcb::delay(100);
-
+	//判断参数是否变更
+	if (adminConfig->unequals(tempConfig) != AdminConfig::Index_None) {
+		//判断是否重置检测系统
+		sysResetCode |= adminConfig->getSystemResetCode(tempConfig);
+		//将临时配置拷贝到config中
+		tempConfig.copyTo(adminConfig);
+		//将参数保存到config文件中
+		Configurator::saveConfigFile(configFileName, adminConfig);
+		//更新运行参数
+		sysResetCode |= detectParams->updateGridSize(adminConfig, detectConfig);
+		if (!detectParams->isValid()) detectParams->showMessageBox(this);
+		//发送检测系统重置信号
+		emit resetDetectSystem_adminUI(sysResetCode);
+	}
+	if (adminConfig->getErrorCode() != tempConfig.getErrorCode()) {
+		//将临时配置拷贝到系统参数对象中
+		tempConfig.copyTo(adminConfig);
+	}
+	
 	//将本界面上的按键设为可点击
 	this->setPushButtonsToEnabled(true);
 }
@@ -97,6 +109,11 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 void AdminSettingUI::on_pushButton_return_clicked()
 {
 	emit showSettingUI_adminUI();
+	//如果界面上的系统参数无效，而adminConfig有效，则显示adminConfig
+	//注：初始条件下，没有按确定键，则tempConfig为空，tempConfig无效
+	if (!tempConfig.isValid() && adminConfig->isValid()) {
+		this->refreshAdminSettingUI();
+	}
 }
 
 //设置按键的可点击状态
@@ -112,6 +129,8 @@ void AdminSettingUI::setPushButtonsToEnabled(bool code)
 //从界面获取config参数
 void AdminSettingUI::getConfigFromAdminSettingUI()
 {
+	tempConfig.resetErrorCode();
+
 	tempConfig.MaxMotionStroke = ui.lineEdit_MaxMotionStroke->text().toInt();
 	tempConfig.MaxCameraNum = ui.lineEdit_MaxCameraNum->text().toInt();
 	tempConfig.PixelsNumPerUnitLength = ui.lineEdit_PixelsNumPerUnitLength->text().toInt();
@@ -125,29 +144,25 @@ void AdminSettingUI::getConfigFromAdminSettingUI()
 }
 
 //设置界面上光标的位置
-void setCursorLocation(pcb::AdminConfig::ConfigIndex code)
+void AdminSettingUI::setCursorLocation(AdminConfig::ConfigIndex code)
 {
-	int MaxMotionStroke; //机械结构的最大运动行程
-		int MaxCameraNum; //可用相机的总数
-		int PixelsNumPerUnitLength; //图像分辨率 pix/mm
-		double ImageOverlappingRate; //分图重叠率
-		int ImageSize_W; //图像宽度
-		int ImageSize_H; //图像高度
-		double ImageAspectRatio; //图像宽高比
-
 	switch (code)
 	{
-	case pcb::DetectConfig::MaxMotionStroke:
+	case pcb::DetectConfig::Index_All:
+	case pcb::DetectConfig::Index_None:
+		ui.lineEdit_MaxMotionStroke->setFocus();
+		ui.lineEdit_MaxMotionStroke->clearFocus(); break;
+	case pcb::AdminConfig::Index_MaxMotionStroke:
 		ui.lineEdit_MaxMotionStroke->setFocus(); break;
-	case pcb::DetectConfig::MaxCameraNum:
+	case pcb::AdminConfig::Index_MaxCameraNum:
 		ui.lineEdit_MaxCameraNum->setFocus(); break;
-	case pcb::DetectConfig::PixelsNumPerUnitLength:
+	case pcb::AdminConfig::Index_PixelsNumPerUnitLength:
 		ui.lineEdit_PixelsNumPerUnitLength->setFocus(); break;
-	case pcb::DetectConfig::ImageOverlappingRate:
+	case pcb::AdminConfig::Index_ImageOverlappingRate:
 		ui.lineEdit_ImageOverlappingRate->setFocus(); break;
-	case pcb::DetectConfig::Index_ImageSize_W:
+	case pcb::AdminConfig::Index_ImageSize_W:
 		ui.lineEdit_ImageSize_W->setFocus(); break;
-	case pcb::DetectConfig::Index_ImageSize_H:
+	case pcb::AdminConfig::Index_ImageSize_H:
 		ui.lineEdit_ImageSize_H->setFocus(); break;
 	}
 }
