@@ -1,5 +1,4 @@
 #include "TemplFunc.h"
-#include <qDebug>
 
 using pcb::DetectConfig;
 using pcb::DetectParams;
@@ -8,13 +7,20 @@ using cv::Size;
 using cv::Rect;
 
 
+TemplFunc::TemplFunc()
+{
+	adminConfig = Q_NULLPTR;
+	detectConfig = Q_NULLPTR;
+	detectParams = Q_NULLPTR;
+}
+
 /***************** 提取 ******************/
 
 //生成完整尺寸的模板图像
 void TemplFunc::generateBigTempl()
 {
-	Size templSize = Size(adminConfig->ImageSize_W*detectParams->nCamera, 
-		adminConfig->ImageSize_H*detectParams->nPhotographing);
+	Size templSize = Size(adminConfig->ImageSize_W * detectParams->nCamera,
+		adminConfig->ImageSize_H * detectParams->nPhotographing);
 	big_templ = Mat(templSize, CV_8UC3);
 }
 

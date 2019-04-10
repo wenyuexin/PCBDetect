@@ -7,32 +7,31 @@
 #include "DefectDetecter.h"
 
 
-class DetectThread :
-	public QThread
+class DetectThread : public QThread
 {
 	Q_OBJECT
 
 private:
-	DefectDetecter *detectCore; //检测核心
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig *detectConfig; //用户参数
+	pcb::DetectParams *detectParams; //运行参数
 
-	int *currentRow; //当前正在检测的样本行的行号
-	pcb::DetectParams *params;
-	pcb::QImageArray *samples; //正在检测的一行样本
-	std::vector<ImageConverter *> threads; //格式转换线程
-	int nThreads = 10; //默认相机个数不超过10
+	pcb::CvMatArray *cvmatSamples; //用于提取的样本图
+	pcb::DetectResult *detectResult; //检测结果
+	DefectDetecter *defectDetecter; //检测器
 
 public:
 	DetectThread();
 	~DetectThread();
 
-	inline void setDefectDetecter(DefectDetecter* ptr = Q_NULLPTR) { detectCore = ptr; }
-	inline void setSampleImages(pcb::QImageArray* ptr = Q_NULLPTR) { samples = ptr; }
-	inline void setDetectParams(pcb::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
-private:
-	void initImageConvertThreads();
-	void deleteImageConvertThreads();
-	void convertQImageToCvMat(pcb::QImageVector &src, pcb::CvMatVector &dst);
+	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
+	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
+	inline void setDefectDetecter(DefectDetecter* ptr) { defectDetecter = ptr; }
+	void initDefectDetecter();
 
 protected:
 	void run();

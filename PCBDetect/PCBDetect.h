@@ -75,10 +75,11 @@ private Q_SLOTS:
 	void on_pushButton_exit_clicked();
 	void on_pushButton_exit2_clicked();
 
+	void on_initGraphicsView_launchUI(int LaunchCode);
 	void on_launchFinished_launchUI(int LaunchCode);
 	void do_showDetectMainUI_settingUI();
 	void do_resetDetectSystem_settingUI(int);
-	void do_enableButtonsOnDetectMainUI_settingUI();
+	void do_enableButtonsOnMainUI_settingUI();
 	void do_checkSystemState_settingUI();
 	void do_showDetectMainUI_detectUI();
 	void do_showDetectMainUI_templateUI();

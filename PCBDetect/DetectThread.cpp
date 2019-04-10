@@ -11,62 +11,32 @@ using pcb::QImageArray;
 
 DetectThread::DetectThread()
 {
-	initImageConvertThreads();
+	adminConfig = Q_NULLPTR; //系统参数
+	detectConfig = Q_NULLPTR; //用户参数
+	detectParams = Q_NULLPTR; //运行参数
+	cvmatSamples = Q_NULLPTR; //用于提取的样本图
+	defectDetecter = Q_NULLPTR; //提取器
 }
 
 DetectThread::~DetectThread()
 {
-	deleteImageConvertThreads();
+}
+
+//初始化缺陷检测器
+void DetectThread::initDefectDetecter()
+{
+	defectDetecter->setAdminConfig(adminConfig);
+	defectDetecter->setDetectConfig(detectConfig);
+	defectDetecter->setDetectParams(detectParams);
+	defectDetecter->setSampleImages(cvmatSamples);
+	defectDetecter->setDetectResult(detectResult);
+	defectDetecter->initDetectFunc();
 }
 
 
-/***************** 启动线程 ******************/
-
-//检测当前的一行样本
+//运行提取线程
 void DetectThread::run()
 {
-	QImageVector src = (*samples)[params->currentRow_detect];
-	CvMatVector samples;
-
-	double t11 = clock();
-	convertQImageToCvMat(src, samples); //QImage转Mat
-	double t22 = clock();
-	qDebug() << "convert images :" << (t22 - t11) << "ms  ( currentRow_detect -" << params->currentRow_detect << ")";
-
-	detectCore->setSampleImages(&samples); //配置样本图
-	detectCore->doDetect(); //检测
+	defectDetecter->detect(); //检测
 }
 
-
-/**************** Qt至opencv的图像格式转换 *****************/
-
-void DetectThread::convertQImageToCvMat(QImageVector &src, CvMatVector &dst)
-{
-	//开启转换线程
-	size_t vectorSize = src.size();
-	dst.resize(vectorSize);
-	for (int i = 0; i < vectorSize; i++) {
-		threads[i]->set(src[i], dst[i], ImageConverter::QImage2CvMat);
-		threads[i]->start();
-	}
-	//线程等待
-	for (int i = 0; i < samples->size(); i++) {
-		threads[i]->wait();
-	}
-}
-
-void DetectThread::initImageConvertThreads()
-{
-	threads.resize(nThreads);
-	for (int i = 0; i < nThreads; i++) {
-		threads[i] = new ImageConverter();
-	}
-}
-
-void DetectThread::deleteImageConvertThreads()
-{
-	for (int i = 0; i < threads.size(); i++) {
-		delete threads[i];
-		threads[i] = Q_NULLPTR;
-	}
-}

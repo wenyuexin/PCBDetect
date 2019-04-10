@@ -28,7 +28,7 @@ namespace pcb
 {
 #ifndef PCB_FUNCTIONS_CHINESE
 #define PCB_FUNCTIONS_CHINESE
-	inline QString chinese(const QByteArray &str) { return QString::fromLocal8Bit(str); }
+	inline QString chinese(const QByteArray &src) { return QString::fromLocal8Bit(src); }
 #endif //PCB_FUNCTIONS_CHINESE
 
 

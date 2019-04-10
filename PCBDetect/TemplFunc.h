@@ -5,15 +5,15 @@
 #include <string>
 #include "direct.h"
 #include <io.h>
-
+#include <qDebug>
 
 
 class TemplFunc {
 
 private:
-	pcb::AdminConfig* adminConfig;
-	pcb::DetectConfig* detectConfig;
-	pcb::DetectParams* detectParams;
+	pcb::AdminConfig *adminConfig;
+	pcb::DetectConfig *detectConfig;
+	pcb::DetectParams *detectParams;
 
 	cv::Point minloc, maxloc;//最小值位置，最大值位置，
 	int i, j;
@@ -22,12 +22,12 @@ private:
 	cv::Mat big_templ; //大模板;
 
 public:
-	TemplFunc() = default;
-	~TemplFunc(){};
+	TemplFunc();
+	~TemplFunc() = default;
 
-	inline void setDetectConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
 	void generateBigTempl();
 	cv::Mat find1(int currentCol, cv::Mat &image);

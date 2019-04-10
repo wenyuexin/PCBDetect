@@ -32,6 +32,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	launcher->setMotionControler(motionControler);
 	launcher->setCameraControler(cameraControler);
 	launcher->runInitThread(); //运行初始化线程
+	connect(launcher, SIGNAL(initGraphicsView_launchUI(int)), this, SLOT(on_initGraphicsView_launchUI(int)));
 	connect(launcher, SIGNAL(launchFinished_launchUI(int)), this, SLOT(on_launchFinished_launchUI(int)));
 
 	//参数设置界面
@@ -42,7 +43,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	settingUI->doConnect();//信号连接
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
 	connect(settingUI, SIGNAL(resetDetectSystem_settingUI(int)), this, SLOT(do_resetDetectSystem_settingUI(int)));
-	connect(settingUI, SIGNAL(enableButtonsOnDetectMainUI_settingUI()), this, SLOT(do_enableButtonsOnDetectMainUI_settingUI()));
+	connect(settingUI, SIGNAL(enableButtonsOnMainUI_settingUI()), this, SLOT(do_enableButtonsOnMainUI_settingUI()));
 	connect(settingUI, SIGNAL(checkSystemState_settingUI()), this, SLOT(do_checkSystemState_settingUI()));
 	
 	//模板提取界面
@@ -60,9 +61,9 @@ PCBDetect::PCBDetect(QWidget *parent)
 	detectUI->setAdminConfig(&adminConfig);
 	detectUI->setDetectConfig(&detectConfig);
 	detectUI->setDetectParams(&detectParams);
-	//detectUI->setMotionControler(motionControler);
-	//detectUI->setCameraControler(cameraControler);
-	//detectUI->doConnect();//信号连接
+	detectUI->setMotionControler(motionControler);
+	detectUI->setCameraControler(cameraControler);
+	detectUI->doConnect();//信号连接
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
 }
 
@@ -80,18 +81,27 @@ PCBDetect::~PCBDetect()
 /**************** 启动界面 *****************/
 
 //启动结束
-void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
+void PCBDetect::on_initGraphicsView_launchUI(int LaunchCode)
 {
 	if (!LaunchCode) { //正常启动
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
 		templateUI->initGraphicsView();//模板界面中图像显示的初始化
 		detectUI->initGraphicsView();//检测界面中图像显示的初始化
-		this->setPushButtonsToEnabled(true);//模板提取、检测按键设为可点击
 	}
 	else { //存在错误
 		if (detectConfig.getErrorCode() != DetectConfig::Uncheck) {
 			settingUI->refreshSettingUI();//更新参数设置界面的信息
 		}
+	}
+}
+
+//启动结束
+void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
+{
+	if (!LaunchCode) { //正常启动
+		this->setPushButtonsToEnabled(true);//模板提取、检测按键设为可点击
+	}
+	else { //存在错误
 		this->setPushButtonsToEnabled(false);//模板提取、检测按键设为不可点击
 	}
 
@@ -214,7 +224,7 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 }
 
 //将模板提取按键、检测按键设为可点击
-void PCBDetect::do_enableButtonsOnDetectMainUI_settingUI()
+void PCBDetect::do_enableButtonsOnMainUI_settingUI()
 {
 	this->setPushButtonsToEnabled(true);
 }

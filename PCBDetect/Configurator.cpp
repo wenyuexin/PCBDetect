@@ -253,15 +253,15 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
 	{
 	case pcb::DetectConfig::Index_All:
 	case pcb::DetectConfig::Index_SampleDirPath: //样本路径
-		if (!QFileInfo(SampleDirPath).isDir())
+		if (SampleDirPath == "" || !QFileInfo(SampleDirPath).isDir())
 			code = Invalid_SampleDirPath;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectConfig::Index_TemplDirPath: //模板路径
-		if (!QFileInfo(TemplDirPath).isDir())
+		if (TemplDirPath == "" || !QFileInfo(TemplDirPath).isDir())
 			code = Invalid_TemplDirPath;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectConfig::Index_OutputDirPath: //输出路径
-		if (!QFileInfo(OutputDirPath).isDir())
+		if (OutputDirPath == "" || !QFileInfo(OutputDirPath).isDir())
 			code = Invalid_OutputDirPath;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectConfig::Index_ImageFormat: //图像格式
@@ -550,10 +550,10 @@ void Configurator::updateKeys()
 	if (fileDateTime.isNull() || fileDateTime != fileInfo.lastModified()) {
 		fileDateTime = fileInfo.lastModified();
 		if (fileDateTime.isNull()) fileDateTime = fileInfo.created();
-		keys[0] = fileDateTime.toString("dd").toInt() % 10;
-		keys[1] = fileDateTime.toString("MM").toInt() % 10;
-		keys[2] = fileDateTime.toString("yyyy").toInt() % 10;
-		keys[3] = (keys[1] + keys[2] + 2019) % 10;
+		keys[0] = fileDateTime.toString("dd").toInt() % 9;
+		keys[1] = fileDateTime.toString("MM").toInt() % 9;
+		keys[2] = fileDateTime.toString("yyyy").toInt() % 9;
+		keys[3] = (keys[0] + keys[1] + keys[2] + 2019) % 9;
 	}
 }
 
@@ -601,14 +601,15 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
 		createConfigFile(configFilePath);//创建配置文件
 		config->loadDefaultValue();//加载默认值
+		config->markConfigFileMissing();//标记文件丢失
 		saveConfigFile(fileName, config);//保存默认config
 		success = false;
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
-		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath);
 		configurator.jsonReadValue("SampleDirPath", config->SampleDirPath);
 		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath);
+		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath);
 		configurator.jsonReadValue("ImageFormat", config->ImageFormat);
 
 		configurator.jsonReadValue("ActualProductSize_W", config->ActualProductSize_W);
@@ -658,6 +659,7 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
 		createConfigFile(configFilePath);//创建配置文件
 		config->loadDefaultValue();//加载默认值
+		config->markConfigFileMissing();//标记文件丢失
 		saveConfigFile(fileName, config);//保存默认config
 		success = false;
 	}

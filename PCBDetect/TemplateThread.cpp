@@ -1,40 +1,33 @@
 #include "TemplateThread.h"
 
-using pcb::DetectConfig;
-using pcb::QImageVector;
-using pcb::CvMatVector;
-using pcb::CvMatArray;
-using pcb::QImageArray;
-using pcb::DetectParams;
-using cv::Size;
-using cv::Mat;
-
 
 TemplateThread::TemplateThread(QObject *parent)
 	: QThread(parent)
 {
+	adminConfig = Q_NULLPTR; //系统参数
+	detectConfig = Q_NULLPTR; //用户参数
+	detectParams = Q_NULLPTR; //运行参数
+	cvmatSamples = Q_NULLPTR; //用于提取的样本图
+	templExtractor = Q_NULLPTR; //提取器
 }
 
 TemplateThread::~TemplateThread()
 {
-	delete templFunc;
 }
 
 
-/******************** 配置 **********************/
-
-void TemplateThread::initTemplFunc()
+//初始化模板提取器
+void TemplateThread::initTemplateExtractor()
 {
-	templFunc = new TemplFunc;
-	templFunc->setDetectParams(params);
-	templFunc->setDetectConfig(config);
-	templFunc->generateBigTempl();
-
-	templExtractor->setTemplFunc(templFunc);
+	templExtractor->setAdminConfig(adminConfig);
+	templExtractor->setDetectConfig(detectConfig);
+	templExtractor->setDetectParams(detectParams);
+	templExtractor->setSampleImages(cvmatSamples);
+	templExtractor->initTemplFunc();
 }
 
-/******************** 运行 **********************/
 
+//运行提取线程
 void TemplateThread::run()
 {
 	templExtractor->extract(); //提取

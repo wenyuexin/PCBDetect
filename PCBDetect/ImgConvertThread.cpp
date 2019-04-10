@@ -9,6 +9,14 @@ ImgConvertThread::ImgConvertThread(QObject *parent)
 	: QThread(parent)
 {
 	initImageConverters();
+
+	//成员变量初始化
+	errorCode = ImageConverter::ErrorCode::Default;
+	cvmats = Q_NULLPTR;
+	qpixmaps = Q_NULLPTR;
+	qimages = Q_NULLPTR;
+	cvtCode = ImageConverter::CvtCode::Null; //转换代码
+	currentRow = Q_NULLPTR; //当前行号
 }
 
 ImgConvertThread::~ImgConvertThread()
@@ -19,15 +27,22 @@ ImgConvertThread::~ImgConvertThread()
 
 void ImgConvertThread::run()
 {
-	qDebug() << "ImgConvertThread -> start ( currentRow -" << *currentRow << ")";
+	qDebug() << ">>>>>>>>>> " << pcb::chinese("转换图像类型：")
+		<< "( currentRow_show -" << *currentRow << ")";
+
 	clock_t t1 = clock();
+	errorCode = ImageConverter::Uncheck;
 
 	if (*currentRow < 0) { qDebug() << "Warning: ImgConvertThread: currentRow < 0"; return; }
 	if (cvmats->size() < 1 || (cvmats->at(*currentRow)).size() < 1) { 
-		qDebug() << "warning: invalid size of cvmats"; return; 
+		qDebug() << "warning: invalid size of cvmats"; 
+		errorCode = ImageConverter::ErrorCode::Invalid_ImageNum;
+		return; 
 	}
 	if ((cvmats->at(*currentRow))[0]->size().width < 1) {
-		qDebug() << "warning: invalid imageSize"; return;
+		qDebug() << "warning: invalid imageSize"; 
+		errorCode = ImageConverter::ErrorCode::Invalid_ImageSize;
+		return;
 	}
 
 	switch (cvtCode)
@@ -45,7 +60,8 @@ void ImgConvertThread::run()
 	}
 
 	clock_t t2 = clock();
-	qDebug() << "ImgConvertThread: " << (t2-t1) << "ms ( currentRow -" << *currentRow << ")";
+	qDebug() << ">>>>>>>>>> " << pcb::chinese("图像类型转换结束：")
+		<< (t2 - t1) << "( currentRow_show -" << *currentRow << ")";
 
 	emit convertFinished_convertThread();
 }
