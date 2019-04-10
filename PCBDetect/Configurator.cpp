@@ -3,207 +3,22 @@
 using pcb::DetectConfig;
 using pcb::AdminConfig;
 using pcb::Configurator;
-using pcb::DetectParams;
-
-
-/****************************************************/
-/*                   DetectConfig                   */
-/****************************************************/
-
-//加载默认值
-void DetectConfig::loadDefaultValue() 
-{
-	QDir dir(QDir::currentPath());
-	dir.cdUp(); //转到上一级目录
-	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
-
-	this->errorCode = Uncheck; //错误代码
-	this->SampleDirPath = appDirPath + "/sample"; //样本文件存储路径
-	this->TemplDirPath = appDirPath + "/template";//模板文件的存储路径
-	this->OutputDirPath = appDirPath + "/output";//检测结果存储路径
-	this->ImageFormat = ".bmp"; //图像后缀
-	this->ActualProductSize_W = 500;//产品实际宽度
-	this->ActualProductSize_H = 600;//产品实际高度
-	this->nBasicUnitInRow = 4; //每一行中的基本单元数
-	this->nBasicUnitInCol = 6; //每一列中的基本单元数
-}
-
-//参数有效性检查
-DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
-{
-	if (this->errorCode == ValidConfig)
-		return this->errorCode;
-
-	ErrorCode code = Uncheck;
-	switch (index)
-	{
-	case pcb::DetectConfig::Index_All:
-	case pcb::DetectConfig::Index_SampleDirPath:
-		if (!QFileInfo(SampleDirPath).isDir())
-			code = Invalid_SampleDirPath;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_TemplDirPath:
-		if (!QFileInfo(TemplDirPath).isDir())
-			code = Invalid_TemplDirPath;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_OutputDirPath:
-		if (!QFileInfo(OutputDirPath).isDir())
-			code = Invalid_OutputDirPath;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_ImageFormat:
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_nCamera:
-		if (nCamera < 1) code = Invalid_nCamera;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_nPhotographing:
-		if (nPhotographing < 1)
-			code = Invalid_nPhotographing;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_nBasicUnitInRow:
-		if (nBasicUnitInRow < 1)
-			code = Invalid_nBasicUnitInRow;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_nBasicUnitInCol:
-		if (nBasicUnitInCol < 1)
-			code = Invalid_nBasicUnitInCol;
-		if (code != Uncheck || index != Index_All) break;
-	}
-
-	if (code == Uncheck) code = ValidConfig;
-	if (code != ValidConfig || index == Index_All) this->errorCode = code;
-	return code;
-}
-
-//判断参数是否有效
-bool DetectConfig::isValid() {
-	if (this->errorCode == DetectConfig::Uncheck)
-		checkValidity(Index_All);
-	return this->errorCode == ValidConfig;
-}
-
-//将错误代码转为参数索引
-DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code) 
-{
-	switch (code)
-	{
-	case pcb::DetectConfig::ValidConfig:
-		return Index_None;
-	case pcb::DetectConfig::Invalid_SampleDirPath:
-		return Index_SampleDirPath;
-	case pcb::DetectConfig::Invalid_TemplDirPath:
-		return Index_TemplDirPath;
-	case pcb::DetectConfig::Invalid_OutputDirPath:
-		return Index_OutputDirPath;
-	case pcb::DetectConfig::Invalid_ImageFormat:
-		return Index_ImageFormat;
-	case pcb::DetectConfig::Invalid_nCamera:
-		return Index_nCamera;
-	case pcb::DetectConfig::Invalid_nPhotographing:
-		return Index_nPhotographing;
-	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
-		return Index_nBasicUnitInRow;
-	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
-		return Index_nBasicUnitInCol;
-	}
-	return Index_None;
-}
-
-//参数报错
-bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
-{
-	ErrorCode tempCode = (code == Default) ? errorCode : code;
-	if (tempCode == DetectConfig::ValidConfig) return false;
-
-	QString valueName;
-	if (tempCode == ConfigFileMissing) {
-		QString message = pcb::chinese(".user.config文件丢失，已生成默认文件!    \n")
-			+ pcb::chinese("请在参数设置界面确认参数是否有效 ...   \n");
-		QMessageBox::warning(parent, pcb::chinese("警告"),
-			message + "Config: User: ErrorCode: " + QString::number(tempCode),
-			pcb::chinese("确定"));
-		return true;
-	}
-
-	switch (tempCode)
-	{
-	case pcb::DetectConfig::Invalid_SampleDirPath:
-		valueName = pcb::chinese("样本路径"); break;
-	case pcb::DetectConfig::Invalid_TemplDirPath:
-		valueName = pcb::chinese("模板路径"); break;
-	case pcb::DetectConfig::Invalid_OutputDirPath:
-		valueName = pcb::chinese("输出路径"); break;
-	case pcb::DetectConfig::Invalid_ImageFormat:
-		valueName = pcb::chinese("图像格式"); break;
-	case pcb::DetectConfig::Invalid_nCamera:
-		valueName = pcb::chinese("相机个数"); break;
-	case pcb::DetectConfig::Invalid_nPhotographing:
-		valueName = pcb::chinese("拍摄次数"); break;
-	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
-	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
-		valueName = pcb::chinese("基本单元数"); break;
-	default:
-		valueName = ""; break;
-	}
-
-	QMessageBox::warning(parent, pcb::chinese("警告"),
-		pcb::chinese("参数无效，请在参数设置界面重新设置") + valueName + "!        \n" +
-		"Config: User: ErrorCode: " + QString::number(tempCode),
-		pcb::chinese("确定"));
-	return true;
-}
-
-//不相等判断
-DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
-	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
-	if (this->TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
-	if (this->OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
-	if (this->ImageFormat != other.ImageFormat) return Index_ImageFormat;
-	if (this->nCamera != other.nCamera) return Index_nCamera;
-	if (this->nPhotographing != other.nPhotographing) return Index_nPhotographing;
-	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
-	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
-	return Index_None;
-}
-
-//功能：获取系统重置代码
-//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
-//      0b1234 第1位置位，则表示重置模板提取模块
-//             第2位置位，则表示重置检测模块
-//             第3位置位，则表示重置运动结构
-//             第4位置位，则表示重置相机
-int DetectConfig::getSystemResetCode(DetectConfig &newConfig) 
-{
-	int resetCode = 0b0000;
-	if (ActualProductSize_W != newConfig.ActualProductSize_W || 
-		ActualProductSize_H != newConfig.ActualProductSize_H) 
-	{
-		//resetCode |= 0b1100;
-	}
-	return resetCode;
-}
-
-//拷贝结构体
-void DetectConfig::copyTo(DetectConfig *dst) 
-{
-	dst->errorCode = this->errorCode; //参数有效性
-	dst->SampleDirPath = this->SampleDirPath; //样本文件存储路径
-	dst->TemplDirPath = this->TemplDirPath;//模板文件的存储路径
-	dst->OutputDirPath = this->OutputDirPath;//检测结果存储路径
-	dst->ImageFormat = this->ImageFormat; //图像后缀
-	dst->nCamera = this->nCamera; //相机个数
-	dst->nPhotographing = this->nPhotographing; //拍照次数
-	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
-	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
-	dst->ImageAspectRatio_W = this->ImageAspectRatio_W; //宽高比中的宽
-	dst->ImageAspectRatio_H = this->ImageAspectRatio_H; //宽高比中的高
-	dst->ImageAspectRatio = this->ImageAspectRatio; //样本图像的宽高比
-}
-
 
 
 /****************************************************/
 /*                   AdminConfig                    */
 /****************************************************/
+
+AdminConfig::AdminConfig()
+{
+	MaxMotionStroke = -1; //机械结构的最大运动行程
+	MaxCameraNum = -1; //可用相机总数
+	PixelsNumPerUnitLength = -1; //单位长度的像素 pix/mm
+	ImageOverlappingRate = -1; //分图重叠率
+	ImageSize_W = -1; //分图宽度
+	ImageSize_H = -1; //分图高度
+	ImageAspectRatio = -1; //图像宽高比
+}
 
 //加载默认参数
 void AdminConfig::loadDefaultValue()
@@ -213,9 +28,9 @@ void AdminConfig::loadDefaultValue()
 	this->MaxCameraNum = 5; //可用相机的总数
 	this->PixelsNumPerUnitLength = 40; //单位长度内的像素个数
 	this->ImageOverlappingRate = 0.05; //分图重叠率
-	this->ImageSize_W = 4; //宽高比中的宽
-	this->ImageSize_H = 3; //宽高比中的高
-	this->ImageAspectRatio = 4.0 / 3.0; //样本图像的宽高比
+	this->ImageSize_W = 4384; //宽高比中的宽
+	this->ImageSize_H = 3288; //宽高比中的高
+	this->ImageAspectRatio = 1.0 * ImageSize_W / ImageSize_H; //样本图像的宽高比
 }
 
 //参数有效性检查
@@ -228,31 +43,31 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 	switch (index)
 	{
 	case pcb::AdminConfig::Index_All:
-	case pcb::AdminConfig::Index_MaxMotionStroke:
+	case pcb::AdminConfig::Index_MaxMotionStroke: //机械结构的最大运动行程
 		if (MaxMotionStroke <= 0) 
 			code = Invalid_MaxMotionStroke;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::AdminConfig::Index_MaxCameraNum:
+	case pcb::AdminConfig::Index_MaxCameraNum: //可用相机总数
 		if (MaxCameraNum <= 0) 
 			code = Invalid_MaxCameraNum;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::AdminConfig::Index_PixelsNumPerUnitLength:
+	case pcb::AdminConfig::Index_PixelsNumPerUnitLength: //单位长度的像素
 		if (PixelsNumPerUnitLength <= 0) 
 			code = Invalid_PixelsNumPerUnitLength;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageOverlappingRate:
+	case pcb::AdminConfig::Index_ImageOverlappingRate: //分图重叠率
 		if (ImageOverlappingRate <= 0 || ImageOverlappingRate >= 1) 
 			code = Invalid_ImageOverlappingRate;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageSize_W:
+	case pcb::AdminConfig::Index_ImageSize_W: //分图宽度
 		if (ImageSize_W <= 0)
 			code = Invalid_ImageSize_W;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageSize_H:
+	case pcb::AdminConfig::Index_ImageSize_H: //分图高度
 		if (ImageSize_H <= 0)
 			code = Invalid_ImageSize_H;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageAspectRatio:
+	case pcb::AdminConfig::Index_ImageAspectRatio: //图像宽高比
 		if (code != Uncheck || index != Index_All) break;
 	}
 
@@ -284,10 +99,10 @@ AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
 			return Index_PixelsNumPerUnitLength;
 		case pcb::AdminConfig::Invalid_ImageOverlappingRate:
 			return Index_ImageOverlappingRate;
-		case pcb::AdminConfig::Invalid_ImageAspectRatio_W:
-			return Index_ImageAspectRatio_W;
-		case pcb::AdminConfig::Invalid_ImageAspectRatio_H:
-			return Index_ImageAspectRatio_H;
+		case pcb::AdminConfig::Invalid_ImageSize_W:
+			return Index_ImageSize_W;
+		case pcb::AdminConfig::Invalid_ImageSize_H:
+			return Index_ImageSize_H;
 		case pcb::AdminConfig::Invalid_ImageAspectRatio:
 			return Index_ImageAspectRatio;
 	}
@@ -310,26 +125,26 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 		return true;
 	}
 
-	switch (code)
+	switch (tempCode)
 	{
 	case pcb::AdminConfig::Invalid_MaxMotionStroke:
-		valueName = pcb::chinese(" 机械结构最大行程 "); break;
+		valueName = pcb::chinese("\"机械结构最大行程\""); break;
 	case pcb::AdminConfig::Invalid_MaxCameraNum:
-		valueName = pcb::chinese(" 可用相机总数 "); break;
-	case pcb::AdminConfig::Invalid_ImageResolutionRatio:
-		valueName = pcb::chinese(" 单位长度的像素个数 "); break;
+		valueName = pcb::chinese("\"可用相机总数\""); break;
+	case pcb::AdminConfig::Invalid_PixelsNumPerUnitLength:
+		valueName = pcb::chinese("\"每毫米像素数\""); break;
 	case pcb::AdminConfig::Invalid_ImageOverlappingRate:
-		valueName = pcb::chinese(" 分图重叠率 "); break;
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_W:
-	case pcb::DetectConfig::Invalid_ImageAspectRatio_H:
-	case pcb::DetectConfig::Invalid_ImageAspectRatio:
-		valueName = pcb::chinese(" 图像尺寸 "); break;
+		valueName = pcb::chinese("\"分图重叠率\""); break;
+	case pcb::AdminConfig::Invalid_ImageSize_W:
+	case pcb::AdminConfig::Invalid_ImageSize_H:
+	case pcb::AdminConfig::Invalid_ImageAspectRatio:
+		valueName = pcb::chinese("\"分图尺寸\""); break;
 	default:
-		valueName = ""; break;
+		valueName = "\"\""; break;
 	}
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
-		pcb::chinese("参数无效，请联系管理员重新设置") + valueName + "!        \n" +
+		pcb::chinese("系统参数无效，请联系管理员重新设置") + valueName + "!        \n" +
 		"Config: Admin: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;
@@ -350,7 +165,7 @@ AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 {
 	if (this->MaxMotionStroke != other.MaxMotionStroke) return Index_MaxMotionStroke;
 	if (this->MaxCameraNum != other.MaxCameraNum) return Index_MaxCameraNum;
-	if (this->ImageResolutionRatio != other.ImageResolutionRatio) return Index_ImageResolutionRatio;
+	if (this->PixelsNumPerUnitLength != other.PixelsNumPerUnitLength) return Index_PixelsNumPerUnitLength;
 	if (this->ImageOverlappingRate != other.ImageOverlappingRate) return Index_ImageOverlappingRate;
 	if (this->ImageSize_W != other.ImageSize_W) return Index_ImageSize_W;
 	if (this->ImageSize_H != other.ImageSize_H) return Index_ImageSize_H;
@@ -389,6 +204,210 @@ void AdminConfig::copyTo(AdminConfig *dst)
 	dst->ImageSize_W = this->ImageSize_W;
 	dst->ImageSize_H = this->ImageSize_H;
 	dst->ImageAspectRatio = this->ImageAspectRatio;
+}
+
+
+
+/****************************************************/
+/*                   DetectConfig                   */
+/****************************************************/
+
+DetectConfig::DetectConfig()
+{
+	SampleDirPath = "";//样本文件存储路径
+	TemplDirPath = ""; //模板文件的存储路径
+	OutputDirPath = "";//检测结果存储路径
+	ImageFormat = ""; //图像后缀
+	ActualProductSize_W = -1;//产品实际宽度,单位mm
+	ActualProductSize_H = -1;//产品实际高度,单位mm
+	nBasicUnitInRow = -1; //每一行中的基本单元数
+	nBasicUnitInCol = -1; //每一列中的基本单元数
+}
+
+//加载默认值
+void DetectConfig::loadDefaultValue()
+{
+	QDir dir(QDir::currentPath());
+	dir.cdUp(); //转到上一级目录
+	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
+
+	this->errorCode = Uncheck; //错误代码
+	this->SampleDirPath = appDirPath + "/sample"; //样本文件存储路径
+	this->TemplDirPath = appDirPath + "/template";//模板文件的存储路径
+	this->OutputDirPath = appDirPath + "/output";//检测结果存储路径
+	this->ImageFormat = ".bmp"; //图像后缀
+	this->ActualProductSize_W = 500;//产品实际宽度
+	this->ActualProductSize_H = 600;//产品实际高度
+	this->nBasicUnitInRow = 4; //每一行中的基本单元数
+	this->nBasicUnitInCol = 6; //每一列中的基本单元数
+}
+
+//参数有效性检查
+DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
+{
+	if (this->errorCode == ValidConfig)
+		return this->errorCode;
+
+	ErrorCode code = Uncheck;
+	switch (index)
+	{
+	case pcb::DetectConfig::Index_All:
+	case pcb::DetectConfig::Index_SampleDirPath: //样本路径
+		if (!QFileInfo(SampleDirPath).isDir())
+			code = Invalid_SampleDirPath;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_TemplDirPath: //模板路径
+		if (!QFileInfo(TemplDirPath).isDir())
+			code = Invalid_TemplDirPath;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_OutputDirPath: //输出路径
+		if (!QFileInfo(OutputDirPath).isDir())
+			code = Invalid_OutputDirPath;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_ImageFormat: //图像格式
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_ActualProductSize_W: //产品实际宽度
+		if (ActualProductSize_W < 1)
+			code = Invalid_ActualProductSize_W;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_ActualProductSize_H: //产品实际高度
+		if (ActualProductSize_H < 1)
+			code = Invalid_ActualProductSize_H;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_nBasicUnitInRow: //每一行中的基本单元数
+		if (nBasicUnitInRow < 1)
+			code = Invalid_nBasicUnitInRow;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_nBasicUnitInCol: //每一列中的基本单元数
+		if (nBasicUnitInCol < 1)
+			code = Invalid_nBasicUnitInCol;
+		if (code != Uncheck || index != Index_All) break;
+	}
+
+	if (code == Uncheck) code = ValidConfig;
+	if (code != ValidConfig || index == Index_All) this->errorCode = code;
+	return code;
+}
+
+//判断参数是否有效
+bool DetectConfig::isValid() {
+	if (this->errorCode == DetectConfig::Uncheck)
+		checkValidity(Index_All);
+	return this->errorCode == ValidConfig;
+}
+
+//将错误代码转为参数索引
+DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code)
+{
+	switch (code)
+	{
+	case pcb::DetectConfig::ValidConfig:
+		return Index_None;
+	case pcb::DetectConfig::Invalid_SampleDirPath:
+		return Index_SampleDirPath;
+	case pcb::DetectConfig::Invalid_TemplDirPath:
+		return Index_TemplDirPath;
+	case pcb::DetectConfig::Invalid_OutputDirPath:
+		return Index_OutputDirPath;
+	case pcb::DetectConfig::Invalid_ImageFormat:
+		return Index_ImageFormat;
+	case pcb::DetectConfig::Invalid_ActualProductSize_W:
+		return Index_ActualProductSize_W;
+	case pcb::DetectConfig::Invalid_ActualProductSize_H:
+		return Index_ActualProductSize_H;
+	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
+		return Index_nBasicUnitInRow;
+	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
+		return Index_nBasicUnitInCol;
+	}
+	return Index_None;
+}
+
+//参数报错
+bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
+{
+	ErrorCode tempCode = (code == Default) ? errorCode : code;
+	if (tempCode == DetectConfig::ValidConfig) return false;
+
+	QString valueName;
+	if (tempCode == ConfigFileMissing) {
+		QString message = pcb::chinese(".user.config文件丢失，已生成默认文件!    \n")
+			+ pcb::chinese("请在参数设置界面确认参数是否有效 ...   \n");
+		QMessageBox::warning(parent, pcb::chinese("警告"),
+			message + "Config: User: ErrorCode: " + QString::number(tempCode),
+			pcb::chinese("确定"));
+		return true;
+	}
+
+	switch (tempCode)
+	{
+	case pcb::DetectConfig::Invalid_SampleDirPath:
+		valueName = pcb::chinese("\"样本路径\""); break;
+	case pcb::DetectConfig::Invalid_TemplDirPath:
+		valueName = pcb::chinese("\"模板路径\""); break;
+	case pcb::DetectConfig::Invalid_OutputDirPath:
+		valueName = pcb::chinese("\"输出路径\""); break;
+	case pcb::DetectConfig::Invalid_ImageFormat:
+		valueName = pcb::chinese("\"图像格式\""); break;
+	case pcb::DetectConfig::Invalid_ActualProductSize_W:
+	case pcb::DetectConfig::Invalid_ActualProductSize_H:
+		valueName = pcb::chinese("\"产品实际尺寸\""); break;
+	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
+	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
+		valueName = pcb::chinese("\"基本单元数\""); break;
+	default:
+		valueName = ""; break;
+	}
+
+	QMessageBox::warning(parent, pcb::chinese("警告"),
+		pcb::chinese("用户参数无效，请在参数设置界面重新设置") + valueName + "!        \n" +
+		"Config: User: ErrorCode: " + QString::number(tempCode),
+		pcb::chinese("确定"));
+	return true;
+}
+
+//不相等判断
+DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
+	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
+	if (this->TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
+	if (this->OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
+	if (this->ImageFormat != other.ImageFormat) return Index_ImageFormat;
+	if (this->ActualProductSize_W != other.ActualProductSize_W) return Index_ActualProductSize_W;
+	if (this->ActualProductSize_H != other.ActualProductSize_H) return Index_ActualProductSize_H;
+	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
+	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
+	return Index_None;
+}
+
+//功能：获取系统重置代码
+//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
+//      0b1234 第1位置位，则表示重置模板提取模块
+//             第2位置位，则表示重置检测模块
+//             第3位置位，则表示重置运动结构
+//             第4位置位，则表示重置相机
+int DetectConfig::getSystemResetCode(DetectConfig &newConfig)
+{
+	int resetCode = 0b000000000;
+	if (ActualProductSize_W != newConfig.ActualProductSize_W ||
+		ActualProductSize_H != newConfig.ActualProductSize_H)
+	{
+		//resetCode |= 0b1100;
+	}
+	return resetCode;
+}
+
+//拷贝结构体
+void DetectConfig::copyTo(DetectConfig *dst)
+{
+	dst->errorCode = this->errorCode; //参数有效性
+	dst->SampleDirPath = this->SampleDirPath; //样本文件存储路径
+	dst->TemplDirPath = this->TemplDirPath;//模板文件的存储路径
+	dst->OutputDirPath = this->OutputDirPath;//检测结果存储路径
+	dst->ImageFormat = this->ImageFormat; //图像后缀
+	dst->ActualProductSize_W = this->ActualProductSize_W; //产品实际宽度
+	dst->ActualProductSize_H = this->ActualProductSize_H; //产品实际高度
+	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
+	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
 }
 
 
@@ -719,82 +738,4 @@ bool Configurator::checkDir(QString dirpath)
 		if (!config.isDir()) return false; //没有配置文件 则创建文件
 	}
 	return true;
-}
-
-
-
-/****************************************************/
-/*                   DetectParams                   */
-/****************************************************/
-
-//重置产品序号
-void DetectParams::resetSerialNum()
-{
-	QString sampleModelNum = ""; //型号
-	QString sampleBatchNum = ""; //批次号
-	QString sampleNum = ""; //样本编号
-}
-
-//加载默认的运行参数
-void DetectParams::loadDefaultValue()
-{
-	resetSerialNum();
-	imageSize = QSize(-1, -1);
-	int currentRow_detect = -1; //检测行号
-	int currentRow_extract = -1; //提取行号
-}
-
-//计算nCamera、nPhotographing
-int DetectParams::updateGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig)
-{
-	int resetCode = 0b0000; //系统重置代码
-	int nCamera_old = nCamera;
-	int nPhotographing_old = nPhotographing;
-
-	//计算需要开启的相机个数
-	int overlap = adminConfig->ImageOverlappingRate; //图像重叠率
-	int nW = detectConfig->ActualProductSize_W / adminConfig->ImageResolutionRatio;
-	nw /= adminConfig->ImageSize_W;
-	this->nCamera = (nW - overlap) / (1 - overlap);
-
-	//计算拍摄次数
-	int nH = detectConfig->ActualProductSize_H / adminConfig->ImageResolutionRatio;
-	nH /= adminConfig->ImageSize_H;
-	this->nPhotographing = (nH - overlap) / (1 - overlap);
-
-	//判断是否需要重置系统
-	if (this->nCamera != nCamera_old)
-		resetCode |= 0b1101;
-	if (this->nPhotographing != nPhotographing_old)
-		resetCode |= 0b1100;
-	return resetCode;
-}
-
-
-
-/****************************************************/
-/*                   namespace pcb                  */
-/****************************************************/
-
-//非阻塞延迟
-void pcb::delay(unsigned long msec)
-{
-	QTime dieTime = QTime::currentTime().addMSecs(msec);
-	while (QTime::currentTime() < dieTime)
-		QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-}
-
-//交互式文件夹路径选择
-QString pcb::selectDirPath(QString windowTitle)
-{
-	QFileDialog *fileDialog = new QFileDialog(this);
-	fileDialog->setWindowTitle(windowTitle); //设置文件保存对话框的标题
-	fileDialog->setFileMode(QFileDialog::Directory); //设置文件对话框弹出的时候显示文件夹
-	fileDialog->setViewMode(QFileDialog::Detail); //文件以详细的形式显示，显示文件名，大小，创建日期等信息
-
-	QString path = "";
-	if (fileDialog->exec() == QDialog::DialogCode::Accepted) //选择路径
-		path = fileDialog->selectedFiles()[0];
-	delete fileDialog;
-	return path;
 }

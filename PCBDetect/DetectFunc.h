@@ -1,5 +1,6 @@
 #pragma once
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "direct.h"
 #include <io.h>
 #include <string>
@@ -11,9 +12,10 @@
 class DetectFunc {
 
 private:
-	pcb::DetectConfig* config;
-	pcb::DetectParams* params;
-	
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig *detectConfig; //用户参数
+	pcb::DetectParams *detectParams; //运行参数
+
 	//配准函数需要用到的参数
 	int MAX_FEATURES = 500;
 	float GOOD_MATCH_PERCENT = 0.15f;//保留的良好匹配的比例
@@ -22,8 +24,9 @@ public:
 	DetectFunc() = default;
 	~DetectFunc() {};
 
-	void setDetectConfig(pcb::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
-	void setDetectParams(pcb::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
 	void alignImages(cv::Mat &im1Gray, cv::Mat &im2Gray, cv::Mat &im1Reg, cv::Mat &h, cv::Mat &imMatches);
 	cv::Mat sub_process(cv::Mat &imgOut, cv::Mat &imgOut2);

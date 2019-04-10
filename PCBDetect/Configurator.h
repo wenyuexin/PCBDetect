@@ -20,66 +20,89 @@
 #include <QGraphicsItem>
 #include <string>
 #include <vector>
-#include "windows.h"
 #include <iostream>
+#include "windows.h"
 
 
 namespace pcb 
 {
-#ifndef PCB_FUNCTIONS
-#define PCB_FUNCTIONS
-	void delay(unsigned long msec);//非阻塞延迟
-	inline QString chinese(const QByteArray &str) { return  QString::fromLocal8Bit(str); }
-	QString selectDirPath(QString windowTitle = chinese("请选择路径"));//交互式文件夹路径选择
-#endif //PCB_FUNCTIONS
-
-#ifndef IMAGE_FORMAT
-#define IMAGE_FORMAT
-	enum ImageFormat { Unknown, BMP, JPG, PNG, TIF };
-#endif //IMAGE_FORMAT
-
-#ifndef TYPE_ITEM_GRID
-#define TYPE_ITEM_GRID 
-	typedef QList<QList<QPointF>> ItemGrid;
-#endif //TYPE_ITEM_GRID
-
-#ifndef TYPE_ITEM_ARRAY
-#define TYPE_ITEM_ARRAY 
-	typedef QVector<QVector<QGraphicsPixmapItem *>> ItemArray;
-#endif //TYPE_ITEM_ARRAY
-
-#ifndef TYPE_CV_MAT_CONTAINER
-#define TYPE_CV_MAT_CONTAINER 
-	typedef std::vector<cv::Mat *> CvMatVector;
-	typedef std::vector<CvMatVector> CvMatArray;
-#endif //TYPE_CV_MAT_CONTAINER
-
-#ifndef TYPE_QIMAGE_CONTAINER
-#define TYPE_QIMAGE_CONTAINER
-	typedef std::vector<QImage *> QImageVector;
-	typedef std::vector<QImageVector> QImageArray;
-#endif //TYPE_QIMAGE_CONTAINER
-
-#ifndef TYPE_QPIXMAP_CONTAINER
-#define TYPE_QPIXMAP_CONTAINER 
-	typedef std::vector<QPixmap *> QPixmapVector;
-	typedef std::vector<QPixmapVector> QPixmapArray;
-#endif //TYPE_QPIXMAP_CONTAINER
+#ifndef PCB_FUNCTIONS_CHINESE
+#define PCB_FUNCTIONS_CHINESE
+	inline QString chinese(const QByteArray &str) { return QString::fromLocal8Bit(str); }
+#endif //PCB_FUNCTIONS_CHINESE
 
 
-#ifndef STRUCT_DETECT_RESULT
-#define STRUCT_DETECT_RESULT 
-	struct DetectResult { //检测结果
 
+#ifndef CLASS_ADMIN_CONFIG
+#define CLASS_ADMIN_CONFIG 
+	//系统参数类
+	class AdminConfig 
+	{
+	public:
+		int MaxMotionStroke; //机械结构的最大运动行程
+		int MaxCameraNum; //可用相机总数
+		int PixelsNumPerUnitLength; //单位长度的像素 pix/mm
+		double ImageOverlappingRate; //分图重叠率
+		int ImageSize_W; //分图宽度
+		int ImageSize_H; //分图高度
+		double ImageAspectRatio; //图像宽高比
+
+		enum ConfigIndex {
+			Index_All,
+			Index_None,
+			Index_MaxMotionStroke,
+			Index_MaxCameraNum,
+			Index_PixelsNumPerUnitLength,
+			Index_ImageOverlappingRate,
+			Index_ImageSize_W,
+			Index_ImageSize_H,
+			Index_ImageAspectRatio
+		};
+
+		//错误代码
+		enum ErrorCode {
+			ValidConfig = 0x000,
+			ValidValue = 0x000,
+			Uncheck = 0x100,
+			ConfigFileMissing = 0x101,
+			Invalid_MaxMotionStroke = 0x102,
+			Invalid_MaxCameraNum = 0x103,
+			Invalid_PixelsNumPerUnitLength = 0x104,
+			Invalid_ImageOverlappingRate = 0x105,
+			Invalid_ImageSize_W = 0x106,
+			Invalid_ImageSize_H = 0x107,
+			Invalid_ImageAspectRatio = 0x108,
+			Default = 0x1FF
+		};
+
+	private:
+		ErrorCode errorCode = Uncheck;
+
+	public:
+		AdminConfig();
+		~AdminConfig() = default;
+		void loadDefaultValue(); //加载默认参数
+
+		ErrorCode checkValidity(ConfigIndex index = Index_All);
+		bool isValid();
+		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
+		inline void resetErrorCode() { errorCode = Uncheck; }
+		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
+		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转参数索引
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
+
+		ErrorCode calcImageAspectRatio(); //计算宽高比
+		ConfigIndex unequals(AdminConfig &other); //不等性判断
+		int getSystemResetCode(AdminConfig &newConfig); //获取系统重置代码
+		void copyTo(AdminConfig *dst); //拷贝参数
 	};
-#endif //STRUCT_DETECT_RESULT
-
+#endif //CLASS_ADMIN_CONFIG
 
 
 #ifndef CLASS_DETECT_CONFIG
 #define CLASS_DETECT_CONFIG
 	//用户参数类
-	class DetectConfig 
+	class DetectConfig
 	{
 	public:
 		QString SampleDirPath;//样本文件存储路径
@@ -99,39 +122,40 @@ namespace pcb
 			Index_TemplDirPath,
 			Index_OutputDirPath,
 			Index_ImageFormat,
-			Index_ActualProductSize_W;
-		    Index_ActualProductSize_H;
+			Index_ActualProductSize_W,
+			Index_ActualProductSize_H,
 			Index_nBasicUnitInRow,
-			Index_nBasicUnitInCol,
+			Index_nBasicUnitInCol
 		};
 
 		//错误代码
 		enum ErrorCode {
 			ValidConfig = 0x000,
 			ValidValue = 0x000,
-			Uncheck = 0x100,
-			ConfigFileMissing = 0x101,
-			Invalid_SampleDirPath = 0x102,
-			Invalid_TemplDirPath = 0x103,
-			Invalid_OutputDirPath = 0x104,
-			Invalid_ImageFormat = 0x105,
-			Index_ActualProductSize_W = 0x106,
-		    Index_ActualProductSize_H = 0x107,
-			Invalid_nBasicUnitInRow = 0x108,
-			Invalid_nBasicUnitInCol = 0x109,
-			Default = 0x1FF
+			Uncheck = 0x200,
+			ConfigFileMissing = 0x201,
+			Invalid_SampleDirPath = 0x202,
+			Invalid_TemplDirPath = 0x203,
+			Invalid_OutputDirPath = 0x204,
+			Invalid_ImageFormat = 0x205,
+			Invalid_ActualProductSize_W = 0x206,
+			Invalid_ActualProductSize_H = 0x207,
+			Invalid_nBasicUnitInRow = 0x208,
+			Invalid_nBasicUnitInCol = 0x209,
+			Default = 0x2FF
 		};
 
 	private:
 		ErrorCode errorCode = Uncheck;
 
 	public:
-		DetectConfig() = default;
+		DetectConfig();
 		~DetectConfig() = default;
 		void loadDefaultValue(); //加载默认参数
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
 		bool isValid();
+		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
 		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
 		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转索引
@@ -143,70 +167,6 @@ namespace pcb
 	};
 #endif //CLASS_DETECT_CONFIG
 
-
-#ifndef CLASS_ADMIN_CONFIG
-#define CLASS_ADMIN_CONFIG 
-	//系统参数类
-	class AdminConfig 
-	{
-	public:
-		int MaxMotionStroke; //机械结构的最大运动行程
-		int MaxCameraNum; //可用相机的总数
-		int PixelsNumPerUnitLength; //图像分辨率 pix/mm
-		double ImageOverlappingRate; //分图重叠率
-		int ImageSize_W; //图像宽度
-		int ImageSize_H; //图像高度
-		double ImageAspectRatio; //图像宽高比
-
-		enum ConfigIndex {
-			Index_All,
-			Index_None,
-			Index_MaxMotionStroke,
-			Index_MaxCameraNum,
-			Index_PixelsNumPerUnitLength,
-			Index_ImageOverlappingRate,
-			Index_ImageSize_W,
-			Index_ImageSize_H,
-			Index_ImageAspectRatio
-		};
-
-		//错误代码
-		enum ErrorCode {
-			ValidConfig = 0x000,
-			ValidValue = 0x000,
-			Uncheck = 0x200,
-			ConfigFileMissing = 0x201,
-			Invalid_MaxMotionStroke = 0x202,
-			Invalid_MaxCameraNum = 0x203,
-			Invalid_PixelsNumPerUnitLength = 0x204,
-			Invalid_ImageOverlappingRate = 0x205,
-			Invalid_ImageSize_W = 0x206,
-			Invalid_ImageSize_H = 0x207,
-			Invalid_ImageAspectRatio = 0x208,
-			Default = 0x2FF
-		};
-
-	private:
-		ErrorCode errorCode = Uncheck;
-
-	public:
-		AdminConfig() = default;
-		~AdminConfig() = default;
-		void loadDefaultValue(); //加载默认参数
-
-		ErrorCode checkValidity(ConfigIndex index = Index_All);
-		bool isValid();
-		inline void resetErrorCode() { errorCode = Uncheck; }
-		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
-		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转参数索引
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
-
-		ErrorCode calcImageAspectRatio(); //计算宽高比
-		ConfigIndex unequals(AdminConfig &other); //不等性判断
-		int getSystemResetCode(AdminConfig &newConfig); //获取系统重置代码
-		void copyTo(AdminConfig *dst); //拷贝参数
-	};
-#endif //CLASS_ADMIN_CONFIG
 
 
 #ifndef CLASS_CONFIGURATOR
@@ -249,41 +209,4 @@ namespace pcb
 		QString decrypt(const char* origin) const;
 	};
 #endif //CLASS_CONFIGURATOR
-
-
-
-#ifndef STRUCT_DETECT_PARAMS
-#define STRUCT_DETECT_PARAMS
-	//程序运行期间使用的临时变量或参数
-	class DetectParams 
-	{
-	public:
-		QString sampleModelNum; //型号
-		QString sampleBatchNum; //批次号
-		QString sampleNum; //样本编号
-		int currentRow_detect; //检测行号
-		int currentRow_extract; //提取行号
-		int nCamera; //相机个数
-		int nPhotographing; //拍照次数
-
-		enum ErrorCode {
-			ValidParams = 0x000,
-			Uncheck = 0x300,
-			Invalid_nCamera = 0x301,
-			Default = 0x3FF
-		};
-
-	private:
-		ErrorCode errorCode = Uncheck;
-
-	public:
-		DetectParams() = default;
-		~DetectParams() = default;
-
-		void resetSerialNum();
-		void loadDefaultValue();
-		int updateGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig);
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
-	};
-#endif //STRUCT_DETECT_PARAMS
 }

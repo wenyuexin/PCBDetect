@@ -1,15 +1,12 @@
 #pragma once
 
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "opencv2/opencv.hpp"
 #include <QThread>
 #include <map>
 #include <iterator>
 
-
-namespace pcb {
-	class CameraControler;
-}
 
 //相机控制器
 class CameraControler : public QThread
@@ -27,9 +24,9 @@ public:
 	//相机的错误代码
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x400,
-		InitFailed = 0x401,
-		InvalidCameraNum = 0x402
+		Uncheck = 0x500,
+		InitFailed = 0x501,
+		InvalidCameraNum = 0x502
 	};
 
 private:
@@ -61,6 +58,7 @@ public:
 	ErrorCode resetDeviceIndex(std::vector<int> iv = {}); //设定接入的总设备数
 	inline bool checkCameraState(int index) { return cameraState[index]; }
 
+	inline bool isReady() { return errorCode == NoError; }
 	inline ErrorCode getErrorCode() { return errorCode; } //获取当前的错误代码
 	bool showMessageBox(QWidget *parent); //弹窗警告
 

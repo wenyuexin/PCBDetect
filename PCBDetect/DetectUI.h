@@ -3,6 +3,7 @@
 #include <QWidget>
 #include "ui_DetectUI.h"
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "DetectThread.h"
 #include <vector>
 #include <QRect>
@@ -23,8 +24,9 @@ private:
 	QString IconFolder; //图标文件夹
 	QPixmap lightOnIcon; //亮灯图标 red
 	QPixmap lightOffIcon; //灭灯图标 grey
-	pcb::DetectConfig *config; //参数配置
-	pcb::DetectParams *params; //临时参数
+	pcb::AdminConfig *adminConfig; //参数配置
+	pcb::DetectConfig *detectConfig; //参数配置
+	pcb::DetectParams *detectParams; //临时参数
 	int currentRow_show; //当前正在显示的行
 
 	int itemSpacing = 3; //图元间距
@@ -37,7 +39,7 @@ private:
 	bool isStarted; //系统是否处于已启动的状态
 	int eventCounter; //事件计数器
 	DetectThread *detectThread; //检测线程
-	DetectCore *detectCore; //检测核心类
+	DefectDetecter *detectCore; //检测核心类
 	pcb::QImageArray samples; //当前样本
 	pcb::DetectResult detectResult; //检测结果
 	int detectState; //检测状态
@@ -46,8 +48,9 @@ public:
 	DetectUI(QWidget *parent = Q_NULLPTR);
 	~DetectUI();
 
-	inline void setDetectConfig(pcb::DetectConfig* ptr = Q_NULLPTR) { config = ptr; }
-	inline void setDetectParams(pcb::DetectParams* ptr = Q_NULLPTR) { params = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig* ptr = Q_NULLPTR) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig* ptr = Q_NULLPTR) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams* ptr = Q_NULLPTR) { detectParams = ptr; }
 
 	void initGraphicsView();
 	void resetDetectUI();

@@ -51,16 +51,6 @@ public:
     QLineEdit *lineEdit_OutputDirPath;
     QSpacerItem *horizontalSpacer_17;
     QPushButton *pushButton_OutputDirPath;
-    QWidget *layoutWidget_4;
-    QHBoxLayout *horizontalLayout_4;
-    QLabel *label_roiHeight_L;
-    QSpacerItem *horizontalSpacer_4;
-    QLineEdit *lineEdit_nCamera;
-    QWidget *layoutWidget_5;
-    QHBoxLayout *horizontalLayout_5;
-    QLabel *label_roiHeight_L_2;
-    QSpacerItem *horizontalSpacer_5;
-    QLineEdit *lineEdit_nPhotographing;
     QWidget *layoutWidget_6;
     QHBoxLayout *horizontalLayout_6;
     QLabel *label_roiHeight_L_3;
@@ -75,16 +65,16 @@ public:
     QLabel *label_roiHeight_L_4;
     QSpacerItem *horizontalSpacer_8;
     QComboBox *comboBox_ImageFormat;
+    QPushButton *pushButton_admin;
     QWidget *layoutWidget_8;
     QHBoxLayout *horizontalLayout_8;
     QLabel *label_roiHeight_L_5;
     QSpacerItem *horizontalSpacer_9;
-    QLineEdit *lineEdit_ImageAspectRatio_W;
-    QSpacerItem *horizontalSpacer_11;
-    QLabel *label_roiHeight_L_6;
-    QSpacerItem *horizontalSpacer_12;
-    QLineEdit *lineEdit_ImageAspectRatio_H;
-    QPushButton *pushButton_admin;
+    QLabel *label_roiHeight_L_9;
+    QLineEdit *lineEdit_ActualProductSize_W;
+    QSpacerItem *horizontalSpacer_10;
+    QLabel *label_roiHeight_L_10;
+    QLineEdit *lineEdit_ActualProductSize_H;
 
     void setupUi(QWidget *SettingUI)
     {
@@ -280,77 +270,9 @@ public:
 
         horizontalLayout_3->addWidget(pushButton_OutputDirPath);
 
-        layoutWidget_4 = new QWidget(SettingUI);
-        layoutWidget_4->setObjectName(QStringLiteral("layoutWidget_4"));
-        layoutWidget_4->setGeometry(QRect(60, 280, 311, 37));
-        horizontalLayout_4 = new QHBoxLayout(layoutWidget_4);
-        horizontalLayout_4->setSpacing(6);
-        horizontalLayout_4->setContentsMargins(11, 11, 11, 11);
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
-        horizontalLayout_4->setContentsMargins(0, 0, 0, 0);
-        label_roiHeight_L = new QLabel(layoutWidget_4);
-        label_roiHeight_L->setObjectName(QStringLiteral("label_roiHeight_L"));
-        sizePolicy.setHeightForWidth(label_roiHeight_L->sizePolicy().hasHeightForWidth());
-        label_roiHeight_L->setSizePolicy(sizePolicy);
-        label_roiHeight_L->setMinimumSize(QSize(90, 35));
-        label_roiHeight_L->setMaximumSize(QSize(90, 35));
-        label_roiHeight_L->setFont(font2);
-        label_roiHeight_L->setAlignment(Qt::AlignCenter);
-
-        horizontalLayout_4->addWidget(label_roiHeight_L);
-
-        horizontalSpacer_4 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-
-        horizontalLayout_4->addItem(horizontalSpacer_4);
-
-        lineEdit_nCamera = new QLineEdit(layoutWidget_4);
-        lineEdit_nCamera->setObjectName(QStringLiteral("lineEdit_nCamera"));
-        sizePolicy.setHeightForWidth(lineEdit_nCamera->sizePolicy().hasHeightForWidth());
-        lineEdit_nCamera->setSizePolicy(sizePolicy);
-        lineEdit_nCamera->setMinimumSize(QSize(180, 35));
-        lineEdit_nCamera->setMaximumSize(QSize(160, 35));
-        lineEdit_nCamera->setFont(font2);
-        lineEdit_nCamera->setAlignment(Qt::AlignCenter);
-
-        horizontalLayout_4->addWidget(lineEdit_nCamera);
-
-        layoutWidget_5 = new QWidget(SettingUI);
-        layoutWidget_5->setObjectName(QStringLiteral("layoutWidget_5"));
-        layoutWidget_5->setGeometry(QRect(60, 340, 311, 37));
-        horizontalLayout_5 = new QHBoxLayout(layoutWidget_5);
-        horizontalLayout_5->setSpacing(6);
-        horizontalLayout_5->setContentsMargins(11, 11, 11, 11);
-        horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
-        horizontalLayout_5->setContentsMargins(0, 0, 0, 0);
-        label_roiHeight_L_2 = new QLabel(layoutWidget_5);
-        label_roiHeight_L_2->setObjectName(QStringLiteral("label_roiHeight_L_2"));
-        sizePolicy.setHeightForWidth(label_roiHeight_L_2->sizePolicy().hasHeightForWidth());
-        label_roiHeight_L_2->setSizePolicy(sizePolicy);
-        label_roiHeight_L_2->setMinimumSize(QSize(90, 35));
-        label_roiHeight_L_2->setMaximumSize(QSize(90, 35));
-        label_roiHeight_L_2->setFont(font2);
-        label_roiHeight_L_2->setAlignment(Qt::AlignCenter);
-
-        horizontalLayout_5->addWidget(label_roiHeight_L_2);
-
-        horizontalSpacer_5 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-
-        horizontalLayout_5->addItem(horizontalSpacer_5);
-
-        lineEdit_nPhotographing = new QLineEdit(layoutWidget_5);
-        lineEdit_nPhotographing->setObjectName(QStringLiteral("lineEdit_nPhotographing"));
-        sizePolicy.setHeightForWidth(lineEdit_nPhotographing->sizePolicy().hasHeightForWidth());
-        lineEdit_nPhotographing->setSizePolicy(sizePolicy);
-        lineEdit_nPhotographing->setMinimumSize(QSize(180, 35));
-        lineEdit_nPhotographing->setMaximumSize(QSize(150, 35));
-        lineEdit_nPhotographing->setFont(font2);
-        lineEdit_nPhotographing->setAlignment(Qt::AlignCenter);
-
-        horizontalLayout_5->addWidget(lineEdit_nPhotographing);
-
         layoutWidget_6 = new QWidget(SettingUI);
         layoutWidget_6->setObjectName(QStringLiteral("layoutWidget_6"));
-        layoutWidget_6->setGeometry(QRect(60, 400, 348, 37));
+        layoutWidget_6->setGeometry(QRect(70, 400, 358, 37));
         horizontalLayout_6 = new QHBoxLayout(layoutWidget_6);
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setContentsMargins(11, 11, 11, 11);
@@ -360,8 +282,8 @@ public:
         label_roiHeight_L_3->setObjectName(QStringLiteral("label_roiHeight_L_3"));
         sizePolicy.setHeightForWidth(label_roiHeight_L_3->sizePolicy().hasHeightForWidth());
         label_roiHeight_L_3->setSizePolicy(sizePolicy);
-        label_roiHeight_L_3->setMinimumSize(QSize(120, 35));
-        label_roiHeight_L_3->setMaximumSize(QSize(120, 35));
+        label_roiHeight_L_3->setMinimumSize(QSize(130, 35));
+        label_roiHeight_L_3->setMaximumSize(QSize(130, 35));
         label_roiHeight_L_3->setFont(font2);
         label_roiHeight_L_3->setAlignment(Qt::AlignCenter);
 
@@ -395,7 +317,7 @@ public:
 
         horizontalLayout_6->addWidget(lineEdit_nBasicUnitInRow);
 
-        horizontalSpacer_7 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        horizontalSpacer_7 = new QSpacerItem(3, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
         horizontalLayout_6->addItem(horizontalSpacer_7);
 
@@ -423,7 +345,7 @@ public:
 
         layoutWidget_7 = new QWidget(SettingUI);
         layoutWidget_7->setObjectName(QStringLiteral("layoutWidget_7"));
-        layoutWidget_7->setGeometry(QRect(60, 470, 311, 37));
+        layoutWidget_7->setGeometry(QRect(70, 270, 331, 37));
         horizontalLayout_7 = new QHBoxLayout(layoutWidget_7);
         horizontalLayout_7->setSpacing(6);
         horizontalLayout_7->setContentsMargins(11, 11, 11, 11);
@@ -453,16 +375,22 @@ public:
         comboBox_ImageFormat->setObjectName(QStringLiteral("comboBox_ImageFormat"));
         sizePolicy.setHeightForWidth(comboBox_ImageFormat->sizePolicy().hasHeightForWidth());
         comboBox_ImageFormat->setSizePolicy(sizePolicy);
-        comboBox_ImageFormat->setMinimumSize(QSize(150, 35));
-        comboBox_ImageFormat->setMaximumSize(QSize(150, 35));
+        comboBox_ImageFormat->setMinimumSize(QSize(160, 35));
+        comboBox_ImageFormat->setMaximumSize(QSize(160, 35));
         comboBox_ImageFormat->setFont(font3);
         comboBox_ImageFormat->setLayoutDirection(Qt::LeftToRight);
 
         horizontalLayout_7->addWidget(comboBox_ImageFormat);
 
+        pushButton_admin = new QPushButton(SettingUI);
+        pushButton_admin->setObjectName(QStringLiteral("pushButton_admin"));
+        pushButton_admin->setGeometry(QRect(850, 710, 120, 40));
+        sizePolicy.setHeightForWidth(pushButton_admin->sizePolicy().hasHeightForWidth());
+        pushButton_admin->setSizePolicy(sizePolicy);
+        pushButton_admin->setFont(font1);
         layoutWidget_8 = new QWidget(SettingUI);
         layoutWidget_8->setObjectName(QStringLiteral("layoutWidget_8"));
-        layoutWidget_8->setGeometry(QRect(60, 530, 321, 37));
+        layoutWidget_8->setGeometry(QRect(70, 340, 351, 37));
         horizontalLayout_8 = new QHBoxLayout(layoutWidget_8);
         horizontalLayout_8->setSpacing(6);
         horizontalLayout_8->setContentsMargins(11, 11, 11, 11);
@@ -472,8 +400,8 @@ public:
         label_roiHeight_L_5->setObjectName(QStringLiteral("label_roiHeight_L_5"));
         sizePolicy.setHeightForWidth(label_roiHeight_L_5->sizePolicy().hasHeightForWidth());
         label_roiHeight_L_5->setSizePolicy(sizePolicy);
-        label_roiHeight_L_5->setMinimumSize(QSize(120, 35));
-        label_roiHeight_L_5->setMaximumSize(QSize(120, 35));
+        label_roiHeight_L_5->setMinimumSize(QSize(130, 35));
+        label_roiHeight_L_5->setMaximumSize(QSize(130, 35));
         label_roiHeight_L_5->setFont(font2);
         label_roiHeight_L_5->setAlignment(Qt::AlignCenter);
 
@@ -483,57 +411,54 @@ public:
 
         horizontalLayout_8->addItem(horizontalSpacer_9);
 
-        lineEdit_ImageAspectRatio_W = new QLineEdit(layoutWidget_8);
-        lineEdit_ImageAspectRatio_W->setObjectName(QStringLiteral("lineEdit_ImageAspectRatio_W"));
-        sizePolicy.setHeightForWidth(lineEdit_ImageAspectRatio_W->sizePolicy().hasHeightForWidth());
-        lineEdit_ImageAspectRatio_W->setSizePolicy(sizePolicy);
-        lineEdit_ImageAspectRatio_W->setMinimumSize(QSize(60, 35));
-        lineEdit_ImageAspectRatio_W->setMaximumSize(QSize(60, 35));
-        lineEdit_ImageAspectRatio_W->setFont(font2);
-        lineEdit_ImageAspectRatio_W->setAlignment(Qt::AlignCenter);
+        label_roiHeight_L_9 = new QLabel(layoutWidget_8);
+        label_roiHeight_L_9->setObjectName(QStringLiteral("label_roiHeight_L_9"));
+        sizePolicy.setHeightForWidth(label_roiHeight_L_9->sizePolicy().hasHeightForWidth());
+        label_roiHeight_L_9->setSizePolicy(sizePolicy);
+        label_roiHeight_L_9->setMinimumSize(QSize(25, 35));
+        label_roiHeight_L_9->setMaximumSize(QSize(25, 35));
+        label_roiHeight_L_9->setFont(font3);
+        label_roiHeight_L_9->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_8->addWidget(lineEdit_ImageAspectRatio_W);
+        horizontalLayout_8->addWidget(label_roiHeight_L_9);
 
-        horizontalSpacer_11 = new QSpacerItem(3, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        lineEdit_ActualProductSize_W = new QLineEdit(layoutWidget_8);
+        lineEdit_ActualProductSize_W->setObjectName(QStringLiteral("lineEdit_ActualProductSize_W"));
+        sizePolicy.setHeightForWidth(lineEdit_ActualProductSize_W->sizePolicy().hasHeightForWidth());
+        lineEdit_ActualProductSize_W->setSizePolicy(sizePolicy);
+        lineEdit_ActualProductSize_W->setMinimumSize(QSize(60, 35));
+        lineEdit_ActualProductSize_W->setMaximumSize(QSize(60, 35));
+        lineEdit_ActualProductSize_W->setFont(font2);
+        lineEdit_ActualProductSize_W->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_8->addItem(horizontalSpacer_11);
+        horizontalLayout_8->addWidget(lineEdit_ActualProductSize_W);
 
-        label_roiHeight_L_6 = new QLabel(layoutWidget_8);
-        label_roiHeight_L_6->setObjectName(QStringLiteral("label_roiHeight_L_6"));
-        sizePolicy.setHeightForWidth(label_roiHeight_L_6->sizePolicy().hasHeightForWidth());
-        label_roiHeight_L_6->setSizePolicy(sizePolicy);
-        label_roiHeight_L_6->setMinimumSize(QSize(8, 35));
-        label_roiHeight_L_6->setMaximumSize(QSize(8, 35));
-        QFont font4;
-        font4.setPointSize(16);
-        font4.setBold(true);
-        font4.setWeight(75);
-        label_roiHeight_L_6->setFont(font4);
-        label_roiHeight_L_6->setAlignment(Qt::AlignCenter);
+        horizontalSpacer_10 = new QSpacerItem(3, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
-        horizontalLayout_8->addWidget(label_roiHeight_L_6);
+        horizontalLayout_8->addItem(horizontalSpacer_10);
 
-        horizontalSpacer_12 = new QSpacerItem(3, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        label_roiHeight_L_10 = new QLabel(layoutWidget_8);
+        label_roiHeight_L_10->setObjectName(QStringLiteral("label_roiHeight_L_10"));
+        sizePolicy.setHeightForWidth(label_roiHeight_L_10->sizePolicy().hasHeightForWidth());
+        label_roiHeight_L_10->setSizePolicy(sizePolicy);
+        label_roiHeight_L_10->setMinimumSize(QSize(25, 35));
+        label_roiHeight_L_10->setMaximumSize(QSize(25, 35));
+        label_roiHeight_L_10->setFont(font3);
+        label_roiHeight_L_10->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_8->addItem(horizontalSpacer_12);
+        horizontalLayout_8->addWidget(label_roiHeight_L_10);
 
-        lineEdit_ImageAspectRatio_H = new QLineEdit(layoutWidget_8);
-        lineEdit_ImageAspectRatio_H->setObjectName(QStringLiteral("lineEdit_ImageAspectRatio_H"));
-        sizePolicy.setHeightForWidth(lineEdit_ImageAspectRatio_H->sizePolicy().hasHeightForWidth());
-        lineEdit_ImageAspectRatio_H->setSizePolicy(sizePolicy);
-        lineEdit_ImageAspectRatio_H->setMinimumSize(QSize(60, 35));
-        lineEdit_ImageAspectRatio_H->setMaximumSize(QSize(60, 35));
-        lineEdit_ImageAspectRatio_H->setFont(font2);
-        lineEdit_ImageAspectRatio_H->setAlignment(Qt::AlignCenter);
+        lineEdit_ActualProductSize_H = new QLineEdit(layoutWidget_8);
+        lineEdit_ActualProductSize_H->setObjectName(QStringLiteral("lineEdit_ActualProductSize_H"));
+        sizePolicy.setHeightForWidth(lineEdit_ActualProductSize_H->sizePolicy().hasHeightForWidth());
+        lineEdit_ActualProductSize_H->setSizePolicy(sizePolicy);
+        lineEdit_ActualProductSize_H->setMinimumSize(QSize(60, 35));
+        lineEdit_ActualProductSize_H->setMaximumSize(QSize(60, 35));
+        lineEdit_ActualProductSize_H->setFont(font2);
+        lineEdit_ActualProductSize_H->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_8->addWidget(lineEdit_ImageAspectRatio_H);
+        horizontalLayout_8->addWidget(lineEdit_ActualProductSize_H);
 
-        pushButton_admin = new QPushButton(SettingUI);
-        pushButton_admin->setObjectName(QStringLiteral("pushButton_admin"));
-        pushButton_admin->setGeometry(QRect(850, 710, 120, 40));
-        sizePolicy.setHeightForWidth(pushButton_admin->sizePolicy().hasHeightForWidth());
-        pushButton_admin->setSizePolicy(sizePolicy);
-        pushButton_admin->setFont(font1);
         label_3->raise();
         label_title->raise();
         line->raise();
@@ -542,12 +467,10 @@ public:
         layoutWidget->raise();
         layoutWidget_2->raise();
         layoutWidget_3->raise();
-        layoutWidget_4->raise();
-        layoutWidget_5->raise();
         layoutWidget_6->raise();
         layoutWidget_7->raise();
-        layoutWidget_8->raise();
         pushButton_admin->raise();
+        layoutWidget_8->raise();
 
         retranslateUi(SettingUI);
 
@@ -567,8 +490,6 @@ public:
         pushButton_TemplDirPath->setText(QApplication::translate("SettingUI", "\351\200\211\346\213\251", nullptr));
         label_path_L_3->setText(QApplication::translate("SettingUI", "\350\276\223\345\207\272\350\267\257\345\276\204", nullptr));
         pushButton_OutputDirPath->setText(QApplication::translate("SettingUI", "\351\200\211\346\213\251", nullptr));
-        label_roiHeight_L->setText(QApplication::translate("SettingUI", "\347\233\270\346\234\272\344\270\252\346\225\260", nullptr));
-        label_roiHeight_L_2->setText(QApplication::translate("SettingUI", "\346\213\215\346\221\204\346\254\241\346\225\260", nullptr));
         label_roiHeight_L_3->setText(QApplication::translate("SettingUI", "\345\237\272\346\234\254\345\215\225\345\205\203\346\225\260", nullptr));
         label_roiHeight_L_7->setText(QApplication::translate("SettingUI", "\350\241\214", nullptr));
         label_roiHeight_L_8->setText(QApplication::translate("SettingUI", "\345\210\227", nullptr));
@@ -579,10 +500,10 @@ public:
         comboBox_ImageFormat->setItemText(3, QApplication::translate("SettingUI", "    *.png", nullptr));
         comboBox_ImageFormat->setItemText(4, QApplication::translate("SettingUI", "    *.tif", nullptr));
 
-        label_roiHeight_L_5->setText(QApplication::translate("SettingUI", "\345\233\276\345\203\217\345\256\275\351\253\230\346\257\224", nullptr));
-        label_roiHeight_L_6->setText(QApplication::translate("SettingUI", ":", nullptr));
-        lineEdit_ImageAspectRatio_H->setText(QString());
         pushButton_admin->setText(QApplication::translate("SettingUI", "\347\263\273\347\273\237\350\256\276\347\275\256", nullptr));
+        label_roiHeight_L_5->setText(QApplication::translate("SettingUI", "\344\272\247\345\223\201\345\260\272\345\257\270(mm)", nullptr));
+        label_roiHeight_L_9->setText(QApplication::translate("SettingUI", "\345\256\275", nullptr));
+        label_roiHeight_L_10->setText(QApplication::translate("SettingUI", "\351\253\230", nullptr));
     } // retranslateUi
 
 };

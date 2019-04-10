@@ -57,9 +57,6 @@
     <ClCompile Include="DetectThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DetectCore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TemplateThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,6 +90,12 @@
     <ClCompile Include="PassWordUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RuntimeLibrary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DefectDetecter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="PCBDetect.h">
@@ -114,9 +117,6 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="DetectThread.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="DetectCore.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="TemplateThread.h">
@@ -144,6 +144,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="PassWordUI.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="DefectDetecter.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -189,6 +192,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AMC98C.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

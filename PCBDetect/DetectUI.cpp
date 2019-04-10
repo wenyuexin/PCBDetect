@@ -34,11 +34,11 @@ DetectUI::DetectUI(QWidget *parent)
 	lightOffIcon = QPixmap::fromImage(greenIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio));
 
 	//检测线程的信号连接
-	detectCore = new DetectCore;
+	detectCore = new DefectDetecter;
 	connect(detectCore, SIGNAL(sig_detectState_detectCore(int)), this, SLOT(update_detectState_detectCore(int)));
 
 	detectThread = new DetectThread;
-	detectThread->setDetectCore(detectCore);
+	detectThread->setDefectDetecter(detectCore);
 }
 
 
@@ -57,7 +57,7 @@ void DetectUI::resetDetectUI()
 	deletePointersInItemArray();//删除图元矩阵中的指针
 	deletePointersInSampleImages();//删除图元矩阵中的指针
 	currentRow_show = -1; //显示行号的复位
-	params->currentRow_detect = -1; //提取行号的复位
+	detectParams->currentRow_detect = -1; //提取行号的复位
 	eventCounter = 0; //事件计数器
 	ui.graphicsView->centerOn(0, 0); //垂直滑条复位
 }
@@ -116,7 +116,7 @@ void DetectUI::initGraphicsView()
 
 	//初始化若干用于监视程序运行状态的变量
 	currentRow_show = -1; //显示行号
-	params->currentRow_detect = -1; //检测行号
+	detectParams->currentRow_detect = -1; //检测行号
 	eventCounter = 0; //事件计数器
 
 	//初始化绘图控件
@@ -126,11 +126,11 @@ void DetectUI::initGraphicsView()
 	ui.graphicsView->centerOn(sceneSize.width()/2, 0); //设置垂直滑动条的位置
 
 	//配置detectThread和detectCore
-	detectCore->setDetectConfig(config);
-	detectCore->setDetectParams(params);
+	detectCore->setDetectConfig(detectConfig);
+	detectCore->setDetectParams(detectParams);
 	detectCore->setDetectResult(&detectResult); //设置存储检测结果的结构体
 	detectThread->setSampleImages(&samples);
-	detectThread->setDetectParams(params);
+	detectThread->setDetectParams(detectParams);
 }
 
 
@@ -140,7 +140,7 @@ void DetectUI::readSampleImages()
 	double t1 = clock();
 
 	//获取对应目录的路径
-	QString dirpath = config->SampleDirPath + "/" + params->sampleModelNum + "/" + params->sampleBatchNum + "/" + params->sampleNum;
+	QString dirpath = detectConfig->SampleDirPath + "/" + detectParams->sampleModelNum + "/" + detectParams->sampleBatchNum + "/" + detectParams->sampleNum;
 
 	//读取目录下的样本图像
 	QDir dir(dirpath);
@@ -149,10 +149,11 @@ void DetectUI::readSampleImages()
 	QFileInfoList fileList = dir.entryInfoList();
 	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
 
-	if (params->imageSize.width() < 0) {
-		QImage img = QImage(fileList.at(0).absoluteFilePath());//读图
-		params->imageSize = img.size();
-	}
+	//判断图像大小是否正确
+	//if (adminConfig->ImageSize_W < 0) {
+	//	QImage img = QImage(fileList.at(0).absoluteFilePath());//读图
+	//	detectParams->imageSize = img.size();
+	//}
 
 	//读取并将图像存到itemArray和sampleImages中
 	double loadtime = 0;
@@ -164,8 +165,8 @@ void DetectUI::readSampleImages()
 		int iPhotographing = idxs[0].toInt() - 1;
 		int iCamera = idxs[1].toInt() - 1;
 		if (iPhotographing != currentRow_show) continue;
-		if (iPhotographing < 0 || iPhotographing >= config->nPhotographing) continue;
-		if (iCamera < 0 || iCamera >= config->nCamera) continue;
+		if (iPhotographing < 0 || iPhotographing >= detectParams->nPhotographing) continue;
+		if (iCamera < 0 || iCamera >= detectParams->nCamera) continue;
 
 		QString filepath = fileList.at(i).absoluteFilePath(); //样本图的路径
 		double t11 = clock();
@@ -185,7 +186,7 @@ void DetectUI::readSampleImages()
 void DetectUI::showSampleImages()
 {
 	//定义图元
-	for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 		QImage imgScaled = (*samples[currentRow_show][iCamera]).scaled(itemSize, Qt::KeepAspectRatio);
 		QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(imgScaled)); //定义图元
 		item->setPos(itemGrid[currentRow_show][iCamera]); //图元的显示位置
@@ -193,7 +194,7 @@ void DetectUI::showSampleImages()
 	}
 
 	//加载相机组新拍摄的一行图元
-	for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+	for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 		scene.addItem(itemArray[currentRow_show][iCamera]);
 	}
 
@@ -212,9 +213,9 @@ void DetectUI::showSampleImages()
 void DetectUI::initItemGrid()
 {
 	//基本参数
-	int nCamera = config->nCamera; //相机个数
-	int nPhotographing = config->nPhotographing; //拍摄次数
-	QString SampleDirPath = config->SampleDirPath; //sample文件夹的路径 
+	int nCamera = detectParams->nCamera; //相机个数
+	int nPhotographing = detectParams->nPhotographing; //拍摄次数
+	QString SampleDirPath = detectConfig->SampleDirPath; //sample文件夹的路径 
 	//QSize imageSize = config->imageSize; //原图尺寸
 
 	//计算总间距
@@ -226,7 +227,7 @@ void DetectUI::initItemGrid()
 	QSize viewSize = ui.graphicsView->size(); //视图尺寸
 	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
 	//qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
-	qreal itemAspectRatio = config->ImageAspectRatio; //宽高比
+	qreal itemAspectRatio = adminConfig->ImageAspectRatio; //宽高比
 	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
 
 	//计算场景尺寸
@@ -260,10 +261,10 @@ void DetectUI::initPointersInItemArray()
 		deletePointersInItemArray();//若执行过init函数，则先delete指针
 	}
 	else {
-		itemArray.resize(config->nPhotographing); //设置大小
-		for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) { //行
-			itemArray[iPhotographing].resize(config->nCamera);
-			for (int iCamera = 0; iCamera < config->nCamera; iCamera++) { //列
+		itemArray.resize(detectParams->nPhotographing); //设置大小
+		for (int iPhotographing = 0; iPhotographing < detectParams->nPhotographing; iPhotographing++) { //行
+			itemArray[iPhotographing].resize(detectParams->nCamera);
+			for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) { //列
 				itemArray[iPhotographing][iCamera] = Q_NULLPTR;
 			}
 		}
@@ -289,10 +290,10 @@ void DetectUI::initPointersInSampleImages()
 		deletePointersInSampleImages();//若执行过init函数，则先delete指针
 	}
 	else {
-		samples.resize(config->nPhotographing);
-		for (int iPhotographing = 0; iPhotographing < config->nPhotographing; iPhotographing++) { //行
-			samples[iPhotographing].resize(config->nCamera);
-			for (int iCamera = 0; iCamera < config->nCamera; iCamera++) {
+		samples.resize(detectParams->nPhotographing);
+		for (int iPhotographing = 0; iPhotographing < detectParams->nPhotographing; iPhotographing++) { //行
+			samples[iPhotographing].resize(detectParams->nCamera);
+			for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 				samples[iPhotographing][iCamera] = Q_NULLPTR;
 			}
 		}
@@ -326,9 +327,9 @@ void DetectUI::removeItemsFromGraphicsScene()
 //暂时使用敲击键盘按键模拟外部信号
 void DetectUI::keyPressEvent(QKeyEvent *event)
 {
-	params->sampleModelNum = "1"; //型号
-	params->sampleBatchNum = "1"; //批次号
-	params->sampleNum = "3"; //样本编号
+	detectParams->sampleModelNum = "1"; //型号
+	detectParams->sampleBatchNum = "1"; //批次号
+	detectParams->sampleNum = "3"; //样本编号
 
 	switch (event->key())
 	{
@@ -352,7 +353,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 //在绘图网格中显示下一行图像
 void DetectUI::nextRowOfSampleImages()
 {
-	if (currentRow_show + 1 < config->nPhotographing) { //直接显示新的样本行
+	if (currentRow_show + 1 < detectParams->nPhotographing) { //直接显示新的样本行
 		currentRow_show += 1; //更新显示行号
 		eventCounter += 1; //更新事件计数器
 		qDebug() << "currentRow_show  - " << currentRow_show;
@@ -371,7 +372,7 @@ void DetectUI::nextRowOfSampleImages()
 			detectSampleImages(); //执行检测
 		}
 	}
-	else if (params->currentRow_detect == config->nPhotographing - 1 && !detectThread->isRunning()) {
+	else if (detectParams->currentRow_detect == detectParams->nPhotographing - 1 && !detectThread->isRunning()) {
 		qDebug() << "currentRow_show  - " << currentRow_show;
 		//params->sampleNum = QString::number(params->sampleNum.toInt() + 1); //编号自增
 
@@ -394,11 +395,11 @@ void DetectUI::on_detectFinished_detectThread(bool qualified)
 //检测当前的一行样本图像
 void DetectUI::detectSampleImages()
 {
-	params->currentRow_detect += 1; //更新检测行号
-	qDebug() << "currentRow_detect  - " << params->currentRow_detect;
+	detectParams->currentRow_detect += 1; //更新检测行号
+	qDebug() << "currentRow_detect  - " << detectParams->currentRow_detect;
 
 	ui.label_status->setText(QString::fromLocal8Bit("正在检测第") +
-		QString::number(params->currentRow_detect + 1) + QString::fromLocal8Bit("行图像"));//更新状态
+		QString::number(detectParams->currentRow_detect + 1) + QString::fromLocal8Bit("行图像"));//更新状态
 
 	//开启检测线程
 	detectThread->start();
@@ -413,7 +414,7 @@ void DetectUI::update_detectState_detectCore(int state)
 
 		eventCounter -= 1; //更新事件计数器
 		ui.label_status->setText(QString::fromLocal8Bit("第") +
-			QString::number(params->currentRow_detect + 1) +
+			QString::number(detectParams->currentRow_detect + 1) +
 			QString::fromLocal8Bit("行检测结束"));//更新状态栏
 		qApp->processEvents();
 

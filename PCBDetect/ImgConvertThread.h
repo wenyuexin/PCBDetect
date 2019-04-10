@@ -2,17 +2,11 @@
 
 #include <QThread>
 #include "Configurator.h"
+#include "RuntimeLibrary.h"
 #include "ImageConverter.h"
 
-namespace Ui {
-#ifndef TYPE_CV_MAT_CONTAINER
-#define TYPE_CV_MAT_CONTAINER 
-	typedef std::vector<cv::Mat *> CvMatVector;
-	typedef std::vector<CvMatVector> CvMatArray;
-#endif //TYPE_CV_MAT_CONTAINER
-}
 
-
+//Í¼Ïñ×ª»»Ïß³Ì
 class ImgConvertThread : public QThread
 {
 	Q_OBJECT
