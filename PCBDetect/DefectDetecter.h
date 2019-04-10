@@ -10,34 +10,43 @@ class DefectDetecter : public QObject
 {
 	Q_OBJECT
 
+public:
+	enum DetectState {
+		InitialState,
+		Start,
+		Finished,
+		Default
+	};
+
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectParams *detectParams; //运行参数
-	pcb::DetectResult *detectResult; //检测结果
-	pcb::CvMatVector *samples; //正在检测的一行样本
-	int *currentRow; //当前的样本行号（对应第几次拍）
-	int detectState; //检测状态（用于界面显示和程序调试）
 
-	int defectNum = 0;//缺陷编号
+	DetectFunc *detectFunc;
+	pcb::CvMatArray *cvmatSamples; //正在检测的样本
+	pcb::DetectResult *detectResult; //检测结果
+	int detectState; //检测状态（用于界面显示和程序调试）
+	int defectNum; //缺陷数
 
 public:
 	DefectDetecter();
 	~DefectDetecter();
 
-	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig* ptr) { detectConfig = ptr; } //来自配置文件或参数设置界面
-	inline void setDetectParams(pcb::DetectParams* ptr) { detectParams = ptr; } //临时变量或临时参数
-	inline void setSampleImages(pcb::CvMatVector* ptr) { samples = ptr; } //当前正在检测的一行样本
-	inline void setDetectResult(pcb::DetectResult* ptr) { detectResult = ptr; } //检测结果
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } //系统参数
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; } //用户参数
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; } //运行参数
+	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; } //样本图
+	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; } //检测结果
 
-	void doDetect();
+	void initDetectFunc();
+	void detect();
 
 private:
 	//cv::Mat QImageToCvMat(const QImage &inImage, bool inCloneImageData = true);
 	//cv::Mat QPixmapToCvMat(const QPixmap &inPixmap, bool inCloneImageData = true);
 
 Q_SIGNALS:
-	void sig_detectState_detectCore(int state);
+	void updateDetectState_detecter(int state);
 };
 

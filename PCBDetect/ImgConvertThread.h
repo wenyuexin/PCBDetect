@@ -12,24 +12,21 @@ class ImgConvertThread : public QThread
 	Q_OBJECT
 
 private:
-	//pcb::DetectConfig *config;
-	//pcb::DetectParams *params;
+	ImageConverter::ErrorCode errorCode;
 
-	pcb::CvMatArray *cvmats = Q_NULLPTR;
-	pcb::QPixmapArray *qpixmaps = Q_NULLPTR;
-	pcb::QImageArray *qimages = Q_NULLPTR;
+	pcb::CvMatArray *cvmats;
+	pcb::QPixmapArray *qpixmaps;
+	pcb::QImageArray *qimages;
 
 	std::vector<ImageConverter *> converters; //格式转换线程
-	int ConvertersNum = 15; //转换线程的总数不超过15
-	ImageConverter::CvtCode cvtCode;
+	const int ConvertersNum = 16; //转换线程的总数不超过设定值
+
+	ImageConverter::CvtCode cvtCode; //转换代码
 	int *currentRow; //当前行号
 
 public:
 	ImgConvertThread(QObject *parent = Q_NULLPTR);
 	~ImgConvertThread();
-
-	//inline void setDetectParams(pcb::DetectParams *ptr) { params = ptr; }
-	//inline void setDetectConfig(pcb::DetectConfig *ptr) { config = ptr; }
 
 	inline void setQImages(pcb::QImageArray *ptr) { qimages = ptr; }
 	inline void setQPixmaps(pcb::QPixmapArray *ptr) { qpixmaps = ptr; }

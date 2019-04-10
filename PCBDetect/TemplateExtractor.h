@@ -16,14 +16,15 @@ public:
 	enum ExtractState {
 		InitialState,
 		Start,
-		Finished
+		Finished,
+		Default
 	};
 	
 private:
 	pcb::AdminConfig *adminConfig;
 	pcb::DetectConfig *detectConfig;
 	pcb::DetectParams *detectParams;
-	pcb::CvMatArray *samples;
+	pcb::CvMatArray *cvmatSamples;
 	TemplFunc *templFunc;
 	ExtractState extractState;
 
@@ -31,12 +32,12 @@ public:
 	TemplateExtractor(QObject *parent = Q_NULLPTR);
 	~TemplateExtractor();
 
-	void setSampleImages(pcb::CvMatArray *ptr = Q_NULLPTR) { samples = ptr; }
-	void setDetectConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
-	void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
-	void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
-	void setTemplFunc(TemplFunc *ptr = Q_NULLPTR) { templFunc = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 
+	void initTemplFunc();
 	void extract();
 	
 Q_SIGNALS:

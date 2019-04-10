@@ -46,7 +46,7 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 //切换分图
 void SerialNumberUI::on_pushButton_switchImage_clicked()
 {
-	emit switchImage_serialNumberUI();
+	emit switchImage_serialNumUI();
 }
 
 //识别产品序号

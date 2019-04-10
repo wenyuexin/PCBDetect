@@ -48,7 +48,7 @@ private:
 Q_SIGNALS:
 	void showDetectMainUI();
 	void resetDetectSystem_settingUI(int);
-	void enableButtonsOnDetectMainUI_settingUI();
+	void enableButtonsOnMainUI_settingUI();
 	void checkSystemState_settingUI();
 
 private Q_SLOTS:

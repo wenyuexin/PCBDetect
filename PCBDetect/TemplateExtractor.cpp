@@ -1,6 +1,5 @@
 #include "TemplateExtractor.h"
 
-
 using pcb::DetectConfig;
 using pcb::DetectParams;
 using pcb::CvMatVector;
@@ -14,19 +13,33 @@ using cv::Point2f;
 using cv::Vec4i;
 using cv::Rect;
 using cv::Size;
-using cv::imread;
 
 
 TemplateExtractor::TemplateExtractor(QObject *parent)
 	: QObject(parent)
 {
+	adminConfig = Q_NULLPTR;
+	detectConfig = Q_NULLPTR;
+	detectParams = Q_NULLPTR;
+	cvmatSamples = Q_NULLPTR;
+	templFunc = Q_NULLPTR;
 	extractState = InitialState;
 }
 
 TemplateExtractor::~TemplateExtractor()
 {
+	delete templFunc;
 }
 
+//初始化templFunc
+void TemplateExtractor::initTemplFunc()
+{
+	templFunc = new TemplFunc;
+	templFunc->setAdminConfig(adminConfig);
+	templFunc->setDetectConfig(detectConfig);
+	templFunc->setDetectParams(detectParams);
+	templFunc->generateBigTempl();
+}
 
 /******************** 提取 **********************/
 
@@ -48,7 +61,7 @@ void TemplateExtractor::extract()
 	for (int col = 0; col < detectParams->nCamera; col++) {
 		string temp = templ_path + "/" + std::to_string(detectParams->currentRow_extract + 1) + "_" 
 			+ std::to_string(col + 1)  + detectConfig->ImageFormat.toUpper().toStdString();
-		Mat src = *((*samples)[detectParams->currentRow_extract][col]);
+		Mat src = *((*cvmatSamples)[detectParams->currentRow_extract][col]);
 		cv::imwrite(temp, src);//保存模板图片
 		Mat mask = templFunc->find1(col, src);
 

@@ -49,6 +49,8 @@ void LaunchUI::runInitThread()
 	connect(initThread, SIGNAL(adminConfigError_initThread()), this, SLOT(on_adminConfigError_initThread()));
 	connect(initThread, SIGNAL(detectConfigError_initThread()), this, SLOT(on_detectConfigError_initThread()));
 	connect(initThread, SIGNAL(detectParamsError_initThread()), this, SLOT(on_detectParamsError_initThread()));
+	connect(initThread, SIGNAL(initGraphicsView_initThread(int)), this, SLOT(on_initGraphicsView_initThread(int)));
+
 	connect(initThread, SIGNAL(motionError_initThread(int)), this, SLOT(on_motionError_initThread(int)));
 	connect(initThread, SIGNAL(cameraError_initThread()), this, SLOT(on_cameraError_initThread()));
 	connect(initThread, SIGNAL(sysInitFinished_initThread()), this, SLOT(on_sysInitFinished_initThread()));
@@ -57,6 +59,11 @@ void LaunchUI::runInitThread()
 	initThread->start(); 
 }
 
+//转发初始化界面中GraphicsView的信号
+void LaunchUI::on_initGraphicsView_initThread(int launchCode)
+{
+	emit initGraphicsView_launchUI(launchCode);
+}
 
 /***************** 错误提示 ******************/
 
@@ -68,7 +75,7 @@ void LaunchUI::on_adminConfigError_initThread()
 	if (adminConfig->getErrorCode() == AdminConfig::ConfigFileMissing)
 		adminConfig->resetErrorCode(); //错误代码设为Uncheck
 	update_sysInitStatus_initThread(pcb::chinese("系统参数获取结束  "));
-	pcb::delay(1000); //延时
+	pcb::delay(600); //延时
 	emit launchFinished_launchUI(adminConfig->getErrorCode());
 }
 
@@ -82,7 +89,9 @@ void LaunchUI::on_detectConfigError_initThread()
 		detectConfig->resetErrorCode(); //错误代码设为Uncheck
 	update_sysInitStatus_initThread(pcb::chinese("用户参数获取结束  "));
 
-	pcb::delay(1000); //延时
+	pcb::delay(600); //延时
+	emit initGraphicsView_launchUI(detectConfig->getErrorCode());
+	pcb::delay(10); //延时
 	emit launchFinished_launchUI(detectConfig->getErrorCode());
 }
 
@@ -93,7 +102,7 @@ void LaunchUI::on_detectParamsError_initThread()
 	detectParams->showMessageBox(this);
 	pcb::delay(10); //延时
 	update_sysInitStatus_initThread(pcb::chinese("系统参数获取结束  "));
-	pcb::delay(1000); //延时
+	pcb::delay(600); //延时
 	emit launchFinished_launchUI(detectParams->getErrorCode());
 }
 

@@ -9,8 +9,7 @@
 
 
 //初始化线程
-class SysInitThread :
-	public QThread
+class SysInitThread : public QThread
 {
 	Q_OBJECT
 
@@ -43,10 +42,11 @@ private:
 	bool initCameraControler();
 
 Q_SIGNALS:
-	void sysInitStatus_initThread(QString status);
+	void sysInitStatus_initThread(QString);
 	void adminConfigError_initThread();
 	void detectConfigError_initThread();
 	void detectParamsError_initThread();
+	void initGraphicsView_initThread(int);
 	void motionError_initThread(int);
 	void cameraError_initThread();
 	void sysInitFinished_initThread();

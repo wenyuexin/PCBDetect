@@ -51,8 +51,8 @@ private:
 
 
 Q_SIGNALS:
-	void recognizeFinished_serialNumberUI();
-	void switchImage_serialNumberUI();
+	void recognizeFinished_serialNumUI();
+	void switchImage_serialNumUI();
 
 private Q_SLOTS:
 	void on_pushButton_getROI_clicked();

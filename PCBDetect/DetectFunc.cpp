@@ -13,8 +13,15 @@ using cv::Point2f;
 using cv::Vec4i;
 using cv::Rect;
 using cv::Size;
-using cv::imwrite;
 
+
+DetectFunc::DetectFunc()
+{
+	adminConfig = Q_NULLPTR; //系统参数
+	detectConfig = Q_NULLPTR; //用户参数
+	detectParams = Q_NULLPTR; //运行参数
+	detectResult = Q_NULLPTR; //检测结果
+}
 
 /***************** 检测 ******************/
 /**

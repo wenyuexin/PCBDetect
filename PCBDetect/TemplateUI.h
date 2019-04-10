@@ -26,7 +26,7 @@ private:
 	MotionControler *motionControler; //运动控制器
 	CameraControler *cameraControler; //相机控制器
 
-	int itemSpacing = 3; //图元间距
+	const int itemSpacing = 3; //图元间距
 	QSize itemSize; //图元尺寸
 	QSize gridSize; //网格尺寸
 	QGraphicsScene scene; //绘图场景
@@ -46,26 +46,17 @@ public:
 	TemplateUI(QWidget *parent = Q_NULLPTR);
 	~TemplateUI();
 	
-	inline void setAdminConfig(pcb::AdminConfig *ptr = Q_NULLPTR) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { detectParams = ptr; }
-	inline void setMotionControler(MotionControler *ptr = Q_NULLPTR) { motionControler = ptr; }
-	inline void setCameraControler(CameraControler *ptr = Q_NULLPTR) { cameraControler = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setMotionControler(MotionControler *ptr) { motionControler = ptr; }
+	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 
 	void doConnect();
 	void initGraphicsView();
 	void resetTemplateUI();
 
 private:
-	void readSampleImages();
-	void showSampleImages();
-	void nextRowOfSampleImages();
-
-	void readSampleImages2();
-	void nextRowOfSampleImages2();
-
-	void extractTemplateImages();
-
 	void initItemGrid(pcb::ItemGrid &grid);//初始化图元网格
 	void initPointersInItemArray(pcb::ItemArray &items);//初始化itemArray
 	void deletePointersInItemArray(pcb::ItemArray &items);//删除itemArray中的指针
@@ -74,6 +65,12 @@ private:
 	void initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//初始化QPixmapArray
 	void deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//删除QPixmapArray中的指针
 	void removeItemsFromGraphicsScene();//移除场景中的图元
+
+	void showSampleImages();
+	void nextRowOfSampleImages();
+	void readSampleImages2();
+	void nextRowOfSampleImages2();
+	void extractTemplateImages();
 
 Q_SIGNALS:
 	void showDetectMainUI();
@@ -92,6 +89,6 @@ private Q_SLOTS:
 	void on_convertFinished_convertThread();
 
 	void mouseDoubleClickEvent(QMouseEvent *event);
-	void on_switchImage_serialNumberUI();
-	void on_recognizeFinished_serialNumberUI();
+	void on_switchImage_serialNumUI();
+	void on_recognizeFinished_serialNumUI();
 };

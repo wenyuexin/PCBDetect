@@ -9,7 +9,7 @@ namespace pcb
 {
 #ifndef PCB_FUNCTIONS_CHINESE
 #define PCB_FUNCTIONS_CHINESE
-	inline QString chinese(const QByteArray &str) { return QString::fromLocal8Bit(str); }
+	inline QString chinese(const QByteArray &src) { return QString::fromLocal8Bit(src); }
 #endif //PCB_FUNCTIONS_CHINESE
 
 #ifndef PCB_FUNCTIONS
@@ -75,12 +75,14 @@ namespace pcb
 		int currentRow_extract; //提取行号
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
+		int singleStepMotionStroke; //单步行程 mm
 
 		enum ErrorCode {
 			ValidParams = 0x000,
 			ValidValue = 0x000,
 			Uncheck = 0x300,
 			Invalid_nCamera = 0x301,
+			Invalid_nPhotographing = 0x302,
 			Default = 0x3FF
 		};
 

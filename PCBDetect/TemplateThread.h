@@ -12,30 +12,25 @@ class TemplateThread : public QThread
 	Q_OBJECT
 
 private:
-	TemplateExtractor *templExtractor;
-	pcb::DetectConfig *config;
-	pcb::DetectParams *params;
-	pcb::QImageArray *qimages;
-	pcb::CvMatArray cvmats;
-	TemplFunc *templFunc = Q_NULLPTR;
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig *detectConfig; //用户参数
+	pcb::DetectParams *detectParams; //运行参数
 
-	std::vector<ImageConverter *> threads; //格式转换线程
-	int nThreads = 10; //默认相机个数不超过10
-
+	pcb::CvMatArray *cvmatSamples; //用于提取的样本图
+	TemplateExtractor *templExtractor; //提取器
 
 public:
 	TemplateThread(QObject *parent = Q_NULLPTR);
 	~TemplateThread();
 
-	inline void setTemplateExtractor(TemplateExtractor *ptr = Q_NULLPTR) { templExtractor = ptr; }
-	inline void setSampleImages(pcb::QImageArray *ptr = Q_NULLPTR) { qimages = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr = Q_NULLPTR) { params = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr = Q_NULLPTR) { config = ptr; }
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
-	void initTemplFunc();
+	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
+	inline void setTemplateExtractor(TemplateExtractor *ptr) { templExtractor = ptr; }
+	void initTemplateExtractor();
 
 protected:
 	void run();
-
-
 };

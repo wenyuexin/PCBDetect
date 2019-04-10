@@ -18,9 +18,16 @@ TemplateUI::TemplateUI(QWidget *parent)
 	//设置检测界面的聚焦策略
 	this->setFocusPolicy(Qt::ClickFocus);
 
+	//成员变量初始化
+	adminConfig = Q_NULLPTR;
+	detectConfig = Q_NULLPTR;
+	detectParams = Q_NULLPTR;
+	motionControler = Q_NULLPTR;
+	cameraControler = Q_NULLPTR;
+
 	//产品序号识别界面
-	connect(&serialNumberUI, SIGNAL(recognizeFinished_serialNumberUI()), this, SLOT(on_recognizeFinished_serialNumberUI()));
-	connect(&serialNumberUI, SIGNAL(switchImage_serialNumberUI()), this, SLOT(on_switchImage_serialNumberUI()));
+	connect(&serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
+	connect(&serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
 
 	//模板提取线程
 	templExtractor = new TemplateExtractor;
@@ -81,11 +88,11 @@ void TemplateUI::initGraphicsView()
 	serialNumberUI.setQPixmapArray(&qpixmapSamples);
 
 	//配置提取线程
-	templThread->setDetectParams(detectParams);
+	templThread->setAdminConfig(adminConfig);
 	templThread->setDetectConfig(detectConfig);
-	templExtractor->setDetectParams(detectParams);
-	templExtractor->setDetectConfig(detectConfig);
-	templExtractor->setSampleImages(&cvmatSamples);
+	templThread->setDetectParams(detectParams);
+	templThread->setSampleImages(&cvmatSamples);
+	templThread->initTemplateExtractor();
 
 	//视图控件的设置
 	ui.graphicsView->setFocusPolicy(Qt::NoFocus); //设置聚焦策略
@@ -119,7 +126,6 @@ void TemplateUI::initItemGrid(pcb::ItemGrid &grid)
 	int nCamera = detectParams->nCamera; //相机个数
 	int nPhotographing = detectParams->nPhotographing; //拍摄次数
 	QString SampleDirPath = detectConfig->SampleDirPath; //sample文件夹的路径 
-	//QSize imageSize = config->imageSize; //原图尺寸
 
 	//计算总间距
 	QSize totalSpacing; //总间距
@@ -129,7 +135,6 @@ void TemplateUI::initItemGrid(pcb::ItemGrid &grid)
 	//计算图元尺寸
 	QSize viewSize = ui.graphicsView->size(); //视图尺寸
 	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
-	//qreal itemAspectRatio = qreal(imageSize.width()) / imageSize.height(); //宽高比
 	qreal itemAspectRatio = adminConfig->ImageAspectRatio; //宽高比
 	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
 
@@ -264,7 +269,7 @@ void TemplateUI::removeItemsFromGraphicsScene()
 void TemplateUI::on_pushButton_start_clicked()
 {
 	if (detectParams->currentRow_extract == -1 && !templThread->isRunning()) {
-		ui.label_status->setText(QString::fromLocal8Bit("开始运行"));
+		ui.label_status->setText(pcb::chinese("开始运行"));
 		ui.pushButton_start->setEnabled(false); //禁用开始按键
 		ui.pushButton_return->setEnabled(false); //禁用返回按键
 
@@ -277,7 +282,7 @@ void TemplateUI::on_pushButton_start_clicked()
 //void TemplateUI::on_pushButton_clear_clicked()
 //{
 //	resetTemplateUI();
-//	ui.label_status->setText(QString::fromLocal8Bit("缓存数据已清空"));
+//	ui.label_status->setText(pcb::chinese("缓存数据已清空"));
 //}
 
 //返回
@@ -321,9 +326,9 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 			currentRow_show += 1; //更新显示行号
 			qDebug() << "currentRow_show  - " << currentRow_show;
 
-			ui.label_status->setText(QString::fromLocal8Bit("正在拍摄第") +
+			ui.label_status->setText(pcb::chinese("正在拍摄第") +
 				QString::number(currentRow_show + 1) +
-				QString::fromLocal8Bit("行图像"));//更新状态
+				pcb::chinese("行图像"));//更新状态
 			qApp->processEvents();
 
 			readSampleImages2(); //读图 - 相当于相机拍照		
@@ -402,12 +407,6 @@ void TemplateUI::nextRowOfSampleImages2()
 
 /***************** 读图、显示与提取 *****************/
 
-//读取相机组拍摄的一组分图（图像显示网格中的一行）
-void TemplateUI::readSampleImages()
-{
-	//详见：on_takePhotos_finished_camera()
-}
-
 //读取相机组拍摄的一组分图 - 直接从硬盘上读图
 void TemplateUI::readSampleImages2()
 {
@@ -423,12 +422,6 @@ void TemplateUI::readSampleImages2()
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
 	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
-
-	//if (adminConfig->ImageSize_W < 0) { //小于0说明imageSize未初始化
-	//	QImage img = QImage(fileList.at(0).absoluteFilePath());//读图
-	//	detectParams->imageSize = img.size();
-	//	templThread->initTemplFunc();
-	//}
 
 	//读取并储存图像 - 从硬盘上读图 (用于临时调试)
 	for (int i = 0; i < fileList.size(); i++) {
@@ -489,18 +482,12 @@ void TemplateUI::mouseDoubleClickEvent(QMouseEvent *event)
 	QSize graphicsViewSize = ui.graphicsView->size();
 	QRect graphicsViewRect = QRect(graphicsViewPos, graphicsViewSize);
 	QPoint mousePosition(event->x(), event->y());
-	
-	//qDebug() << graphicsViewPos.x() << graphicsViewPos.y();
-	//qDebug() << graphicsViewSize.width() << graphicsViewSize.height();
-	//qDebug() << graphicsViewRect.contains(mousePosition);
-	//qDebug() << mousePosition.x() << mousePosition.y();
 
-	//todo 判断鼠标点击的是哪个分图
+	//判断鼠标点击的是哪个分图
 	if (!graphicsViewRect.contains(mousePosition)) return;
 	QPoint relativePos = mousePosition - graphicsViewPos; //相对位置
 	int gridColIdx = (int) ceil(relativePos.x() / gridSize.width());//点击位置在第几列
 	int gridRowIdx = (int) ceil(relativePos.y() / gridSize.height());//点击位置在第几行
-	//qDebug() << gridColIdx << gridRowIdx;
 	
 	if (true && gridRowIdx <= currentRow_show) {
 		serialNumberUI.showSampleImage(gridRowIdx, gridColIdx);
@@ -509,11 +496,10 @@ void TemplateUI::mouseDoubleClickEvent(QMouseEvent *event)
 		pcb::delay(10);//延迟
 		this->hide();
 	}
-
 }
 
 //切换分图
-void TemplateUI::on_switchImage_serialNumberUI()
+void TemplateUI::on_switchImage_serialNumUI()
 {
 	this->showFullScreen();
 	pcb::delay(10);//延迟
@@ -521,7 +507,7 @@ void TemplateUI::on_switchImage_serialNumberUI()
 }
 
 //从序号识别界面获得产品序号之后
-void TemplateUI::on_recognizeFinished_serialNumberUI()
+void TemplateUI::on_recognizeFinished_serialNumUI()
 {
 	//先将产品序号转换为 型号、批次号、样本编号
 
@@ -539,9 +525,9 @@ void TemplateUI::on_moveForwardFinished_motion()
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
 		currentRow_show += 1; //更新显示行号
 
-		ui.label_status->setText(QString::fromLocal8Bit("正在拍摄第") +
+		ui.label_status->setText(pcb::chinese("正在拍摄第") +
 			QString::number(currentRow_show + 1) + 
-			QString::fromLocal8Bit("行分图"));//更新状态
+			pcb::chinese("行分图"));//更新状态
 		qApp->processEvents();
 
 		cameraControler->start(); //拍照
@@ -579,8 +565,6 @@ void TemplateUI::on_takePhotosFinished_camera(int)
 	//	templThread->initTemplFunc();
 	//}
 
-	templThread->initTemplFunc();
-
 	//调用图像类型转换线程
 	imgConvertThread.start();
 }
@@ -595,9 +579,9 @@ void TemplateUI::on_convertFinished_convertThread()
 	eventCounter += 1;
 
 	//更新状态栏
-	ui.label_status->setText(QString::fromLocal8Bit("第") +
+	ui.label_status->setText(pcb::chinese("第") +
 		QString::number(currentRow_show + 1) +
-		QString::fromLocal8Bit("行拍摄结束"));
+		pcb::chinese("行拍摄结束"));
 	qApp->processEvents();
 
 	//在界面上显示样本图
@@ -627,7 +611,7 @@ void TemplateUI::on_convertFinished_convertThread()
 //{
 //	//显示结果
 //	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
-//	ui.label_result->setText((qualified) ? QString::fromLocal8Bit("合格") : QString::fromLocal8Bit("不合格"));
+//	ui.label_result->setText((qualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
 //}
 
 //提取当前的一行样本图像
@@ -637,9 +621,9 @@ void TemplateUI::extractTemplateImages()
 	detectParams->currentRow_extract += 1;
 
 	//更新状态栏
-	ui.label_status->setText(QString::fromLocal8Bit("正在提取第") +
+	ui.label_status->setText(pcb::chinese("正在提取第") +
 		QString::number(detectParams->currentRow_extract + 1) + 
-		QString::fromLocal8Bit("行模板"));
+		pcb::chinese("行模板"));
 	qApp->processEvents();
 
 	//开启检测线程
@@ -654,9 +638,9 @@ void TemplateUI::update_extractState_extractor(int state)
 		eventCounter -= 1; //更新事件计数器
 
 		//更新状态栏
-		ui.label_status->setText(QString::fromLocal8Bit("第") +
+		ui.label_status->setText(pcb::chinese("第") +
 			QString::number(detectParams->currentRow_extract + 1) +
-			QString::fromLocal8Bit("行提取结束"));
+			pcb::chinese("行提取结束"));
 		qApp->processEvents();
 
 		//检查是否有未处理的事件

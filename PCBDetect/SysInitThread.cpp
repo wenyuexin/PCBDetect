@@ -25,30 +25,40 @@ SysInitThread::~SysInitThread()
 
 void SysInitThread::run()
 {
-	if (bootStatus == 0x0000) {  //初次执行初始化
+	//初次执行初始化
+	if (bootStatus == 0x0000) {  
+		//参数初始化
 		if (!initAdminConfig()) { bootStatus |= 0x0100; return; }
 		if (!initDetectConfig()) { bootStatus |= 0x0100; return; }
 		if (!initDetectParams()) { bootStatus |= 0x1100; return; }
+		emit initGraphicsView_initThread(0);
+		qApp->processEvents();
+
+		//运动结构与相机
 		if (!initMotionControler()) { bootStatus |= 0x0010; return; }
 		if (!initCameraControler()) { bootStatus |= 0x0001; return; }
 	}
 	
-	if (!((bootStatus & 0xF000) >> 12)) { //adminConfig初始化异常
+	//系统参数adminConfig初始化异常
+	if (!((bootStatus & 0xF000) >> 12)) { 
 		if (!initAdminConfig()) { bootStatus |= 0x1000; return; }
 		else { bootStatus &= 0x0FFF; }
 	}
 
-	if (!((bootStatus & 0x0F00) >> 8)) { //detectConfig初始化异常
+	//用户参数detectConfig初始化异常
+	if (!((bootStatus & 0x0F00) >> 8)) { 
 		if (!initDetectConfig()) { bootStatus |= 0x0100; return; }
 		else                     { bootStatus &= 0xF0FF; }
 	}
 	
-	if (!((bootStatus & 0x00F0) >> 4)) { //运动结构初始化异常
+	//运动结构初始化异常
+	if (!((bootStatus & 0x00F0) >> 4)) { 
 		if (!initMotionControler()) { bootStatus |= 0x0010; return; }
 		else                        { bootStatus &= 0xFF0F; }
 	}
 
-	if (!(bootStatus & 0x000F)) { //相机初始化异常
+	//相机初始化异常
+	if (!(bootStatus & 0x000F)) { 
 		if (!initCameraControler()) { bootStatus |= 0x0001; return; }
 		else                        { bootStatus &= 0xFFF0; }
 	}
@@ -67,7 +77,6 @@ bool SysInitThread::initAdminConfig()
 	pcb::delay(800);
 
 	if (!Configurator::loadConfigFile("/.admin.config", adminConfig)) {
-		adminConfig->markConfigFileMissing(); //标记配置文件丢失
 		emit adminConfigError_initThread(); return false;
 	}
 	else {
@@ -96,7 +105,6 @@ bool SysInitThread::initDetectConfig()
 	pcb::delay(800);
 
 	if (!Configurator::loadConfigFile("/.user.config", detectConfig)) {
-		detectConfig->markConfigFileMissing(); //标记配置文件丢失
 		emit detectConfigError_initThread(); return false;
 	}
 	else {
@@ -134,7 +142,6 @@ bool SysInitThread::initDetectParams()
 bool SysInitThread::initMotionControler()
 {
 	emit sysInitStatus_initThread(pcb::chinese("正在初始化运动结构 ..."));
-	qApp->processEvents();
 	pcb::delay(800);
 	
 	motionControler->initControler(); //初始化控制器

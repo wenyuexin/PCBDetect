@@ -67,6 +67,9 @@ int DetectParams::updateGridSize(AdminConfig *adminConfig, DetectConfig *detectC
 	if (this->nCamera <= 0 || this->nCamera > adminConfig->MaxCameraNum) {
 		errorCode = Invalid_nCamera; return errorCode;
 	}
+	//else if (this->nPhotographing * detectParams->singleStepMotionStroke > adminConfig->MaxMotionStroke) {
+	//	errorCode = Invalid_nPhotographing; return errorCode;
+	//}
 	else {
 		errorCode = ValidParams;
 	}

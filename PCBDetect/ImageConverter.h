@@ -14,7 +14,21 @@ class ImageConverter : public QThread
 	Q_OBJECT
 
 public:
-	enum CvtCode { QImage2CvMat, QPixmap2CvMat, CvMat2QImage, CvMat2QPixmap };
+	enum CvtCode { 
+		QImage2CvMat, 
+		QPixmap2CvMat, 
+		CvMat2QImage, 
+		CvMat2QPixmap,
+		Null
+	};
+
+	enum ErrorCode {
+		NoError = 0x000,
+		Uncheck = 0x600,
+		Invalid_ImageNum = 0x601,
+		Invalid_ImageSize = 0x602,
+		Default = 0x6FF
+	};
 
 private:
 	QImage *qimage;

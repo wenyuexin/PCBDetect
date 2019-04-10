@@ -39,13 +39,16 @@ public:
 	void runInitThread(); //ÔËÐÐ
 
 Q_SIGNALS:
+	void initGraphicsView_launchUI(int LaunchCode);
 	void launchFinished_launchUI(int LaunchCode);
 
 private Q_SLOTS:
-	void update_sysInitStatus_initThread(QString status);
+	void update_sysInitStatus_initThread(QString);
 	void on_adminConfigError_initThread();
 	void on_detectConfigError_initThread();
 	void on_detectParamsError_initThread();
+	void on_initGraphicsView_initThread(int);
+
 	void on_motionError_initThread(int code = MotionControler::Default);
 	void on_cameraError_initThread();
 	void on_sysInitFinished_initThread();
