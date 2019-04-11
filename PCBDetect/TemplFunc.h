@@ -34,4 +34,9 @@ public:
 
 	inline cv::Mat getBigTempl() { return big_templ; }
 	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect); }
+
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Mat descriptors;
+	void save(const std::string& path, cv::Mat& image_template_gray);
+	void load(const std::string& path);
 };

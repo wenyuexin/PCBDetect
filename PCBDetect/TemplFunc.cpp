@@ -1,10 +1,17 @@
 #include "TemplFunc.h"
+#include <qDebug>
+#include "opencv2/opencv.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 
 using pcb::DetectConfig;
 using pcb::DetectParams;
 using cv::Mat;
+using namespace std;
+using namespace cv;
 using cv::Size;
 using cv::Rect;
+using namespace cv::xfeatures2d;
 
 
 TemplFunc::TemplFunc()
@@ -199,4 +206,27 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 		mask = Mat::ones(image.size(), CV_8UC1) * 255;//Ô­Ê¼ÑÚÄ£
 	}
 	return mask;
+}
+
+
+void TemplFunc::save(const std::string& path, Mat& image_template_gray) {
+	Mat temp;
+	cv::pyrDown(image_template_gray, temp);
+	cv::pyrDown(temp, temp);
+	cv::pyrDown(temp, temp);
+	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
+	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
+	cv::FileStorage store(path, cv::FileStorage::WRITE);
+	cv::write(store, "keypoints", keypoints);
+	cv::write(store, "descriptors", descriptors);
+	store.release();
+
+}
+void TemplFunc::load(const std::string& path) {
+	cv::FileStorage store(path, cv::FileStorage::READ);
+	cv::FileNode n1 = store["keypoints"];
+	cv::read(n1, keypoints);
+	cv::FileNode n2 = store["descriptors"];
+	cv::read(n2, descriptors);
+	store.release();
 }
