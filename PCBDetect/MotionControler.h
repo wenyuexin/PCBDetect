@@ -36,11 +36,13 @@ public:
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectParams *detectParams; //用户参数
+	pcb::DetectParams *detectParams; //运行参数
+
 	int callerOfResetControler; //复位的调用函数的标识
 	bool running; //操作是否正在运行
-	ErrorCode errorCode; //控制器的错误码
 	QMutex mutex; //线程锁
+	
+	ErrorCode errorCode; //控制器的错误码
 
 public:
 	MotionControler(QObject *parent = Q_NULLPTR);

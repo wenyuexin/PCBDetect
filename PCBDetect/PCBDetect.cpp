@@ -17,6 +17,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	motionControler = new MotionControler;//运动控制器
 	motionControler->setAdminConfig(&adminConfig);
 	motionControler->setDetectConfig(&detectConfig);
+	motionControler->setDetectParams(&detectParams);
 
 	//相机控制器
 	cameraControler = new CameraControler;

@@ -155,7 +155,8 @@ void SettingUI::on_pushButton_confirm_clicked()
 	getConfigFromSettingUI();
 
 	//检查界面上config的有效性
-	DetectConfig::ErrorCode code = tempConfig.checkValidity(DetectConfig::Index_All);
+	DetectConfig::ErrorCode code;
+	code = tempConfig.checkValidity(DetectConfig::Index_All, adminConfig);
 	if (code != DetectConfig::ValidConfig) { //参数无效则报错
 		tempConfig.showMessageBox(this); //弹窗警告
 		this->setPushButtonsToEnabled(true);//将按键设为可点击
@@ -177,12 +178,22 @@ void SettingUI::on_pushButton_confirm_clicked()
 		Configurator::saveConfigFile(configFileName, detectConfig);
 
 		//更新运行参数
-		sysResetCode |= detectParams->calcItemGridSize(adminConfig, detectConfig);
-		if (!detectParams->isValid()) detectParams->showMessageBox(this);
+		detectParams->copyTo(&tempParams);
+
+		DetectParams::ErrorCode code;
+		code = tempParams.calcSingleMotionStroke(adminConfig);
+		if (code != DetectParams::ValidValue) detectParams->showMessageBox(this);
+		code = tempParams.calcItemGridSize(adminConfig, detectConfig);
+		if (code != DetectParams::ValidValue) detectParams->showMessageBox(this);
+
+		sysResetCode |= detectParams->getSystemResetCode(tempParams);
 
 		//判断是否重置检测系统
-		if (adminConfig->isValid() && detectConfig->isValid() && detectParams->isValid())
+		if (adminConfig->isValid() && detectConfig->isValid(adminConfig)
+			&& detectParams->isValid(adminConfig)) 
+		{
 			emit resetDetectSystem_settingUI(sysResetCode);
+		}
 	}
 	else if (detectConfig->getErrorCode() != tempConfig.getErrorCode()) {
 		//将临时配置拷贝到用户参数对象中
@@ -203,8 +214,8 @@ void SettingUI::on_pushButton_confirm_clicked()
 void SettingUI::on_pushButton_return_clicked()
 {
 	emit showDetectMainUI();
-	//如果界面上的系统参数无效，而adminConfig有效，则显示adminConfig
-	if (!tempConfig.isValid() && detectConfig->isValid()) {
+	//如果界面上的参数无效，而detectConfig有效，则显示detectConfig
+	if (!tempConfig.isValid(adminConfig) && detectConfig->isValid(adminConfig)) {
 		this->refreshSettingUI();
 	}
 }
@@ -304,7 +315,9 @@ void SettingUI::do_resetDetectSystem_adminUI(int code)
 //转发由系统设置界面发出的系统状态检查信号
 void SettingUI::do_checkSystemWorkingState_adminUI()
 {
-	if (adminConfig->isValid() && detectConfig->isValid() && detectParams->isValid()) {
+	if (adminConfig->isValid() && detectConfig->isValid(adminConfig) 
+		&& detectParams->isValid(adminConfig)) 
+	{
 		emit checkSystemState_settingUI();
 		pcb::delay(10);
 	}

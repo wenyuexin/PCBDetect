@@ -123,6 +123,9 @@ namespace pcb
 		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; }
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
+
+		void copyTo(DetectParams *dst); //拷贝参数
+		int getSystemResetCode(DetectParams &newConfig); //获取系统重置代码
 	};
 #endif //STRUCT_DETECT_PARAMS
 }

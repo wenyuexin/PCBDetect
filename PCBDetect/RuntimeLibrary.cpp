@@ -43,10 +43,7 @@ void DetectParams::loadDefaultValue()
 //计算机械结构的单步运动距离 singleMotionStroke
 DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminConfig)
 {
-	//int sysResetCode = 0b000000000; //系统重置代码
 	if (!adminConfig->isValid()) return Default;
-
-	//int singleMotionStroke_old = singleMotionStroke;
 
 	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 	double stroke = 1.0 * adminConfig->ImageSize_H / (1 - overlap);
@@ -55,21 +52,12 @@ DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminC
 
 	//判断参数有效性
 	return checkValidity(ParamsIndex::Index_singleMotionStroke, adminConfig);
-
-	//判断是否需要重置系统
-	//if (this->singleMotionStroke != singleMotionStroke_old)
-	//	sysResetCode |= 0b000100000;
-	//return sysResetCode;
 }
 
 //计算nCamera、nPhotographing
 DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig)
 {
-	//int sysResetCode = 0b000000000; //系统重置代码
-	if (!adminConfig->isValid() || !detectConfig->isValid()) return Default;
-
-	//int nCamera_old = this->nCamera;
-	//int nPhotographing_old = this->nPhotographing;
+	if (!adminConfig->isValid() || !detectConfig->isValid(adminConfig)) return Default;
 
 	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 
@@ -91,13 +79,6 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	if (code != ValidParams) return code;
 
 	return ValidParams;
-
-	//判断是否需要重置系统
-	//if (this->nCamera != nCamera_old)
-	//	sysResetCode |= 0b000010110;
-	//if (this->nPhotographing != nPhotographing_old)
-	//	sysResetCode |= 0b000000110;
-	//return sysResetCode;
 }
 
 //参数有效性检查
@@ -122,21 +103,21 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_singleMotionStroke:
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "DetectParams: checkValidity: adminConfig is NULL !";
+			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (singleMotionStroke <= 0 || singleMotionStroke > adminConfig->MaxMotionStroke) {
 			errorCode = Invalid_singleMotionStroke;
 		}
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_nCamera:
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "DetectParams: checkValidity: adminConfig is NULL !";
+			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (nCamera <= 0 || nCamera > adminConfig->MaxCameraNum) {
 			errorCode = Invalid_nCamera;
 		}
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_nPhotographing:
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "DetectParams: checkValidity: adminConfig is NULL !";
+			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (nPhotographing * singleMotionStroke > adminConfig->MaxMotionStroke) {
 			errorCode = Invalid_nPhotographing; 
 		}
@@ -183,6 +164,39 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 	return true;
 }
 
+//拷贝参数
+void DetectParams::copyTo(DetectParams *dst)
+{
+	dst->errorCode = this->errorCode;
+	dst->sampleModelNum = this->sampleModelNum; //型号
+	dst->sampleBatchNum = this->sampleBatchNum; //批次号
+	dst->sampleNum = this->sampleNum; //样本编号
+	dst->currentRow_detect = this->currentRow_detect; //检测行号
+	dst->currentRow_extract = this->currentRow_extract; //提取行号
+	dst->singleMotionStroke = this->singleMotionStroke; //运功动结构的单步行程 mm
+	dst->nCamera = this->nCamera; //相机个数
+	dst->nPhotographing = this->nPhotographing; //拍照次数
+}
+
+//获取系统重置代码
+int DetectParams::getSystemResetCode(DetectParams &newConfig)
+{
+	int sysResetCode = 0b000000000; //系统重置代码
+
+	//运动结构的单步运动距离
+	if (this->singleMotionStroke != newConfig.singleMotionStroke)
+		sysResetCode |= 0b000100000;
+	
+	//相机个数
+	if (this->nCamera != newConfig.nCamera)
+		sysResetCode |= 0b000010110;
+
+	//拍照次数
+	if (this->nPhotographing != newConfig.nPhotographing)
+		sysResetCode |= 0b000000110;
+	
+	return sysResetCode;
+}
 
 
 /****************************************************/

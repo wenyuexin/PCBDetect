@@ -64,7 +64,7 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 			code = Invalid_ImageSize_W;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageSize_H: //分图高度
-		if (ImageSize_H <= 0)
+		if (ImageSize_H <= 0 || ImageSize_H <= PixelsNumPerUnitLength)
 			code = Invalid_ImageSize_H;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageAspectRatio: //图像宽高比
@@ -174,22 +174,19 @@ AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 }
 
 //功能：获取系统重置代码
-//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
-//      0b1234 第1位置位，则表示重置模板提取模块
-//             第2位置位，则表示重置检测模块
-//             第3位置位，则表示重置运动结构
-//             第4位置位，则表示重置相机
 int AdminConfig::getSystemResetCode(AdminConfig &newConfig)
 {
-	int resetCode = 0b0000;//重置代码
+	int resetCode = 0b000000000;//重置代码
 
 	//重置模板提取、检测界面
-	if (ImageSize_W != newConfig.ImageSize_W || ImageSize_H != newConfig.ImageSize_H)
-		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) > 1E-6) resetCode |= 0x1100;
+	if (ImageSize_W != newConfig.ImageSize_W || ImageSize_H != newConfig.ImageSize_H) {
+		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) > 1E-6) 
+			resetCode |= 0x000000110;
+	}
 	//重置运动结构模块
-	if (this->MaxMotionStroke != newConfig.MaxMotionStroke) resetCode |= 0x0010;
+	if (this->MaxMotionStroke != newConfig.MaxMotionStroke) resetCode |= 0x000100000;
 	//重置相机模块
-	if (this->MaxCameraNum != newConfig.MaxCameraNum) resetCode |= 0x0001;
+	if (this->MaxCameraNum != newConfig.MaxCameraNum) resetCode |= 0x000010000;
 
 	return resetCode;
 }
@@ -244,7 +241,7 @@ void DetectConfig::loadDefaultValue()
 }
 
 //参数有效性检查
-DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
+DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConfig *adminConfig)
 {
 	if (this->errorCode == ValidConfig)
 		return this->errorCode;
@@ -272,7 +269,10 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
 			code = Invalid_ActualProductSize_W;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectConfig::Index_ActualProductSize_H: //产品实际高度
-		if (ActualProductSize_H < 1)
+		if (adminConfig == Q_NULLPTR)
+			qDebug() << "Warning: DetectConfig: checkValidity: adminConfig is null !";
+		if (ActualProductSize_H < 1 || 
+			ActualProductSize_H > adminConfig->MaxMotionStroke)
 			code = Invalid_ActualProductSize_H;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectConfig::Index_nBasicUnitInRow: //每一行中的基本单元数
@@ -291,9 +291,9 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index)
 }
 
 //判断参数是否有效
-bool DetectConfig::isValid() {
+bool DetectConfig::isValid(AdminConfig *adminConfig) {
 	if (this->errorCode == DetectConfig::Uncheck)
-		checkValidity(Index_All);
+		checkValidity(Index_All, adminConfig);
 	return this->errorCode == ValidConfig;
 }
 
@@ -381,11 +381,6 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 }
 
 //功能：获取系统重置代码
-//输出：返回一个重置代码，代码不同的二进制位，代表不同的重置操作
-//      0b1234 第1位置位，则表示重置模板提取模块
-//             第2位置位，则表示重置检测模块
-//             第3位置位，则表示重置运动结构
-//             第4位置位，则表示重置相机
 int DetectConfig::getSystemResetCode(DetectConfig &newConfig)
 {
 	int resetCode = 0b000000000;
@@ -449,7 +444,7 @@ void Configurator::createConfigFile(QString filePath)
 /********** 将某个参数的写入config文件中 ************/
 
 //将参数写入配置文件中 - QString
-bool Configurator::jsonSetValue(const QString &key, QString &value)
+bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
 {
 	QTextStream textStrteam(configFile);
 	configFile->seek(0);
@@ -461,6 +456,14 @@ bool Configurator::jsonSetValue(const QString &key, QString &value)
 		if (!confDcoument.isNull() || !confDcoument.isEmpty()) {
 			if (confDcoument.isObject()) {
 				QJsonObject obj = confDcoument.object();
+				if (encode) { //加密
+					QString encodeKey = encrypt(key); 
+					QString encodeValue = encrypt(value);
+					obj[encodeKey] = encodeValue;
+				}
+				else { //不加密
+					obj[key] = value;
+				}
 				QString encodeKey = encrypt(key); //加密
 				QString encodeValue = encrypt(value);
 				obj[encodeKey] = encodeValue;
@@ -479,22 +482,22 @@ bool Configurator::jsonSetValue(const QString &key, QString &value)
 }
 
 //将参数写入配置文件中 - int
-bool Configurator::jsonSetValue(const QString &key, int &value)
+bool Configurator::jsonSetValue(const QString &key, int &value, bool encode)
 {
-	return jsonSetValue(key, QString::number(value));
+	return jsonSetValue(key, QString::number(value), encode);
 }
 
 //将参数写入配置文件中 - double
-bool Configurator::jsonSetValue(const QString &key, double &value)
+bool Configurator::jsonSetValue(const QString &key, double &value, bool encode)
 {
-	return jsonSetValue(key, QString::number(value, 'g', 7));
+	return jsonSetValue(key, QString::number(value, 'g', 7), encode);
 }
 
 
 /************* 从config文件中读取某个参数 ************/
 
 //从配置文件中读取参数 - QString
-bool Configurator::jsonReadValue(const QString &key, QString &value)
+bool Configurator::jsonReadValue(const QString &key, QString &value, bool decode)
 {
 	configFile->seek(0);
 	QString val = configFile->readAll();
@@ -504,9 +507,14 @@ bool Configurator::jsonReadValue(const QString &key, QString &value)
 		if (!confDcoument.isNull() || !confDcoument.isEmpty()) {
 			if (confDcoument.isObject()) {
 				QJsonObject obj = confDcoument.object();
-				QString encodeKey = encrypt(key); //加密
-				QString encodeValue = obj[encodeKey].toString();
-				value = decrypt(encodeValue); //解密
+				if (decode) { //解密
+					QString encodeKey = encrypt(key); 
+					QString encodeValue = obj[encodeKey].toString();
+					value = decrypt(encodeValue); 
+				}
+				else { //不加密
+					value = obj[key].toString();
+				}
 				QByteArray();
 				return true;
 			}
@@ -520,20 +528,20 @@ bool Configurator::jsonReadValue(const QString &key, QString &value)
 }
 
 //从配置文件中读取参数 - double
-bool Configurator::jsonReadValue(const QString &key, double &value)
+bool Configurator::jsonReadValue(const QString &key, double &value, bool decode)
 {
 	QString valueStr = "";
-	if (jsonReadValue(key, valueStr)) {
+	if (jsonReadValue(key, valueStr, decode)) {
 		value = valueStr.toDouble(); return true;
 	}
 	return false;
 }
 
 //从配置文件中读取参数 - int
-bool Configurator::jsonReadValue(const QString &key, int &value)
+bool Configurator::jsonReadValue(const QString &key, int &value, bool decode)
 {
 	QString valueStr = "";
-	if (jsonReadValue(key, valueStr)) {
+	if (jsonReadValue(key, valueStr, decode)) {
 		value = valueStr.toInt(); return true;
 	}
 	return false;
@@ -550,7 +558,8 @@ void Configurator::updateKeys()
 	//如果最近的修改时间为空，则使用文件的创建时间
 	if (fileDateTime.isNull() || fileDateTime != fileInfo.lastModified()) {
 		fileDateTime = fileInfo.lastModified();
-		if (fileDateTime.isNull()) fileDateTime = fileInfo.created();
+		//if (fileDateTime.isNull()) fileDateTime = fileInfo.created();
+
 		keys[0] = fileDateTime.toString("dd").toInt() % 9;
 		keys[1] = fileDateTime.toString("MM").toInt() % 9;
 		keys[2] = fileDateTime.toString("yyyy").toInt() % 9;
@@ -608,15 +617,15 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
-		configurator.jsonReadValue("SampleDirPath", config->SampleDirPath);
-		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath);
-		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath);
-		configurator.jsonReadValue("ImageFormat", config->ImageFormat);
+		configurator.jsonReadValue("SampleDirPath", config->SampleDirPath, false);
+		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath, false);
+		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath, false);
+		configurator.jsonReadValue("ImageFormat", config->ImageFormat, false);
 
-		configurator.jsonReadValue("ActualProductSize_W", config->ActualProductSize_W);
-		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H);
-		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow);
-		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol);
+		configurator.jsonReadValue("ActualProductSize_W", config->ActualProductSize_W, false);
+		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H, false);
+		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
+		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
 		configFile.close();
 	}
 	return success;
@@ -637,15 +646,15 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
-		configurator.jsonSetValue("SampleDirPath", config->SampleDirPath);//样本文件夹
-		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath);//模板文件夹
-		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath);//输出文件夹
-		configurator.jsonSetValue("ImageFormat", config->ImageFormat);//图像格式
+		configurator.jsonSetValue("SampleDirPath", config->SampleDirPath, false);//样本文件夹
+		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath, false);//模板文件夹
+		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath, false);//输出文件夹
+		configurator.jsonSetValue("ImageFormat", config->ImageFormat, false);//图像格式
 
-		configurator.jsonSetValue("ActualProductSize_W", QString::number(config->ActualProductSize_W));//产品实际宽度
-		configurator.jsonSetValue("ActualProductSize_H", QString::number(config->ActualProductSize_H));//产品实际高度
-		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow)); //每一行中的基本单元数
-		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol)); //每一列中的基本单元数
+		configurator.jsonSetValue("ActualProductSize_W", QString::number(config->ActualProductSize_W), false);
+		configurator.jsonSetValue("ActualProductSize_H", QString::number(config->ActualProductSize_H), false);
+		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow), false);
+		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol), false);
 		configFile.close();
 	}
 	return success;
@@ -666,12 +675,12 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
-		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke);
-		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum);
-		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength);
-		configurator.jsonReadValue("ImageOverlappingRate", config->ImageOverlappingRate);
-		configurator.jsonReadValue("ImageSize_W", config->ImageSize_W);
-		configurator.jsonReadValue("ImageSize_H", config->ImageSize_H);
+		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
+		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum, true);
+		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
+		configurator.jsonReadValue("ImageOverlappingRate", config->ImageOverlappingRate, true);
+		configurator.jsonReadValue("ImageSize_W", config->ImageSize_W, true);
+		configurator.jsonReadValue("ImageSize_H", config->ImageSize_H, true);
 		configFile.close();
 	}
 	return success;
@@ -692,12 +701,12 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
-		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke);
-		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum);
-		configurator.jsonSetValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength);
-		configurator.jsonSetValue("ImageOverlappingRate", config->ImageOverlappingRate);
-		configurator.jsonSetValue("ImageSize_W", config->ImageSize_W);
-		configurator.jsonSetValue("ImageSize_H", config->ImageSize_H);
+		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke, true);
+		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum, true);
+		configurator.jsonSetValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
+		configurator.jsonSetValue("ImageOverlappingRate", config->ImageOverlappingRate, true);
+		configurator.jsonSetValue("ImageSize_W", config->ImageSize_W, true);
+		configurator.jsonSetValue("ImageSize_H", config->ImageSize_H, true);
 		configFile.close();
 	}
 	return success;
