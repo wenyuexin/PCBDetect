@@ -115,11 +115,12 @@ namespace pcb
 
 		void resetSerialNum();
 		void loadDefaultValue();
-		int calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
-		int calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
+		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
+		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
 
 		bool isValid(AdminConfig *adminConfig = Q_NULLPTR);
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
+		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; }
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //µ¯´°¾¯¸æ
 	};
