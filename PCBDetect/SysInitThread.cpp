@@ -110,7 +110,7 @@ bool SysInitThread::initDetectConfig()
 	else {
 		DetectConfig::ErrorCode code;//错误代码
 		//参数有效性判断
-		code = detectConfig->checkValidity(DetectConfig::Index_All);
+		code = detectConfig->checkValidity(DetectConfig::Index_All, adminConfig);
 		if (code != DetectConfig::ValidConfig) { 
 			emit detectConfigError_initThread(); return false; 
 		}

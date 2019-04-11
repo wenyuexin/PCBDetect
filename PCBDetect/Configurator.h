@@ -153,8 +153,8 @@ namespace pcb
 		~DetectConfig() = default;
 		void loadDefaultValue(); //º”‘ÿƒ¨»œ≤Œ ˝
 
-		ErrorCode checkValidity(ConfigIndex index = Index_All);
-		bool isValid();
+		ErrorCode checkValidity(ConfigIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
+		bool isValid(AdminConfig *adminConfig = Q_NULLPTR);
 		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
 		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; } //ªÒ»°¥ÌŒÛ¥˙¬Î
@@ -186,12 +186,12 @@ namespace pcb
 
 		static void createConfigFile(QString filePath);
 
-		bool jsonSetValue(const QString &key, QString &value); //–¥QString
-		bool jsonSetValue(const QString &key, int &value); //–¥int
-		bool jsonSetValue(const QString &key, double &value); //–¥double
-		bool jsonReadValue(const QString &key, QString &value); //∂¡QString
-		bool jsonReadValue(const QString &key, int &value); //∂¡int
-		bool jsonReadValue(const QString &key, double &value); //∂¡double
+		bool jsonSetValue(const QString &key, QString &value, bool encode); //–¥QString
+		bool jsonSetValue(const QString &key, int &value, bool encode); //–¥int
+		bool jsonSetValue(const QString &key, double &value, bool encode); //–¥double
+		bool jsonReadValue(const QString &key, QString &value, bool decode); //∂¡QString
+		bool jsonReadValue(const QString &key, int &value, bool decode); //∂¡int
+		bool jsonReadValue(const QString &key, double &value, bool decode); //∂¡double
 
 		static bool loadConfigFile(const QString &fileName, DetectConfig *config);
 		static bool saveConfigFile(const QString &fileName, DetectConfig *config);

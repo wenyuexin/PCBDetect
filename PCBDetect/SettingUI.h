@@ -18,6 +18,7 @@ class SettingUI : public QWidget
 private:
 	Ui::SettingUI ui;
 	pcb::DetectParams *detectParams;//运行参数
+	pcb::DetectParams tempParams;//临时的运行参数
 
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectConfig tempConfig; //临时的用户参数类

@@ -3,11 +3,12 @@
 MotionControler::MotionControler(QObject *parent)
 	: QObject(parent)
 {
-	detectConfig = Q_NULLPTR;
-	adminConfig = Q_NULLPTR;
-	callerOfResetControler = 0; //复位的调用函数的标识
+	adminConfig = Q_NULLPTR; //系统参数
+	detectConfig = Q_NULLPTR; //用户参数
+	detectParams = Q_NULLPTR; //运行参数
 	errorCode = Uncheck; //控制器的错误码
 	running = false; //操作是否正在运行
+	callerOfResetControler = 0; //复位的调用函数的标识
 }
 
 MotionControler::~MotionControler()
@@ -22,7 +23,7 @@ void MotionControler::initControler()
 {
 	QMutexLocker locker(&mutex);
 	if (running) return;
-	else running = true;
+	running = true;
 
 	////0控制器类型
 	//AMC98_KZQSet(0, 0, _T("4"));
@@ -35,7 +36,8 @@ void MotionControler::initControler()
 	////3协议
 	//str.Format(_T("%d"), xieyi_byte);
 	//AMC98_KZQSet(0, 3, str);
-	//
+	
+
 	////AMC98_Connect(NULL, 0);//放在最前面
 	//void (MotionControler::*funcPtr)();
 	//funcPtr = &MotionControler::on_initControler_finished;
@@ -72,9 +74,6 @@ void MotionControler::initControler()
 
 	//用于临时测试
 	pcb::delay(1000);
-	//running = false;
-	//emit initControlerFinished_motion();
-
 	on_initControler_finished();
 }
 
@@ -90,7 +89,9 @@ void MotionControler::moveForward()
 	//AMC98_Connect((HWND)(&funcPtr), 0);
 
 	////AMC98_Connect(NULL, 0);
-	//AMC98_start_sr_move(2, 0, 80, WeizhiType_XD, 10, 50, 100, 100, 0, 0);
+
+	//double dist = detectParams->singleMotionStroke;
+	//AMC98_start_sr_move(2, 0, dist, WeizhiType_XD, 10, 50, 100, 100, 0, 0);
 }
 
 //运动结构归零
