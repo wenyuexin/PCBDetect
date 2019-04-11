@@ -156,6 +156,6 @@ DllExport I16 WINAPI AMC98_sd_stop(I16 AxisNo,F64 Tdec);
 //Tdec:0-250 减速时间
 //返回0此功能 其他值错误
 DllExport I16 WINAPI AMC98_start_sr_move(I16 CardNo,
-			I16 AxisNo,F64 Dist, I16 PosType,
+			I16 AxisNo, F64 Dist, I16 PosType,
 			F64 StrVel, F64 MaxVel,F64 Tacc, F64 Tdec, F64 SVacc, F64 SVdec);
 #endif // !defined(AFX_AMC98C_H__25A92AAB_7A68_4C71_854B_44E2624F7E58__INCLUDED_)

@@ -177,7 +177,7 @@ void SettingUI::on_pushButton_confirm_clicked()
 		Configurator::saveConfigFile(configFileName, detectConfig);
 
 		//更新运行参数
-		sysResetCode |= detectParams->updateGridSize(adminConfig, detectConfig);
+		sysResetCode |= detectParams->calcItemGridSize(adminConfig, detectConfig);
 		if (!detectParams->isValid()) detectParams->showMessageBox(this);
 
 		//判断是否重置检测系统

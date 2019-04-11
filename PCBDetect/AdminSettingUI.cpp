@@ -91,7 +91,7 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 		//将参数保存到config文件中
 		Configurator::saveConfigFile(configFileName, adminConfig);
 		//更新运行参数
-		sysResetCode |= detectParams->updateGridSize(adminConfig, detectConfig);
+		sysResetCode |= detectParams->calcItemGridSize(adminConfig, detectConfig);
 		if (!detectParams->isValid()) detectParams->showMessageBox(this);
 		//发送检测系统重置信号
 		emit resetDetectSystem_adminUI(sysResetCode);

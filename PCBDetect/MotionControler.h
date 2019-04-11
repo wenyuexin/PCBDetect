@@ -36,6 +36,7 @@ public:
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::DetectConfig *detectConfig; //用户参数
+	pcb::DetectParams *detectParams; //用户参数
 	int callerOfResetControler; //复位的调用函数的标识
 	bool running; //操作是否正在运行
 	ErrorCode errorCode; //控制器的错误码
@@ -47,6 +48,7 @@ public:
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } 
 	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; } 
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
 	void initControler(); //初始化
 	void moveForward(); //前进
