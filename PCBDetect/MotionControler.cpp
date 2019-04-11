@@ -150,7 +150,7 @@ void MotionControler::on_initControler_finished()
 //发送运动结构前进结束的信号
 void MotionControler::on_moveForward_finished()
 {
-	QMutexLocker locker(&mutex);
+	//QMutexLocker locker(&mutex);
 	running = false;
 	emit moveForwardFinished_motion();
 }
@@ -158,7 +158,7 @@ void MotionControler::on_moveForward_finished()
 //发送运动结构归零结束的信号
 void MotionControler::on_returnToZero_finished()
 {
-	QMutexLocker locker(&mutex);
+	//QMutexLocker locker(&mutex);
 	running = false;
 	emit returnToZeroFinished_motion();
 }
@@ -166,7 +166,7 @@ void MotionControler::on_returnToZero_finished()
 //发送运动结构复位结束的信号
 void MotionControler::on_resetControler_finished()
 {
-	QMutexLocker locker(&mutex);
+	//QMutexLocker locker(&mutex);
 	running = false;
 	emit resetControlerFinished_motion(callerOfResetControler);
 }
