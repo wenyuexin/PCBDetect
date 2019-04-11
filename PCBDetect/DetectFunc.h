@@ -8,6 +8,9 @@
 #include "opencv2/opencv.hpp"
 #include <qDebug>
 
+using namespace std;
+using namespace cv;
+
 
 class DetectFunc {
 
@@ -16,10 +19,6 @@ private:
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectParams *detectParams; //运行参数
 	pcb::DetectResult *detectResult; //检测结果
-
-	//配准函数需要用到的参数
-	const int MAX_FEATURES = 500;
-	const float GOOD_MATCH_PERCENT = 0.15f;//保留的良好匹配的比例
 
 public:
 	DetectFunc();
@@ -30,11 +29,18 @@ public:
 	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 
-	void alignImages(cv::Mat &im1Gray, cv::Mat &im2Gray, cv::Mat &im1Reg, cv::Mat &h, cv::Mat &imMatches);
-	cv::Mat sub_process(cv::Mat &imgOut, cv::Mat &imgOut2);
-	void markDefect(cv::Mat &diffBw, cv::Mat &src, cv::Mat &temp_bw, cv::Mat &templ_reg, int &defectNum,int currentCol);
+
+	bool alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches);//测试载入特征
+	cv::Mat sub_process_new(cv::Mat &imgTempl, cv::Mat &sampBw, Mat& mask_roi);
+	void markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol);
+	void save(const std::string& path, cv::Mat& image_template_gray);
+	void load(const std::string& path);
+
+	Scalar getMSSIM(const Mat& i1, const Mat& i2);
+
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Mat descriptors;
 
 private:
-	float correlationCoefficient(const std::vector<double> &X, const std::vector<double> &Y);
 
 };

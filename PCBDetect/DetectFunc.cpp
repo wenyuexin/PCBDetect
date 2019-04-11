@@ -1,4 +1,7 @@
 #include "DetectFunc.h"
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
+#include <qDebug>
 
 
 using pcb::DetectConfig;
@@ -13,6 +16,7 @@ using cv::Point2f;
 using cv::Vec4i;
 using cv::Rect;
 using cv::Size;
+using namespace cv::xfeatures2d;
 
 
 DetectFunc::DetectFunc()
@@ -23,205 +27,206 @@ DetectFunc::DetectFunc()
 	detectResult = Q_NULLPTR; //检测结果
 }
 
-/***************** 检测 ******************/
+
+bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
+{
+
+	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
+	std::vector<KeyPoint> keypoints_2;
+	Mat descriptors_2;
+
+	double t1 = clock();
+	cv::Mat pyr;
+	cv::Size sz = image_sample_gray.size();
+	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
+	pyrDown(image_sample_gray, pyr);
+	pyrDown(pyr, pyr);
+	pyrDown(pyr, pyr);
+
+	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
+
+	double t2 = clock();
+	cout << "获取特征点时间" << double(t2 - t1) / CLOCKS_PER_SEC << endl;
+
+	Ptr<flann::IndexParams> indexParams = new cv::flann::KDTreeIndexParams(5);
+	Ptr<flann::SearchParams> searchParams;
+	FlannBasedMatcher matcher(indexParams);
+	vector<DMatch> matches;
+	vector<vector<DMatch>> m_knnMatches;
+
+	/*const float minRatio = 1.f / 1.5f;*/
+	const float minRatio = 0.7;
+	matcher.knnMatch(descriptors_1, descriptors_2, m_knnMatches, 2);
+
+
+
+	//Mat outImg;
+	//drawKeypoints(image_template, keypoints_1, image_template,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	//imwrite("outImg.jpg", image_template);
+
+	std::sort(m_knnMatches.begin(), m_knnMatches.end(), [](const vector<DMatch> m1, const vector<DMatch> m2) {return m1[0].distance < m2[0].distance; });
+
+	for (int i = 0; i < m_knnMatches.size(); i++)
+	{
+		const DMatch& bestMatch = m_knnMatches[i][0];
+		const DMatch& betterMatch = m_knnMatches[i][1];
+
+		if (bestMatch.distance < 0.7*betterMatch.distance)
+		{
+			matches.push_back(bestMatch);
+		}
+	}
+
+	vector< DMatch > good_matches;
+
+	if (!matches.size())
+	{
+		cout << "matches is empty! " << endl;
+
+	}
+	else if (matches.size() < 4)
+	{
+		cout << matches.size() << " points matched is not enough " << endl;
+	}
+
+	else //单应性矩阵的计算最少得使用4个点
+	{
+
+		for (int i = 0; i < matches.size(); i++)
+		{
+			good_matches.push_back(matches[i]);
+		}
+
+		vector<Point2f> temp_points;
+		vector<Point2f> samp_points;
+
+		for (int i = 0; i < matches.size(); i++)
+		{
+			temp_points.push_back(keypoints_1[matches[i].queryIdx].pt);
+			samp_points.push_back(keypoints_2[matches[i].trainIdx].pt);
+		}
+
+		double t3 = clock();
+		cout << "匹配并获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
+
+
+		H = findHomography(samp_points, temp_points, CV_RANSAC, 5.0);
+		H.at<double>(0, 2) *= 8;
+		H.at<double>(1, 2) *= 8;
+		H.at<double>(2, 0) /= 8;
+		H.at<double>(2, 1) /= 8;
+		warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
+	}
+
+	return true;
+}
+
 /**
-*功能：使用BRISK算法获取配准点做配准
-*输入：
-*	im1Gray:样本灰度图
-*	im2Gray:模板灰度图
-*	im1Reg:样本配准后的灰度图
-*   h:单应性矩阵
-*   imMatched:绘制的匹配点
+*先进行阈值处理，再进行差值处理
 */
+cv::Mat DetectFunc::sub_process_new(cv::Mat &templBw, cv::Mat &sampBw, Mat& mask_roi) {
 
-void DetectFunc::alignImages(Mat &im1Gray, Mat &im2Gray, Mat &im1Reg, Mat &h, Mat &imMatches)
-{
-	time_t t0 = clock();
-	// Variables to store keypoints and descriptors
-	vector<cv::KeyPoint> keypoints1, keypoints2;
-	Mat descriptors1, descriptors2;
-	// Detect BRISK features and compute descriptors.
-	cv::Ptr<cv::Feature2D> orb = cv::BRISK::create(50);
-	//cv::Ptr<Feature2D> orb = ORB::create(MAX_FEATURES);
-	orb->detectAndCompute(im1Gray, Mat(), keypoints1, descriptors1);
-	orb->detectAndCompute(im2Gray, Mat(), keypoints2, descriptors2);
+	//cv::equalizeHist(imgTempl, imgTempl);
+	//cv::equalizeHist(imgSamp, imgSamp);
+	//cv::imwrite("../../detectfunc_test_res/imgTempl.jpg", imgTempl);
+	//cv::imwrite("../../detectfunc_test_res/imgSamp.jpg", imgSamp);
+	////阈值处理
+	//Mat temp_d;
+	//cv::absdiff(imgTempl, imgSamp, temp_d);
+	//cv::imwrite("../../detectfunc_test_res/diff.jpg", temp_d);
 
-	time_t t1 = clock();
-	qDebug() << QString::fromLocal8Bit("特征查找：") << double(t1 - t0) / CLOCKS_PER_SEC << endl;
+	//Mat imgTempl_roi_bw, imgSamp_roi_bw;
+	//cv::Rect roi_rect = cv::Rect(95, 1380, 4100, 1600);
+	//Mat imgTempl_roi = imgTempl(roi_rect);
+	//Mat imgSamp_roi =imgSamp(roi_rect);
 
-	// Match features.
-	std::vector<cv::DMatch> matches;
-	cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::NORM_HAMMING);
-
-
-	matcher->match(descriptors1, descriptors2, matches, Mat());
-
-	time_t t2 = clock();
-	qDebug() << QString::fromLocal8Bit("特征匹配：") << double(t2 - t1) / CLOCKS_PER_SEC << endl;
-
-	// Sort matches by score
-	std::sort(matches.begin(), matches.end());
-
-	// Remove not so good matches
-	const int numGoodMatches = matches.size() * GOOD_MATCH_PERCENT;
-	matches.erase(matches.begin() + numGoodMatches, matches.end());
-
-	time_t t3 = clock();
-	qDebug() << QString::fromLocal8Bit("匹配筛选：") << double(t3 - t2) / CLOCKS_PER_SEC << endl;
-
-	// Draw top matches
-	Mat im1, im2;
-	cvtColor(im1Gray, im1, CV_GRAY2BGR);
-	cvtColor(im2Gray, im2, CV_GRAY2BGR);
-	drawMatches(im1, keypoints1, im2, keypoints2, matches, imMatches);
-
-	time_t t4 = clock();
-	qDebug() << QString::fromLocal8Bit("匹配绘制：") << double(t4 - t3) / CLOCKS_PER_SEC << endl;
-	//imwrite("matches.jpg", imMatches);
+	//cv::imwrite("../../detectfunc_test_res/imgTempl_bw.jpg", imgTempl_bw);
+	//cv::imwrite("../../detectfunc_test_res/imgSamp_bw.jpg", imgSamp_bw);
 
 
-	// Extract location of good matches
-	std::vector<cv::Point2f> points1, points2;
-	for (size_t i = 0; i < matches.size(); i++)
-	{
-		points1.push_back(keypoints1[matches[i].queryIdx].pt);
-		points2.push_back(keypoints2[matches[i].trainIdx].pt);
-	}
+	//cv::imwrite("../../detectfunc_test_res/imgTempl_bw_morph.jpg", imgTempl_bw);
+	//cv::imwrite("../../detectfunc_test_res/imgSamp_bw_morph.jpg", imgSamp_bw);
 
-	time_t t5 = clock();
-	qDebug() << QString::fromLocal8Bit("提取匹配坐标：") << double(t5 - t4) / CLOCKS_PER_SEC << endl;
-
-	// Find homography
-	//至少需要四对点
-	h = findHomography(points1, points2, cv::LMEDS);
-
-	time_t t6 = clock();
-	qDebug() << QString::fromLocal8Bit("计算单应性矩阵：") << double(t6 - t5) / CLOCKS_PER_SEC << endl;
-
-	// Use homography to warp image
-	warpPerspective(im1Gray, im1Reg, h, im2Gray.size());
-
-	cv::imwrite("imgReg.bmp", im1Reg);
-
-	time_t t7 = clock();
-	qDebug() << QString::fromLocal8Bit("变换：") << double(t7 - t6) / CLOCKS_PER_SEC << endl;
-
-}
-
-
-/**
- *
- * 功能：计算向量X和向量Y的相关系数
- * 输入：X 向量1
- *       Y 向量2
- * 返回：相关系数[-1,1],越靠近0越不相关
- *
- */
-float DetectFunc::correlationCoefficient(const vector<double> &X, const vector<double> & Y)
-{
-	int n = X.size();
-	int sum_X = 0, sum_Y = 0, sum_XY = 0;
-	int squareSum_X = 0, squareSum_Y = 0;
-
-	for (int i = 0; i < n; i++)
-	{
-		// sum of elements of array X. 
-		sum_X = sum_X + X[i];
-
-		// sum of elements of array Y. 
-		sum_Y = sum_Y + Y[i];
-
-		// sum of X[i] * Y[i]. 
-		sum_XY = sum_XY + X[i] * Y[i];
-
-		// sum of square of array elements. 
-		squareSum_X = squareSum_X + X[i] * X[i];
-		squareSum_Y = squareSum_Y + Y[i] * Y[i];
-	}
-
-	// use formula for calculating correlation coefficient. 
-	float corr = (float)(n * sum_XY - sum_X * sum_Y)
-		/ sqrt((n * squareSum_X - sum_X * sum_X)
-			* (n * squareSum_Y - sum_Y * sum_Y));
-
-	return corr;
-}
-
-/**
- * imgOut:模板灰度图
- * imgOut2:样本灰度图
- */
-cv::Mat DetectFunc::sub_process(cv::Mat &imgOut, cv::Mat &imgOut2) {
-	//阈值处理
 	Mat imgFlaw;
-	cv::absdiff(imgOut2, imgOut, imgFlaw);
-	cv::threshold(imgFlaw, imgFlaw, 30, 255, cv::THRESH_BINARY);
+	cv::absdiff(templBw, sampBw, imgFlaw);
+	bitwise_and(imgFlaw, mask_roi, imgFlaw);
 
-	//形态学处理，先开后闭，这里的处理与最小线宽有关
-	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_b);
-	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_b);
+	//cv::imwrite("../../detectfunc_test_res/imgFlaw.jpg", imgFlaw);
 
+	//cout << "imgFlaw.size()" << imgFlaw.size() << endl;
 
-	//膨胀模板边缘，与形态学处理后的图片相乘，获取边界上的点消除
-	cv::Mat edges;
-	cv::Canny(imgOut, edges, 150, 50);
+	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
 	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
-	cv::dilate(edges, edges, element_a);
-	cv::Mat points_Edge;
-	cv::bitwise_and(edges, imgFlaw, points_Edge);
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
 
-	vector<cv::Point2i> morph_num;
-	cv::findNonZero(imgFlaw, morph_num);
-	//cout << "总像素:" << morph_num.size() << endl;
+	//cv::imwrite("../../detectfunc_test_res/imgFlaw_morph.jpg", imgFlaw);
 
 
-	//返回形态学处理后的非0坐标
-	vector<cv::Point2i> locations;
-	cv::findNonZero(points_Edge, locations);
-	//cout << "位于边缘的像素:" << locations.size() << endl;;
-	int cal = 0;
-	for (auto xy : locations) {
-		vector<cv::Point2i> neighbors{ cv::Point2i(xy.x - 1,xy.y - 1),cv::Point2i(xy.x,xy.y - 1),cv::Point2i(xy.x + 1,xy.y - 1),
-									cv::Point2i(xy.x - 1,xy.y),cv::Point2i(xy.x,xy.y),cv::Point2i(xy.x + 1,xy.y),
-									cv::Point2i(xy.x - 1,xy.y + 1),cv::Point2i(xy.x,xy.y + 1),cv::Point2i(xy.x + 1,xy.y + 1)
-		};
-		vector<double> vec1;
-		vector<double> vec2;
-		for (int i = 0; i < 9; i++) {
-			cv::Point2i p = neighbors[i];
-			if (p.x < 0 || p.x >= imgOut.cols || p.y < 0 || p.y >= imgOut.rows)
-				continue;
-			vec1.push_back(imgOut.at<uchar>(p.y, p.x));
-			vec2.push_back(imgOut2.at<uchar>(p.y, p.x));
-		}
-		if (vec1.size() < 4 || vec2.size() < 4)
-			continue;
+	////膨胀模板边缘，与形态学处理后的图片相乘，获取边界上的点消除
+	cv::Mat edges;
+	cv::Canny(templBw, edges, 150, 50);
+	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	cv::dilate(edges, edges, element_b);
+	edges = 255 - edges;
+	cv::bitwise_and(edges, imgFlaw, imgFlaw);
+	//cv::Mat points_Edge;
+	//cv::bitwise_and(edges, imgFlaw, points_Edge);
 
-		double cor = abs(correlationCoefficient(vec1, vec2));
-		if (cor > 0.5) {
-			imgFlaw.at<uchar>(xy.y, xy.x) = 0;
-			cal++;
-		}
-	}
+	//vector<cv::Point2i> morph_num;
+	//cv::findNonZero(imgFlaw, morph_num);
+	//////cout << "总像素:" << morph_num.size() << endl;
+
+
+	////返回形态学处理后的非0坐标
+	//vector<cv::Point2i> locations;
+	//cv::findNonZero(points_Edge, locations);
+	////cout << "位于边缘的像素:" << locations.size() << endl;;
+	//int cal = 0;
+	//for (auto xy : locations) {
+	//	vector<cv::Point2i> neighbors{ cv::Point2i(xy.x - 1,xy.y - 1),cv::Point2i(xy.x,xy.y - 1),cv::Point2i(xy.x + 1,xy.y - 1),
+	//								cv::Point2i(xy.x - 1,xy.y),cv::Point2i(xy.x,xy.y),cv::Point2i(xy.x + 1,xy.y),
+	//								cv::Point2i(xy.x - 1,xy.y + 1),cv::Point2i(xy.x,xy.y + 1),cv::Point2i(xy.x + 1,xy.y + 1)
+	//	};
+	//	vector<double> vec1;
+	//	vector<double> vec2;
+	//	for (int i = 0; i < 9; i++) {
+	//		cv::Point2i p = neighbors[i];
+	//		if (p.x < 0 || p.x >= imgTempl.cols || p.y < 0 || p.y >= imgTempl.rows)
+	//			continue;
+	//		vec1.push_back(imgTempl.at<uchar>(p.y, p.x));
+	//		vec2.push_back(imgSamp.at<uchar>(p.y, p.x));
+	//	}
+	//	if (vec1.size() < 4 || vec2.size() < 4)
+	//		continue;
+
+	//	double cor = abs(correlationCoefficient(vec1, vec2));
+	//	if (cor > 0.5) {
+	//		imgFlaw.at<uchar>(xy.y, xy.x) = 0;
+	//		cal++;
+	//	}
+	//}
 
 	//再进行一次形态学处理
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_b);
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_b);
 
+
 	return imgFlaw;
 }
+
+
 /**
 *	功能：标记并存储缺陷图片和位置信息
 *	输入：
-*		diff_Bw: 差值图像，覆盖回到与样本等大的纯黑图像对应位置
-*		src:配准后的样本灰度图
-*		temp_bw: 模板二值图像，覆盖到与样本等大的纯黑图像对应位置
-*		model_num,batch_num,pcb_num:型号，批次号，样本编号
-*		cal:调用次数
-*		off_x，off_y:样本相对模板的偏移量
+*		diffBw: 差值图像二值图
+*		sampGrayReg:配准后的样本灰度图
+*		templBw: 模板二值图像
+*		templGray:模板灰度图
+*       defectNum:缺陷序号
+*       currentCol:检测的列
 */
-void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,int &defectNum,int currentCol) {
+void DetectFunc::markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol) {
 	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 
@@ -244,9 +249,10 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 
 
 	for (int i = 0; i < contours.size(); i++) {
-
+		if (currentCol == 4 && detectParams->currentRow_detect == 0 && i == 87)
+			qDebug() << endl;
 		int w_b = 300, h_b = 300;//缺陷分图的大小
-		if (contourArea(contours[i], false) <= 50 && contourArea(contours[i], false) >= 200)//可判定为缺陷的最小面积
+		if (contourArea(contours[i], false) <= 50 && contourArea(contours[i], false) >= 200)//缺陷的最大和最小面积
 			continue;
 		else {
 			//pt3是300×300分图在diffBw中的左上角坐标
@@ -264,15 +270,15 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 				pt3.x = 0;
 			if (pt3.y < 0)
 				pt3.y = 0;
-			if (pt3.x + w_b > src.cols - 1)
-				w_b = src.cols - 1 - pt3.x;
-			if (pt3.y + h_b > src.rows - 1)
-				h_b = src.rows - 1 - pt3.y;
+			if (pt3.x + w_b > sampGrayReg.cols - 1)
+				w_b = sampGrayReg.cols - 1 - pt3.x;
+			if (pt3.y + h_b > sampGrayReg.rows - 1)
+				h_b = sampGrayReg.rows - 1 - pt3.y;
 
-			Mat imgSeg;//最后要保存和显示的分图
-			src(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(imgSeg);//分图的左上角点为pt3,宽和高为w_b,h_b
+			Mat imgSeg;//配准后样本分图
+			sampGrayReg(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(imgSeg);//分图的左上角点为pt3,宽和高为w_b,h_b
 			Mat templSeg;//模板分图
-			templ_reg(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(templSeg);
+			templGray(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(templSeg);
 			Mat diffSeg;//差异分图
 			diffBw(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(diffSeg);
 
@@ -280,14 +286,23 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 			int pos_y = pt3.y + h_b / 2;
 
 			//对缺陷进行分类
-			Mat temp_part;
-			temp_bw(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(temp_part);//模板
+			Mat temp_part;//二值化模板分图
+			templBw(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(temp_part);
 			Mat diff_part = Mat::zeros(Size(temp_part.cols, temp_part.rows), CV_8UC1);
 			cv::RotatedRect minRect = minAreaRect(contours[i]);//轮廓的外接旋转矩形
 			Point2f rect_points[4];
 			minRect.points(rect_points);//获取旋转矩形的4个顶点
+			Point2f rect_points_move[4];
+			//for (int j = 0; j < 4; j++) {
+			//	rect_points_move[j] = rect_points[j];
+			//	rect_points_move[j].x -= pt3.x;
+			//	rect_points_move[j].y -= pt3.y;
+
+			//}
 			for (int j = 0; j < 4; j++)
 			{
+				Point2f start = (rect_points[j].x - pt3.x, rect_points[j].y - pt3.y);
+				Point2f end = (rect_points[(j + 1) % 4].x - pt3.x, rect_points[(j + 1) % 4].y - pt3.y);
 				line(diff_part, Point2f(rect_points[j].x - pt3.x, rect_points[j].y - pt3.y), Point2f(rect_points[(j + 1) % 4].x - pt3.x, rect_points[(j + 1) % 4].y - pt3.y), (255, 255, 255));
 			}
 
@@ -305,6 +320,20 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 					trans_num++;
 			}
 
+			Mat diff_part_big = Mat::zeros(Size(temp_part.cols * 2, temp_part.rows * 2), CV_8UC1);
+			//if (currentCol == 4 && params->currentRow_detect == 0&&i==87) {
+			//	int idx = 0;
+			//	for (; idx >= 0; idx = hierarchy_rect[idx][0])
+			//	{
+			//		Scalar color(rand() & 255, rand() & 255, rand() & 255);
+			//		drawContours(diff_part, contours_rect, idx, color, 1, 8, hierarchy_rect);
+			//		drawContours(diff_part_big, contours_rect, idx, color, 1, 8, hierarchy_rect);
+			//		
+			//	}
+			//	imwrite("diffSeg.jpg", diffSeg);
+			//	imwrite("diff_part.jpg", diff_part);
+			//	imwrite("diff_part_big.jpg", diff_part_big);
+			//}
 
 			if (trans_num == 0)//缺陷不跨越线路直接忽略
 				continue;
@@ -320,7 +349,10 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 							Point2i(contour_center.x - 1,contour_center.y + 1),Point2i(contour_center.x,contour_center.y + 1),Point2i(contour_center.x + 1,contour_center.y + 1)
 			};
 			int neighbors_sum = 0;
+
+
 			for (int i = 0; i < 9; i++) {
+
 				neighbors_sum += (int)temp_part.at<uchar>(neighbors[i]);
 			}
 			int lack_flag = 0;//0表示无缺失，1表示有缺失
@@ -360,14 +392,90 @@ void DetectFunc::markDefect(Mat &diffBw, Mat &src, Mat &temp_bw,Mat &templ_reg,i
 				rect1.height = imgSeg.rows - 1 - rect1.y;
 
 			rectangle(imgSeg, rect1, CV_RGB(255, 0, 0), 2);
+			Size sz = diffBw.size();
 			defectNum++;//增加缺陷计数
-			pos_x = adminConfig->ImageSize_W*currentCol + pos_x;//缺陷在整体图像中的横坐标
-			pos_y = adminConfig->ImageSize_H*detectParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
+			pos_x = sz.width*currentCol + pos_x;//缺陷在整体图像中的横坐标
+			pos_y = sz.height*detectParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
 
 			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + detectConfig->ImageFormat.toStdString(), diffSeg);
 			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + detectConfig->ImageFormat.toStdString(), templSeg);
-			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + detectConfig->ImageFormat.toStdString(), imgSeg);
+			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + detectConfig->ImageFormat.toStdString(), imgSeg);
 
 		}
 	}
+}
+
+void DetectFunc::save(const std::string& path, Mat& image_template_gray) {
+	Mat temp;
+	cv::pyrDown(image_template_gray, temp);
+	cv::pyrDown(temp, temp);
+	cv::pyrDown(temp, temp);
+	Ptr<SURF> detector = SURF::create(3500, 3, 3, true, true);
+	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
+	cv::FileStorage store(path, cv::FileStorage::WRITE);
+	cv::write(store, "keypoints", keypoints);
+	cv::write(store, "descriptors", descriptors);
+	store.release();
+
+}
+void DetectFunc::load(const std::string& path) {
+	cv::FileStorage store(path, cv::FileStorage::READ);
+	cv::FileNode n1 = store["keypoints"];
+	cv::read(n1, keypoints);
+	cv::FileNode n2 = store["descriptors"];
+	cv::read(n2, descriptors);
+	store.release();
+}
+
+Scalar DetectFunc::getMSSIM(const Mat& i1, const Mat& i2)
+{
+	const double C1 = 6.5025, C2 = 58.5225;
+	/***************************** INITS **********************************/
+	int d = CV_32F;
+
+	Mat I1, I2;
+	i1.convertTo(I1, d);           // cannot calculate on one byte large values
+	i2.convertTo(I2, d);
+
+	Mat I2_2 = I2.mul(I2);        // I2^2
+	Mat I1_2 = I1.mul(I1);        // I1^2
+	Mat I1_I2 = I1.mul(I2);        // I1 * I2
+
+	/*************************** END INITS **********************************/
+
+	Mat mu1, mu2;   // PRELIMINARY COMPUTING
+	GaussianBlur(I1, mu1, Size(11, 11), 1.5);
+	GaussianBlur(I2, mu2, Size(11, 11), 1.5);
+
+	Mat mu1_2 = mu1.mul(mu1);
+	Mat mu2_2 = mu2.mul(mu2);
+	Mat mu1_mu2 = mu1.mul(mu2);
+
+	Mat sigma1_2, sigma2_2, sigma12;
+
+	GaussianBlur(I1_2, sigma1_2, Size(11, 11), 1.5);
+	sigma1_2 -= mu1_2;
+
+	GaussianBlur(I2_2, sigma2_2, Size(11, 11), 1.5);
+	sigma2_2 -= mu2_2;
+
+	GaussianBlur(I1_I2, sigma12, Size(11, 11), 1.5);
+	sigma12 -= mu1_mu2;
+
+	///////////////////////////////// FORMULA ////////////////////////////////
+	Mat t1, t2, t3;
+
+	t1 = 2 * mu1_mu2 + C1;
+	t2 = 2 * sigma12 + C2;
+	t3 = t1.mul(t2);              // t3 = ((2*mu1_mu2 + C1).*(2*sigma12 + C2))
+
+	t1 = mu1_2 + mu2_2 + C1;
+	t2 = sigma1_2 + sigma2_2 + C2;
+	t1 = t1.mul(t2);               // t1 =((mu1_2 + mu2_2 + C1).*(sigma1_2 + sigma2_2 + C2))
+
+	Mat ssim_map;
+	divide(t3, t1, ssim_map);      // ssim_map =  t3./t1;
+
+	Scalar mssim = mean(ssim_map); // mssim = average of ssim map
+	return mssim;
 }
