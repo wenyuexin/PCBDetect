@@ -191,7 +191,6 @@ void SettingUI::on_pushButton_confirm_clicked()
 		Configurator::saveConfigFile(configFileName, detectConfig);
 	}
 		
-
 	//向主界面发送消息
 	emit checkSystemState_settingUI(); //检查系统的工作状态
 	pcb::delay(10);
