@@ -90,6 +90,8 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	code = checkValidity(ParamsIndex::Index_nPhotographing, adminConfig);
 	if (code != ValidParams) return code;
 
+	return ValidParams;
+
 	//判断是否需要重置系统
 	//if (this->nCamera != nCamera_old)
 	//	sysResetCode |= 0b000010110;
