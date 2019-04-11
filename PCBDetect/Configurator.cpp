@@ -151,7 +151,8 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 }
 
 //¼ÆËã¿í¸ß±È
-AdminConfig::ErrorCode AdminConfig::calcImageAspectRatio() {
+AdminConfig::ErrorCode AdminConfig::calcImageAspectRatio() 
+{
 	ErrorCode code = checkValidity(Index_ImageSize_W);
 	if (code != ValidValue) return code;
 	code = checkValidity(Index_ImageSize_H);

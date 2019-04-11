@@ -73,16 +73,30 @@ namespace pcb
 		QString sampleNum; //样本编号
 		int currentRow_detect; //检测行号
 		int currentRow_extract; //提取行号
+		int singleMotionStroke; //运功动结构的单步行程 mm
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
-		int singleStepMotionStroke; //单步行程 mm
+
+		enum ParamsIndex {
+			Index_All,
+			Index_None,
+			Index_sampleModelNum,
+			Index_sampleBatchNum,
+			Index_sampleNum,
+			Index_currentRow_detect,
+			Index_currentRow_extract,
+			Index_singleMotionStroke,
+			Index_nCamera,
+			Index_nPhotographing
+		};
 
 		enum ErrorCode {
 			ValidParams = 0x000,
 			ValidValue = 0x000,
 			Uncheck = 0x300,
-			Invalid_nCamera = 0x301,
-			Invalid_nPhotographing = 0x302,
+			Invalid_singleMotionStroke = 0x301,
+			Invalid_nCamera = 0x302,
+			Invalid_nPhotographing = 0x303,
 			Default = 0x3FF
 		};
 
@@ -101,9 +115,12 @@ namespace pcb
 
 		void resetSerialNum();
 		void loadDefaultValue();
-		int updateGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
+		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
+		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
 
-		bool isValid();
+		bool isValid(AdminConfig *adminConfig = Q_NULLPTR);
+		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
+		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; }
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 	};

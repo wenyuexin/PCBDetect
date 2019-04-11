@@ -126,15 +126,20 @@ bool SysInitThread::initDetectParams()
 {
 	emit sysInitStatus_initThread(pcb::chinese("正在更新运行参数 ..."));
 	pcb::delay(800);
-
-	detectParams->updateGridSize(adminConfig, detectConfig);
-	if (!detectParams->isValid()) {
-		emit detectParamsError_initThread();
-		return false;
+	
+	DetectParams::ErrorCode code;
+	code = detectParams->calcSingleMotionStroke(adminConfig);
+	if (code != DetectParams::ValidValue) {
+		emit detectParamsError_initThread(); return false;
 	}
 
-	pcb::delay(600);
+	code = detectParams->calcItemGridSize(adminConfig, detectConfig);
+	if (code != DetectParams::ValidValue) {
+		emit detectParamsError_initThread(); return false;
+	}
+
 	emit sysInitStatus_initThread(pcb::chinese("运行参数更新结束    "));
+	pcb::delay(600);
 	return true;
 }
 
@@ -159,8 +164,8 @@ bool SysInitThread::initMotionControler()
 		return false;
 	}
 
-	pcb::delay(600);
 	emit sysInitStatus_initThread(pcb::chinese("运动结构初始化结束    "));
+	pcb::delay(600);
 	return true;
 }
 
@@ -175,7 +180,7 @@ bool SysInitThread::initCameraControler()
 	if (cameraControler->getErrorCode() != CameraControler::NoError) { 
 		emit cameraError_initThread(); return false; 
 	}
-	pcb::delay(600);
 	emit sysInitStatus_initThread(pcb::chinese("相机初始化结束    "));
+	pcb::delay(600);
 	return true;
 }
