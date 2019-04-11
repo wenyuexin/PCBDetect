@@ -39,7 +39,7 @@ namespace pcb
 	class AdminConfig 
 	{
 	public:
-		int MaxMotionStroke; //机械结构的最大运动行程
+		int MaxMotionStroke; //机械结构的最大运动行程 mm
 		int MaxCameraNum; //可用相机总数
 		int PixelsNumPerUnitLength; //单位长度的像素 pix/mm
 		double ImageOverlappingRate; //分图重叠率

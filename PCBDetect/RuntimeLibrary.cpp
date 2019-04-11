@@ -40,53 +40,117 @@ void DetectParams::loadDefaultValue()
 	nPhotographing = 4; //拍照次数
 }
 
-//计算nCamera、nPhotographing
-int DetectParams::updateGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig)
+//计算机械结构的单步运动距离 singleMotionStroke
+DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminConfig)
 {
-	int sysResetCode = 0b000000000; //系统重置代码
-	if (adminConfig->getErrorCode() != AdminConfig::ValidConfig ||
-		detectConfig->getErrorCode() != DetectConfig::ValidConfig)
-		return sysResetCode;
+	//int sysResetCode = 0b000000000; //系统重置代码
+	if (!adminConfig->isValid()) return Default;
 
-	errorCode = Uncheck;
-	int nCamera_old = nCamera;
-	int nPhotographing_old = nPhotographing;
+	//int singleMotionStroke_old = singleMotionStroke;
+
+	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
+	double stroke = 1.0 * adminConfig->ImageSize_H / (1 - overlap);
+	stroke /= adminConfig->PixelsNumPerUnitLength;
+	this->singleMotionStroke = (int) ceil(stroke);
+
+	//判断参数有效性
+	return checkValidity(ParamsIndex::Index_singleMotionStroke, adminConfig);
+
+	//判断是否需要重置系统
+	//if (this->singleMotionStroke != singleMotionStroke_old)
+	//	sysResetCode |= 0b000100000;
+	//return sysResetCode;
+}
+
+//计算nCamera、nPhotographing
+DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig)
+{
+	//int sysResetCode = 0b000000000; //系统重置代码
+	if (!adminConfig->isValid() || !detectConfig->isValid()) return Default;
+
+	//int nCamera_old = this->nCamera;
+	//int nPhotographing_old = this->nPhotographing;
+
 	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 
 	//计算需要开启的相机个数
 	double nPixels_W = detectConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
 	double nW = nPixels_W / adminConfig->ImageSize_W;
-	this->nCamera = ceil((nW - overlap) / (1 - overlap));
+	this->nCamera = (int) ceil((nW - overlap) / (1 - overlap));
 
 	//计算拍摄次数
 	double nPixels_H = detectConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
-	this->nPhotographing = ceil((nH - overlap) / (1 - overlap));
+	this->nPhotographing = (int) ceil((nH - overlap) / (1 - overlap));
 
 	//判断参数有效性
-	if (this->nCamera <= 0 || this->nCamera > adminConfig->MaxCameraNum) {
-		errorCode = Invalid_nCamera; return errorCode;
-	}
-	//else if (this->nPhotographing * detectParams->singleStepMotionStroke > adminConfig->MaxMotionStroke) {
-	//	errorCode = Invalid_nPhotographing; return errorCode;
-	//}
-	else {
-		errorCode = ValidParams;
-	}
+	ErrorCode code;
+	code = checkValidity(ParamsIndex::Index_nCamera, adminConfig);
+	if (code != ValidParams) return code;
+	code = checkValidity(ParamsIndex::Index_nPhotographing, adminConfig);
+	if (code != ValidParams) return code;
 
 	//判断是否需要重置系统
-	if (this->nCamera != nCamera_old)
-		sysResetCode |= 0b000010110;
-	if (this->nPhotographing != nPhotographing_old)
-		sysResetCode |= 0b000000110;
-	return sysResetCode;
+	//if (this->nCamera != nCamera_old)
+	//	sysResetCode |= 0b000010110;
+	//if (this->nPhotographing != nPhotographing_old)
+	//	sysResetCode |= 0b000000110;
+	//return sysResetCode;
+}
+
+//参数有效性检查
+DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConfig *adminConfig)
+{
+	if (this->errorCode == ValidParams)
+		return this->errorCode;
+
+	ErrorCode code = Uncheck;
+	switch (index)
+	{
+	case pcb::DetectParams::Index_All:
+	case pcb::DetectParams::Index_sampleModelNum:
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_sampleBatchNum:
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_sampleNum:
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_currentRow_detect:
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_currentRow_extract:
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_singleMotionStroke:
+		if (adminConfig == Q_NULLPTR)
+			qDebug() << "DetectParams: checkValidity: adminConfig is NULL !";
+		if (singleMotionStroke <= 0 || singleMotionStroke > adminConfig->MaxMotionStroke) {
+			errorCode = Invalid_singleMotionStroke;
+		}
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_nCamera:
+		if (adminConfig == Q_NULLPTR)
+			qDebug() << "DetectParams: checkValidity: adminConfig is NULL !";
+		if (nCamera <= 0 || nCamera > adminConfig->MaxCameraNum) {
+			errorCode = Invalid_nCamera;
+		}
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_nPhotographing:
+		if (adminConfig == Q_NULLPTR)
+			qDebug() << "DetectParams: checkValidity: adminConfig is NULL !";
+		if (nPhotographing * singleMotionStroke > adminConfig->MaxMotionStroke) {
+			errorCode = Invalid_nPhotographing; 
+		}
+		if (code != Uncheck || index != Index_All) break;
+	}
+
+	if (code == Uncheck) code = ValidParams;
+	if (code != ValidParams || index == Index_All) this->errorCode = code;
+	return code;
 }
 
 //判断参数是否有效
-bool DetectParams::isValid() 
+bool DetectParams::isValid(AdminConfig *adminConfig)
 {
 	if (this->errorCode == DetectParams::Uncheck) {
-		//checkValidity(Index_All);
+		checkValidity(Index_All, adminConfig);
 	}
 	return this->errorCode == ValidParams;
 }
@@ -111,7 +175,7 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
 		pcb::chinese("运行参数无效，请检查参数设置或图像数据！ \n") +
-		pcb::chinese("错误参数：") + valueName + "!        \n" +
+		pcb::chinese("错误提示：") + valueName + "!        \n" +
 		"Config: Runtime: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;
