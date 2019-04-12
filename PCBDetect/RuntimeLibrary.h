@@ -76,6 +76,7 @@ namespace pcb
 		int singleMotionStroke; //运功动结构的单步行程 mm
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
+		QString bufferDirPath; //缓存文件夹
 
 		enum ParamsIndex {
 			Index_All,
@@ -87,7 +88,8 @@ namespace pcb
 			Index_currentRow_extract,
 			Index_singleMotionStroke,
 			Index_nCamera,
-			Index_nPhotographing
+			Index_nPhotographing,
+			Index_bufferDirPath
 		};
 
 		enum ErrorCode {

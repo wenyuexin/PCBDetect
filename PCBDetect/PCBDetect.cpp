@@ -242,13 +242,25 @@ void PCBDetect::do_checkSystemState_settingUI()
 	}
 
 	//检查用户参数
-	if (enableButtonsOnMainUI && !detectConfig.isValid()) {
+	if (enableButtonsOnMainUI && !detectConfig.isValid(&adminConfig)) {
 		detectConfig.showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}
 
+	//检查运行参数
+	if (enableButtonsOnMainUI && !detectParams.isValid(&adminConfig)) {
+		detectParams.showMessageBox(settingUI);
+		enableButtonsOnMainUI = false;
+	}
+
+	//检测运动结构
+	if (enableButtonsOnMainUI && motionControler->isReady()) {
+		motionControler->showMessageBox(settingUI);
+		enableButtonsOnMainUI = false;
+	}
+
 	//检查相机
-	if (enableButtonsOnMainUI && cameraControler->getErrorCode() != CameraControler::NoError) {
+	if (enableButtonsOnMainUI && cameraControler->isReady()) {
 		cameraControler->showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}

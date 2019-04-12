@@ -91,4 +91,5 @@ private Q_SLOTS:
 	void mouseDoubleClickEvent(QMouseEvent *event);
 	void on_switchImage_serialNumUI();
 	void on_recognizeFinished_serialNumUI();
+	void do_showPreviousUI_serialNumUI();
 };
