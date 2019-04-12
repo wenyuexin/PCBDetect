@@ -127,16 +127,21 @@ bool SysInitThread::initDetectParams()
 	emit sysInitStatus_initThread(pcb::chinese("正在更新运行参数 ..."));
 	pcb::delay(800);
 	
-	DetectParams::ErrorCode code;
+	DetectParams::ErrorCode code, code2;
 	code = detectParams->calcSingleMotionStroke(adminConfig);
 	if (code != DetectParams::ValidValue) {
 		emit detectParamsError_initThread(); return false;
 	}
 
-	code = detectParams->calcItemGridSize(adminConfig, detectConfig);
-	if (code != DetectParams::ValidValue) {
+	qDebug() << code;
+
+	code2 = detectParams->calcItemGridSize(adminConfig, detectConfig);
+	if (code2 != DetectParams::ValidValue) {
+		qDebug() << code2 << "==";
 		emit detectParamsError_initThread(); return false;
 	}
+
+	qDebug() << code2 << " --- ";
 
 	emit sysInitStatus_initThread(pcb::chinese("运行参数更新结束    "));
 	pcb::delay(600);

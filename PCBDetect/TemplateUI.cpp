@@ -303,7 +303,7 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 {
 	detectParams->sampleModelNum = "1"; //型号
 	detectParams->sampleBatchNum = "1"; //批次号
-	detectParams->sampleNum = "2"; //样本编号
+	detectParams->sampleNum = "4"; //样本编号
 
 	switch (event->key())
 	{

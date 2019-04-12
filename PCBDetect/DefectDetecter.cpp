@@ -35,6 +35,7 @@ void DefectDetecter::initDetectFunc()
 	detectFunc->setDetectConfig(detectConfig);
 	detectFunc->setDetectParams(detectParams);
 	detectFunc->setDetectResult(detectResult);
+	detectFunc->generateBigTempl();
 }
 
 
@@ -116,14 +117,13 @@ void DefectDetecter::detect()
 			//调试时候的边缘处理
 			cv::Size szDiff = diff.size();
 			cv::Mat diff_roi = cv::Mat::zeros(szDiff, diff.type());
-			int zoom = 20;
+			int zoom = 50;
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
 
 			//标记缺陷
-			//detectFunc->markDefect_new(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
-
-
+			//detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
+			//continue;
 
 			//调试使用
 			Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
@@ -138,7 +138,7 @@ void DefectDetecter::detect()
 				Rect rect = boundingRect(Mat(contours[i]));
 				Rect rect_out = Rect(rect.x - 5, rect.y, rect.width + 10, rect.height + 10);
 				Mat temp_area = templ_gray(rect_out);
-				Mat samp_area = samp_gray(rect_out);
+				Mat samp_area = samp_gray_reg(rect_out);
 				Mat mask;
 				//double res = computeECC(temp_area, samp_area,mask);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
 				auto res = detectFunc->getMSSIM(temp_area, samp_area);
@@ -172,8 +172,15 @@ void DefectDetecter::detect()
 				QString::fromLocal8Bit("出现异常");
 		}	
 	}
-	if (detectParams->currentRow_detect + 1 == detectParams->nPhotographing)
-		defectNum = 0;
+	if (detectParams->currentRow_detect + 1 == detectParams->nPhotographing) {
+		if (defectNum > 0) {
+			cv::Size sz = detectFunc->getBigTempl().size();
+			cv::Mat dst;
+			cv::resize(detectFunc->getBigTempl(), dst, cv::Size(sz.width*0.25, sz.height*0.25), (0, 0), (0, 0), cv::INTER_LINEAR);
+			cv::imwrite(detectFunc->out_path + "/" + "fullImage_" + std::to_string(sz.width) + "_" + std::to_string(sz.height) + "_" + to_string(defectNum) + ".jpg", dst);
+			defectNum = 0;//将整体缺陷置0
+		}
+	}
 
 	//检测结束
 	double t2 = clock();
