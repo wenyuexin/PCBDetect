@@ -158,7 +158,7 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 
 	}
 
-	if (currentCol == 1 && 1 < currentRow && detectParams->currentRow_extract < nPhotographing)//左边
+	if (currentCol == 1 && 1 < currentRow && currentRow < nPhotographing)//左边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -169,7 +169,7 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 		mask(rect).setTo(255);
 	}
 
-	if (currentCol == nCamera && 1 < currentRow && detectParams->currentRow_extract < nPhotographing)//右边
+	if (currentCol == nCamera && 1 < currentRow && currentRow< nPhotographing)//右边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
@@ -180,7 +180,7 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 		mask(rect).setTo(255);
 	}
 
-	if (detectParams->currentRow_extract == 1 && 1 < currentCol && currentCol < nCamera)//上边
+	if (currentRow == 1 && 1 < currentCol && currentCol < nCamera)//上边
 	{
 		mask = Mat::zeros(image.size(), image.type());//原始掩模
 		Rect rect;
