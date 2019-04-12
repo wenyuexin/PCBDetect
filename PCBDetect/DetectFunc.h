@@ -20,6 +20,11 @@ private:
 	pcb::DetectParams *detectParams; //运行参数
 	pcb::DetectResult *detectResult; //检测结果
 
+	cv::Mat big_templ; //大模板;
+
+
+
+
 public:
 	DetectFunc();
 	~DetectFunc() = default;
@@ -33,13 +38,20 @@ public:
 	bool alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches);//测试载入特征
 	cv::Mat sub_process_new(cv::Mat &imgTempl, cv::Mat &sampBw, Mat& mask_roi);
 	void markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol);
+	void markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol);
 	void save(const std::string& path, cv::Mat& image_template_gray);
 	void load(const std::string& path);
-
 	Scalar getMSSIM(const Mat& i1, const Mat& i2);
+
+
+	void generateBigTempl();
+	inline cv::Mat getBigTempl() { return big_templ; }
+	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect); }
 
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
+
+	std::string batch_path, num_path, out_path;
 
 private:
 

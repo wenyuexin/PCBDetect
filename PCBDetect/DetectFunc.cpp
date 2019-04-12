@@ -27,6 +27,14 @@ DetectFunc::DetectFunc()
 	detectResult = Q_NULLPTR; //检测结果
 }
 
+//生成完整尺寸的缺陷检测图像
+void DetectFunc::generateBigTempl()
+{
+	Size templSize = Size(adminConfig->ImageSize_W * detectParams->nCamera,
+		adminConfig->ImageSize_H * detectParams->nPhotographing);
+	big_templ = Mat(templSize, CV_8UC3);
+}
+
 
 bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
 {
@@ -403,6 +411,251 @@ void DetectFunc::markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat
 
 		}
 	}
+}
+
+/**
+*	功能：标记并存储缺陷图片和位置信息
+*	输入：
+*		diffBw: 差值图像二值图
+*		sampGrayReg:配准后的样本灰度图
+*		templBw: 模板二值图像
+*		templGray:模板灰度图
+*       defectNum:缺陷序号
+*       currentCol:检测的列
+*/
+void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol) {
+	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
+
+	Mat sampGrayRegCopy = sampGrayReg.clone();
+	cvtColor(sampGrayRegCopy, sampGrayRegCopy, COLOR_GRAY2BGR);
+
+	std::vector<std::vector<cv::Point>> contours;
+	std::vector<cv::Vec4i>   hierarchy;
+	cv::findContours(diffBw, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
+	if (contours.size() == 0) {
+		Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, detectParams->currentRow_detect*adminConfig->ImageSize_H,
+			adminConfig->ImageSize_W, adminConfig->ImageSize_H);
+		Mat roi = getBigTempl(roiRect);
+		sampGrayRegCopy.copyTo(roi);
+		return;
+	}
+	batch_path = (detectConfig->OutputDirPath).toStdString() + "\\" + detectParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
+	if (0 != _access(batch_path.c_str(), 0))
+		_mkdir(batch_path.c_str());
+	num_path = batch_path + "\\" + detectParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
+	if (0 != _access(num_path.c_str(), 0) && contours.size() > 0)
+		_mkdir(num_path.c_str());
+	out_path = num_path + "\\" + detectParams->sampleNum.toStdString();//检查编号文件夹是否存在
+	if (0 != _access(out_path.c_str(), 0) && contours.size() > 0)
+		_mkdir(out_path.c_str());
+
+
+	for (int i = 0; i < contours.size(); i++) {
+		if (contourArea(contours[i], false) <= 60){//缺陷最小面积
+			continue;
+		}	
+		Rect rectCon = boundingRect(Mat(contours[i]));
+		int larger = 20;//稍微扩大缺陷所在的矩形区域
+		Rect rect_out = Rect(rectCon.x - larger, rectCon.y - larger, rectCon.width + 2 * larger, rectCon.height + 2 * larger);
+		Mat temp_area;
+		Mat samp_area;
+		try {
+			temp_area = templGray(rect_out);
+			samp_area = sampGrayReg(rect_out);
+		}
+		catch (std::exception e) {
+			qDebug()<<QString::fromLocal8Bit("矩形越界");
+		};
+
+
+		//对缺陷所在的小分图进行处理
+		int meanTemp = mean(temp_area)[0];
+		Mat tempAreaBw;
+		threshold(temp_area, tempAreaBw, meanTemp, 255, THRESH_BINARY_INV);
+		int meanSamp = mean(samp_area)[0];
+		Mat sampAreaBw;
+		threshold(samp_area, sampAreaBw, meanSamp, 255, THRESH_BINARY_INV);
+		Mat diffPart;
+		//absdiff(tempAreaBw, sampAreaBw, diffPart);
+		Mat smallRoi = cv::Mat::ones(sampAreaBw.size(), sampAreaBw.type()) * 255;
+		diffPart = sub_process_new(tempAreaBw, sampAreaBw, smallRoi);
+		auto msssim = getMSSIM(temp_area, samp_area);
+		if (msssim[0] >= 0.85)
+			continue;
+
+		drawContours(sampGrayRegCopy, contours, i, cv::Scalar(0, 0, 255), 2, 8);
+		rectangle(sampGrayRegCopy, rect_out, Scalar(0, 255, 0));
+
+		Size szDiff = diffPart.size();
+		putText(temp_area, to_string(int(100 * msssim[0])), Point(0, szDiff.height), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 23, 0), 4, 8);//在图片上写文字	
+		rectangle(temp_area, Rect(rectCon.x - rect_out.x, rectCon.y - rect_out.y, rectCon.width, rectCon.height), Scalar(0, 255, 0));
+		drawContours(temp_area, contours, i, cv::Scalar(0, 0, 255), 2, 8, Mat(), 0, Point2f(-rect_out.x, -rect_out.y));
+		//putText(samp_area, to_string(maxVal), Point(0, sz.height), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 23, 0), 4, 8);
+		if (defectNum == 206)
+			qDebug() << endl;
+		cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\"  + to_string(++defectNum) + "_5_diffArea.jpg", diffPart);
+		cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\"  + to_string(defectNum) + "_3_templAreaBw.jpg", tempAreaBw);
+		cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\"  + to_string(defectNum) + "_4_sampAreaBw.jpg", sampAreaBw);
+		cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\"  + to_string(defectNum) + "_1_templArea.jpg", temp_area);
+		cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\"  + to_string(defectNum) + "_2_sampArea.jpg", samp_area);
+		continue;
+		
+
+		int w_b = 300, h_b = 300;//缺陷分图的大小
+		//pt3是300×300分图在diffBw中的左上角坐标
+		Rect rect = boundingRect(Mat(contours[i]));
+		Point pt1, pt2, pt3, pt4;
+		pt1.x = rect.x;
+		pt1.y = rect.y;
+		pt2.x = rect.x + rect.width;
+		pt2.y = rect.y + rect.height;
+		pt3.x = (pt2.x + pt1.x) / 2 - w_b / 2;
+		pt3.y = (pt2.y + pt1.y) / 2 - h_b / 2;
+
+		//防止分图越界,如果分图imgSeg超出src边界则往回收缩
+		if (pt3.x < 0)
+			pt3.x = 0;
+		if (pt3.y < 0)
+			pt3.y = 0;
+		if (pt3.x + w_b > sampGrayReg.cols - 1)
+			w_b = sampGrayReg.cols - 1 - pt3.x;
+		if (pt3.y + h_b > sampGrayReg.rows - 1)
+			h_b = sampGrayReg.rows - 1 - pt3.y;
+
+		Mat imgSeg;//配准后样本分图
+		sampGrayReg(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(imgSeg);//分图的左上角点为pt3,宽和高为w_b,h_b
+		Mat templSeg;//模板分图
+		templGray(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(templSeg);
+		Mat diffSeg;//差异分图
+		diffBw(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(diffSeg);
+
+		int pos_x = pt3.x + w_b / 2;
+		int pos_y = pt3.y + h_b / 2;
+
+		//对缺陷进行分类
+		Mat temp_part;//二值化模板分图
+		templBw(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(temp_part);
+		Mat diff_part = Mat::zeros(Size(temp_part.cols, temp_part.rows), CV_8UC1);
+		cv::RotatedRect minRect = minAreaRect(contours[i]);//轮廓的外接旋转矩形
+		Point2f rect_points[4];
+		minRect.points(rect_points);//获取旋转矩形的4个顶点
+		Point2f rect_points_move[4];
+		//for (int j = 0; j < 4; j++) {
+		//	rect_points_move[j] = rect_points[j];
+		//	rect_points_move[j].x -= pt3.x;
+		//	rect_points_move[j].y -= pt3.y;
+
+		//}
+		for (int j = 0; j < 4; j++)
+		{
+			Point2f start = (rect_points[j].x - pt3.x, rect_points[j].y - pt3.y);
+			Point2f end = (rect_points[(j + 1) % 4].x - pt3.x, rect_points[(j + 1) % 4].y - pt3.y);
+			line(diff_part, Point2f(rect_points[j].x - pt3.x, rect_points[j].y - pt3.y), Point2f(rect_points[(j + 1) % 4].x - pt3.x, rect_points[(j + 1) % 4].y - pt3.y), (255, 255, 255));
+		}
+
+		//变换次数
+		int trans_num = 0;
+		vector<vector<Point>> contours_rect;
+		vector<Vec4i>   hierarchy_rect;
+		findContours(diff_part, contours_rect, hierarchy_rect, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE, Point(0, 0));
+
+		for (int k = 1; k < contours_rect[0].size(); k++) {
+			Point pre = contours_rect[0][k - 1];
+			Point temp = contours_rect[0][k];
+			//cout << "(" << temp << "):" << (int)temp_part.at<uchar>(temp) << endl;
+			if ((int)temp_part.at<uchar>(pre) != (int)temp_part.at<uchar>(temp))
+				trans_num++;
+		}
+
+		Mat diff_part_big = Mat::zeros(Size(temp_part.cols * 2, temp_part.rows * 2), CV_8UC1);
+		//if (currentCol == 4 && params->currentRow_detect == 0&&i==87) {
+		//	int idx = 0;
+		//	for (; idx >= 0; idx = hierarchy_rect[idx][0])
+		//	{
+		//		Scalar color(rand() & 255, rand() & 255, rand() & 255);
+		//		drawContours(diff_part, contours_rect, idx, color, 1, 8, hierarchy_rect);
+		//		drawContours(diff_part_big, contours_rect, idx, color, 1, 8, hierarchy_rect);
+		//		
+		//	}
+		//	imwrite("diffSeg.jpg", diffSeg);
+		//	imwrite("diff_part.jpg", diff_part);
+		//	imwrite("diff_part_big.jpg", diff_part_big);
+		//}
+
+		if (trans_num == 0)//缺陷不跨越线路直接忽略
+			continue;
+
+		//是否有缺失
+		cv::Moments m = cv::moments(contours_rect[0]);
+		cv::Point2f contour_center = Point2f(static_cast<float>(m.m10 / (m.m00 + 1e-5)),
+			static_cast<float>(m.m01 / (m.m00 + 1e-5)));//通过缺陷轮廓矩计算缺陷轮廓中心
+
+
+		vector<Point2i> neighbors{ Point2i(contour_center.x - 1,contour_center.y - 1),Point2i(contour_center.x,contour_center.y - 1),Point2i(contour_center.x + 1,contour_center.y - 1),
+						Point2i(contour_center.x - 1,contour_center.y),Point2i(contour_center.x,contour_center.y),Point2i(contour_center.x + 1,contour_center.y),
+						Point2i(contour_center.x - 1,contour_center.y + 1),Point2i(contour_center.x,contour_center.y + 1),Point2i(contour_center.x + 1,contour_center.y + 1)
+		};
+		int neighbors_sum = 0;
+
+
+		for (int i = 0; i < 9; i++) {
+
+			neighbors_sum += (int)temp_part.at<uchar>(neighbors[i]);
+		}
+		int lack_flag = 0;//0表示无缺失，1表示有缺失
+		if (neighbors_sum >= 255 * 2)
+			lack_flag = 1;
+
+		int defect_flag = 0;
+		if (lack_flag) {
+			defect_flag = trans_num > 2 ? 1 : 2;
+		}
+		else {
+			defect_flag = trans_num > 2 ? 3 : 4;
+		}
+
+		vector<string> defect_str{ "","断路","缺失","短路","凸起" };
+
+
+		//imwrite(out_path + "\\" + to_string(cal) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_diff_part.bmp", diff_part);
+		//imwrite(out_path + "\\" + to_string(cal) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_temp_part.bmp", temp_part);
+
+		//在分图上标记
+		Rect rect1;
+		int w_s = 10, h_s = 10;//缺陷矩形框扩展的宽和高
+		rect1.x = rect.x - pt3.x - w_s / 2;
+		rect1.y = rect.y - pt3.y - h_s / 2;
+		rect1.height = rect.height + h_s;
+		rect1.width = rect.width + w_s;
+
+		//防止方框越界
+		if (rect1.x < 0)
+			rect1.x = 0;
+		if (rect1.y < 0)
+			rect1.y = 0;
+		if (rect1.x + rect1.width > imgSeg.cols - 1)
+			rect1.width = imgSeg.cols - 1 - rect1.x;
+		if (rect1.y + rect1.height > imgSeg.rows - 1)
+			rect1.height = imgSeg.rows - 1 - rect1.y;
+
+		rectangle(imgSeg, rect1, CV_RGB(255, 0, 0), 2);
+		Size sz = diffBw.size();
+		defectNum++;//增加缺陷计数
+		pos_x = sz.width*currentCol + pos_x;//缺陷在整体图像中的横坐标
+		pos_y = sz.height*detectParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
+
+		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + detectConfig->ImageFormat.toStdString(), diffSeg);
+		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + detectConfig->ImageFormat.toStdString(), templSeg);
+		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + detectConfig->ImageFormat.toStdString(), imgSeg);
+	}
+
+	Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, detectParams->currentRow_detect*adminConfig->ImageSize_H,
+		adminConfig->ImageSize_W, adminConfig->ImageSize_H);
+	Mat roi = getBigTempl(roiRect);
+	sampGrayRegCopy.copyTo(roi);
 }
 
 void DetectFunc::save(const std::string& path, Mat& image_template_gray) {
