@@ -310,7 +310,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 {
 	detectParams->sampleModelNum = "1"; //型号
 	detectParams->sampleBatchNum = "1"; //批次号
-	detectParams->sampleNum = "3"; //样本编号
+	detectParams->sampleNum = "5"; //样本编号
 
 	switch (event->key())
 	{

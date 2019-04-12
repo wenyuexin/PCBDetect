@@ -90,13 +90,15 @@ void TemplateExtractor::extract()
 		//提取模板特征并保存
 		templFunc->save(templbin_path + "/" + std::to_string(detectParams->currentRow_extract + 1) + "_" + std::to_string(col + 1) + ".bin", src);
 
+
+		//合成大模板
 		Rect roiRect = Rect(col*adminConfig->ImageSize_W, detectParams->currentRow_extract*adminConfig->ImageSize_H,
 			adminConfig->ImageSize_W, adminConfig->ImageSize_H);
 		Mat roi = templFunc->getBigTempl(roiRect);
 		src.copyTo(roi);
 	}
 
-	if (detectParams->currentRow_extract + 1 == detectParams->nPhotographing) {
+	if (detectParams->currentRow_extract+ 1 == detectParams->nPhotographing) {
 		cv::Size sz = templFunc->getBigTempl().size();
 		cv::Mat dst;
 		cv::resize(templFunc->getBigTempl(), dst, cv::Size(sz.width*0.25,sz.height*0.25), (0, 0), (0, 0), cv::INTER_LINEAR);
