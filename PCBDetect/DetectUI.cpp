@@ -620,15 +620,6 @@ void DetectUI::on_convertFinished_convertThread()
 
 /******************** 模板提取线程 ********************/
 
-
-//检测线程结束后
-void DetectUI::on_detectFinished_detectThread(bool qualified)
-{
-	//显示结果
-	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
-	ui.label_result->setText((qualified) ? QString::fromLocal8Bit("合格") : QString::fromLocal8Bit("不合格"));
-}
-
 //检测当前的一行样本图像
 void DetectUI::detectSampleImages()
 {
@@ -665,5 +656,16 @@ void DetectUI::do_updateDetectState_detecter(int state)
 		else { //当前PCB未提取完
 			if (eventCounter > 0) detectSampleImages(); //检测下一行分图
 		}
+
+		on_detectFinished_detectThread(true);
 	}
+}
+
+
+//检测线程结束后
+void DetectUI::on_detectFinished_detectThread(bool qualified)
+{
+	//显示结果
+	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
+	ui.label_result->setText((qualified) ? QString::fromLocal8Bit("合格") : QString::fromLocal8Bit("不合格"));
 }

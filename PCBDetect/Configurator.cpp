@@ -181,7 +181,7 @@ int AdminConfig::getSystemResetCode(AdminConfig &newConfig)
 	//重置模板提取、检测界面
 	if (ImageSize_W != newConfig.ImageSize_W || ImageSize_H != newConfig.ImageSize_H) {
 		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) > 1E-6) 
-			resetCode |= 0x000000110;
+			resetCode |= 0x000000011;
 	}
 	//重置运动结构模块
 	if (this->MaxMotionStroke != newConfig.MaxMotionStroke) resetCode |= 0x000100000;

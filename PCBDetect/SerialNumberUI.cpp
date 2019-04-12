@@ -1,5 +1,8 @@
 #include "SerialNumberUI.h"
 
+using pcb::DetectParams;
+
+
 SerialNumberUI::SerialNumberUI(QWidget *parent)
 	: QWidget(parent)
 {
@@ -82,11 +85,9 @@ void SerialNumberUI::initCheckBoxGroup()
 	checkBoxGroup.addButton(ui.checkBox_roi_br, 2);
 }
 
-
+//切换界面控件的状态
 void SerialNumberUI::setSerialNumberUIEnabled(bool enable)
 {
-	//ui.checkBox_roi_tl->setCheckable(enable);
-	//ui.checkBox_roi_br->setCheckable(enable);
 	ui.lineEdit_roi_tl_x->setEnabled(enable);
 	ui.lineEdit_roi_tl_y->setEnabled(enable);
 	ui.lineEdit_roi_br_x->setEnabled(enable);
@@ -98,6 +99,21 @@ void SerialNumberUI::setSerialNumberUIEnabled(bool enable)
 	ui.lineEdit_serialNum->setEnabled(enable);
 	ui.pushButton_confirm->setEnabled(enable);
 	ui.pushButton_return->setEnabled(enable);
+}
+
+//重置序号识别界面
+void SerialNumberUI::resetSerialNumberUI()
+{
+	ui.checkBox_roi_tl->setChecked(true);
+	ui.checkBox_roi_tl->setChecked(false);
+	ui.checkBox_roi_br->setChecked(false);
+	ui.lineEdit_serialNum->setText("");
+
+	deleteImageItem();
+
+	//删除buffer文件夹中的roi图片
+	QFile file(roiFilePath);
+	if (file.exists()) QFile::remove(roiFilePath);
 }
 
 /******************* 按键响应 *******************/
@@ -130,7 +146,7 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 //识别产品序号 - 此处调用OCR模块
 void SerialNumberUI::on_pushButton_recognize_clicked()
 {
-	
+	this->setSerialNumberUIEnabled(false);
 	PIX *img = pixRead(roiFilePath.toStdString().c_str());
 	char *text = NULL;
 
@@ -147,8 +163,15 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 		//die("Error getting text\n");
 	}
 
-	serialNum = QString(text);
-	QString s4 = serialNum.remove(QRegExp("\\s"));
+	QString serialNum = QString(text);
+	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
+	this->setSerialNumberUIEnabled(true);
+
+	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	DetectParams::ErrorCode code = detectParams->parseSerialNum(); //解析产品序号
+	if (code != DetectParams::ValidValue) {
+		detectParams->showMessageBox(this, code); return;
+	}
 }
 
 //确定
@@ -160,7 +183,7 @@ void SerialNumberUI::on_pushButton_confirm_clicked()
 	}
 
 	//返回上一级界面，并执行下一步处理
-	//enum recognizeFinished_serialNumUI();
+	emit recognizeFinished_serialNumUI();
 }
 
 //返回
@@ -170,7 +193,7 @@ void SerialNumberUI::on_pushButton_return_clicked()
 }
 
 
-/******************* 显示分图与鼠标框选 *******************/
+/**************** 显示分图与鼠标框选 ****************/
 
 //删除graphicsView中显示的的图像
 void SerialNumberUI::deleteImageItem()
@@ -178,6 +201,7 @@ void SerialNumberUI::deleteImageItem()
 	delete imageItem;
 	imageItem = Q_NULLPTR;
 
+	//从场景中移除
 	QList<QGraphicsItem *> itemList = graphicsScene.items();
 	for (int i = 0; i < itemList.size(); i++) {
 		graphicsScene.removeItem(itemList[i]);
@@ -246,7 +270,7 @@ void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 	}
 }
 
-//鼠标移动事件
+//鼠标移动事件 - 暂时没用
 void SerialNumberUI::mouseMoveEvent(QMouseEvent *event)
 {
 	if (event->buttons() == Qt::LeftButton && mousePress) {
@@ -259,7 +283,7 @@ void SerialNumberUI::mouseMoveEvent(QMouseEvent *event)
 	}
 }
 
-//鼠标释放事件
+//鼠标释放事件 - 暂时没用
 void SerialNumberUI::mouseReleaseEvent(QMouseEvent *event)
 {
 	Qt::MouseButtons b = event->buttons();
@@ -275,13 +299,14 @@ void SerialNumberUI::mouseReleaseEvent(QMouseEvent *event)
 	}
 }
 
+// 暂时没用
 bool SerialNumberUI::isPressPosInGraphicViewRect(QPoint mousePressPos)
 {
 	QRect selectRect = getRect(mousePressPos, mouseReleasePos);
 	return selectRect.contains(mousePressPos);
 }
 
-// 根据beginPoint , endPoint 获取当前选中的矩形
+// 根据beginPoint , endPoint 获取当前选中的矩形 - 暂时没用
 QRect SerialNumberUI::getRect(const QPoint &beginPoint, const QPoint &endPoint)
 {
 	int x, y, width, height;
@@ -291,7 +316,7 @@ QRect SerialNumberUI::getRect(const QPoint &beginPoint, const QPoint &endPoint)
 	y = beginPoint.y() < endPoint.y() ? beginPoint.y() : endPoint.y();
 
 	// 避免宽或高为零时拷贝截图有误;
-	// 可以看QQ截图，当选取截图宽或高为零时默认为2;
+	// 当选取截图宽或高为零时默认为2;
 	QRect selectedRect = QRect(x, y, width, height);
 	if (selectedRect.width() == 0) selectedRect.setWidth(1);
 	if (selectedRect.height() == 0) selectedRect.setHeight(1);

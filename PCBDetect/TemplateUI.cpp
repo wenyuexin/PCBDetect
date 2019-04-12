@@ -290,6 +290,7 @@ void TemplateUI::on_pushButton_start_clicked()
 //返回
 void TemplateUI::on_pushButton_return_clicked()
 {
+	serialNumberUI.resetSerialNumberUI();
 	resetTemplateUI(); //重置模板提取界面，清空缓存数据
 	emit showDetectMainUI(); //发送返回信号
 }

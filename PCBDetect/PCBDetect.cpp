@@ -203,13 +203,13 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 	}
 
 	//重置模板提取界面，并初始化其中的图像显示的空间
-	if (code & 0b000000100 == 0b000000100) {
+	if (code & 0b000000010 == 0b000000010) {
 		templateUI->resetTemplateUI();
 		templateUI->initGraphicsView();
 	}
 
 	//重置检测界面，并初始化其中的图像显示的空间
-	if (code & 0b000000010 == 0b000000010) {
+	if (code & 0b000000001 == 0b000000001) {
 		detectUI->resetDetectUI();
 		detectUI->initGraphicsView();
 	}
