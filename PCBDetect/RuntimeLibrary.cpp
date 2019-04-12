@@ -79,11 +79,36 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	//判断参数有效性
 	ErrorCode code;
 	code = checkValidity(ParamsIndex::Index_nCamera, adminConfig);
-	if (code != ValidParams) return code;
+	if (code != ValidValue) return code;
 	code = checkValidity(ParamsIndex::Index_nPhotographing, adminConfig);
-	if (code != ValidParams) return code;
+	if (code != ValidValue) return code;
 
-	return ValidParams;
+	return ValidValue;
+}
+
+//产品序号解析
+DetectParams::ErrorCode DetectParams::parseSerialNum()
+{
+	if (serialNumSlice[0] != serialNum.size()) {
+		return Invalid_SerialNum;
+	}
+
+	int to = 0;
+	int from = serialNumSlice[0];
+	sampleModelNum = serialNum.mid(to, from); //型号
+	sampleModelNum = QString::number(sampleModelNum.toInt());//去除数字0
+
+	to = from;
+	from = to + serialNumSlice[1];
+	sampleBatchNum = serialNum.mid(to, from); //批次号
+	sampleBatchNum = QString::number(sampleBatchNum.toInt());
+
+	to = from;
+	from = to + serialNumSlice[2];
+	sampleNum = serialNum.mid(to, from); //样本编号
+	sampleNum = QString::number(sampleNum.toInt());
+
+	return ValidValue;
 }
 
 //参数有效性检查
@@ -96,6 +121,8 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 	switch (index)
 	{
 	case pcb::DetectParams::Index_All:
+	case pcb::DetectParams::Index_SerialNum:
+		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_sampleModelNum:
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_sampleBatchNum:
@@ -154,6 +181,8 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 	{
 	case pcb::DetectParams::Uncheck:
 		valueName = pcb::chinese("\"参数未验证\""); break;
+	case pcb::DetectParams::Invalid_SerialNum:
+		valueName = pcb::chinese("\"产品序号\""); break;
 	case pcb::DetectParams::Invalid_nCamera:
 		valueName = pcb::chinese("\"相机个数\""); break;
 	case pcb::DetectParams::Default:
@@ -193,11 +222,11 @@ int DetectParams::getSystemResetCode(DetectParams &newConfig)
 	
 	//相机个数
 	if (this->nCamera != newConfig.nCamera)
-		sysResetCode |= 0b000010110;
+		sysResetCode |= 0b000010011;
 
 	//拍照次数
 	if (this->nPhotographing != newConfig.nPhotographing)
-		sysResetCode |= 0b000000110;
+		sysResetCode |= 0b000000011;
 	
 	return sysResetCode;
 }

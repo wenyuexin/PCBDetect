@@ -182,4 +182,7 @@ void DefectDetecter::detect()
 	
 	detectState = DetectState::Finished;
 	emit updateDetectState_detecter(detectState);
+	pcb::delay(10);
+	bool qualified = (defectNum < 1);
+	emit detectFinished_detectThread(qualified);
 }

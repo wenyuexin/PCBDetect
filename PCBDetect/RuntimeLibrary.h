@@ -68,6 +68,7 @@ namespace pcb
 	class DetectParams
 	{
 	public:
+		QString serialNum;
 		QString sampleModelNum; //型号
 		QString sampleBatchNum; //批次号
 		QString sampleNum; //样本编号
@@ -81,6 +82,7 @@ namespace pcb
 		enum ParamsIndex {
 			Index_All,
 			Index_None,
+			Index_SerialNum,
 			Index_sampleModelNum,
 			Index_sampleBatchNum,
 			Index_sampleNum,
@@ -96,9 +98,10 @@ namespace pcb
 			ValidParams = 0x000,
 			ValidValue = 0x000,
 			Uncheck = 0x300,
-			Invalid_singleMotionStroke = 0x301,
-			Invalid_nCamera = 0x302,
-			Invalid_nPhotographing = 0x303,
+			Invalid_SerialNum = 0x301,
+			Invalid_singleMotionStroke = 0x302,
+			Invalid_nCamera = 0x303,
+			Invalid_nPhotographing = 0x304,
 			Default = 0x3FF
 		};
 
@@ -108,8 +111,11 @@ namespace pcb
 		//系统状态值 0x123456789
 		//adminConfig 1， detectConfig 2, DetectParams 3
 		//MotionControler 4, CameraControler 5, ImageConvert 6
-		//TemplateExtract 7, Detect 8, SerialNumber 9
+		//SerialNumber 7, TemplateExtract 8, Detect 9
 		long systemState = 0x000000000;
+
+		//总长度=型号长度+批次号长度+编号长度
+		const int serialNumSlice[4] = { 8, 2, 2, 4 }; //产品序号组成
 
 	public:
 		DetectParams();
@@ -119,6 +125,7 @@ namespace pcb
 		void loadDefaultValue();
 		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
 		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
+		ErrorCode parseSerialNum();
 
 		bool isValid(AdminConfig *adminConfig = Q_NULLPTR);
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);

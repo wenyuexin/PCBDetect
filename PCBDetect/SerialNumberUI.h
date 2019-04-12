@@ -61,7 +61,6 @@ private:
 
 	TessBaseAPI *handle;
 	QString roiFilePath;
-	QString serialNum; //²úÆ·ÐòºÅ
 
 public:
 	SerialNumberUI(QWidget *parent = Q_NULLPTR);
@@ -73,7 +72,8 @@ public:
 	inline void setQPixmapArray(pcb::QPixmapArray *ptr) { qpixmapSamples = ptr; }
 	inline void setGridIndex(int row, int col) { gridRowIdx = row; gridColIdx = col; }
 
-	void showSampleImage(int gridRowIdx, int gridColIdx);
+	void showSampleImage(int row, int col);
+	void resetSerialNumberUI();
 
 private:
 	bool isPressPosInGraphicViewRect(QPoint mousePressPos);
@@ -97,7 +97,6 @@ private Q_SLOTS:
 	void on_pushButton_recognize_clicked();
 	void on_pushButton_return_clicked();
 
-	
 	void mousePressEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
