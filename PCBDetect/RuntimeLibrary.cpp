@@ -15,6 +15,11 @@ DetectParams::DetectParams()
 	currentRow_extract = -1; //提取行号
 	nCamera = 0; //相机个数
 	nPhotographing = 0; //拍照次数
+
+	//缓存文件夹
+	bufferDirPath = QDir::currentPath() + "/buffer"; 
+	QDir bufferDir(bufferDirPath);
+	if (!bufferDir.exists()) bufferDir.mkdir(bufferDirPath);
 }
 
 DetectParams::~DetectParams()
@@ -141,13 +146,12 @@ bool DetectParams::isValid(AdminConfig *adminConfig)
 //弹窗报错
 bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 {
-	DetectParams::ErrorCode tempCode = (code == Default) ? errorCode : code;
+	ErrorCode tempCode = (code == Default) ? errorCode : code;
 	if (tempCode == DetectConfig::ValidConfig) return false;
 
 	QString valueName;
 	switch (tempCode)
 	{
-	case pcb::DetectParams::ValidParams:
 	case pcb::DetectParams::Uncheck:
 		valueName = pcb::chinese("\"参数未验证\""); break;
 	case pcb::DetectParams::Invalid_nCamera:
@@ -158,7 +162,7 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
 		pcb::chinese("运行参数无效，请检查参数设置或图像数据！ \n") +
-		pcb::chinese("错误提示：") + valueName + "!        \n" +
+		pcb::chinese("错误来源：") + valueName + "!        \n" +
 		"Config: Runtime: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;

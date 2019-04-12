@@ -28,6 +28,7 @@ TemplateUI::TemplateUI(QWidget *parent)
 	//产品序号识别界面
 	connect(&serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
 	connect(&serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
+	connect(&serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
 
 	//模板提取线程
 	templExtractor = new TemplateExtractor;
@@ -83,6 +84,7 @@ void TemplateUI::initGraphicsView()
 	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
 
 	//产品序号识别界面
+	serialNumberUI.setAdminConfig(adminConfig);
 	serialNumberUI.setDetectParams(detectParams);
 	serialNumberUI.setCvMatArray(&cvmatSamples);
 	serialNumberUI.setQPixmapArray(&qpixmapSamples);
@@ -515,6 +517,13 @@ void TemplateUI::on_recognizeFinished_serialNumUI()
 
 }
 
+//显示序号识别界面的上一级界面
+void TemplateUI::do_showPreviousUI_serialNumUI()
+{
+	this->showFullScreen();
+	pcb::delay(10);//延迟
+	serialNumberUI.hide();
+}
 
 /******************** 运动控制 ********************/
 
@@ -558,13 +567,6 @@ void TemplateUI::on_initCamerasFinished_camera(int)
 //相机拍摄结束
 void TemplateUI::on_takePhotosFinished_camera(int)
 {
-	//初始化若干变量
-	//if (detectParams->imageSize.width() <= 0) {
-	//	cv::Size size = cvmatSamples[0][0]->size();
-	//	detectParams->imageSize = QSize(size.width, size.height);
-	//	templThread->initTemplFunc();
-	//}
-
 	//调用图像类型转换线程
 	imgConvertThread.start();
 }
@@ -605,14 +607,6 @@ void TemplateUI::on_convertFinished_convertThread()
 
 
 /******************** 模板提取线程 ********************/
-
-//提取线程结束后
-//void DetectUI::on_detectFinished_detectThread(bool qualified)
-//{
-//	//显示结果
-//	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
-//	ui.label_result->setText((qualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
-//}
 
 //提取当前的一行样本图像
 void TemplateUI::extractTemplateImages()
@@ -655,3 +649,10 @@ void TemplateUI::update_extractState_extractor(int state)
 	}
 }
 
+//提取线程结束后
+//void DetectUI::on_detectFinished_detectThread(bool qualified)
+//{
+//	//显示结果
+//	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
+//	ui.label_result->setText((qualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
+//}
