@@ -118,7 +118,7 @@ bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 		cout << "匹配并获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
 
 
-		H = findHomography(samp_points, temp_points, CV_RANSAC, 5.0);
+		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
 		H.at<double>(0, 2) *= 8;
 		H.at<double>(1, 2) *= 8;
 		H.at<double>(2, 0) /= 8;
