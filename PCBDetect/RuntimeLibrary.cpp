@@ -48,7 +48,7 @@ void DetectParams::loadDefaultValue()
 //计算机械结构的单步运动距离 singleMotionStroke
 DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminConfig)
 {
-	if (!adminConfig->isValid()) return Default;
+	if (!adminConfig->isValid()) return DetectParams::Default;
 
 	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 	double stroke = 1.0 * adminConfig->ImageSize_H / (1 - overlap);
@@ -77,7 +77,7 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	this->nPhotographing = (int) ceil((nH - overlap) / (1 - overlap));
 
 	//判断参数有效性
-	ErrorCode code;
+	ErrorCode code = ErrorCode::Uncheck;
 	code = checkValidity(ParamsIndex::Index_nCamera, adminConfig);
 	if (code != ValidValue) return code;
 	code = checkValidity(ParamsIndex::Index_nPhotographing, adminConfig);
@@ -117,7 +117,7 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 	if (this->errorCode == ValidParams)
 		return this->errorCode;
 
-	ErrorCode code = Uncheck;
+	ErrorCode code = ErrorCode::Uncheck;
 	switch (index)
 	{
 	case pcb::DetectParams::Index_All:
@@ -137,21 +137,21 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (singleMotionStroke <= 0 || singleMotionStroke > adminConfig->MaxMotionStroke) {
-			errorCode = Invalid_singleMotionStroke;
+			code = Invalid_singleMotionStroke;
 		}
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_nCamera:
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (nCamera <= 0 || nCamera > adminConfig->MaxCameraNum) {
-			errorCode = Invalid_nCamera;
+			code = Invalid_nCamera;
 		}
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_nPhotographing:
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (nPhotographing * singleMotionStroke > adminConfig->MaxMotionStroke) {
-			errorCode = Invalid_nPhotographing; 
+			code = Invalid_nPhotographing; 
 		}
 		if (code != Uncheck || index != Index_All) break;
 	}

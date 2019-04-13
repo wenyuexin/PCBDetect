@@ -82,14 +82,17 @@ PCBDetect::~PCBDetect()
 /**************** 启动界面 *****************/
 
 //启动结束
-void PCBDetect::on_initGraphicsView_launchUI(int LaunchCode)
+void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 {
-	if (!LaunchCode) { //正常启动
+	if (launchCode == -1) { //系统参数和用户参数已经正常初始化
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
+	}
+	else if (launchCode == 0) { //正常启动 (运行参数也正常初始化)
 		templateUI->initGraphicsView();//模板界面中图像显示的初始化
 		detectUI->initGraphicsView();//检测界面中图像显示的初始化
 	}
 	else { //存在错误
+		//用户参数配置文件丢失，生成了默认文件
 		if (detectConfig.getErrorCode() != DetectConfig::Uncheck) {
 			settingUI->refreshSettingUI();//更新参数设置界面的信息
 		}
@@ -97,9 +100,9 @@ void PCBDetect::on_initGraphicsView_launchUI(int LaunchCode)
 }
 
 //启动结束
-void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
+void PCBDetect::on_launchFinished_launchUI(int launchCode)
 {
-	if (!LaunchCode) { //正常启动
+	if (!launchCode) { //正常启动
 		this->setPushButtonsToEnabled(true);//模板提取、检测按键设为可点击
 	}
 	else { //存在错误
