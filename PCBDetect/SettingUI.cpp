@@ -182,11 +182,20 @@ void SettingUI::on_pushButton_confirm_clicked()
 
 		DetectParams::ErrorCode code;
 		code = tempParams.calcSingleMotionStroke(adminConfig);
-		if (code != DetectParams::ValidValue) detectParams->showMessageBox(this);
+		if (code != DetectParams::ValidValue) {
+			detectParams->showMessageBox(this); return;
+		}
 		code = tempParams.calcItemGridSize(adminConfig, detectConfig);
-		if (code != DetectParams::ValidValue) detectParams->showMessageBox(this);
+		if (code != DetectParams::ValidValue) {
+			detectParams->showMessageBox(this); return;
+		}
 
+		tempParams.copyTo(detectParams);
+		if (!tempParams.isValid(adminConfig)) {
+			tempParams.showMessageBox(this);
+		}
 		sysResetCode |= detectParams->getSystemResetCode(tempParams);
+		tempParams.copyTo(detectParams);
 
 		//判断是否重置检测系统
 		if (adminConfig->isValid() && detectConfig->isValid(adminConfig)

@@ -257,13 +257,13 @@ void PCBDetect::do_checkSystemState_settingUI()
 	}
 
 	//检测运动结构
-	if (enableButtonsOnMainUI && motionControler->isReady()) {
+	if (enableButtonsOnMainUI && !motionControler->isReady()) {
 		motionControler->showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}
 
 	//检查相机
-	if (enableButtonsOnMainUI && cameraControler->isReady()) {
+	if (enableButtonsOnMainUI && !cameraControler->isReady()) {
 		cameraControler->showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}
