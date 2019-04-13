@@ -304,7 +304,7 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 			resetTemplateUI();//重置模板提取子模块
 			motionControler->resetControler(2); //运动结构复位
 		}
-	case Qt::Key_PageDown: //换新的PCB板时按这个
+	case Qt::Key_PageDown:
 		qDebug() << "===== Key_PageDown";
 		break;
 	case Qt::Key_Up:
@@ -443,7 +443,7 @@ void TemplateUI::on_switchImage_serialNumUI()
 void TemplateUI::on_recognizeFinished_serialNumUI()
 {
 	//判断是否执行检测操作
-	if (detectParams->isValid(DetectParams::Index_All_SerialNum)
+	if (detectParams->isValid(DetectParams::Index_All_SerialNum, true)
 		&& eventCounter >= 1 && !templThread->isRunning())
 	{
 		extractTemplateImages(); //提取
@@ -457,6 +457,7 @@ void TemplateUI::do_showPreviousUI_serialNumUI()
 	pcb::delay(10);//延迟
 	serialNumberUI.hide();
 }
+
 
 /******************** 运动控制 ********************/
 
@@ -489,6 +490,7 @@ void TemplateUI::on_resetControlerFinished_motion(int caller)
 		break;
 	}
 }
+
 
 /******************** 相机控制 ********************/
 
@@ -527,9 +529,10 @@ void TemplateUI::on_convertFinished_convertThread()
 	qDebug() << "showSampleImages: " << (t2 - t1) << "ms ( currentRow =" << currentRow_show << ")";
 
 	//更新状态栏
-	if (detectParams->serialNum == "") {
-		ui.label_status->setText(pcb::chinese("请打开产品序号\n")
-			+ pcb::chinese("识别界面获取序号"));
+	//if (currentRow_show == 0) detectParams->resetSerialNum();//测试使用
+	if (!detectParams->isValid(DetectParams::Index_All_SerialNum, false)) {
+		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+			+ pcb::chinese("获取产品序号"));
 		qApp->processEvents();
 		pcb::delay(10); //延迟
 	}
@@ -542,8 +545,8 @@ void TemplateUI::on_convertFinished_convertThread()
 		motionControler->resetControler(3); //当前PCB拍完则复位
 
 	//判断是否执行检测操作
-	if (detectParams->checkValidity(DetectParams::Index_All_SerialNum) != DetectParams::ValidParams
-		&& eventCounter == 1 && !templThread->isRunning()) 
+	if (detectParams->isValid(DetectParams::Index_All_SerialNum, false)
+		&& eventCounter >= 1 && !templThread->isRunning()) 
 	{
 		extractTemplateImages(); //提取
 	}

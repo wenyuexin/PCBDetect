@@ -178,28 +178,29 @@ void SettingUI::on_pushButton_confirm_clicked()
 		Configurator::saveConfigFile(configFileName, detectConfig);
 
 		//更新运行参数
-		detectParams->copyTo(&tempParams);
+		if (adminConfig->isValid(false)) {
+			detectParams->copyTo(&tempParams);
 
-		DetectParams::ErrorCode code;
-		code = tempParams.calcSingleMotionStroke(adminConfig);
-		if (code != DetectParams::ValidValue) {
-			detectParams->showMessageBox(this); return;
-		}
-		code = tempParams.calcItemGridSize(adminConfig, detectConfig);
-		if (code != DetectParams::ValidValue) {
-			detectParams->showMessageBox(this); return;
-		}
+			DetectParams::ErrorCode code;
+			code = tempParams.calcSingleMotionStroke(adminConfig);
+			if (code != DetectParams::ValidValue) {
+				detectParams->showMessageBox(this); return;
+			}
+			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
+			if (code != DetectParams::ValidValue) {
+				detectParams->showMessageBox(this); return;
+			}
 
-		tempParams.copyTo(detectParams);
-		if (!tempParams.isValid(DetectParams::Index_All_SysInit, adminConfig)) {
-			tempParams.showMessageBox(this);
+			tempParams.copyTo(detectParams);
+			if (!tempParams.isValid(DetectParams::Index_All_SysInit, adminConfig)) {
+				tempParams.showMessageBox(this);
+			}
+			sysResetCode |= detectParams->getSystemResetCode(tempParams);
+			tempParams.copyTo(detectParams);
 		}
-		sysResetCode |= detectParams->getSystemResetCode(tempParams);
-		tempParams.copyTo(detectParams);
-
 		//判断是否重置检测系统
-		if (adminConfig->isValid() && detectConfig->isValid(adminConfig)
-			&& detectParams->isValid(DetectParams::Index_All_SysInit, adminConfig))
+		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
+			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
 		{
 			emit resetDetectSystem_settingUI(sysResetCode);
 		}
@@ -324,8 +325,8 @@ void SettingUI::do_resetDetectSystem_adminUI(int code)
 //转发由系统设置界面发出的系统状态检查信号
 void SettingUI::do_checkSystemWorkingState_adminUI()
 {
-	if (adminConfig->isValid() && detectConfig->isValid(adminConfig) 
-		&& detectParams->isValid(DetectParams::Index_All_SysInit, adminConfig))
+	if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
+		&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
 	{
 		emit checkSystemState_settingUI();
 		pcb::delay(10);
