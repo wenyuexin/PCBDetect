@@ -105,7 +105,7 @@ public:
         pushButton_return->setFont(font3);
         label_status = new QLabel(TemplateUI);
         label_status->setObjectName(QStringLiteral("label_status"));
-        label_status->setGeometry(QRect(1190, 680, 173, 51));
+        label_status->setGeometry(QRect(1190, 680, 173, 60));
         QFont font4;
         font4.setPointSize(15);
         label_status->setFont(font4);

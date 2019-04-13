@@ -42,9 +42,9 @@ private:
 	int gridColIdx; //点击的分图在第几行
 	
 	QRect graphicsViewRect;
-	QPointF graphicsScenePos;
-	QGraphicsScene graphicsScene;
-	QGraphicsPixmapItem* imageItem;
+	QGraphicsScene graphicsScene;//绘图场景
+	QPointF graphicsScenePos;//场景左上角点在屏幕中的位置
+	QGraphicsPixmapItem* imageItem;//图元
 
 	QButtonGroup checkBoxGroup;
 	QPointF roiRect_tl;
