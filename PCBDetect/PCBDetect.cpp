@@ -240,7 +240,7 @@ void PCBDetect::do_checkSystemState_settingUI()
 	bool enableButtonsOnMainUI = true;
 
 	//检查系统参数
-	if (enableButtonsOnMainUI && !adminConfig.isValid()) {
+	if (enableButtonsOnMainUI && !adminConfig.isValid(true)) {
 		adminConfig.showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}

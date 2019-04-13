@@ -36,9 +36,6 @@ void AdminConfig::loadDefaultValue()
 //参数有效性检查
 AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index)
 {
-	if (errorCode == ValidConfig) 
-		return this->errorCode;
-
 	AdminConfig::ErrorCode code = Uncheck;
 	switch (index)
 	{
@@ -77,9 +74,9 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 }
 
 //判断参数是否有效
-bool AdminConfig::isValid() 
+bool AdminConfig::isValid(bool doCheck) 
 {
-	if (errorCode == AdminConfig::Uncheck)
+	if (doCheck && errorCode == AdminConfig::Uncheck)
 		checkValidity(Index_All);
 	return errorCode == ValidConfig;
 }
@@ -243,9 +240,6 @@ void DetectConfig::loadDefaultValue()
 //参数有效性检查
 DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConfig *adminConfig)
 {
-	if (this->errorCode == ValidConfig)
-		return this->errorCode;
-
 	ErrorCode code = Uncheck;
 	switch (index)
 	{
@@ -291,8 +285,8 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConf
 }
 
 //判断参数是否有效
-bool DetectConfig::isValid(AdminConfig *adminConfig) {
-	if (this->errorCode == DetectConfig::Uncheck)
+bool DetectConfig::isValid(AdminConfig *adminConfig, bool doCheck) {
+	if (doCheck && this->errorCode == DetectConfig::Uncheck)
 		checkValidity(Index_All, adminConfig);
 	return this->errorCode == ValidConfig;
 }

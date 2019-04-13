@@ -80,9 +80,7 @@ private:
 	void removeItemsFromGraphicsScene();//移除场景中的图元
 
 	void showSampleImages();
-	void nextRowOfSampleImages();
 	void readSampleImages2();
-	void nextRowOfSampleImages2();
 	void detectSampleImages(); //检测
 
 Q_SIGNALS:

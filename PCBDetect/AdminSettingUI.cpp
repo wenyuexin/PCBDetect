@@ -91,8 +91,11 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 		//将参数保存到config文件中
 		Configurator::saveConfigFile(configFileName, adminConfig);
 		//更新运行参数
-		sysResetCode |= detectParams->calcItemGridSize(adminConfig, detectConfig);
-		if (!detectParams->isValid()) detectParams->showMessageBox(this);
+		if (detectConfig->isValid(adminConfig, false)) {
+			sysResetCode |= detectParams->calcItemGridSize(adminConfig, detectConfig);
+			if (!detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
+				detectParams->showMessageBox(this);
+		}
 		//发送检测系统重置信号
 		emit resetDetectSystem_adminUI(sysResetCode);
 	}
@@ -110,8 +113,7 @@ void AdminSettingUI::on_pushButton_return_clicked()
 {
 	emit showSettingUI_adminUI();
 	//如果界面上的系统参数无效，而adminConfig有效，则显示adminConfig
-	//注：初始条件下，没有按确定键，则tempConfig为空，tempConfig无效
-	if (!tempConfig.isValid() && adminConfig->isValid()) {
+	if (!tempConfig.isValid(true) && adminConfig->isValid(true)) {
 		this->refreshAdminSettingUI();
 	}
 }
