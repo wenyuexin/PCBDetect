@@ -8,11 +8,13 @@ using pcb::DetectParams;
 DetectParams::DetectParams()
 {
 	errorCode = Uncheck;
+	serialNum = ""; //样本编号
 	sampleModelNum = ""; //型号
 	sampleBatchNum = ""; //批次号
 	sampleNum = ""; //样本编号
 	currentRow_detect = -1; //检测行号
 	currentRow_extract = -1; //提取行号
+	singleMotionStroke = -1; //运功动结构的单步行程
 	nCamera = 0; //相机个数
 	nPhotographing = 0; //拍照次数
 
@@ -30,6 +32,7 @@ DetectParams::~DetectParams()
 //重置产品序号
 void DetectParams::resetSerialNum()
 {
+	serialNum = ""; //样本编号
 	QString sampleModelNum = ""; //型号
 	QString sampleBatchNum = ""; //批次号
 	QString sampleNum = ""; //样本编号
@@ -41,6 +44,7 @@ void DetectParams::loadDefaultValue()
 	resetSerialNum();
 	currentRow_detect = -1; //检测行号
 	currentRow_extract = -1; //提取行号
+	singleMotionStroke = 80; //运功动结构的单步行程
 	nCamera = 5; //相机个数
 	nPhotographing = 4; //拍照次数
 }
@@ -56,7 +60,9 @@ DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminC
 	this->singleMotionStroke = (int) ceil(stroke);
 
 	//判断参数有效性
-	return checkValidity(ParamsIndex::Index_singleMotionStroke, adminConfig);
+	ErrorCode code = ErrorCode::Uncheck;
+	code = checkValidity(ParamsIndex::Index_singleMotionStroke, adminConfig);
+	return code;
 }
 
 //计算nCamera、nPhotographing
