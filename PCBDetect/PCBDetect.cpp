@@ -17,6 +17,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	motionControler = new MotionControler;//运动控制器
 	motionControler->setAdminConfig(&adminConfig);
 	motionControler->setDetectConfig(&detectConfig);
+	motionControler->setDetectParams(&detectParams);
 
 	//相机控制器
 	cameraControler = new CameraControler;
@@ -81,14 +82,17 @@ PCBDetect::~PCBDetect()
 /**************** 启动界面 *****************/
 
 //启动结束
-void PCBDetect::on_initGraphicsView_launchUI(int LaunchCode)
+void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 {
-	if (!LaunchCode) { //正常启动
+	if (launchCode == -1) { //系统参数和用户参数已经正常初始化
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
+	}
+	else if (launchCode == 0) { //正常启动 (运行参数也正常初始化)
 		templateUI->initGraphicsView();//模板界面中图像显示的初始化
 		detectUI->initGraphicsView();//检测界面中图像显示的初始化
 	}
 	else { //存在错误
+		//用户参数配置文件丢失，生成了默认文件
 		if (detectConfig.getErrorCode() != DetectConfig::Uncheck) {
 			settingUI->refreshSettingUI();//更新参数设置界面的信息
 		}
@@ -96,9 +100,9 @@ void PCBDetect::on_initGraphicsView_launchUI(int LaunchCode)
 }
 
 //启动结束
-void PCBDetect::on_launchFinished_launchUI(int LaunchCode)
+void PCBDetect::on_launchFinished_launchUI(int launchCode)
 {
-	if (!LaunchCode) { //正常启动
+	if (!launchCode) { //正常启动
 		this->setPushButtonsToEnabled(true);//模板提取、检测按键设为可点击
 	}
 	else { //存在错误
@@ -202,13 +206,13 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 	}
 
 	//重置模板提取界面，并初始化其中的图像显示的空间
-	if (code & 0b000000100 == 0b000000100) {
+	if (code & 0b000000010 == 0b000000010) {
 		templateUI->resetTemplateUI();
 		templateUI->initGraphicsView();
 	}
 
 	//重置检测界面，并初始化其中的图像显示的空间
-	if (code & 0b000000010 == 0b000000010) {
+	if (code & 0b000000001 == 0b000000001) {
 		detectUI->resetDetectUI();
 		detectUI->initGraphicsView();
 	}
@@ -241,13 +245,25 @@ void PCBDetect::do_checkSystemState_settingUI()
 	}
 
 	//检查用户参数
-	if (enableButtonsOnMainUI && !detectConfig.isValid()) {
+	if (enableButtonsOnMainUI && !detectConfig.isValid(&adminConfig)) {
 		detectConfig.showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}
 
+	//检查运行参数
+	if (enableButtonsOnMainUI && !detectParams.isValid(&adminConfig)) {
+		detectParams.showMessageBox(settingUI);
+		enableButtonsOnMainUI = false;
+	}
+
+	//检测运动结构
+	if (enableButtonsOnMainUI && !motionControler->isReady()) {
+		motionControler->showMessageBox(settingUI);
+		enableButtonsOnMainUI = false;
+	}
+
 	//检查相机
-	if (enableButtonsOnMainUI && cameraControler->getErrorCode() != CameraControler::NoError) {
+	if (enableButtonsOnMainUI && !cameraControler->isReady()) {
 		cameraControler->showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}

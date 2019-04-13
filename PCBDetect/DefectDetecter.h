@@ -48,5 +48,5 @@ private:
 
 Q_SIGNALS:
 	void updateDetectState_detecter(int state);
+	void detectFinished_detectThread(bool qualified);
 };
-

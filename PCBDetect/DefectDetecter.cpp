@@ -117,15 +117,15 @@ void DefectDetecter::detect()
 			//调试时候的边缘处理
 			cv::Size szDiff = diff.size();
 			cv::Mat diff_roi = cv::Mat::zeros(szDiff, diff.type());
-			int zoom = 50;
+			int zoom = 50;//忽略的边缘宽度
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
 
 			//标记缺陷
-			//detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
-			//continue;
+			detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
+			continue;
 
-			//调试使用
+			/*****测试代码, 保存疑分图的模板，配准样本，二值图，差值图*****/
 			Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 			dilate(diff, diff, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 			std::vector<std::vector<cv::Point>> contours;
@@ -143,7 +143,7 @@ void DefectDetecter::detect()
 				//double res = computeECC(temp_area, samp_area,mask);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
 				auto res = detectFunc->getMSSIM(temp_area, samp_area);
 				//qDebug() << QString::fromLocal8Bit("===========相关系数") << res;
-				if (res[0] >= 0.5)
+				if (res[0] >= 0.8)
 					continue;
 				//Mat result;
 				//result.create(1, 1, CV_32FC1);
@@ -160,11 +160,12 @@ void DefectDetecter::detect()
 			}
 
 			string name_head = to_string(detectParams->currentRow_detect + 1) + "_" + to_string(i + 1);
-			cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\" + name_head + "_5diff.jpg", diff);
-			cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\" + name_head + "_2templBw.jpg", templBw);
-			cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\" + name_head + "_4sampBw.jpg", sampBw);
-			cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\" + name_head + "_1templ_gray.jpg", templ_gray);
-			cv::imwrite("D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\" + name_head + "_3samp_gray_reg.jpg", samp_gray_reg);
+			string testPath = "D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\";
+			cv::imwrite(testPath + name_head + "_5diff.jpg", diff);
+			cv::imwrite(testPath + name_head + "_2templBw.jpg", templBw);
+			cv::imwrite(testPath + name_head + "_4sampBw.jpg", sampBw);
+			cv::imwrite(testPath + name_head + "_1templ_gray.jpg", templ_gray);
+			cv::imwrite(testPath + name_head + "_3samp_gray_reg.jpg", samp_gray_reg);
 
 
 		}catch (std::exception e) {
@@ -189,4 +190,7 @@ void DefectDetecter::detect()
 	
 	detectState = DetectState::Finished;
 	emit updateDetectState_detecter(detectState);
+	pcb::delay(10);
+	bool qualified = (defectNum < 1);
+	emit detectFinished_detectThread(qualified);
 }
