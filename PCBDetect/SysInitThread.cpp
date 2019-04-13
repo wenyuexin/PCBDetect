@@ -27,9 +27,12 @@ void SysInitThread::run()
 {
 	//初次执行初始化
 	if (bootStatus == 0x0000) {  
-		//参数初始化
+		//参数类的初始化
 		if (!initAdminConfig()) { bootStatus |= 0x0100; return; }
 		if (!initDetectConfig()) { bootStatus |= 0x0100; return; }
+		emit initGraphicsView_initThread(-1);
+		qApp->processEvents();
+
 		if (!initDetectParams()) { bootStatus |= 0x1100; return; }
 		emit initGraphicsView_initThread(0);
 		qApp->processEvents();
@@ -132,8 +135,8 @@ bool SysInitThread::initDetectParams()
 	if (code != DetectParams::ValidValue) {
 		emit detectParamsError_initThread(); return false;
 	}
-
 	qDebug() << code;
+	pcb::delay(10);
 
 	code2 = detectParams->calcItemGridSize(adminConfig, detectConfig);
 	if (code2 != DetectParams::ValidValue) {
