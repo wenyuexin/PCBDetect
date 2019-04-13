@@ -71,7 +71,7 @@ void DefectDetecter::detect()
 		//读取样本图片
 		Mat samp = *((*cvmatSamples)[detectParams->currentRow_detect][i]);
 		Mat samp_gray;
-		cvtColor(samp, samp_gray, CV_BGR2GRAY);
+		cvtColor(samp, samp_gray, COLOR_BGR2GRAY);
 
 		//样本二值化
 		cv::Mat sampBw;
@@ -191,6 +191,7 @@ void DefectDetecter::detect()
 	detectState = DetectState::Finished;
 	emit updateDetectState_detecter(detectState);
 	pcb::delay(10);
-	bool qualified = (defectNum < 1);
-	emit detectFinished_detectThread(qualified);
+	bool qualified = (defectNum < 100);
+	if (detectParams->currentRow_detect == detectParams->nPhotographing-1)
+		emit detectFinished_detectThread(qualified);
 }

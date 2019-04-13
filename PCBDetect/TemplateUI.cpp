@@ -431,14 +431,6 @@ void TemplateUI::mouseDoubleClickEvent(QMouseEvent *event)
 	}
 }
 
-//切换分图
-void TemplateUI::on_switchImage_serialNumUI()
-{
-	this->showFullScreen();
-	pcb::delay(10);//延迟
-	serialNumberUI.hide();
-}
-
 //从序号识别界面获得产品序号之后
 void TemplateUI::on_recognizeFinished_serialNumUI()
 {
