@@ -432,7 +432,7 @@ void DetectUI::readSampleImages2()
 	dir.setSorting(QDir::Time | QDir::Name | QDir::Reversed);
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
-	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
+	if (fileList.isEmpty()) { emit invalidNumberOfSampleImage(); return; }
 
 	//读取并储存图像 - 从硬盘上读图 (用于临时调试)
 	for (int i = 0; i < fileList.size(); i++) {

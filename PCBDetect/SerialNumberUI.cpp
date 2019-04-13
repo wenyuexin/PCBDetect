@@ -22,9 +22,15 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	cvmatSamples = Q_NULLPTR; //用于检测的样本图
 	qpixmapSamples = Q_NULLPTR; //用于显示的样本图
 	imageItem = Q_NULLPTR; 
-	imageScalingRatio = 0;
 	gridRowIdx = -1; //当前分图所在行
 	gridColIdx = -1; //当前分图所在列
+	graphicsScenePos.setX(0);//场景左上角坐标
+	graphicsScenePos.setY(0);
+	roiRect_tl.setX(0);//roi左上角
+	roiRect_tl.setY(0);
+	roiRect_br.setX(0);//roi右下角
+	roiRect_br.setY(0);
+	imageScalingRatio = 0;//图像缩放比例
 
 	//获取绘图控件QGraphicsView的位置
 	QPoint graphicsViewPos = ui.graphicsView->pos();
@@ -133,8 +139,8 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 	cv::Point tl(roiRect_tl.x(), roiRect_tl.y());
 	cv::Point br(roiRect_br.x(), roiRect_br.y());
 	cv::Rect roiRect = cv::Rect(tl, br);
-	if (roiRect.width > adminConfig->ImageSize_W || 
-		roiRect.height > adminConfig->ImageSize_H) 
+	if (roiRect.width >= adminConfig->ImageSize_W || 
+		roiRect.height >= adminConfig->ImageSize_H) 
 	{
 		showMessageBox(this, Invalid_RoiRect); return;
 	}
@@ -168,8 +174,8 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 	}
 
 	QString serialNum = QString(text);
-	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
 	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
 	this->setSerialNumberUIEnabled(true);
 
 	//检查产品序号是否有效
@@ -183,7 +189,7 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 //确定按键
 void SerialNumberUI::on_pushButton_confirm_clicked()
 {
-	QString serialNum = ui.lineEdit_serialNum->text(); //显示识别的产品序号
+	QString serialNum = ui.lineEdit_serialNum->text(); //读取产品序号
 	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
 
 	DetectParams::ErrorCode code = DetectParams::Uncheck;

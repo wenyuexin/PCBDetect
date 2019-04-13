@@ -87,7 +87,7 @@ private:
 
 Q_SIGNALS:
 	void showDetectMainUI();
-	void invalidNummberOfSampleImage();
+	void invalidNumberOfSampleImage();
 
 private Q_SLOTS:
 	void on_pushButton_start_clicked();
