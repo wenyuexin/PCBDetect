@@ -95,23 +95,20 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 //产品序号解析
 DetectParams::ErrorCode DetectParams::parseSerialNum()
 {
-	if (serialNumSlice[0] != serialNum.size()) {
-		return Invalid_SerialNum;
+	if (checkValidity(Index_serialNum) != ValidValue) {
+		return ErrorCode::Invalid_serialNum;
 	}
 
-	int to = 0;
-	int from = serialNumSlice[0];
-	sampleModelNum = serialNum.mid(to, from); //型号
+	int begin = 0;
+	sampleModelNum = serialNum.mid(begin, serialNumSlice[1]); //型号
 	sampleModelNum = QString::number(sampleModelNum.toInt());//去除数字0
 
-	to = from;
-	from = to + serialNumSlice[1];
-	sampleBatchNum = serialNum.mid(to, from); //批次号
+	begin += serialNumSlice[1];
+	sampleBatchNum = serialNum.mid(begin, serialNumSlice[2]); //批次号
 	sampleBatchNum = QString::number(sampleBatchNum.toInt());
 
-	to = from;
-	from = to + serialNumSlice[2];
-	sampleNum = serialNum.mid(to, from); //样本编号
+	begin += serialNumSlice[2];
+	sampleNum = serialNum.mid(begin, serialNumSlice[3]); //样本编号
 	sampleNum = QString::number(sampleNum.toInt());
 
 	return ValidValue;
@@ -127,32 +124,54 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 	switch (index)
 	{
 	case pcb::DetectParams::Index_All:
-	case pcb::DetectParams::Index_SerialNum:
-		if (code != Uncheck || index != Index_All) break;
+
+	//产品序号相关参数
+	case pcb::DetectParams::Index_All_SerialNum:
+	case pcb::DetectParams::Index_serialNum:
+		if (serialNum.size() != serialNumSlice[0]
+			|| serialNum.toDouble() == 0)
+		{
+			code = Invalid_serialNum;
+		}
+		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
 	case pcb::DetectParams::Index_sampleModelNum:
-		if (code != Uncheck || index != Index_All) break;
+		if (sampleModelNum == "" || sampleModelNum.size() > serialNumSlice[1]) {
+			code = Invalid_sampleModelNum;
+		}
+		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
 	case pcb::DetectParams::Index_sampleBatchNum:
-		if (code != Uncheck || index != Index_All) break;
+		if (sampleBatchNum == "" || sampleBatchNum.size() > serialNumSlice[2]) {
+			code = Invalid_sampleBatchNum;
+		}
+		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
 	case pcb::DetectParams::Index_sampleNum:
+		if (sampleNum == "" || sampleNum.size() > serialNumSlice[3]) {
+			code = Invalid_sampleNum;
+		}
 		if (code != Uncheck || index != Index_All) break;
+
+	//检测行号与提取行号
 	case pcb::DetectParams::Index_currentRow_detect:
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::DetectParams::Index_currentRow_extract:
 		if (code != Uncheck || index != Index_All) break;
+
+	//初始化相关参数
+	case pcb::DetectParams::Index_All_SysInit:
 	case pcb::DetectParams::Index_singleMotionStroke:
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (singleMotionStroke <= 0 || singleMotionStroke > adminConfig->MaxMotionStroke) {
 			code = Invalid_singleMotionStroke;
 		}
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
 	case pcb::DetectParams::Index_nCamera:
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (nCamera <= 0 || nCamera > adminConfig->MaxCameraNum) {
 			code = Invalid_nCamera;
 		}
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
 	case pcb::DetectParams::Index_nPhotographing:
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
@@ -162,18 +181,65 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 		if (code != Uncheck || index != Index_All) break;
 	}
 
+	//代码值等于Uncheck表示检测的参数有效
 	if (code == Uncheck) code = ValidParams;
-	if (code != ValidParams || index == Index_All) this->errorCode = code;
+
+	//更新错误代码
+	if (code != ValidParams || index == Index_All) {
+		errorCode = code;
+	}
+	if (code != ValidParams &&
+		index >= Index_All_SysInit && index <= Index_nPhotographing)
+	{
+		errorCode_sysInit = code;
+	}
+	if (code != ValidParams && 
+		index >= Index_All_SerialNum && index <= Index_sampleNum)
+	{
+		errorCode_serialNum = code;
+	}
 	return code;
 }
 
 //判断参数是否有效
-bool DetectParams::isValid(AdminConfig *adminConfig)
+bool DetectParams::isValid(ParamsIndex index, AdminConfig *adminConfig)
 {
-	if (this->errorCode == DetectParams::Uncheck) {
-		checkValidity(Index_All, adminConfig);
+	if (errorCode == ValidParams) return errorCode;
+	if (index == Index_All) {
+		if (errorCode == DetectParams::Uncheck) 
+			checkValidity(index, adminConfig);
+		return errorCode;
 	}
-	return this->errorCode == ValidParams;
+
+	if (index == Index_All_SysInit) {
+		if (errorCode_sysInit == DetectParams::Uncheck) 
+			checkValidity(index, adminConfig);
+		return errorCode_sysInit;
+	}
+
+	if (index == Index_All_SerialNum) {
+		if (errorCode_serialNum == DetectParams::Uncheck) 
+			checkValidity(index, adminConfig);
+		return errorCode_serialNum;
+	}
+	return errorCode;
+}
+
+//获取错误代码
+DetectParams::ErrorCode DetectParams::getErrorCode(ParamsIndex index)
+{ 
+	if (index == Index_All) return errorCode;
+	else if (index == Index_All_SysInit) return errorCode_sysInit;
+	else if (index == Index_All_SerialNum) return errorCode_serialNum;
+	return Default;
+}
+
+//重置错误代码
+void DetectParams::resetErrorCode(ParamsIndex index)
+{ 
+	if (index == Index_All) errorCode = Uncheck; 
+	else if (index == Index_All_SysInit) errorCode_sysInit = Uncheck;
+	else if (index == Index_All_SerialNum) errorCode_serialNum = Uncheck;
 }
 
 //弹窗报错
@@ -187,7 +253,7 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 	{
 	case pcb::DetectParams::Uncheck:
 		valueName = pcb::chinese("\"参数未验证\""); break;
-	case pcb::DetectParams::Invalid_SerialNum:
+	case pcb::DetectParams::Invalid_serialNum:
 		valueName = pcb::chinese("\"产品序号\""); break;
 	case pcb::DetectParams::Invalid_nCamera:
 		valueName = pcb::chinese("\"相机个数\""); break;

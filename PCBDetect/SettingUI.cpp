@@ -191,7 +191,7 @@ void SettingUI::on_pushButton_confirm_clicked()
 		}
 
 		tempParams.copyTo(detectParams);
-		if (!tempParams.isValid(adminConfig)) {
+		if (!tempParams.isValid(DetectParams::Index_All_SysInit, adminConfig)) {
 			tempParams.showMessageBox(this);
 		}
 		sysResetCode |= detectParams->getSystemResetCode(tempParams);
@@ -199,7 +199,7 @@ void SettingUI::on_pushButton_confirm_clicked()
 
 		//判断是否重置检测系统
 		if (adminConfig->isValid() && detectConfig->isValid(adminConfig)
-			&& detectParams->isValid(adminConfig)) 
+			&& detectParams->isValid(DetectParams::Index_All_SysInit, adminConfig))
 		{
 			emit resetDetectSystem_settingUI(sysResetCode);
 		}
@@ -325,7 +325,7 @@ void SettingUI::do_resetDetectSystem_adminUI(int code)
 void SettingUI::do_checkSystemWorkingState_adminUI()
 {
 	if (adminConfig->isValid() && detectConfig->isValid(adminConfig) 
-		&& detectParams->isValid(adminConfig)) 
+		&& detectParams->isValid(DetectParams::Index_All_SysInit, adminConfig))
 	{
 		emit checkSystemState_settingUI();
 		pcb::delay(10);

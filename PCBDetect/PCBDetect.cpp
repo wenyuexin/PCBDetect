@@ -1,7 +1,8 @@
 #include "PCBDetect.h"
 
-using pcb::DetectConfig;
 using pcb::AdminConfig;
+using pcb::DetectConfig;
+using pcb::DetectParams;
 
 PCBDetect::PCBDetect(QWidget *parent)
 	: QMainWindow(parent)
@@ -251,7 +252,7 @@ void PCBDetect::do_checkSystemState_settingUI()
 	}
 
 	//检查运行参数
-	if (enableButtonsOnMainUI && !detectParams.isValid(&adminConfig)) {
+	if (enableButtonsOnMainUI && !detectParams.isValid(DetectParams::Index_All_SysInit, &adminConfig)) {
 		detectParams.showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}

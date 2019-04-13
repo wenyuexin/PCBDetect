@@ -82,15 +82,21 @@ namespace pcb
 		enum ParamsIndex {
 			Index_All,
 			Index_None,
-			Index_SerialNum,
+			//产品序号相关
+			Index_All_SerialNum,
+			Index_serialNum,
 			Index_sampleModelNum,
 			Index_sampleBatchNum,
 			Index_sampleNum,
+			//行号
 			Index_currentRow_detect,
 			Index_currentRow_extract,
+			//初始化相关
+			Index_All_SysInit,
 			Index_singleMotionStroke,
 			Index_nCamera,
 			Index_nPhotographing,
+			//其他
 			Index_bufferDirPath
 		};
 
@@ -98,15 +104,23 @@ namespace pcb
 			ValidParams = 0x000,
 			ValidValue = 0x000,
 			Uncheck = 0x300,
-			Invalid_SerialNum = 0x301,
-			Invalid_singleMotionStroke = 0x302,
-			Invalid_nCamera = 0x303,
-			Invalid_nPhotographing = 0x304,
+			Invalid_serialNum = 0x301,
+			Invalid_sampleModelNum = 0x302,
+			Invalid_sampleBatchNum = 0x303,
+			Invalid_sampleNum = 0x304,
+			Invalid_currentRow_detect = 0x305,
+			Invalid_currentRow_extract = 0x306,
+			Invalid_singleMotionStroke = 0x307,
+			Invalid_nCamera = 0x308,
+			Invalid_nPhotographing = 0x309,
+			Invalid_bufferDirPath = 0x30A,
 			Default = 0x3FF
 		};
 
 	private:
 		ErrorCode errorCode = Uncheck;
+		ErrorCode errorCode_serialNum = Uncheck;
+		ErrorCode errorCode_sysInit = Uncheck;
 
 		//系统状态值 0x123456789
 		//adminConfig 1， detectConfig 2, DetectParams 3
@@ -127,10 +141,10 @@ namespace pcb
 		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
 		ErrorCode parseSerialNum();
 
-		bool isValid(AdminConfig *adminConfig = Q_NULLPTR);
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
-		inline void resetErrorCode() { errorCode = Uncheck; }
-		inline ErrorCode getErrorCode() { return errorCode; }
+		bool isValid(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
+		ErrorCode getErrorCode(ParamsIndex index = Index_All);//获取错误代码
+		void resetErrorCode(ParamsIndex index = Index_All);//重置错误代码
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
 		void copyTo(DetectParams *dst); //拷贝参数
