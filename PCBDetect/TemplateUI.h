@@ -67,14 +67,12 @@ private:
 	void removeItemsFromGraphicsScene();//移除场景中的图元
 
 	void showSampleImages();
-	void nextRowOfSampleImages();
 	void readSampleImages2();
-	void nextRowOfSampleImages2();
 	void extractTemplateImages();
 
 Q_SIGNALS:
 	void showDetectMainUI();
-	void invalidNummberOfSampleImage();
+	void invalidNumberOfSampleImage();
 
 private Q_SLOTS:
 	void on_pushButton_start_clicked();//开始键

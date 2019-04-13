@@ -338,67 +338,6 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 }
 
 
-//在绘图网格中显示下一行图像
-void TemplateUI::nextRowOfSampleImages()
-{
-	if (currentRow_show + 1 < detectParams->nPhotographing) { //直接显示新的样本行
-		currentRow_show += 1; //更新显示行号
-		eventCounter += 1; //更新事件计数器
-		qDebug() << "currentRow_show  - " << currentRow_show;
-
-		double t1 = clock();
-		//readSampleImages(); //读图
-		double t2 = clock();
-		showSampleImages(); //界面显示
-		double t3 = clock();
-
-		//qDebug() << "readSampleImages :" << (t2 - t1) << "ms";
-		qDebug() << "showSampleImages :" << (t3 - t2) << "ms ( currentRow_show -" << currentRow_show << ")";
-
-		//判断是否执行检测操作
-		if (!templThread->isRunning() && eventCounter == 1) {
-			extractTemplateImages(); //提取
-		}
-	}
-	else if (detectParams->currentRow_extract == detectParams->nPhotographing - 1 && !templThread->isRunning()) {
-		qDebug() << "currentRow_show  - " << currentRow_show;
-
-		resetTemplateUI();//重置模板提取子模块
-		nextRowOfSampleImages(); //检测新的PCB样本图
-	}
-}
-
-//在绘图网格中显示下一行图像
-void TemplateUI::nextRowOfSampleImages2()
-{
-	if (currentRow_show + 1 < detectParams->nPhotographing) { //直接显示新的样本行
-		currentRow_show += 1; //更新显示行号
-		eventCounter += 1; //更新事件计数器
-		qDebug() << "currentRow_show  - " << currentRow_show;
-
-		double t1 = clock();
-		readSampleImages2(); //读图
-		double t2 = clock();
-		showSampleImages(); //界面显示
-		double t3 = clock();
-
-		//qDebug() << "readSampleImages :" << (t2 - t1) << "ms";
-		qDebug() << "showSampleImages :" << (t3 - t2) << "ms ( currentRow_show -" << currentRow_show << ")";
-
-		//判断是否执行检测操作
-		if (!templThread->isRunning() && eventCounter == 1) {
-			extractTemplateImages(); //提取
-		}
-	}
-	else if (detectParams->currentRow_extract == detectParams->nPhotographing - 1 && !templThread->isRunning()) {
-		qDebug() << "currentRow_show  - " << currentRow_show;
-
-		resetTemplateUI();//重置模板提取子模块
-		nextRowOfSampleImages2(); //检测新的PCB样本图
-	}
-}
-
-
 /***************** 读图、显示与提取 *****************/
 
 //读取相机组拍摄的一组分图 - 直接从硬盘上读图
@@ -415,7 +354,7 @@ void TemplateUI::readSampleImages2()
 	dir.setSorting(QDir::Time | QDir::Name | QDir::Reversed);
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
-	if (fileList.isEmpty()) { emit invalidNummberOfSampleImage(); return; }
+	if (fileList.isEmpty()) { emit invalidNumberOfSampleImage(); return; }
 
 	//读取并储存图像 - 从硬盘上读图 (用于临时调试)
 	for (int i = 0; i < fileList.size(); i++) {
