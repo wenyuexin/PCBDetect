@@ -110,10 +110,12 @@ void LaunchUI::on_detectParamsError_initThread()
 void LaunchUI::on_motionError_initThread(int code)
 {
 	//弹窗警告
-	if (code == MotionControler::Default) 
+	if (code == MotionControler::Default) {
 		motionControler->showMessageBox(this); 
-	else
+	}
+	else {
 		motionControler->showMessageBox(this, (MotionControler::ErrorCode) code);
+	}
 	pcb::delay(10); //延时
 	update_sysInitStatus_initThread(pcb::chinese("运动结构初始化结束    "));
 	pcb::delay(600); //延时

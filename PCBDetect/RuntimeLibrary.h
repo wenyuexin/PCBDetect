@@ -68,6 +68,7 @@ namespace pcb
 	class DetectParams
 	{
 	public:
+		QString serialNum;
 		QString sampleModelNum; //型号
 		QString sampleBatchNum; //批次号
 		QString sampleNum; //样本编号
@@ -76,10 +77,12 @@ namespace pcb
 		int singleMotionStroke; //运功动结构的单步行程 mm
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
+		QString bufferDirPath; //缓存文件夹
 
 		enum ParamsIndex {
 			Index_All,
 			Index_None,
+			Index_SerialNum,
 			Index_sampleModelNum,
 			Index_sampleBatchNum,
 			Index_sampleNum,
@@ -87,16 +90,18 @@ namespace pcb
 			Index_currentRow_extract,
 			Index_singleMotionStroke,
 			Index_nCamera,
-			Index_nPhotographing
+			Index_nPhotographing,
+			Index_bufferDirPath
 		};
 
 		enum ErrorCode {
 			ValidParams = 0x000,
 			ValidValue = 0x000,
 			Uncheck = 0x300,
-			Invalid_singleMotionStroke = 0x301,
-			Invalid_nCamera = 0x302,
-			Invalid_nPhotographing = 0x303,
+			Invalid_SerialNum = 0x301,
+			Invalid_singleMotionStroke = 0x302,
+			Invalid_nCamera = 0x303,
+			Invalid_nPhotographing = 0x304,
 			Default = 0x3FF
 		};
 
@@ -106,8 +111,11 @@ namespace pcb
 		//系统状态值 0x123456789
 		//adminConfig 1， detectConfig 2, DetectParams 3
 		//MotionControler 4, CameraControler 5, ImageConvert 6
-		//TemplateExtract 7, Detect 8, SerialNumber 9
+		//SerialNumber 7, TemplateExtract 8, Detect 9
 		long systemState = 0x000000000;
+
+		//总长度=型号长度+批次号长度+编号长度
+		const int serialNumSlice[4] = { 8, 2, 2, 4 }; //产品序号组成
 
 	public:
 		DetectParams();
@@ -117,12 +125,16 @@ namespace pcb
 		void loadDefaultValue();
 		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
 		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
+		ErrorCode parseSerialNum();
 
 		bool isValid(AdminConfig *adminConfig = Q_NULLPTR);
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
 		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; }
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
+
+		void copyTo(DetectParams *dst); //拷贝参数
+		int getSystemResetCode(DetectParams &newConfig); //获取系统重置代码
 	};
 #endif //STRUCT_DETECT_PARAMS
 }

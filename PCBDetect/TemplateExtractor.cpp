@@ -48,7 +48,7 @@ void TemplateExtractor::extract()
 	extractState = ExtractState::Start;
 	emit extractState_extractor(extractState);
 
-	//pcb::delay(1000); //提取
+	pcb::delay(1500); //提取
 
 	string curr_path = detectConfig->TemplDirPath.toStdString() + "/";
 	string templ_path = curr_path + detectParams->sampleModelNum.toStdString();//检查模板文件夹中mask文件是否存在
