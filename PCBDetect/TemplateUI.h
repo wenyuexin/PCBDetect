@@ -82,11 +82,11 @@ private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
 	void update_extractState_extractor(int state);
 
-	void on_moveForwardFinished_motion();
-	void on_resetControlerFinished_motion(int);
-	void on_initCamerasFinished_camera(int);
-	void on_takePhotosFinished_camera(int);
-	void on_convertFinished_convertThread();
+	void on_moveForwardFinished_motion();//前进结束
+	void on_resetControlerFinished_motion(int);//复位结束
+	void on_initCamerasFinished_camera(int);//相机初始化结束
+	void on_takePhotosFinished_camera(int);//拍照结束
+	void on_convertFinished_convertThread();//图像转换结束
 
 	void mouseDoubleClickEvent(QMouseEvent *event);
 	void on_switchImage_serialNumUI();
