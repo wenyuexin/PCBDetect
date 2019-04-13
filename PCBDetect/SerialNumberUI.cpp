@@ -175,6 +175,7 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 
 	QString serialNum = QString(text);
 	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
 	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
 	this->setSerialNumberUIEnabled(true);
 
@@ -191,6 +192,7 @@ void SerialNumberUI::on_pushButton_confirm_clicked()
 {
 	QString serialNum = ui.lineEdit_serialNum->text(); //读取产品序号
 	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
 
 	DetectParams::ErrorCode code = DetectParams::Uncheck;
 	code = detectParams->parseSerialNum(); //解析产品序号

@@ -84,7 +84,7 @@ namespace pcb
 		void loadDefaultValue(); //加载默认参数
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
-		bool isValid();
+		bool isValid(bool doCheck = false);
 		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
 		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
@@ -154,7 +154,7 @@ namespace pcb
 		void loadDefaultValue(); //加载默认参数
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
-		bool isValid(AdminConfig *adminConfig = Q_NULLPTR);
+		bool isValid(AdminConfig *adminConfig = Q_NULLPTR, bool doCheck = false);
 		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
 		inline void resetErrorCode() { errorCode = Uncheck; }
 		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码

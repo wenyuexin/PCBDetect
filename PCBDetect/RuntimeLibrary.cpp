@@ -8,6 +8,9 @@ using pcb::DetectParams;
 DetectParams::DetectParams()
 {
 	errorCode = Uncheck;
+	errorCode_serialNum = Uncheck;
+	errorCode_sysInit = Uncheck;
+
 	serialNum = ""; //样本编号
 	sampleModelNum = ""; //型号
 	sampleBatchNum = ""; //批次号
@@ -32,18 +35,22 @@ DetectParams::~DetectParams()
 //重置产品序号
 void DetectParams::resetSerialNum()
 {
+	errorCode_serialNum = Uncheck;
 	serialNum = ""; //样本编号
-	QString sampleModelNum = ""; //型号
-	QString sampleBatchNum = ""; //批次号
-	QString sampleNum = ""; //样本编号
+	sampleModelNum = ""; //型号
+	sampleBatchNum = ""; //批次号
+	sampleNum = ""; //样本编号
 }
 
 //加载默认的运行参数
 void DetectParams::loadDefaultValue()
 {
-	resetSerialNum();
+	errorCode = Uncheck;
+	resetSerialNum(); //重置产品序号
 	currentRow_detect = -1; //检测行号
 	currentRow_extract = -1; //提取行号
+
+	errorCode_sysInit = Uncheck;
 	singleMotionStroke = 80; //运功动结构的单步行程
 	nCamera = 5; //相机个数
 	nPhotographing = 4; //拍照次数
@@ -52,7 +59,7 @@ void DetectParams::loadDefaultValue()
 //计算机械结构的单步运动距离 singleMotionStroke
 DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminConfig)
 {
-	if (!adminConfig->isValid()) return DetectParams::Default;
+	if (!adminConfig->isValid(true)) return DetectParams::Default;
 
 	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 	double stroke = 1.0 * adminConfig->ImageSize_H / (1 - overlap);
@@ -68,7 +75,7 @@ DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminC
 //计算nCamera、nPhotographing
 DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig)
 {
-	if (!adminConfig->isValid() || !detectConfig->isValid(adminConfig)) return Default;
+	if (!adminConfig->isValid(true) || !detectConfig->isValid(adminConfig)) return Default;
 
 	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 
@@ -117,9 +124,6 @@ DetectParams::ErrorCode DetectParams::parseSerialNum()
 //参数有效性检查
 DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConfig *adminConfig)
 {
-	if (this->errorCode == ValidParams)
-		return this->errorCode;
-
 	ErrorCode code = ErrorCode::Uncheck;
 	switch (index)
 	{
@@ -188,41 +192,52 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 	if (code != ValidParams || index == Index_All) {
 		errorCode = code;
 	}
-	if (code != ValidParams &&
-		index >= Index_All_SysInit && index <= Index_nPhotographing)
+
+	//更新错误代码 - 初始化相关参数
+	if (index == Index_All_SysInit || 
+		(code != ValidParams && index >= Index_singleMotionStroke && index <= Index_nPhotographing))
 	{
 		errorCode_sysInit = code;
 	}
-	if (code != ValidParams && 
-		index >= Index_All_SerialNum && index <= Index_sampleNum)
+
+	//更新错误代码 - 产品序号相关参数
+	if (index == Index_All_SerialNum || 
+		(code != ValidParams && index >= Index_serialNum && index <= Index_sampleNum))
 	{
 		errorCode_serialNum = code;
 	}
 	return code;
 }
 
-//判断参数是否有效
-bool DetectParams::isValid(ParamsIndex index, AdminConfig *adminConfig)
+//功能：判断参数是否有效
+//参数：index 需要判断有效性的参数范围
+//      doCheck 当值为true时，如果未检查过有效性，则先检查
+//      adminConfig 判断初始化相关参数的有效性时，需要读取系统参数
+bool DetectParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminConfig)
 {
-	if (errorCode == ValidParams) return errorCode;
+	if (errorCode == ValidParams) return true;
+	
+	//所有参数
 	if (index == Index_All) {
-		if (errorCode == DetectParams::Uncheck) 
+		if (doCheck && errorCode == DetectParams::Uncheck)
 			checkValidity(index, adminConfig);
-		return errorCode;
+		return (errorCode == ValidParams);
 	}
 
+	//初始化相关参数
 	if (index == Index_All_SysInit) {
-		if (errorCode_sysInit == DetectParams::Uncheck) 
+		if (doCheck && errorCode_sysInit == DetectParams::Uncheck)
 			checkValidity(index, adminConfig);
-		return errorCode_sysInit;
+		return (errorCode_sysInit == ValidValues);
 	}
 
+	//产品序号相关参数
 	if (index == Index_All_SerialNum) {
-		if (errorCode_serialNum == DetectParams::Uncheck) 
-			checkValidity(index, adminConfig);
-		return errorCode_serialNum;
+		if (doCheck && errorCode_serialNum == DetectParams::Uncheck)
+			checkValidity(index);
+		return (errorCode_serialNum == ValidValues);
 	}
-	return errorCode;
+	return (errorCode == ValidParams);
 }
 
 //获取错误代码

@@ -101,8 +101,9 @@ namespace pcb
 		};
 
 		enum ErrorCode {
-			ValidParams = 0x000,
 			ValidValue = 0x000,
+			ValidValues = 0x000,
+			ValidParams = 0x000,
 			Uncheck = 0x300,
 			Invalid_serialNum = 0x301,
 			Invalid_sampleModelNum = 0x302,
@@ -118,9 +119,9 @@ namespace pcb
 		};
 
 	private:
-		ErrorCode errorCode = Uncheck;
-		ErrorCode errorCode_serialNum = Uncheck;
-		ErrorCode errorCode_sysInit = Uncheck;
+		ErrorCode errorCode;
+		ErrorCode errorCode_serialNum;
+		ErrorCode errorCode_sysInit;
 
 		//系统状态值 0x123456789
 		//adminConfig 1， detectConfig 2, DetectParams 3
@@ -142,7 +143,7 @@ namespace pcb
 		ErrorCode parseSerialNum();
 
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
-		bool isValid(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
+		bool isValid(ParamsIndex index = Index_All, bool doCheck = false, AdminConfig *adminConfig = Q_NULLPTR);
 		ErrorCode getErrorCode(ParamsIndex index = Index_All);//获取错误代码
 		void resetErrorCode(ParamsIndex index = Index_All);//重置错误代码
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
