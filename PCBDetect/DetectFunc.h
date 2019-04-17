@@ -1,6 +1,6 @@
 #pragma once
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "direct.h"
 #include <io.h>
 #include <string>

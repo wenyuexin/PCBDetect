@@ -101,6 +101,9 @@ void DefectDetecter::detect()
 			cv::Mat templ_roi = cv::Mat::ones(templ_gray.size(), templ_gray.type()) * 255;
 			cv::warpPerspective(templ_roi, templ_roi, h, templ_roi.size());
 
+			cv::Mat templRoiReverse = 255 - templ_roi;
+			cv::add(samp_gray_reg, templ_gray, samp_gray_reg, templRoiReverse);
+
 			//边缘有一个roi
 			string mask_path = detectConfig->TemplDirPath.toStdString() + "/" + detectParams->sampleModelNum.toStdString()
 				+ "/mask/" + to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_mask" + detectConfig->ImageFormat.toStdString();
@@ -178,7 +181,9 @@ void DefectDetecter::detect()
 			cv::Size sz = detectFunc->getBigTempl().size();
 			cv::Mat dst;
 			cv::resize(detectFunc->getBigTempl(), dst, cv::Size(sz.width*0.25, sz.height*0.25), (0, 0), (0, 0), cv::INTER_LINEAR);
-			cv::imwrite(detectFunc->out_path + "/" + "fullImage_" + std::to_string(sz.width) + "_" + std::to_string(sz.height) + "_" + to_string(defectNum) + ".jpg", dst);
+			string fullImagePath = detectFunc->out_path + "/fullImage";
+			_mkdir(fullImagePath.c_str());
+			cv::imwrite(fullImagePath + "/fullImage_" + std::to_string(sz.width) + "_" + std::to_string(sz.height) + "_" + to_string(defectNum) + ".jpg", dst);
 			defectNum = 0;//将整体缺陷置0
 		}
 	}
@@ -192,6 +197,7 @@ void DefectDetecter::detect()
 	emit updateDetectState_detecter(detectState);
 	pcb::delay(10);
 	bool qualified = (defectNum < 100);
+
 	if (detectParams->currentRow_detect == detectParams->nPhotographing-1)
 		emit detectFinished_detectThread(qualified);
 }

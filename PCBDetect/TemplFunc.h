@@ -1,7 +1,7 @@
 #pragma once
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include <string>
 #include "direct.h"
 #include <io.h>

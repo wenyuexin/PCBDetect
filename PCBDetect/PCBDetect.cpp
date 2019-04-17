@@ -4,6 +4,7 @@ using pcb::AdminConfig;
 using pcb::DetectConfig;
 using pcb::DetectParams;
 
+
 PCBDetect::PCBDetect(QWidget *parent)
 	: QMainWindow(parent)
 {
@@ -22,8 +23,8 @@ PCBDetect::PCBDetect(QWidget *parent)
 
 	//相机控制器
 	cameraControler = new CameraControler;
-	cameraControler->setMaxCameraNum(&adminConfig.MaxCameraNum);
-	cameraControler->setCameraNum(&detectParams.nCamera);
+	cameraControler->setAdminConfig(&adminConfig);
+	cameraControler->setDetectParams(&detectParams);
 
 	//启动界面
 	launcher = new LaunchUI;
@@ -122,45 +123,53 @@ void PCBDetect::on_launchFinished_launchUI(int launchCode)
 //设置
 void PCBDetect::on_pushButton_set_clicked()
 {
-	showSettingUI();
+	this->showSettingUI();
 }
 
 void PCBDetect::on_pushButton_set2_clicked()
 {
-	showSettingUI();
+	this->showSettingUI();
 }
 
 //模板提取
 void PCBDetect::on_pushButton_getTempl_clicked()
 {
-	showTemplateUI();
+	motionControler->resetControler(); //运动结构复位
+	templateUI->refreshCameraControler();
+	this->showTemplateUI();
 }
 
 void PCBDetect::on_pushButton_getTempl2_clicked()
 {
-	showTemplateUI();
+	motionControler->resetControler(); //运动结构复位
+	templateUI->refreshCameraControler();//根据模板提取的参数更新相机控制器
+	this->showTemplateUI();//显示模板提取界面
 }
 
 //检测
 void PCBDetect::on_pushButton_detect_clicked()
 {
-	showDetectUI();
+	motionControler->resetControler(); //运动结构复位
+	detectUI->refreshCameraControler();//根据检测的参数更新相机控制器
+	this->showDetectUI();//显示检测界面
 }
 
 void PCBDetect::on_pushButton_detect2_clicked()
 {
-	showDetectUI();
+	motionControler->resetControler(); //运动结构复位
+	detectUI->refreshCameraControler();//根据检测的参数更新相机控制器
+	this->showDetectUI();//显示检测界面
 }
 
 //退出
 void PCBDetect::on_pushButton_exit_clicked()
 {
-	eixtDetectSystem();
+	this->eixtDetectSystem();
 }
 
 void PCBDetect::on_pushButton_exit2_clicked()
 {
-	eixtDetectSystem();
+	this->eixtDetectSystem();
 }
 
 //设置按键是否可点击

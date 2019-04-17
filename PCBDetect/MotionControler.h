@@ -1,11 +1,13 @@
 #pragma once
-
+#pragma comment(lib, "NETDLL.lib")
+#pragma comment(lib,"MOTIONDLL.lib")
+#include "AMC98C.h"
+#include "MOTION_DLL.h"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include <QObject>
 #include <QThread>
 #include <QMutex> 
-//#include "AMC98C.h"
 
 //#ifdef _DEBUG
 //#define new DEBUG_NEW
@@ -27,8 +29,9 @@ public:
 		InitFailed = 0x401,
 		MoveForwardFailed = 0x402,
 		ReturnToZeroFailed = 0x403,
-		ResetControlerFailed = 0x404,
-		Default
+		MoveToInitialPosFailed = 0x404,
+		ResetControlerFailed = 0x405,
+		Default = 0x4FF
 	};
 
 	const int MaxRuntime = 5000; //单位ms
@@ -38,11 +41,12 @@ private:
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectParams *detectParams; //运行参数
 
-	int callerOfResetControler; //复位的调用函数的标识
 	bool running; //操作是否正在运行
 	QMutex mutex; //线程锁
 	
 	ErrorCode errorCode; //控制器的错误码
+
+	const int RETRY_NUM = 1;
 
 public:
 	MotionControler(QObject *parent = Q_NULLPTR);
@@ -52,10 +56,11 @@ public:
 	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; } 
 	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
-	void initControler(); //初始化
-	void moveForward(); //前进
-	void returnToZero(); //归零
-	void resetControler(int caller); //复位
+	bool initControler(); //初始化
+	bool moveForward(); //前进
+	bool returnToZero(); //归零
+	bool moveToInitialPos();//移动到初始位置，到位即可拍照
+	bool resetControler(); //复位
 	bool isRunning(); //判断当前是否有正在运行的操作
 
 	inline bool isReady() { return errorCode == NoError; }
@@ -63,6 +68,8 @@ public:
 	bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
 private:
+	void markInitFailed();
+	bool _AMC98_AddParamPC2CNC(int paramNum, int data);
 	void on_initControler_finished();
 	void on_moveForward_finished();
 	void on_returnToZero_finished();
@@ -72,6 +79,7 @@ Q_SIGNALS:
 	void initControlerFinished_motion();
 	void moveForwardFinished_motion();
 	void returnToZeroFinished_motion();
-	void resetControlerFinished_motion(int);
+	void moveToInitialPosFinished_motion();
+	void resetControlerFinished_motion();
 };
 

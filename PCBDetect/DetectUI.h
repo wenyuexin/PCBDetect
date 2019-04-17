@@ -1,9 +1,10 @@
 #pragma once
 
+#include "AMC98C.h"
 #include <QWidget>
 #include "ui_DetectUI.h"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "DetectThread.h"
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
@@ -68,6 +69,7 @@ public:
 	void doConnect();
 	void initGraphicsView();
 	void resetDetectUI();
+	void refreshCameraControler();
 
 private:
 	void initItemGrid(pcb::ItemGrid &grid);//初始化图元网格
@@ -95,8 +97,9 @@ private Q_SLOTS:
 	void do_updateDetectState_detecter(int state);
 	void on_detectFinished_detectThread(bool qualified);
 
-	void on_moveForwardFinished_motion();
 	void on_resetControlerFinished_motion(int);
+	void on_moveToInitialPosFinished_motion();
+	void on_moveForwardFinished_motion();
 	void on_initCamerasFinished_camera(int);
 	void on_takePhotosFinished_camera(int);
 	void on_convertFinished_convertThread();
