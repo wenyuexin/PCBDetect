@@ -2,7 +2,7 @@
 #include <QObject>
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "TemplFunc.h"
 
 

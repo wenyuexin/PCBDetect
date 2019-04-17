@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "opencv2/opencv.hpp"
 #include <QThread>
 #include <map>
@@ -18,7 +18,7 @@ public:
 	enum Operation {
 		NoOperation,
 		InitCameras,
-		TakePhoto
+		TakePhotos
 	};
 
 	//相机的错误代码
@@ -32,12 +32,15 @@ public:
 private:
 	pcb::CvMatArray *cvmatSamples; //用于检测的样本图
 	int *currentRow; //当前行号
-	int *nCamera; //当前使用的相机个数
-	int *MaxCameraNum; //可使用的相机总数
+
+	pcb::AdminConfig *adminConfig; //系统参数
+	pcb::DetectConfig *detectConfig; //用户参数
+	pcb::DetectParams *detectParams; //运行参数
 
 	std::vector<int> deviceIndex = {}; //设备号
 	std::vector<cv::VideoCapture> cameraList; //相机列表
 	std::map<int, bool> cameraState; //相机状态 <设备号,状态值>
+
 	ErrorCode errorCode = Uncheck; //控制器的错误码
 	Operation operation = NoOperation;//操作指令
 
@@ -47,8 +50,11 @@ public:
 
 	inline void setCvMatSamples(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setCurrentRow(int *row) { currentRow = row;  }
-	inline void setCameraNum(int *num) { nCamera = num; }
-	inline void setMaxCameraNum(int *num) { MaxCameraNum = num; }
+
+	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
+	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
+	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+
 	inline void setDeviceIndex(std::vector<int> &iv) { deviceIndex = iv; }
 	inline void setOperation(Operation op) { operation = op; }
 
@@ -68,5 +74,4 @@ protected:
 Q_SIGNALS:
 	void initCamerasFinished_camera(int);
 	void takePhotosFinished_camera(int);
-
 };

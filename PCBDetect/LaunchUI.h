@@ -4,7 +4,7 @@
 #include "ui_LaunchUI.h"
 #include "SysInitThread.h"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
 #include <QDesktopWidget>

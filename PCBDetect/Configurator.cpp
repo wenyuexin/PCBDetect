@@ -709,17 +709,17 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 /******************* 暂时没用 ********************/
 
 //获取当前磁盘剩余空间
-quint64 Configurator::getDiskFreeSpace(QString driver)
-{
-	LPCWSTR lpcwstrDriver = (LPCWSTR)driver.utf16();
-	ULARGE_INTEGER liFreeBytesAvailable, liTotalBytes, liTotalFreeBytes;
-
-	if (!GetDiskFreeSpaceEx(lpcwstrDriver, &liFreeBytesAvailable, &liTotalBytes, &liTotalFreeBytes)) {
-		qDebug() << "ERROR: Call to GetDiskFreeSpaceEx() failed.";
-		return 0;
-	}
-	return (quint64)liTotalFreeBytes.QuadPart / 1024 / 1024 / 1024;
-}
+//quint64 Configurator::getDiskFreeSpace(QString driver)
+//{
+//	LPCWSTR lpcwstrDriver = (LPCWSTR)driver.utf16();
+//	ULARGE_INTEGER liFreeBytesAvailable, liTotalBytes, liTotalFreeBytes;
+//
+//	if (!GetDiskFreeSpaceEx(lpcwstrDriver, &liFreeBytesAvailable, &liTotalBytes, &liTotalFreeBytes)) {
+//		qDebug() << "ERROR: Call to GetDiskFreeSpaceEx() failed.";
+//		return 0;
+//	}
+//	return (quint64)liTotalFreeBytes.QuadPart / 1024 / 1024 / 1024;
+//}
 
 //暂时没用
 bool Configurator::checkDir(QString dirpath)

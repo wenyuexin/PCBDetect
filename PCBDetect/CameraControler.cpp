@@ -1,5 +1,8 @@
 #include "CameraControler.h"
 
+using cv::Mat;
+using pcb::CvMatVector;
+
 
 CameraControler::CameraControler(QThread *parent)
 	: QThread(parent)
@@ -21,12 +24,13 @@ void CameraControler::run()
 		initCameras();
 		emit initCamerasFinished_camera(errorCode);
 		break;
-	case Operation::TakePhoto: //拍照
+	case Operation::TakePhotos: //拍照
 	    //拍摄结束后将结果存入 (*cvmatSamples)[*currentRow] 中
 		takePhotos();
 		emit takePhotosFinished_camera(errorCode);
 		break;
 	case Operation::NoOperation:
+		break;
 	default:
 		break;
 	}
@@ -39,29 +43,39 @@ void CameraControler::run()
 //输入相机实际排列顺序对应的设备编号进行初始化,系统设备编号从0开始
 CameraControler::ErrorCode CameraControler::initCameras()
 {
-	if (*nCamera <= 0)
+	if (detectParams->nCamera <= 0)
 		return errorCode = CameraControler::InvalidCameraNum;
 
+	//初始化相机列表
 	errorCode = CameraControler::NoError;
 	if (deviceIndex.size() == 0) { //使用默认的设备号初始化
-		if (*nCamera > *MaxCameraNum) //判断调用的相机个数是否过多
+		if (detectParams->nCamera > adminConfig->MaxCameraNum) //判断调用的相机个数是否过多
 			return errorCode = CameraControler::InvalidCameraNum;
 
-		//availableCameras.put(*nCamera); 
-		for (int i = 0; i < *nCamera; i++) { //添加相机
+		for (int i = 0; i < detectParams->nCamera; i++) { //添加相机
 			cameraList.push_back(cv::VideoCapture(i));
 			cameraState[i] = cameraList[i].isOpened(); //判断相机是否能打开
 			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
+			else {
+				cameraList[i].set(cv::CAP_PROP_FRAME_HEIGHT, adminConfig->ImageSize_H);
+				cameraList[i].set(cv::CAP_PROP_FRAME_WIDTH, adminConfig->ImageSize_W);
+				//cameraList[i].set(cv::CAP_PROP_BUFFERSIZE, 0);
+			}
 		}
 	}
 	else { //使用设定的设备号初始化
-		if (*nCamera > deviceIndex.size()) //判断调用的相机个数是否过多
+		if (detectParams->nCamera > deviceIndex.size()) //判断调用的相机个数是否过多
 			return errorCode = CameraControler::InvalidCameraNum;
 
 		for (int i = 0; i < deviceIndex.size(); i++) { //添加相机
 			cameraList.push_back(cv::VideoCapture(deviceIndex[i]));
 			cameraState[i] = cameraList[i].isOpened(); //判断相机是否能打开
 			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
+			else {
+				cameraList[i].set(cv::CAP_PROP_FRAME_HEIGHT, adminConfig->ImageSize_H);
+				cameraList[i].set(cv::CAP_PROP_FRAME_WIDTH, adminConfig->ImageSize_W);
+				cameraList[i].set(cv::CAP_PROP_BUFFERSIZE, 0);
+			}
 		}
 	}
 	return errorCode;
@@ -83,12 +97,27 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 {
 	errorCode = CameraControler::NoError;
 
-	cv::Mat frame;
-	for (int i = 0; i < *nCamera; i++) {
-		cameraList[i] >> frame;
-		cv::Mat* pMat = new cv::Mat(frame);
-		(*cvmatSamples)[*currentRow][i] = pMat;
+	if (true || *currentRow == 0) {
+		for (int i = 0; i < detectParams->nCamera; i++) {
+			Mat frame;
+			cameraList[i] >> frame;
+			pcb::delay(200);
+		}
 	}
+	pcb::delay(6000);
+
+	for (int i = 0; i < detectParams->nCamera; i++) {
+		int iCamera = detectParams->nCamera - i - 1;
+
+		Mat frame;
+		cameraList[i] >> frame;
+		pcb::delay(100);
+		cv::Mat* pMat = new cv::Mat(frame.clone());
+		pcb::delay(100);
+		(*cvmatSamples)[*currentRow][iCamera] = pMat;
+		pcb::delay(2000);
+	}
+
 	return errorCode;
 }
 

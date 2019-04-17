@@ -33,10 +33,10 @@ DetectUI::DetectUI(QWidget *parent)
 	ui.label_indicator->setPixmap(defaultIcon); //加载
 	
 	//加载其他指示灯图标
-	QImage redIcon = QImage(IconFolder + "/red.png"); //red
-	lightOnIcon = QPixmap::fromImage(redIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio));
-	QImage greenIcon = QImage(IconFolder + "/green.png"); //grey
-	lightOffIcon = QPixmap::fromImage(greenIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio));
+	QPixmap redIcon = QPixmap(IconFolder + "/red.png"); //red
+	lightOnIcon = redIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
+	QPixmap greenIcon = QPixmap(IconFolder + "/green.png"); //grey
+	lightOffIcon = greenIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 
 	//产品序号识别界面
 	connect(&serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
@@ -69,6 +69,7 @@ void DetectUI::doConnect()
 	//运动控制
 	connect(motionControler, SIGNAL(moveForwardFinished_motion()), this, SLOT(on_moveForwardFinished_motion()));
 	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion(int)));
+	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion()), this, SLOT(on_moveToInitialPosFinished_motion()));
 	//相机控制
 	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
 	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
@@ -293,14 +294,15 @@ void DetectUI::on_pushButton_start_clicked()
 		ui.pushButton_return->setEnabled(false); //禁用返回按键
 
 		resetDetectUI();//重置检测子模块
-		motionControler->resetControler(1); //运动结构复位
+		motionControler->moveToInitialPos(); //运动结构复位
 	}
 }
 
 //返回
 void DetectUI::on_pushButton_return_clicked()
 {
-	resetDetectUI(); //重置检测子界面，清空缓存数据
+	this->resetDetectUI(); //重置检测子界面，清空缓存数据
+	motionControler->resetControler(); //运动结构复位
 	emit showDetectMainUI(); //发送返回信号
 }
 
@@ -320,7 +322,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 		qDebug() << ">>>>>>>>>> Key_PageUp";
 		if (!detectThread->isRunning()) {
 			resetDetectUI();//重置检测子模块
-			motionControler->resetControler(2); //运动结构复位
+			motionControler->resetControler(); //运动结构复位
 		}
 	case Qt::Key_PageDown:
 		qDebug() << ">>>>>>>>>> Key_PageDown";
@@ -422,7 +424,6 @@ void DetectUI::showSampleImages()
 }
 
 
-
 /******************** 字符识别 ********************/
 
 //通过鼠标双击打开字符识别界面
@@ -475,6 +476,8 @@ void DetectUI::do_showPreviousUI_serialNumUI()
 //运动结构前进结束
 void DetectUI::on_moveForwardFinished_motion()
 {
+	if (motionControler->getErrorCode() != MotionControler::NoError) return;
+
 	//调用相机进行拍照
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
 		currentRow_show += 1; //更新显示行号
@@ -488,22 +491,39 @@ void DetectUI::on_moveForwardFinished_motion()
 	}
 }
 
-//复位
+//到初始达拍照位置
+void DetectUI::on_moveToInitialPosFinished_motion()
+{
+	if (motionControler->getErrorCode() != MotionControler::NoError) return;
+
+	//调用相机进行拍照
+	if (currentRow_show + 1 < detectParams->nPhotographing) {
+		currentRow_show += 1; //更新显示行号
+
+		ui.label_status->setText(pcb::chinese("正在拍摄第") +
+			QString::number(currentRow_show + 1) +
+			pcb::chinese("行分图"));//更新状态
+		qApp->processEvents();
+
+		cameraControler->start(); //拍照
+	}
+}
+
+//复位结束
 void DetectUI::on_resetControlerFinished_motion(int caller)
 {
-	switch (caller)
-	{
-	case 1: //DetectUI::on_pushButton_start_clicked()
-		pcb::delay(10);
-		motionControler->moveForward(); //运动结构前进
-		break;
-	default:
-		break;
-	}
 }
 
 
 /******************** 相机控制 ********************/
+
+//更新相机控制器的参数
+void DetectUI::refreshCameraControler()
+{
+	cameraControler->setCurrentRow(&currentRow_show);//设置行号
+	cameraControler->setCvMatSamples(&cvmatSamples);//设置图像容器
+	cameraControler->setOperation(CameraControler::TakePhotos);//设置相机操作
+}
 
 //相机初始化结束
 void DetectUI::on_initCamerasFinished_camera(int)
@@ -549,16 +569,29 @@ void DetectUI::on_convertFinished_convertThread()
 
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
-	if (currentRow_show + 1 < detectParams->nPhotographing)
-		motionControler->moveForward(); //运动结构前进
-	else
-		motionControler->resetControler(3); //当前PCB拍完则复位
+	if (currentRow_show + 1 < detectParams->nPhotographing) {
+		if (!motionControler->moveForward()) { //运动结构前进
+			motionControler->showMessageBox(this);
+			pcb::delay(10);
+		}
+	}
+	else {
+		if (!motionControler->resetControler()) {
+			motionControler->showMessageBox(this);
+			pcb::delay(10);
+		}
+
+		//如果此时还没开始提取，则可以点击返回按键
+		if (detectParams->currentRow_detect == -1) {
+			ui.pushButton_return->setEnabled(true);
+		}
+	}
 
 	//判断是否执行检测操作
 	if (detectParams->isValid(DetectParams::Index_All_SerialNum, false)
 		&& eventCounter >= 1 && !detectThread->isRunning())
 	{
-		detectSampleImages(); //提取
+		detectSampleImages(); //检测
 	}
 }
 
@@ -568,6 +601,9 @@ void DetectUI::on_convertFinished_convertThread()
 //检测当前的一行样本图像
 void DetectUI::detectSampleImages()
 {
+	//禁用返回键
+	ui.pushButton_return->setEnabled(false);
+
 	//更新提取行号
 	detectParams->currentRow_detect += 1;
 
@@ -585,8 +621,10 @@ void DetectUI::detectSampleImages()
 void DetectUI::do_updateDetectState_detecter(int state)
 {
 	if ((DefectDetecter::DetectState)state == DefectDetecter::Finished) { //检测完一行图像
+		//更新事件计数器
+		eventCounter -= 1; 
 
-		eventCounter -= 1; //更新事件计数器
+		//更新状态栏
 		ui.label_status->setText(QString::fromLocal8Bit("第") +
 			QString::number(detectParams->currentRow_detect + 1) +
 			QString::fromLocal8Bit("行检测结束"));//更新状态栏
@@ -594,11 +632,12 @@ void DetectUI::do_updateDetectState_detecter(int state)
 
 		//检查是否有未处理的事件
 		while (detectThread->isRunning()) pcb::delay(50); //等待线程结束
-		if (detectParams->currentRow_detect == detectParams->nPhotographing - 1) { //当前PCB提取结束
+		if (detectParams->currentRow_detect == detectParams->nPhotographing - 1) { //当前PCB检测结束
+			detectParams->currentRow_detect = detectParams->nPhotographing;
 			ui.pushButton_start->setEnabled(true); //启用开始按键
 			ui.pushButton_return->setEnabled(true); //启用返回按键
 		}
-		else { //当前PCB未提取完
+		else { //当前PCB未检测完
 			if (eventCounter > 0) detectSampleImages(); //检测下一行分图
 		}
 	}
@@ -610,5 +649,5 @@ void DetectUI::on_detectFinished_detectThread(bool qualified)
 {
 	//显示结果
 	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
-	ui.label_result->setText((qualified) ? QString::fromLocal8Bit("合格") : QString::fromLocal8Bit("不合格"));
+	ui.label_result->setText((qualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
 }

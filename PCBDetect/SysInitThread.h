@@ -2,10 +2,10 @@
 
 #include <QThread>
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
-#include <windows.h>
+//#include <windows.h>
 
 
 //初始化线程

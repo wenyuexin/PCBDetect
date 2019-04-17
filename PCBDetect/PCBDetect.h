@@ -5,7 +5,7 @@
 #include "LaunchUI.h"
 #include "SysInitThread.h"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "DetectUI.h"
 #include "SettingUI.h"
 #include "TemplateUI.h"

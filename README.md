@@ -67,7 +67,7 @@
 | ImgConvertThread <br/>ImageConverter | 图像类型转换 | 0x600 ~ 0x6FF |
 | SerialNumberUI | 产品序号识别 | 0x700 ~ 0x7FF |
 | TemplateUI<br/>TemplateThread<br/>TemplateExtractor<br/>TemplFunc | 模板提取 | 0x800 ~ 0x8FF |
-| DetectUI<br/>DetectThread<br/>DetectCore<br/>DetectFunc | 检测 | 0x900 ~ 0x9FF |
+| DetectUI<br/>DetectThread<br/>DefectDetecter<br/>DetectFunc | 检测 | 0x900 ~ 0x9FF |
 |                                                              |              |               |
 |  |  |  |
 

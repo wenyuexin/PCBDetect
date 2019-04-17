@@ -53,7 +53,8 @@ void TemplateUI::doConnect()
 {
 	//运动控制
 	connect(motionControler, SIGNAL(moveForwardFinished_motion()), this, SLOT(on_moveForwardFinished_motion()));
-	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion(int)));
+	connect(motionControler, SIGNAL(resetControlerFinished_motion()), this, SLOT(on_resetControlerFinished_motion()));
+	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion()), this, SLOT(on_moveToInitialPosFinished_motion()));
 	//相机控制
 	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
 	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
@@ -276,14 +277,15 @@ void TemplateUI::on_pushButton_start_clicked()
 		ui.pushButton_return->setEnabled(false); //禁用返回按键
 
 		resetTemplateUI();//重置模板提取子模块
-		motionControler->resetControler(1); //运动结构复位
+		motionControler->moveToInitialPos();//运动到初始拍照位置
 	}
 }
 
 //返回
 void TemplateUI::on_pushButton_return_clicked()
 {
-	resetTemplateUI(); //重置模板提取界面，清空缓存数据
+	this->resetTemplateUI(); //重置模板提取界面，清空缓存数据
+	motionControler->resetControler(); //运动结构复位
 	emit showDetectMainUI(); //发送返回信号
 }
 
@@ -302,10 +304,12 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 		qDebug() << "===== Key_PageUp";
 		if (!templThread->isRunning()) {
 			resetTemplateUI();//重置模板提取子模块
-			motionControler->resetControler(2); //运动结构复位
+			motionControler->resetControler(); //运动结构复位
 		}
 	case Qt::Key_PageDown:
 		qDebug() << "===== Key_PageDown";
+		//motionControler->moveForward();
+		//motionControler->resetControler(0x803);
 		break;
 	case Qt::Key_Up:
 		qDebug() << "===== Up";
@@ -456,6 +460,8 @@ void TemplateUI::do_showPreviousUI_serialNumUI()
 //运动结构前进结束
 void TemplateUI::on_moveForwardFinished_motion()
 {
+	if (motionControler->getErrorCode() != MotionControler::NoError) return;
+
 	//调用相机进行拍照
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
 		currentRow_show += 1; //更新显示行号
@@ -469,22 +475,39 @@ void TemplateUI::on_moveForwardFinished_motion()
 	}
 }
 
-//复位
-void TemplateUI::on_resetControlerFinished_motion(int caller)
+//到初始达拍照位置
+void TemplateUI::on_moveToInitialPosFinished_motion()
 {
-	switch (caller)
-	{
-	case 1: //TemplateUI::on_pushButton_start_clicked()
-		pcb::delay(10);
-		motionControler->moveForward(); //运动结构前进
-		break;
-	default:
-		break;
+	if (motionControler->getErrorCode() != MotionControler::NoError) return;
+
+	//调用相机进行拍照
+	if (currentRow_show + 1 < detectParams->nPhotographing) {
+		currentRow_show += 1; //更新显示行号
+
+		ui.label_status->setText(pcb::chinese("正在拍摄第") +
+			QString::number(currentRow_show + 1) +
+			pcb::chinese("行分图"));//更新状态
+		qApp->processEvents();
+
+		cameraControler->start(); //拍照
 	}
+}
+
+//复位结束
+void TemplateUI::on_resetControlerFinished_motion()
+{
 }
 
 
 /******************** 相机控制 ********************/
+
+//更新相机控制器的参数
+void TemplateUI::refreshCameraControler()
+{
+	cameraControler->setCurrentRow(&currentRow_show);//设置行号
+	cameraControler->setCvMatSamples(&cvmatSamples);//设置图像
+	cameraControler->setOperation(CameraControler::TakePhotos);//设置相机操作
+}
 
 //相机初始化结束
 void TemplateUI::on_initCamerasFinished_camera(int)
@@ -518,10 +541,10 @@ void TemplateUI::on_convertFinished_convertThread()
 	clock_t t1 = clock();
 	showSampleImages(); 
 	clock_t t2 = clock();
-	qDebug() << "showSampleImages: " << (t2 - t1) << "ms ( currentRow =" << currentRow_show << ")";
+	qDebug() << "showSampleImages: " << (t2 - t1) 
+		<< "ms ( currentRow =" << currentRow_show << ")";
 
 	//更新状态栏
-	//if (currentRow_show == 0) detectParams->resetSerialNum();//测试使用
 	if (!detectParams->isValid(DetectParams::Index_All_SerialNum, false)) {
 		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
 			+ pcb::chinese("获取产品序号"));
@@ -531,10 +554,23 @@ void TemplateUI::on_convertFinished_convertThread()
 
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
-	if (currentRow_show + 1 < detectParams->nPhotographing) 
-		motionControler->moveForward(); //运动结构前进
-	else
-		motionControler->resetControler(3); //当前PCB拍完则复位
+	if (currentRow_show + 1 < detectParams->nPhotographing) {
+		if (!motionControler->moveForward()) { //运动结构前进
+			motionControler->showMessageBox(this);
+			pcb::delay(10);
+		}
+	}
+	else { //当前PCB拍完则复位
+		if (!motionControler->resetControler()) {
+			motionControler->showMessageBox(this);
+			pcb::delay(10);
+		}
+		
+		//如果此时还没开始提取，则可以点击返回按键
+		if (detectParams->currentRow_extract == -1) {
+			ui.pushButton_return->setEnabled(true);
+		}
+	}
 
 	//判断是否执行检测操作
 	if (detectParams->isValid(DetectParams::Index_All_SerialNum, false)
@@ -550,6 +586,9 @@ void TemplateUI::on_convertFinished_convertThread()
 //提取当前的一行样本图像
 void TemplateUI::extractTemplateImages()
 {
+	//禁用返回键
+	ui.pushButton_return->setEnabled(false);
+
 	//更新提取行号
 	detectParams->currentRow_extract += 1;
 
@@ -568,7 +607,8 @@ void TemplateUI::update_extractState_extractor(int state)
 {
 	//当提取完一行图像
 	if ((TemplateExtractor::ExtractState)state == TemplateExtractor::Finished) { 
-		eventCounter -= 1; //更新事件计数器
+		//更新事件计数器
+		eventCounter -= 1; 
 
 		//更新状态栏
 		ui.label_status->setText(pcb::chinese("第") +
@@ -579,6 +619,7 @@ void TemplateUI::update_extractState_extractor(int state)
 		//检查是否有未处理的事件
 		while (templThread->isRunning()) pcb::delay(50); //等待线程结束
 		if (detectParams->currentRow_extract == detectParams->nPhotographing - 1) { //当前PCB提取结束
+			detectParams->currentRow_extract = detectParams->nPhotographing;
 			ui.pushButton_start->setEnabled(true); //启用开始按键
 			ui.pushButton_return->setEnabled(true); //启用返回按键
 		}
