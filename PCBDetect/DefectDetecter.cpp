@@ -87,6 +87,7 @@ void DefectDetecter::detect()
 		std::string sampPath = out_path + "\\" + to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + detectConfig->ImageFormat.toStdString();
 		imwrite(sampPath,samp);
 
+
 		//样本二值化
 		cv::Mat sampBw;
 		cv::adaptiveThreshold(samp_gray, sampBw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
