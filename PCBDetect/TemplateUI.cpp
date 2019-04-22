@@ -121,6 +121,13 @@ void TemplateUI::resetTemplateUI()
 	qApp->processEvents();
 }
 
+//按键设置
+void TemplateUI::setPushButtonsEnabled(bool enable)
+{
+	ui.pushButton_start->setEnabled(enable);
+	ui.pushButton_return->setEnabled(enable);
+}
+
 
 /********* 图元矩阵和样本图像矩阵的初始化和删除等操作 ***********/
 
@@ -273,11 +280,10 @@ void TemplateUI::on_pushButton_start_clicked()
 {
 	if (detectParams->currentRow_extract == -1 && !templThread->isRunning()) {
 		ui.label_status->setText(pcb::chinese("开始运行"));
-		ui.pushButton_start->setEnabled(false); //禁用开始按键
-		ui.pushButton_return->setEnabled(false); //禁用返回按键
+		this->setPushButtonsEnabled(false); //禁用按键
 
 		//重置模板提取子模块
-		resetTemplateUI();
+		this->resetTemplateUI();
 		//运动到初始拍照位置
 		motionControler->setOperation(MotionControler::MoveToInitialPos);
 		motionControler->start();
@@ -287,8 +293,11 @@ void TemplateUI::on_pushButton_start_clicked()
 //返回
 void TemplateUI::on_pushButton_return_clicked()
 {
+	//设置按键
+	this->setPushButtonsEnabled(false);
 	//重置模板提取界面，清空缓存数据
 	this->resetTemplateUI(); 
+
 	//运动结构复位
 	motionControler->setOperation(MotionControler::ResetControler);
 	motionControler->start(); 
@@ -297,6 +306,9 @@ void TemplateUI::on_pushButton_return_clicked()
 		motionControler->showMessageBox(this);
 		pcb::delay(10);
 	}
+
+	//设置按键
+	this->setPushButtonsEnabled(true);
 	//发送返回信号
 	emit showDetectMainUI(); 
 }
@@ -636,8 +648,7 @@ void TemplateUI::update_extractState_extractor(int state)
 		while (templThread->isRunning()) pcb::delay(50); //等待线程结束
 		if (detectParams->currentRow_extract == detectParams->nPhotographing - 1) { //当前PCB提取结束
 			detectParams->currentRow_extract = detectParams->nPhotographing;
-			ui.pushButton_start->setEnabled(true); //启用开始按键
-			ui.pushButton_return->setEnabled(true); //启用返回按键
+			this->setPushButtonsEnabled(true); //启用按键
 		}
 		else { //当前PCB未提取完
 			if (eventCounter > 0) extractTemplateImages(); //提取下一行分图

@@ -66,11 +66,22 @@ DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminC
 	stroke /= adminConfig->PixelsNumPerUnitLength;
 	this->singleMotionStroke = (int) ceil(stroke);
 
-	this->singleMotionStroke = 80;
+	this->singleMotionStroke = 79;
 
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Uncheck;
 	code = checkValidity(ParamsIndex::Index_singleMotionStroke, adminConfig);
+	return code;
+}
+
+//计算初始拍照位置
+DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(AdminConfig *adminConfig, DetectConfig *detectConfig)
+{
+	if (!adminConfig->isValid(true) || !detectConfig->isValid(adminConfig)) return Default;
+
+	//判断参数有效性
+	ErrorCode code = ErrorCode::Uncheck;
+	code = checkValidity(ParamsIndex::Index_initialPhotoPos, adminConfig);
 	return code;
 }
 
@@ -79,13 +90,12 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 {
 	if (!adminConfig->isValid(true) || !detectConfig->isValid(adminConfig)) return Default;
 
-
 	//计算需要开启的相机个数
 	double overlap_W = 0.213959; //该值由相机之间的距离决定
 	double nPixels_W = detectConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
 	double nW = nPixels_W / adminConfig->ImageSize_W;
 	this->nCamera = (int) ceil((nW - overlap_W) / (1 - overlap_W));
-
+	
 	this->nCamera = 3;
 
 	//计算拍摄次数
@@ -93,7 +103,7 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	double nPixels_H = detectConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
 	this->nPhotographing = (int) ceil((nH - overlap_H) / (1 - overlap_H));
-
+	
 	this->nPhotographing = 3;
 
 	//判断参数有效性
@@ -169,21 +179,28 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 
 	//初始化相关参数
 	case pcb::DetectParams::Index_All_SysInit:
-	case pcb::DetectParams::Index_singleMotionStroke:
+	case pcb::DetectParams::Index_singleMotionStroke: //单步前进距离
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (singleMotionStroke <= 0 || singleMotionStroke > adminConfig->MaxMotionStroke) {
 			code = Invalid_singleMotionStroke;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
-	case pcb::DetectParams::Index_nCamera:
+	case pcb::DetectParams::Index_initialPhotoPos: //初始拍照位置
+		if (adminConfig == Q_NULLPTR)
+			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
+		if (initialPhotoPos <= 0 || initialPhotoPos > adminConfig->MaxMotionStroke) {
+			code = Invalid_initialPhotoPos;
+		}
+		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
+	case pcb::DetectParams::Index_nCamera: //相机个数
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (nCamera <= 0 || nCamera > adminConfig->MaxCameraNum) {
 			code = Invalid_nCamera;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
-	case pcb::DetectParams::Index_nPhotographing:
+	case pcb::DetectParams::Index_nPhotographing: //拍照次数
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
 		if (nPhotographing * singleMotionStroke > adminConfig->MaxMotionStroke) {
@@ -276,16 +293,27 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 	case pcb::DetectParams::Uncheck:
 		valueName = pcb::chinese("\"参数未验证\""); break;
 	case pcb::DetectParams::Invalid_serialNum:
+	case pcb::DetectParams::Invalid_sampleModelNum:
+	case pcb::DetectParams::Invalid_sampleBatchNum:
+	case pcb::DetectParams::Invalid_sampleNum:
 		valueName = pcb::chinese("\"产品序号\""); break;
+	case pcb::DetectParams::Invalid_singleMotionStroke:
+		valueName = pcb::chinese("\"单步前进距离\""); break;
+	case pcb::DetectParams::Invalid_initialPhotoPos:
+		valueName = pcb::chinese("\"初始拍照位置\""); break;
 	case pcb::DetectParams::Invalid_nCamera:
 		valueName = pcb::chinese("\"相机个数\""); break;
+	case pcb::DetectParams::Invalid_nPhotographing:
+		valueName = pcb::chinese("\"拍照次数\""); break;
 	case pcb::DetectParams::Default:
 		valueName = pcb::chinese("\"未知错误\""); break;
+	default:
+		valueName = "--"; break;
 	}
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
 		pcb::chinese("运行参数无效，请检查参数设置或图像数据！ \n") +
-		pcb::chinese("错误来源：") + valueName + "!        \n" +
+		pcb::chinese("错误来源：") + valueName + "        \n" +
 		"Config: Runtime: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;

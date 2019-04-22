@@ -64,7 +64,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
-	void setPushButtonsToEnabled(bool code, bool all = false);
+	void setPushButtonsEnabled(bool code, bool all = false);
 
 	void on_pushButton_set_clicked();
 	void on_pushButton_set2_clicked();
