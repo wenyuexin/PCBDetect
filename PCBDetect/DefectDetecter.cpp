@@ -184,6 +184,7 @@ void DefectDetecter::detect()
 			string fullImagePath = detectFunc->out_path + "/fullImage";
 			_mkdir(fullImagePath.c_str());
 			cv::imwrite(fullImagePath + "/fullImage_" + std::to_string(sz.width) + "_" + std::to_string(sz.height) + "_" + to_string(defectNum) + ".jpg", dst);
+			detectFunc->generateBigTempl();
 			defectNum = 0;//½«ÕûÌåÈ±ÏİÖÃ0
 		}
 	}
