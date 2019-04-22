@@ -69,6 +69,7 @@ public:
 	void doConnect();
 	void initGraphicsView();
 	void resetDetectUI();
+	void setPushButtonsEnabled(bool enable);
 	void refreshCameraControler();
 
 private:
