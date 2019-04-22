@@ -6,6 +6,8 @@
 #include <QThread>
 #include <map>
 #include <iterator>
+#include "AMC98C.h"
+#include <CameraApi.h>
 
 
 //相机控制器
@@ -26,7 +28,9 @@ public:
 		NoError = 0x000,
 		Uncheck = 0x500,
 		InitFailed = 0x501,
-		InvalidCameraNum = 0x502
+		InvalidCameraNum = 0x502,
+		TakePhotosFailed = 0x503,
+		Default = 0x5FF
 	};
 
 private:
@@ -39,10 +43,11 @@ private:
 
 	std::vector<int> deviceIndex = {}; //设备号
 	std::vector<cv::VideoCapture> cameraList; //相机列表
+	std::vector<CameraHandle> cameraList2;
 	std::map<int, bool> cameraState; //相机状态 <设备号,状态值>
 
-	ErrorCode errorCode = Uncheck; //控制器的错误码
-	Operation operation = NoOperation;//操作指令
+	ErrorCode errorCode; //控制器的错误码
+	Operation operation; //操作指令
 
 public:
 	CameraControler(QThread *parent = Q_NULLPTR);
@@ -58,15 +63,19 @@ public:
 	inline void setDeviceIndex(std::vector<int> &iv) { deviceIndex = iv; }
 	inline void setOperation(Operation op) { operation = op; }
 
-	ErrorCode initCameras();//初始化
-	QString cameraStatusMapToString(); //相机状态转字符串
-	ErrorCode takePhotos();//进行拍摄
 	ErrorCode resetDeviceIndex(std::vector<int> iv = {}); //设定接入的总设备数
 	inline bool checkCameraState(int index) { return cameraState[index]; }
 
 	inline bool isReady() { return errorCode == NoError; }
 	inline ErrorCode getErrorCode() { return errorCode; } //获取当前的错误代码
 	bool showMessageBox(QWidget *parent); //弹窗警告
+
+private:
+	ErrorCode initCameras();//初始化
+	bool initCameras2();
+	QString cameraStatusMapToString(); //相机状态转字符串
+	ErrorCode takePhotos();//进行拍摄
+	void takePhotos2();
 
 protected:
 	void run();

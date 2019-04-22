@@ -156,16 +156,12 @@ bool SysInitThread::initMotionControler()
 	emit sysInitStatus_initThread(pcb::chinese("正在初始化运动结构 ..."));
 	pcb::delay(800);
 	
-	if (!motionControler->initControler()) {
-		emit motionError_initThread(MotionControler::InitFailed);
-		return false; //初始化控制器
-	}
-
+	motionControler->setOperation(MotionControler::InitControler);
+	motionControler->start(); //执行初始化
+	motionControler->wait(); //线程等待
 	if (!motionControler->isReady()) {
-		MotionControler::ErrorCode code;
-		code = motionControler->getErrorCode();
-		emit motionError_initThread(code);
-		return false;
+		emit motionError_initThread(MotionControler::InitFailed);
+		return false; 
 	}
 
 	emit sysInitStatus_initThread(pcb::chinese("运动结构初始化结束    "));
@@ -181,7 +177,7 @@ bool SysInitThread::initCameraControler()
 	cameraControler->setOperation(CameraControler::InitCameras);
 	cameraControler->start(); //启动线程
 	cameraControler->wait(); //线程等待
-	if (cameraControler->getErrorCode() != CameraControler::NoError) { 
+	if (!cameraControler->isReady()) { 
 		emit cameraError_initThread(); return false; 
 	}
 	emit sysInitStatus_initThread(pcb::chinese("相机初始化结束    "));
