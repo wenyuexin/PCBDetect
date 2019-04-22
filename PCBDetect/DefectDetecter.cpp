@@ -201,3 +201,5 @@ void DefectDetecter::detect()
 	if (detectParams->currentRow_detect == detectParams->nPhotographing-1)
 		emit detectFinished_detectThread(qualified);
 }
+
+

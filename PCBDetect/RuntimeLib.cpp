@@ -86,13 +86,15 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	double nW = nPixels_W / adminConfig->ImageSize_W;
 	this->nCamera = (int) ceil((nW - overlap_W) / (1 - overlap_W));
 
+	this->nCamera = 3;
+
 	//计算拍摄次数
 	double overlap_H = adminConfig->ImageOverlappingRate; //图像重叠率
 	double nPixels_H = detectConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
 	this->nPhotographing = (int) ceil((nH - overlap_H) / (1 - overlap_H));
 
-	this->nPhotographing = 4;
+	this->nPhotographing = 3;
 
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Uncheck;
