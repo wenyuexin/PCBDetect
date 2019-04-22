@@ -134,31 +134,81 @@ void PCBDetect::on_pushButton_set2_clicked()
 //模板提取
 void PCBDetect::on_pushButton_getTempl_clicked()
 {
-	motionControler->resetControler(); //运动结构复位
+	//设置按键
+	this->setPushButtonsToEnabled(false, true);
+	pcb::delay(10);
+
+	//运动结构复位
+	motionControler->setOperation(MotionControler::ResetControler);
+	motionControler->start(); //复位
+	while (motionControler->isRunning()) pcb::delay(100);
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);//错误提示
+	}
+
+	//更新相机参数
 	templateUI->refreshCameraControler();
+	//显示模板提取界面
 	this->showTemplateUI();
 }
 
 void PCBDetect::on_pushButton_getTempl2_clicked()
 {
-	motionControler->resetControler(); //运动结构复位
-	templateUI->refreshCameraControler();//根据模板提取的参数更新相机控制器
-	this->showTemplateUI();//显示模板提取界面
+	//设置按键
+	this->setPushButtonsToEnabled(false, true);
+	pcb::delay(10);
+
+	//运动结构复位
+	motionControler->setOperation(MotionControler::ResetControler);
+	motionControler->start(); //复位
+	while (motionControler->isRunning()) pcb::delay(100);
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+	}
+	//根据模板提取的参数更新相机控制器
+	templateUI->refreshCameraControler();
+	//显示模板提取界面
+	this->showTemplateUI();
 }
 
 //检测
 void PCBDetect::on_pushButton_detect_clicked()
 {
-	motionControler->resetControler(); //运动结构复位
-	detectUI->refreshCameraControler();//根据检测的参数更新相机控制器
-	this->showDetectUI();//显示检测界面
+	//设置按键
+	this->setPushButtonsToEnabled(false, true);
+	pcb::delay(10);
+
+	//复位
+	motionControler->setOperation(MotionControler::ResetControler);
+	motionControler->start(); 
+	while (motionControler->isRunning()) pcb::delay(100);
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+	}
+
+	//根据检测的参数更新相机控制器
+	detectUI->refreshCameraControler();
+	//显示检测界面
+	this->showDetectUI();
 }
 
 void PCBDetect::on_pushButton_detect2_clicked()
 {
-	motionControler->resetControler(); //运动结构复位
-	detectUI->refreshCameraControler();//根据检测的参数更新相机控制器
-	this->showDetectUI();//显示检测界面
+	//设置按键
+	this->setPushButtonsToEnabled(false, true);
+	pcb::delay(10);
+
+	//运动结构复位
+	motionControler->setOperation(MotionControler::ResetControler);
+	motionControler->start(); //复位
+	while (motionControler->isRunning()) pcb::delay(100);
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+	}
+	//根据检测的参数更新相机控制器
+	detectUI->refreshCameraControler();
+	//显示检测界面
+	this->showDetectUI();
 }
 
 //退出
@@ -173,15 +223,25 @@ void PCBDetect::on_pushButton_exit2_clicked()
 }
 
 //设置按键是否可点击
-void PCBDetect::setPushButtonsToEnabled(bool code)
+void PCBDetect::setPushButtonsToEnabled(bool enable, bool all)
 {
 	//模板提取
-	ui.pushButton_getTempl->setEnabled(code); 
-	ui.pushButton_getTempl2->setEnabled(code);
+	ui.pushButton_getTempl->setEnabled(enable);
+	ui.pushButton_getTempl2->setEnabled(enable);
 	//检测
-	ui.pushButton_detect->setEnabled(code);
-	ui.pushButton_detect2->setEnabled(code);
+	ui.pushButton_detect->setEnabled(enable);
+	ui.pushButton_detect2->setEnabled(enable);
+
+	if (all) {
+		//设置
+		ui.pushButton_set->setEnabled(enable);
+		ui.pushButton_set2->setEnabled(enable);
+		//退出
+		ui.pushButton_exit->setEnabled(enable);
+		ui.pushButton_exit2->setEnabled(enable);
+	}
 }
+
 
 /****************** 设置界面 ******************/
 
@@ -288,6 +348,8 @@ void PCBDetect::do_checkSystemState_settingUI()
 
 void PCBDetect::do_showDetectMainUI_templateUI()
 {
+	this->setPushButtonsToEnabled(true, true);
+	pcb::delay(10);
 	this->showFullScreen(); //显示主界面
 	pcb::delay(10); //延时
 	templateUI->hide(); //隐藏模板提取界面
@@ -305,6 +367,8 @@ void PCBDetect::showTemplateUI()
 
 void PCBDetect::do_showDetectMainUI_detectUI()
 {
+	this->setPushButtonsToEnabled(true, true);
+	pcb::delay(10);
 	this->showFullScreen(); //显示主界面
 	pcb::delay(10); //延时
 	detectUI->hide(); //隐藏检测界面
@@ -327,7 +391,7 @@ void PCBDetect::eixtDetectSystem()
 	qApp->exit(0);
 }
 
-//用于测试的后门 - 切换主界面按键的可点击状态
+//测试后门 - 切换主界面按键的可点击状态
 void PCBDetect::keyPressEvent(QKeyEvent *event)
 {
 	bool buttonsEnabled = false;

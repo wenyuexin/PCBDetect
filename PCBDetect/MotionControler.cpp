@@ -1,27 +1,82 @@
 #include "MotionControler.h"
 //#include "WinNT.h"
 
-//PortIndex 控制器编号0,1,2,3,4,
-typedef int (*Uart_AMC98_GetNewDataType)(int,unsigned char *,int);  //函数指针类型
+//PortIndex 控制器编号0,1,2,3,4
+typedef int(*Uart_AMC98_GetNewDataType)(int, unsigned char *, int);
 int CallBack_UartNetGetNewData(int PortIndex, unsigned char *pGetData, int lth);
 int CallBack_UartNetGetNewData(int PortIndex, unsigned char *pGetData, int lth)
 {
-	//theApp.GetNewData(PortIndex);
+	//getMotionData(PortIndex);
+	//emit UartNetGetNewData_motion();
 	return 0;
 }
 
-MotionControler::MotionControler(QObject *parent)
-	: QObject(parent)
+
+//控制器的构造函数
+MotionControler::MotionControler(QThread *parent)
+	: QThread(parent)
 {
 	adminConfig = Q_NULLPTR; //系统参数
 	detectConfig = Q_NULLPTR; //用户参数
 	detectParams = Q_NULLPTR; //运行参数
+	xMotionPos = 0; //X轴的位置
 	errorCode = Uncheck; //控制器的错误码
-	running = false; //操作是否正在运行
+	operation = NoOperation;//操作指令
 }
 
 MotionControler::~MotionControler()
 {
+}
+
+//启动线程
+void MotionControler::run()
+{
+	switch (operation)
+	{
+	case MotionControler::NoOperation:
+		break;
+	case MotionControler::InitControler: //初始化
+		if (!initControler()) {
+			errorCode = ErrorCode::InitFailed; 
+		}
+		break;
+	case MotionControler::MoveForward: //前进
+		if (!moveForward()) {
+			errorCode = ErrorCode::MoveForwardFailed;
+		}
+		break;
+	case MotionControler::ReturnToZero: //归零
+		if (!returnToZero()) {
+			errorCode = ErrorCode::ReturnToZeroFailed;
+		}
+		break;
+	case MotionControler::MoveToInitialPos: //运动到初始拍照位置
+		if (!moveToInitialPos()) {
+			errorCode = ErrorCode::MoveToInitialPosFailed;
+		}
+		break;
+	case MotionControler::ResetControler: //复位
+		if (!resetControler()) {
+			errorCode = ErrorCode::ResetControlerFailed;
+		}
+		break;
+	}
+}
+
+//获取控制器状态信息
+//portIndex 控制器编号0,1,2,3,4,
+void MotionControler::getMotionData(int portIndex)
+{
+	int *d = AMC98_GetCNCDataBuffer();
+	motionInfo.xPos = d[137];//X轴当前位置
+	motionInfo.yPos = d[149];//Y轴当前位置
+	motionInfo.outputStauts = d[1];//输出状态
+	motionInfo.inputStatus = d[4];//输入状态
+	motionInfo.motorStatus = d[218];//电机状态
+	int ts = d[226];
+	CString strts = AMC98_GetInfString(ts);//提示信息
+	int cw = d[227];
+	CString strerr = AMC98_GetErrString(cw);//错误信息
 }
 
 
@@ -30,35 +85,32 @@ MotionControler::~MotionControler()
 //初始化，下载参数
 bool MotionControler::initControler()
 {
-	QMutexLocker locker(&mutex);
-	if (running) return false;
-	running = true;
+	//QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Uncheck; //控制器的错误码
 
-	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
+	//设置端口数据更新的回调函数
+	//Uart_AMC98_GetNewData(CallBack_UartNetGetNewData);
 
 	//0控制器类型
-	if (AMC98_KZQSet_v2(0, 0, "4") != 0) {
-		markInitFailed(); return false;
-	}
+	if (AMC98_KZQSet_v2(0, 0, "4")) { markInitFailed(); return false; }
+	pcb::delay(10);
 	//1设置
-	if (AMC98_KZQSet_v2(0, 1, "9600,N,8,1") != 0) {
-		markInitFailed(); return false;
-	}
+	if (AMC98_KZQSet_v2(0, 1, "9600,N,8,1")) { markInitFailed(); return false; }
+	pcb::delay(10);
 	//2端口
-	if (AMC98_KZQSet_v2(0, 2, "4") != 0) {
-		markInitFailed(); return false;
-	}
+	if (AMC98_KZQSet_v2(0, 2, "3")) { markInitFailed(); return false; }
+	pcb::delay(10);
 	//3协议
 	//str.Format(_T("%d"), xieyi_byte);
-	if (AMC98_KZQSet_v2(0, 3, "2") != 0) {
-		markInitFailed(); return false;
-	}
+	if (AMC98_KZQSet_v2(0, 3, "2")) { markInitFailed(); return false; }
+	pcb::delay(10);
 
 	//连接控制器 - 方式1
-	if (AMC98_Connect(NULL, 0) != 0) { 
-		markInitFailed(); return false; 
-	}
+	//getSafeHwnd
+	//FindWindow();
+	//this->GetSafeHwnd()
+	if (AMC98_Connect(NULL, 0) != 0) { markInitFailed(); return false; }
+	pcb::delay(100);
 
 	//连接控制器 - 方式2
 	//void (MotionControler::*funcPtr)();
@@ -67,9 +119,7 @@ bool MotionControler::initControler()
 
 	//进一步检查运动结构的最大行程
 	int maxDist = adminConfig->MaxMotionStroke;
-	if (maxDist > 500) {
-		qDebug() << "invalid maxDist"; return false;
-	}
+	if (maxDist > 500) { qDebug() << "invalid maxDist"; }
 
 	//设置控制指令 - X轴
 	if (!_AMC98_AddParamPC2CNC(138, maxDist * 10000)) return false; //轴最大值
@@ -88,25 +138,26 @@ bool MotionControler::initControler()
 
 
 	//设置控制指令 - Y轴
-	if (!_AMC98_AddParamPC2CNC(150, maxDist * 10000)) return false;//Y轴最大值
-	if (!_AMC98_AddParamPC2CNC(157, 0 * 10000)) return false;//轴最小值
-	if (!_AMC98_AddParamPC2CNC(151, 10 * 10000)) return false;//轴开始速度
-	if (!_AMC98_AddParamPC2CNC(152, 50 * 10000)) return false;//轴结束数度
-	if (!_AMC98_AddParamPC2CNC(153, 10 * 10000)) return false;//回原点慢速度
-	if (!_AMC98_AddParamPC2CNC(154, 30 * 10000)) return false;//回原点快速度
-	if (!_AMC98_AddParamPC2CNC(155, 5 * 10000)) return false;//原点位置
-	if (!_AMC98_AddParamPC2CNC(158, 85 * 10000)) return false;//1单位脉冲数
-	if (!_AMC98_AddParamPC2CNC(156, 2)) return false;//回原点设置 2负方向复位 1正方向复位
-	if (!_AMC98_AddParamPC2CNC(159, 200)) return false;//加速时间
-	if (!_AMC98_AddParamPC2CNC(160, 200)) return false;//减速时间
-	if (!_AMC98_AddParamPC2CNC(243, 1)) return false;//需要复位的电机 1要X复位 3要XY复位 0不要复位
-	if (!_AMC98_AddParamPC2CNC(60000, 3)) return false;//保存数据
+	//if (!_AMC98_AddParamPC2CNC(150, maxDist * 10000)) return false;//Y轴最大值
+	//if (!_AMC98_AddParamPC2CNC(157, 0 * 10000)) return false;//轴最小值
+	//if (!_AMC98_AddParamPC2CNC(151, 10 * 10000)) return false;//轴开始速度
+	//if (!_AMC98_AddParamPC2CNC(152, 50 * 10000)) return false;//轴结束数度
+	//if (!_AMC98_AddParamPC2CNC(153, 10 * 10000)) return false;//回原点慢速度
+	//if (!_AMC98_AddParamPC2CNC(154, 30 * 10000)) return false;//回原点快速度
+	//if (!_AMC98_AddParamPC2CNC(155, 5 * 10000)) return false;//原点位置
+	//if (!_AMC98_AddParamPC2CNC(158, 85 * 10000)) return false;//1单位脉冲数
+	//if (!_AMC98_AddParamPC2CNC(156, 2)) return false;//回原点设置 2负方向复位 1正方向复位
+	//if (!_AMC98_AddParamPC2CNC(159, 200)) return false;//加速时间
+	//if (!_AMC98_AddParamPC2CNC(160, 200)) return false;//减速时间
+	//if (!_AMC98_AddParamPC2CNC(243, 1)) return false;//需要复位的电机 1要X复位 3要XY复位 0不要复位
+	//if (!_AMC98_AddParamPC2CNC(60000, 3)) return false;//保存数据
+	
 	if (AMC98_ParamPC2CNC() != 0) return false;//放在最后面
+	pcb::delay(600);
 
 	//初始化结束
 	errorCode = ErrorCode::NoError;
-	running = false;
-	emit initControlerFinished_motion();
+	emit initControlerFinished_motion(errorCode);
 	return true;
 }
 
@@ -123,48 +174,54 @@ bool MotionControler::_AMC98_AddParamPC2CNC(int paramNum, int data)
 void MotionControler::markInitFailed()
 {
 	errorCode = ErrorCode::InitFailed;
-	running = false;
-	emit initControlerFinished_motion();
+	emit initControlerFinished_motion(errorCode);
 }
 
 
 //运动结构前进
 bool MotionControler::moveForward()
 {
-	QMutexLocker locker(&mutex);
-	if (running) return false;
-	running = true;
+	//QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Uncheck;
+	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) { 
-		markInitFailed(); return false; 
+		errorCode = ErrorCode::MoveForwardFailed;
+		emit moveForwardFinished_motion(errorCode);
+		return false; 
 	}
-
-	//连接控制器 - 方式2
-	//void (MotionControler::*funcPtr)();
-	//funcPtr = &MotionControler::on_moveForward_finished;
-	//if (AMC98_Connect((HWND)(&funcPtr), 0) != 0) return false;
+	pcb::delay(100);
 
 	//发送控制指令
 	double dist = -detectParams->singleMotionStroke;
-
-	clock_t t1 = clock();
 	if (AMC98_start_sr_move(2, 0, dist, WeizhiType_XD, 10, 50, 100, 100, 0, 0) != 0) {
 		errorCode = ErrorCode::MoveForwardFailed;
-		running = false; 
-		emit moveForwardFinished_motion();
+		emit moveForwardFinished_motion(errorCode);
 		return false;
 	}
-	clock_t t2 = clock();
-	qDebug() << "AMC98_start_sr_move" << t2 - t1;
 
-	pcb::delay(8000);
+	//等待运动到位
+	//int motionTime = 0; //运动累计时间
+	//while (true) {
+	//	this->getMotionData(0);
+	//	if (motionInfo.xPos = xMotionPos + dist) {
+	//		xMotionPos = motionInfo.xPos; break;
+	//	}
+	//	pcb::delay(500); //延时
+	//	motionTime += 500; //更新累计时间
+	//	if (motionTime > 20000) { //超时 20s
+	//		errorCode = ErrorCode::MoveForwardFailed;
+	//		emit moveForwardFinished_motion(errorCode);
+	//		return false;
+	//	}
+	//}
+
+	pcb::delay(3000);
 
 	//前进结束
 	errorCode = ErrorCode::NoError;
-	running = false;
-	emit moveForwardFinished_motion();
+	emit moveForwardFinished_motion(errorCode);
 	return true;
 }
 
@@ -172,36 +229,47 @@ bool MotionControler::moveForward()
 //运动结构归零
 bool MotionControler::returnToZero()
 {
-	QMutexLocker locker(&mutex);
-	if (running) return false;
-	running = true;
+	//QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Uncheck;
+	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
-	//连接控制器 - 方式1
-	int counter = RETRY_NUM; //计数器
-	while (counter > 0) {
-		if (!AMC98_Connect(Q_NULLPTR, 0)) break;
-		counter -= 1; //更新计数器
-		if (counter == 0) { markInitFailed(); return false; }
+	//连接控制器
+	if (AMC98_Connect(Q_NULLPTR, 0) != 0) { 
+		errorCode = ErrorCode::ReturnToZeroFailed;
+		emit returnToZeroFinished_motion(errorCode);
+		return false; 
 	}
-
-	//连接控制器 - 方式2
-	//void (MotionControler::*funcPtr)();
-	//funcPtr = &MotionControler::on_returnToZero_finished;
-	//if (AMC98_Connect((HWND)(&funcPtr), 0) != 0) return false;
+	pcb::delay(100);
 
 	//发送控制指令
-	if (AMC98_start_sr_move(2, 0, 0, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
-		errorCode = ErrorCode::MoveForwardFailed;
-		running = false;
-		emit returnToZeroFinished_motion();
+	int zeroPos = 0;
+	if (AMC98_start_sr_move(2, 0, zeroPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
+		errorCode = ErrorCode::ReturnToZeroFailed;
+		emit returnToZeroFinished_motion(errorCode);
 		return false;
 	}
 
+	//等待运动到位
+	//int motionTime = 0; //运动累计时间
+	//while (true) {
+	//	this->getMotionData(0);
+	//	if (motionInfo.xPos == zeroPos) {
+	//		xMotionPos = motionInfo.xPos; break;
+	//	}
+	//	pcb::delay(500); //延时
+	//	motionTime += 500; //更新累计时间
+	//	if (motionTime > 30000) { //超时 30s
+	//		errorCode = ErrorCode::ReturnToZeroFailed;
+	//		emit returnToZeroFinished_motion(errorCode);
+	//		return false;
+	//	}
+	//}
+
+	pcb::delay(9000);
+
 	//归零结束
 	errorCode = ErrorCode::NoError;
-	running = false;
-	emit returnToZeroFinished_motion();
+	emit returnToZeroFinished_motion(errorCode);
 	return true;
 }
 
@@ -210,34 +278,45 @@ bool MotionControler::returnToZero()
 bool MotionControler::moveToInitialPos()
 {
 	QMutexLocker locker(&mutex);
-	if (running) return false;
-	running = true;
 	errorCode = ErrorCode::Uncheck;
+	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) { 
-		markInitFailed(); return false; 
-	}
-
-	//连接控制器 - 方式2
-	//void (MotionControler::*funcPtr)();
-	//funcPtr = &MotionControler::on_returnToZero_finished;
-	//if (AMC98_Connect((HWND)(&funcPtr), 0) != 0) return false;
-
-	//发送控制指令
-	if (AMC98_start_sr_move(2, 0, 245, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
 		errorCode = ErrorCode::MoveToInitialPosFailed;
-		running = false;
-		emit moveToInitialPosFinished_motion();
+		emit moveToInitialPosFinished_motion(errorCode);
 		return false;
 	}
 
-	pcb::delay(15000);
+	//发送控制指令
+	int endingPos = 245 - 80; //后期需要根据板子的尺寸计算得到
+	if (AMC98_start_sr_move(2, 0, endingPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
+		errorCode = ErrorCode::MoveToInitialPosFailed;
+		emit moveToInitialPosFinished_motion(errorCode);
+		return false;
+	}
 
-	//移动结束
+	//等待运动到位
+	//int motionTime = 0; //运动累计时间
+	//while (true) {
+	//	this->getMotionData(0);
+	//	if (motionInfo.xPos == endingPos) {
+	//		xMotionPos = motionInfo.xPos; break;
+	//	}
+	//	pcb::delay(500); //延时
+	//	motionTime += 500; //更新累计时间
+	//	if (motionTime > 30000) { //超时 30s
+	//		errorCode = ErrorCode::MoveToInitialPosFailed;
+	//		emit moveToInitialPosFinished_motion(errorCode);
+	//		return false;
+	//	}
+	//}
+
+	pcb::delay(8000);
+
+	//到达初始拍照位置
 	errorCode = ErrorCode::NoError;
-	running = false;
-	emit moveToInitialPosFinished_motion();
+	emit moveToInitialPosFinished_motion(errorCode);
 	return true;
 }
 
@@ -248,79 +327,49 @@ bool MotionControler::moveToInitialPos()
 bool MotionControler::resetControler()
 {
 	QMutexLocker locker(&mutex);
-	if (running) return false;
-	running = true;
 	errorCode = ErrorCode::Uncheck;
+	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
-	if (AMC98_Connect(NULL, 0) != 0) { 
-		markInitFailed(); return false; 
+	if (AMC98_Connect(NULL, 0) != 0) {
+		errorCode = ErrorCode::ResetControlerFailed;
+		emit resetControlerFinished_motion(errorCode);
+		return false; 
 	}
-	
-	//连接控制器 - 方式2
-	//void (MotionControler::*funcPtr)();
-	//funcPtr = &MotionControler::on_resetControler_finished;
-	//if (AMC98_Connect((HWND)(&funcPtr), 0) != 0) return false;
+	pcb::delay(100);
 
 	//发送控制指令
 	//if (AMC98_Comand(1, NULL) != 0) { return false; }
 
 	//移动到合适的位置，此时可以放置新的PCB板
-	if (AMC98_start_sr_move(2, 0, 450, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
+	int resetPos = adminConfig->MaxMotionStroke;
+	if (AMC98_start_sr_move(2, 0, resetPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
 		errorCode = ErrorCode::ResetControlerFailed;
-		running = false;
-		emit resetControlerFinished_motion();
+		emit resetControlerFinished_motion(errorCode);
 		return false;
 	}
 
+	//等待运动到位
+	//int motionTime = 0; //运动累计时间
+	//while (true) {
+	//	this->getMotionData(4);
+	//	xMotionPos = motionInfo.xPos;
+	//	if (motionInfo.xPos == resetPos) break;
+	//	pcb::delay(500); //延时
+	//	motionTime += 500; //更新累计时间
+	//	if (motionTime > 30000) { //超时 30s
+	//		errorCode = ErrorCode::ResetControlerFailed;
+	//		emit resetControlerFinished_motion(errorCode);
+	//		return false;
+	//	}
+	//}
+
+	pcb::delay(11000); //复位等待
+
 	//复位结束
 	errorCode = ErrorCode::NoError;
-	running = false;
-	emit resetControlerFinished_motion();
+	emit resetControlerFinished_motion(errorCode);
 	return true;
-}
-
-
-/********* 判断操作状态、发送结束信号 - 暂时没用 ***********/
-
-//判断当前是否有正在运行的操作
-bool MotionControler::isRunning()
-{ 
-	QMutexLocker locker(&mutex);
-	return running; 
-}
-
-//发送初始化结束的信号
-void MotionControler::on_initControler_finished()
-{
-	//QMutexLocker locker(&mutex);
-	errorCode = NoError;
-	running = false;
-	emit initControlerFinished_motion();
-}
-
-//发送运动结构前进结束的信号
-void MotionControler::on_moveForward_finished()
-{
-	//QMutexLocker locker(&mutex);
-	running = false;
-	emit moveForwardFinished_motion();
-}
-
-//发送运动结构归零结束的信号
-void MotionControler::on_returnToZero_finished()
-{
-	//QMutexLocker locker(&mutex);
-	running = false;
-	emit returnToZeroFinished_motion();
-}
-
-//发送运动结构复位结束的信号
-void MotionControler::on_resetControler_finished()
-{
-	//QMutexLocker locker(&mutex);
-	running = false;
-	emit resetControlerFinished_motion();
 }
 
 
