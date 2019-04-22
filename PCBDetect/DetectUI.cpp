@@ -67,9 +67,9 @@ DetectUI::~DetectUI()
 void DetectUI::doConnect()
 {
 	//运动控制
-	connect(motionControler, SIGNAL(moveForwardFinished_motion()), this, SLOT(on_moveForwardFinished_motion()));
 	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion(int)));
-	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion()), this, SLOT(on_moveToInitialPosFinished_motion()));
+	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()));
+	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()));
 	//相机控制
 	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
 	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
@@ -293,17 +293,29 @@ void DetectUI::on_pushButton_start_clicked()
 		ui.pushButton_start->setEnabled(false); //禁用开始按键
 		ui.pushButton_return->setEnabled(false); //禁用返回按键
 
-		resetDetectUI();//重置检测子模块
-		motionControler->moveToInitialPos(); //运动结构复位
+		//重置检测子模块
+		resetDetectUI();
+		//运动到初始拍照位置
+		motionControler->setOperation(MotionControler::MoveToInitialPos);
+		motionControler->start();
 	}
 }
 
 //返回
 void DetectUI::on_pushButton_return_clicked()
 {
-	this->resetDetectUI(); //重置检测子界面，清空缓存数据
-	motionControler->resetControler(); //运动结构复位
-	emit showDetectMainUI(); //发送返回信号
+	//重置检测子界面，清空缓存数据
+	this->resetDetectUI(); 
+	//运动结构复位
+	motionControler->setOperation(MotionControler::ResetControler);
+	motionControler->start();
+	while (motionControler->isRunning()) pcb::delay(100);//等待复位结束
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+		pcb::delay(10);
+	}
+	//发送返回信号
+	emit showDetectMainUI();
 }
 
 
@@ -476,7 +488,11 @@ void DetectUI::do_showPreviousUI_serialNumUI()
 //运动结构前进结束
 void DetectUI::on_moveForwardFinished_motion()
 {
-	if (motionControler->getErrorCode() != MotionControler::NoError) return;
+	//检查运动结构的状态
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+		pcb::delay(10); return;
+	}
 
 	//调用相机进行拍照
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
@@ -494,7 +510,11 @@ void DetectUI::on_moveForwardFinished_motion()
 //到初始达拍照位置
 void DetectUI::on_moveToInitialPosFinished_motion()
 {
-	if (motionControler->getErrorCode() != MotionControler::NoError) return;
+	//检查运动结构的状态
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+		pcb::delay(10); return;
+	}
 
 	//调用相机进行拍照
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
@@ -512,6 +532,10 @@ void DetectUI::on_moveToInitialPosFinished_motion()
 //复位结束
 void DetectUI::on_resetControlerFinished_motion(int caller)
 {
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+		pcb::delay(10);
+	}
 }
 
 
@@ -570,16 +594,14 @@ void DetectUI::on_convertFinished_convertThread()
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
-		if (!motionControler->moveForward()) { //运动结构前进
-			motionControler->showMessageBox(this);
-			pcb::delay(10);
-		}
+		//运动结构前进
+		motionControler->setOperation(MotionControler::MoveForward);
+		motionControler->start();
 	}
-	else {
-		if (!motionControler->resetControler()) {
-			motionControler->showMessageBox(this);
-			pcb::delay(10);
-		}
+	else { //当前PCB已拍完
+		//运动结构复位
+		motionControler->setOperation(MotionControler::ResetControler);
+		motionControler->start();
 
 		//如果此时还没开始提取，则可以点击返回按键
 		if (detectParams->currentRow_detect == -1) {

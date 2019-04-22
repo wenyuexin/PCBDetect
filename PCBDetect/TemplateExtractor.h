@@ -17,7 +17,14 @@ public:
 		InitialState,
 		Start,
 		Finished,
-		Default
+		Error
+	};
+
+	//´íÎó´úÂë
+	enum ErrorCode {
+		NoError = 0x000,
+		Uncheck = 0x800,
+		Default = 0x8FF
 	};
 	
 private:

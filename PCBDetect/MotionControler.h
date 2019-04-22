@@ -1,6 +1,7 @@
 #pragma once
 #pragma comment(lib, "NETDLL.lib")
-#pragma comment(lib,"MOTIONDLL.lib")
+#pragma comment(lib, "MOTIONDLL.lib")
+
 #include "AMC98C.h"
 #include "MOTION_DLL.h"
 #include "Configurator.h"
@@ -17,11 +18,21 @@
 
 
 //运动控制器
-class MotionControler : public QObject
+class MotionControler : public QThread
 {
 	Q_OBJECT
 
 public:
+	//相机的相关操作
+	enum Operation {
+		NoOperation,
+		InitControler,
+		MoveForward,
+		ReturnToZero,
+		MoveToInitialPos,
+		ResetControler
+	};
+
 	//运动结构的错误代码
 	enum ErrorCode {
 		NoError = 0x000,
@@ -34,22 +45,29 @@ public:
 		Default = 0x4FF
 	};
 
-	const int MaxRuntime = 5000; //单位ms
-
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectParams *detectParams; //运行参数
 
-	bool running; //操作是否正在运行
+	int xMotionPos; //X轴的位置
+
+	struct MotionInfo //电机信息
+	{
+		int xPos;//X轴当前位置
+		int yPos;//X轴当前位置
+		int inputStatus;//输入状态
+		int outputStauts;//输出状态 
+		int motorStatus;//电机状态
+	} motionInfo;
+
 	QMutex mutex; //线程锁
 	
 	ErrorCode errorCode; //控制器的错误码
-
-	const int RETRY_NUM = 1;
+	Operation operation; //操作指令
 
 public:
-	MotionControler(QObject *parent = Q_NULLPTR);
+	MotionControler(QThread *parent = Q_NULLPTR);
 	~MotionControler();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } 
@@ -61,8 +79,8 @@ public:
 	bool returnToZero(); //归零
 	bool moveToInitialPos();//移动到初始位置，到位即可拍照
 	bool resetControler(); //复位
-	bool isRunning(); //判断当前是否有正在运行的操作
 
+	inline void setOperation(Operation op) { operation = op; }
 	inline bool isReady() { return errorCode == NoError; }
 	inline ErrorCode getErrorCode() { return errorCode; } //获取当前的错误代码
 	bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
@@ -70,16 +88,18 @@ public:
 private:
 	void markInitFailed();
 	bool _AMC98_AddParamPC2CNC(int paramNum, int data);
-	void on_initControler_finished();
-	void on_moveForward_finished();
-	void on_returnToZero_finished();
-	void on_resetControler_finished();
+	void getMotionData(int portIndex);
+
+protected:
+	void run();
 
 Q_SIGNALS:
-	void initControlerFinished_motion();
-	void moveForwardFinished_motion();
-	void returnToZeroFinished_motion();
-	void moveToInitialPosFinished_motion();
-	void resetControlerFinished_motion();
+	void UartNetGetNewData_motion();
+
+	void initControlerFinished_motion(int);
+	void resetControlerFinished_motion(int);
+	void moveToInitialPosFinished_motion(int);
+	void returnToZeroFinished_motion(int);
+	void moveForwardFinished_motion(int);
 };
 
