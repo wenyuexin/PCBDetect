@@ -68,10 +68,24 @@ void DefectDetecter::detect()
 
 
 
-		//读取样本图片
+		//获取样本图片
 		Mat samp = *((*cvmatSamples)[detectParams->currentRow_detect][i]);
 		Mat samp_gray;
 		cvtColor(samp, samp_gray, COLOR_BGR2GRAY);
+
+	
+		//保存样本图片
+		string batch_path = (detectConfig->SampleDirPath).toStdString() + "\\" + detectParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
+		if (0 != _access(batch_path.c_str(), 0))
+			_mkdir(batch_path.c_str());
+		string num_path = batch_path + "\\" + detectParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
+		if (0 != _access(num_path.c_str(), 0))
+			_mkdir(num_path.c_str());
+		string out_path = num_path + "\\" + detectParams->sampleNum.toStdString();//检查编号文件夹是否存在
+		if (0 != _access(out_path.c_str(), 0))
+			_mkdir(out_path.c_str());
+		std::string sampPath = out_path + "\\" + to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + detectConfig->ImageFormat.toStdString();
+		imwrite(sampPath,samp);
 
 		//样本二值化
 		cv::Mat sampBw;
