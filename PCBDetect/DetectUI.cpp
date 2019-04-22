@@ -137,6 +137,13 @@ void DetectUI::resetDetectUI()
 	qApp->processEvents();
 }
 
+//按键设置
+void DetectUI::setPushButtonsEnabled(bool enable)
+{
+	ui.pushButton_start->setEnabled(enable);
+	ui.pushButton_return->setEnabled(enable);
+}
+
 
 /********* 图元矩阵和样本图像矩阵的初始化和删除等操作 ***********/
 
@@ -290,11 +297,10 @@ void DetectUI::on_pushButton_start_clicked()
 {
 	if (detectParams->currentRow_detect == -1 && !detectThread->isRunning()) {
 		ui.label_status->setText(pcb::chinese("开始运行"));
-		ui.pushButton_start->setEnabled(false); //禁用开始按键
-		ui.pushButton_return->setEnabled(false); //禁用返回按键
+		this->setPushButtonsEnabled(false); //禁用按键
 
 		//重置检测子模块
-		resetDetectUI();
+		this->resetDetectUI();
 		//运动到初始拍照位置
 		motionControler->setOperation(MotionControler::MoveToInitialPos);
 		motionControler->start();
@@ -304,8 +310,11 @@ void DetectUI::on_pushButton_start_clicked()
 //返回
 void DetectUI::on_pushButton_return_clicked()
 {
+	//设置按键
+	this->setPushButtonsEnabled(false);
 	//重置检测子界面，清空缓存数据
 	this->resetDetectUI(); 
+
 	//运动结构复位
 	motionControler->setOperation(MotionControler::ResetControler);
 	motionControler->start();
@@ -314,6 +323,9 @@ void DetectUI::on_pushButton_return_clicked()
 		motionControler->showMessageBox(this);
 		pcb::delay(10);
 	}
+
+	//设置按键
+	this->setPushButtonsEnabled(true);
 	//发送返回信号
 	emit showDetectMainUI();
 }
@@ -656,8 +668,7 @@ void DetectUI::do_updateDetectState_detecter(int state)
 		while (detectThread->isRunning()) pcb::delay(50); //等待线程结束
 		if (detectParams->currentRow_detect == detectParams->nPhotographing - 1) { //当前PCB检测结束
 			detectParams->currentRow_detect = detectParams->nPhotographing;
-			ui.pushButton_start->setEnabled(true); //启用开始按键
-			ui.pushButton_return->setEnabled(true); //启用返回按键
+			this->setPushButtonsEnabled(true); //启用按键
 		}
 		else { //当前PCB未检测完
 			if (eventCounter > 0) detectSampleImages(); //检测下一行分图

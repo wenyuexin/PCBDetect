@@ -105,10 +105,10 @@ void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 void PCBDetect::on_launchFinished_launchUI(int launchCode)
 {
 	if (!launchCode) { //正常启动
-		this->setPushButtonsToEnabled(true);//模板提取、检测按键设为可点击
+		this->setPushButtonsEnabled(true);//模板提取、检测按键设为可点击
 	}
 	else { //存在错误
-		this->setPushButtonsToEnabled(false);//模板提取、检测按键设为不可点击
+		this->setPushButtonsEnabled(false);//模板提取、检测按键设为不可点击
 	}
 
 	//关闭初始化界面，显示主界面
@@ -135,7 +135,7 @@ void PCBDetect::on_pushButton_set2_clicked()
 void PCBDetect::on_pushButton_getTempl_clicked()
 {
 	//设置按键
-	this->setPushButtonsToEnabled(false, true);
+	this->setPushButtonsEnabled(false, true);
 	pcb::delay(10);
 
 	//运动结构复位
@@ -155,7 +155,7 @@ void PCBDetect::on_pushButton_getTempl_clicked()
 void PCBDetect::on_pushButton_getTempl2_clicked()
 {
 	//设置按键
-	this->setPushButtonsToEnabled(false, true);
+	this->setPushButtonsEnabled(false, true);
 	pcb::delay(10);
 
 	//运动结构复位
@@ -175,7 +175,7 @@ void PCBDetect::on_pushButton_getTempl2_clicked()
 void PCBDetect::on_pushButton_detect_clicked()
 {
 	//设置按键
-	this->setPushButtonsToEnabled(false, true);
+	this->setPushButtonsEnabled(false, true);
 	pcb::delay(10);
 
 	//复位
@@ -195,7 +195,7 @@ void PCBDetect::on_pushButton_detect_clicked()
 void PCBDetect::on_pushButton_detect2_clicked()
 {
 	//设置按键
-	this->setPushButtonsToEnabled(false, true);
+	this->setPushButtonsEnabled(false, true);
 	pcb::delay(10);
 
 	//运动结构复位
@@ -223,7 +223,7 @@ void PCBDetect::on_pushButton_exit2_clicked()
 }
 
 //设置按键是否可点击
-void PCBDetect::setPushButtonsToEnabled(bool enable, bool all)
+void PCBDetect::setPushButtonsEnabled(bool enable, bool all)
 {
 	//模板提取
 	ui.pushButton_getTempl->setEnabled(enable);
@@ -290,7 +290,7 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 	//将主界面的模板提取按键、检测按键设为可点击
 	if (cameraControler->isReady() && motionControler->isReady()) {
 		//若各个模块的状态正常，则设置按键
-		this->setPushButtonsToEnabled(true);
+		this->setPushButtonsEnabled(true);
 		pcb::delay(10);
 		//向设置界面发送重置操作结束的信号
 		emit resetDetectSystemFinished_mainUI();
@@ -300,7 +300,7 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 //将模板提取按键、检测按键设为可点击
 void PCBDetect::do_enableButtonsOnMainUI_settingUI()
 {
-	this->setPushButtonsToEnabled(true);
+	this->setPushButtonsEnabled(true);
 }
 
 //检查系统的工作状态
@@ -321,7 +321,9 @@ void PCBDetect::do_checkSystemState_settingUI()
 	}
 
 	//检查运行参数
-	if (enableButtonsOnMainUI && !detectParams.isValid(DetectParams::Index_All_SysInit, &adminConfig)) {
+	if (enableButtonsOnMainUI && 
+		!detectParams.isValid(DetectParams::Index_All_SysInit, true, &adminConfig)) 
+	{
 		detectParams.showMessageBox(settingUI);
 		enableButtonsOnMainUI = false;
 	}
@@ -340,7 +342,7 @@ void PCBDetect::do_checkSystemState_settingUI()
 
 	//判断是否要启用主界面上的模板提取和检测按键
 	if (enableButtonsOnMainUI) { //系统正常
-		this->setPushButtonsToEnabled(true);
+		this->setPushButtonsEnabled(true);
 	}
 }
 
@@ -348,7 +350,7 @@ void PCBDetect::do_checkSystemState_settingUI()
 
 void PCBDetect::do_showDetectMainUI_templateUI()
 {
-	this->setPushButtonsToEnabled(true, true);
+	this->setPushButtonsEnabled(true, true);
 	pcb::delay(10);
 	this->showFullScreen(); //显示主界面
 	pcb::delay(10); //延时
@@ -367,7 +369,7 @@ void PCBDetect::showTemplateUI()
 
 void PCBDetect::do_showDetectMainUI_detectUI()
 {
-	this->setPushButtonsToEnabled(true, true);
+	this->setPushButtonsEnabled(true, true);
 	pcb::delay(10);
 	this->showFullScreen(); //显示主界面
 	pcb::delay(10); //延时
@@ -399,8 +401,8 @@ void PCBDetect::keyPressEvent(QKeyEvent *event)
 	{
 	case Qt::Key_Shift:
 		if (ui.pushButton_detect->isEnabled())
-			setPushButtonsToEnabled(false);
+			setPushButtonsEnabled(false);
 		else 
-			setPushButtonsToEnabled(true);
+			setPushButtonsEnabled(true);
 	}
 }

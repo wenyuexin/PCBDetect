@@ -182,17 +182,24 @@ void SettingUI::on_pushButton_confirm_clicked()
 			detectParams->copyTo(&tempParams);
 
 			DetectParams::ErrorCode code;
+			//计算单步运动距离
 			code = tempParams.calcSingleMotionStroke(adminConfig);
 			if (code != DetectParams::ValidValue) {
 				detectParams->showMessageBox(this); return;
 			}
+			//计算相机个数和拍照次数
 			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
 			if (code != DetectParams::ValidValue) {
 				detectParams->showMessageBox(this); return;
 			}
+			//计算初始拍照位置
+			//code = tempParams.calcInitialPhotoPos(adminConfig, detectConfig);
+			//if (code != DetectParams::ValidValue) {
+			//	detectParams->showMessageBox(this); return;
+			//}
 
 			tempParams.copyTo(detectParams);
-			if (!tempParams.isValid(DetectParams::Index_All_SysInit, adminConfig)) {
+			if (!tempParams.isValid(DetectParams::Index_All_SysInit, true, adminConfig)) {
 				tempParams.showMessageBox(this);
 			}
 			sysResetCode |= detectParams->getSystemResetCode(tempParams);
