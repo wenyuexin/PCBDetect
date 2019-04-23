@@ -5,14 +5,12 @@ using pcb::DetectConfig;
 using pcb::DetectParams;
 
 
-LaunchUI::LaunchUI(QWidget *parent)
+LaunchUI::LaunchUI(QWidget *parent, QRect &screenRect)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//多屏状态下选择在副屏全屏显示
-	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);
+	//多屏状态下选择在主屏还是副屏上显示
 	this->setGeometry(screenRect);
 
 	//启动界面不显示鼠标

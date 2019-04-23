@@ -98,7 +98,8 @@ bool MotionControler::initControler()
 	if (AMC98_KZQSet_v2(0, 1, "9600,N,8,1")) { markInitFailed(); return false; }
 	pcb::delay(10);
 	//2∂Àø⁄
-	if (AMC98_KZQSet_v2(0, 2, "3")) { markInitFailed(); return false; }
+	const char *port = detectConfig->clusterComPort.toStdString().c_str();
+	if (AMC98_KZQSet_v2(0, 2, port)) { markInitFailed(); return false; }
 	pcb::delay(10);
 	//3–≠“È
 	//str.Format(_T("%d"), xieyi_byte);
