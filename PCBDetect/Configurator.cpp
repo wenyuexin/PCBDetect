@@ -235,6 +235,7 @@ void DetectConfig::loadDefaultValue()
 	this->ActualProductSize_H = 600;//产品实际高度
 	this->nBasicUnitInRow = 4; //每一行中的基本单元数
 	this->nBasicUnitInCol = 6; //每一列中的基本单元数
+	this->clusterComPort = 3; //COM口
 }
 
 //参数有效性检查
@@ -277,6 +278,8 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConf
 		if (nBasicUnitInCol < 1)
 			code = Invalid_nBasicUnitInCol;
 		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_clusterComPort: //COM串口
+		if (code != Uncheck || index != Index_All) break;
 	}
 
 	if (code == Uncheck) code = ValidConfig;
@@ -314,6 +317,8 @@ DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code)
 		return Index_nBasicUnitInRow;
 	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
 		return Index_nBasicUnitInCol;
+	case pcb::DetectConfig::Invalid_clusterComPort:
+		return Index_clusterComPort;
 	}
 	return Index_None;
 }
@@ -350,6 +355,8 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
 	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
 		valueName = pcb::chinese("\"基本单元数\""); break;
+	case pcb::DetectConfig::Invalid_clusterComPort:
+		valueName = pcb::chinese("\"运动控制串口\""); break;
 	default:
 		valueName = ""; break;
 	}
@@ -371,6 +378,7 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 	if (this->ActualProductSize_H != other.ActualProductSize_H) return Index_ActualProductSize_H;
 	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
 	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
+	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
 	return Index_None;
 }
 
@@ -398,6 +406,7 @@ void DetectConfig::copyTo(DetectConfig *dst)
 	dst->ActualProductSize_H = this->ActualProductSize_H; //产品实际高度
 	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
 	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
+	dst->clusterComPort != this->clusterComPort; //COM口
 }
 
 
@@ -620,6 +629,7 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H, false);
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
+		configurator.jsonReadValue("clusterComPort", config->clusterComPort, false);
 		configFile.close();
 	}
 	return success;
@@ -649,6 +659,7 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonSetValue("ActualProductSize_H", QString::number(config->ActualProductSize_H), false);
 		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow), false);
 		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol), false);
+		configurator.jsonSetValue("clusterComPort", config->clusterComPort, false);
 		configFile.close();
 	}
 	return success;

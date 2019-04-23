@@ -26,11 +26,13 @@ private:
 
 	pcb::AdminConfig *adminConfig; //系统参数
 	PassWordUI passWordUI; //系统设置登录界面
-	AdminSettingUI adminSettingUI; //系统设置界面
+
+	QRect screenRect; //屏幕显示区域
+	AdminSettingUI *adminSettingUI; //系统设置界面
 	int sysResetCode = 0b00000000;
 
 public:
-	SettingUI(QWidget *parent = Q_NULLPTR);
+	SettingUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
 	~SettingUI();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
@@ -56,6 +58,7 @@ private Q_SLOTS:
 	void on_pushButton_SampleDirPath_clicked();
 	void on_pushButton_TemplDirPath_clicked();
 	void on_pushButton_OutputDirPath_clicked();
+	void on_currentIndexChanged_comPort();
 	void on_currentIndexChanged_imgFormat();
 
 	void on_pushButton_confirm_clicked();

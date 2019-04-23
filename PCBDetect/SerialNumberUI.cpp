@@ -11,9 +11,9 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	this->setMouseTracking(true);
 
 	//多屏状态下选择在副屏全屏显示
-	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);
-	this->setGeometry(screenRect);
+	//QDesktopWidget* desktop = QApplication::desktop();
+	//QRect screenRect = desktop->screenGeometry(1);
+	//this->setGeometry(screenRect);
 
 	//成员变量的初始化
 	errorCode = ErrorCode::Default;
