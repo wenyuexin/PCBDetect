@@ -6,14 +6,13 @@ using pcb::DetectParams;
 using pcb::Configurator;
 
 
-SettingUI::SettingUI(QWidget *parent)
+SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//多屏状态下选择在副屏全屏显示
-	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);
+	//多屏状态下选择在主屏还是副屏上显示
+	this->screenRect = screenRect;
 	this->setGeometry(screenRect);
 
 	//设置界面初始化
@@ -41,12 +40,13 @@ SettingUI::~SettingUI()
 void SettingUI::doConnect()
 {
 	//系统参数设置界面
-	adminSettingUI.setAdminConfig(adminConfig);
-	adminSettingUI.setDetectConfig(detectConfig);
-	adminSettingUI.setDetectParams(detectParams);
-	connect(&adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
-	connect(&adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
-	connect(&adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
+	adminSettingUI = new AdminSettingUI(Q_NULLPTR, screenRect);
+	adminSettingUI->setAdminConfig(adminConfig);
+	adminSettingUI->setDetectConfig(detectConfig);
+	adminSettingUI->setDetectParams(detectParams);
+	connect(adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
+	connect(adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
+	connect(adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
 }
 
 /************* 界面的设置、输入、更新 **************/
@@ -256,6 +256,37 @@ void SettingUI::setPushButtonsToEnabled(bool code)
 
 /************** 获取界面上的参数 *****************/
 
+//串口号
+void SettingUI::on_currentIndexChanged_comPort()
+{
+	switch (ui.comboBox_ImageFormat->currentIndex())
+	{
+	case 0:
+		tempConfig.clusterComPort = ""; break;
+	case 1:
+		tempConfig.clusterComPort = "1"; break;
+	case 2:
+		tempConfig.clusterComPort = "2"; break;
+	case 3:
+		tempConfig.clusterComPort = "3"; break;
+	case 4:
+		tempConfig.clusterComPort = "4"; break;
+	case 5:
+		tempConfig.clusterComPort = "5"; break;
+	case 6:
+		tempConfig.clusterComPort = "6"; break;
+	case 7:
+		tempConfig.clusterComPort = "7"; break;
+	case 8:
+		tempConfig.clusterComPort = "8"; break;
+	case 9:
+		tempConfig.clusterComPort = "9"; break;
+	default:
+		break;
+	}
+}
+
+//图像格式
 void SettingUI::on_currentIndexChanged_imgFormat()
 {
 	switch ((pcb::ImageFormat) ui.comboBox_ImageFormat->currentIndex())
@@ -302,10 +333,10 @@ void SettingUI::on_closePassWordUI_pswdUI()
 //显示系统参数设置界面
 void SettingUI::do_showAdminSettingUI_pswdUI()
 {
-	adminSettingUI.setAdminConfig(adminConfig);
-	adminSettingUI.refreshAdminSettingUI();
+	adminSettingUI->setAdminConfig(adminConfig);
+	adminSettingUI->refreshAdminSettingUI();
 	pcb::delay(10);
-	adminSettingUI.showFullScreen();
+	adminSettingUI->showFullScreen();
 	pcb::delay(10);
 	this->hide(); //隐藏参数设置界面
 	this->setPushButtonsToEnabled(true);//设置按键
@@ -320,7 +351,7 @@ void SettingUI::do_showSettingUI_adminUI()
 	this->setCursorLocation(DetectConfig::Index_None);
 	this->showFullScreen();
 	pcb::delay(10);
-	adminSettingUI.hide();
+	adminSettingUI->hide();
 }
 
 //转发由系统设置界面发出的重置信号

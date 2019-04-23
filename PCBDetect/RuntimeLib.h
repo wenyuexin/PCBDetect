@@ -81,7 +81,6 @@ namespace pcb
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
 
-		int clusterComPort; //COM串口
 		QString bufferDirPath; //缓存文件夹
 
 		enum ParamsIndex {
@@ -103,7 +102,6 @@ namespace pcb
 			Index_nCamera,
 			Index_nPhotographing,
 			//其他
-			Index_clusterComPort,
 			Index_bufferDirPath
 		};
 
@@ -162,5 +160,3 @@ namespace pcb
 	};
 #endif //STRUCT_DETECT_PARAMS
 }
-
-

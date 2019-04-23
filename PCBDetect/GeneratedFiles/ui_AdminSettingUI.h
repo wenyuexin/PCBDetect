@@ -63,7 +63,7 @@ public:
     {
         if (AdminSettingUI->objectName().isEmpty())
             AdminSettingUI->setObjectName(QStringLiteral("AdminSettingUI"));
-        AdminSettingUI->resize(1366, 768);
+        AdminSettingUI->resize(1440, 900);
         layoutWidget_4 = new QWidget(AdminSettingUI);
         layoutWidget_4->setObjectName(QStringLiteral("layoutWidget_4"));
         layoutWidget_4->setGeometry(QRect(70, 80, 361, 37));
@@ -105,7 +105,7 @@ public:
 
         label_3 = new QLabel(AdminSettingUI);
         label_3->setObjectName(QStringLiteral("label_3"));
-        label_3->setGeometry(QRect(0, -1, 1371, 41));
+        label_3->setGeometry(QRect(0, -1, 1441, 41));
         label_3->setStyleSheet(QStringLiteral("background-color: rgb(240, 240, 250);"));
         label_title = new QLabel(AdminSettingUI);
         label_title->setObjectName(QStringLiteral("label_title"));
@@ -124,13 +124,13 @@ public:
         label_title->setAlignment(Qt::AlignCenter);
         pushButton_return = new QPushButton(AdminSettingUI);
         pushButton_return->setObjectName(QStringLiteral("pushButton_return"));
-        pushButton_return->setGeometry(QRect(780, 690, 112, 40));
+        pushButton_return->setGeometry(QRect(810, 830, 112, 40));
         sizePolicy.setHeightForWidth(pushButton_return->sizePolicy().hasHeightForWidth());
         pushButton_return->setSizePolicy(sizePolicy);
         pushButton_return->setFont(font);
         pushButton_confirm = new QPushButton(AdminSettingUI);
         pushButton_confirm->setObjectName(QStringLiteral("pushButton_confirm"));
-        pushButton_confirm->setGeometry(QRect(490, 690, 112, 40));
+        pushButton_confirm->setGeometry(QRect(560, 830, 112, 40));
         sizePolicy.setHeightForWidth(pushButton_confirm->sizePolicy().hasHeightForWidth());
         pushButton_confirm->setSizePolicy(sizePolicy);
         pushButton_confirm->setFont(font);
@@ -170,7 +170,7 @@ public:
 
         line = new QFrame(AdminSettingUI);
         line->setObjectName(QStringLiteral("line"));
-        line->setGeometry(QRect(0, 30, 1371, 20));
+        line->setGeometry(QRect(0, 30, 1441, 20));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
         layoutWidget_9 = new QWidget(AdminSettingUI);
