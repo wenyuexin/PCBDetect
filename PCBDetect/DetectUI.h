@@ -57,7 +57,7 @@ private:
 	int detectState; //¼ì²â×´Ì¬
 
 public:
-	DetectUI(QWidget *parent = Q_NULLPTR);
+	DetectUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
 	~DetectUI();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }

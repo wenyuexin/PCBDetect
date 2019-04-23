@@ -113,6 +113,7 @@ namespace pcb
 		int ActualProductSize_H;//产品实际高度,单位mm
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
+		QString clusterComPort; //COM串口
 
 		//参数索引
 		enum ConfigIndex {
@@ -125,7 +126,8 @@ namespace pcb
 			Index_ActualProductSize_W,
 			Index_ActualProductSize_H,
 			Index_nBasicUnitInRow,
-			Index_nBasicUnitInCol
+			Index_nBasicUnitInCol,
+			Index_clusterComPort
 		};
 
 		//错误代码
@@ -142,6 +144,7 @@ namespace pcb
 			Invalid_ActualProductSize_H = 0x207,
 			Invalid_nBasicUnitInRow = 0x208,
 			Invalid_nBasicUnitInCol = 0x209,
+			Invalid_clusterComPort = 0x20A,
 			Default = 0x2FF
 		};
 
@@ -198,7 +201,7 @@ namespace pcb
 		static bool loadConfigFile(const QString &fileName, AdminConfig *config);
 		static bool saveConfigFile(const QString &fileName, AdminConfig *config);
 
-		quint64 getDiskFreeSpace(QString driver);
+		//quint64 getDiskFreeSpace(QString driver);
 		bool checkDir(QString dirpath);
 
 	private:

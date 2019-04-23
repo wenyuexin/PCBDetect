@@ -68,7 +68,7 @@ public:
     {
         if (PCBDetectClass->objectName().isEmpty())
             PCBDetectClass->setObjectName(QStringLiteral("PCBDetectClass"));
-        PCBDetectClass->resize(1366, 768);
+        PCBDetectClass->resize(1440, 900);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -81,7 +81,7 @@ public:
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         label_logo = new QLabel(centralWidget);
         label_logo->setObjectName(QStringLiteral("label_logo"));
-        label_logo->setGeometry(QRect(570, 0, 51, 35));
+        label_logo->setGeometry(QRect(610, 0, 51, 35));
         sizePolicy.setHeightForWidth(label_logo->sizePolicy().hasHeightForWidth());
         label_logo->setSizePolicy(sizePolicy);
         label_logo->setMaximumSize(QSize(16777215, 16000000));
@@ -94,7 +94,7 @@ public:
         label_logo->setAlignment(Qt::AlignBottom|Qt::AlignHCenter);
         label_title = new QLabel(centralWidget);
         label_title->setObjectName(QStringLiteral("label_title"));
-        label_title->setGeometry(QRect(630, 0, 171, 41));
+        label_title->setGeometry(QRect(670, 0, 171, 41));
         sizePolicy.setHeightForWidth(label_title->sizePolicy().hasHeightForWidth());
         label_title->setSizePolicy(sizePolicy);
         label_title->setMinimumSize(QSize(60, 30));
@@ -109,16 +109,16 @@ public:
         label_title->setAlignment(Qt::AlignCenter);
         line = new QFrame(centralWidget);
         line->setObjectName(QStringLiteral("line"));
-        line->setGeometry(QRect(0, 30, 1371, 20));
+        line->setGeometry(QRect(0, 30, 1441, 20));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
         label_3 = new QLabel(centralWidget);
         label_3->setObjectName(QStringLiteral("label_3"));
-        label_3->setGeometry(QRect(0, -1, 1371, 41));
+        label_3->setGeometry(QRect(0, -1, 1441, 41));
         label_3->setStyleSheet(QStringLiteral("background-color: rgb(240, 240, 250);"));
         layoutWidget = new QWidget(centralWidget);
         layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(180, 230, 1041, 268));
+        layoutWidget->setGeometry(QRect(150, 310, 1141, 268));
         horizontalLayout_5 = new QHBoxLayout(layoutWidget);
         horizontalLayout_5->setSpacing(6);
         horizontalLayout_5->setContentsMargins(11, 11, 11, 11);

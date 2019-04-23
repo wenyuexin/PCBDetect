@@ -10,7 +10,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	//多屏状态下选择在副屏全屏显示
+	//选择在主屏或者是副屏上显示
 	QDesktopWidget* desktop = QApplication::desktop();
 	QRect screenRect = desktop->screenGeometry(1);
 	this->setGeometry(screenRect);
@@ -27,7 +27,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	cameraControler->setDetectParams(&detectParams);
 
 	//启动界面
-	launcher = new LaunchUI;
+	launcher = new LaunchUI(Q_NULLPTR, screenRect);
 	launcher->showFullScreen(); //显示launcher
 	launcher->setAdminConfig(&adminConfig);
 	launcher->setDetectConfig(&detectConfig);
@@ -39,7 +39,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	connect(launcher, SIGNAL(launchFinished_launchUI(int)), this, SLOT(on_launchFinished_launchUI(int)));
 
 	//参数设置界面
-	settingUI = new SettingUI;
+	settingUI = new SettingUI(Q_NULLPTR, screenRect);
 	settingUI->setAdminConfig(&adminConfig);
 	settingUI->setDetectConfig(&detectConfig);
 	settingUI->setDetectParams(&detectParams);
@@ -50,7 +50,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	connect(settingUI, SIGNAL(checkSystemState_settingUI()), this, SLOT(do_checkSystemState_settingUI()));
 	
 	//模板提取界面
-	templateUI = new TemplateUI;
+	templateUI = new TemplateUI(Q_NULLPTR, screenRect);
 	templateUI->setAdminConfig(&adminConfig);
 	templateUI->setDetectConfig(&detectConfig);
 	templateUI->setDetectParams(&detectParams);
@@ -60,7 +60,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	connect(templateUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_templateUI()));
 
 	//检测界面
-	detectUI = new DetectUI;
+	detectUI = new DetectUI(Q_NULLPTR, screenRect);
 	detectUI->setAdminConfig(&adminConfig);
 	detectUI->setDetectConfig(&detectConfig);
 	detectUI->setDetectParams(&detectParams);

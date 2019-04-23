@@ -133,15 +133,15 @@ bool SysInitThread::initDetectParams()
 	qApp->processEvents();
 	pcb::delay(1000);
 	
-	DetectParams::ErrorCode code, code2;
+	DetectParams::ErrorCode code;
 	code = detectParams->calcSingleMotionStroke(adminConfig);
 	if (code != DetectParams::ValidValue) {
 		emit detectParamsError_initThread(); return false;
 	}
 	pcb::delay(10);
 
-	code2 = detectParams->calcItemGridSize(adminConfig, detectConfig);
-	if (code2 != DetectParams::ValidValue) {
+	code = detectParams->calcItemGridSize(adminConfig, detectConfig);
+	if (code != DetectParams::ValidValue) {
 		emit detectParamsError_initThread(); return false;
 	}
 

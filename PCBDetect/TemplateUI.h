@@ -43,7 +43,7 @@ private:
 	TemplateExtractor *templExtractor; //Ä£°åÌáÈ¡Æ÷
 
 public:
-	TemplateUI(QWidget *parent = Q_NULLPTR);
+	TemplateUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
 	~TemplateUI();
 	
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
