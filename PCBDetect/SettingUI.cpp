@@ -275,23 +275,23 @@ void SettingUI::on_currentIndexChanged_comPort()
 	case 0:
 		tempConfig.clusterComPort = ""; break;
 	case 1:
-		tempConfig.clusterComPort = "1"; break;
+		tempConfig.clusterComPort = "COM1"; break;
 	case 2:
-		tempConfig.clusterComPort = "2"; break;
+		tempConfig.clusterComPort = "COM2"; break;
 	case 3:
-		tempConfig.clusterComPort = "3"; break;
+		tempConfig.clusterComPort = "COM3"; break;
 	case 4:
-		tempConfig.clusterComPort = "4"; break;
+		tempConfig.clusterComPort = "COM4"; break;
 	case 5:
-		tempConfig.clusterComPort = "5"; break;
+		tempConfig.clusterComPort = "COM5"; break;
 	case 6:
-		tempConfig.clusterComPort = "6"; break;
+		tempConfig.clusterComPort = "COM6"; break;
 	case 7:
-		tempConfig.clusterComPort = "7"; break;
+		tempConfig.clusterComPort = "COM7"; break;
 	case 8:
-		tempConfig.clusterComPort = "8"; break;
+		tempConfig.clusterComPort = "COM8"; break;
 	case 9:
-		tempConfig.clusterComPort = "9"; break;
+		tempConfig.clusterComPort = "COM9"; break;
 	default:
 		break;
 	}
