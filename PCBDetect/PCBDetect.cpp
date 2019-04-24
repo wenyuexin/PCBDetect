@@ -9,10 +9,19 @@ PCBDetect::PCBDetect(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	launcher = Q_NULLPTR;
+	settingUI = Q_NULLPTR;
+	templateUI = Q_NULLPTR;
+	detectUI = Q_NULLPTR;
+	motionControler = Q_NULLPTR;
+	cameraControler = Q_NULLPTR;
 
 	//选择在主屏或者是副屏上显示
 	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);
+	QRect screenRect = desktop->screenGeometry(1);//副屏区域
+	if (screenRect.width() < 1440 || screenRect.height() < 900) {
+		screenRect = desktop->screenGeometry(0);//主屏区域
+	}
 	this->setGeometry(screenRect);
 
 	//运动控制器
@@ -28,7 +37,6 @@ PCBDetect::PCBDetect(QWidget *parent)
 
 	//启动界面
 	launcher = new LaunchUI(Q_NULLPTR, screenRect);
-	launcher->showFullScreen(); //显示launcher
 	launcher->setAdminConfig(&adminConfig);
 	launcher->setDetectConfig(&detectConfig);
 	launcher->setDetectParams(&detectParams);
@@ -68,6 +76,9 @@ PCBDetect::PCBDetect(QWidget *parent)
 	detectUI->setCameraControler(cameraControler);
 	detectUI->doConnect();//信号连接
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
+
+	//显示启动界面
+	launcher->showFullScreen(); 
 }
 
 PCBDetect::~PCBDetect()
