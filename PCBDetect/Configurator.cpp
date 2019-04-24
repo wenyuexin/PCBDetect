@@ -232,10 +232,10 @@ void DetectConfig::loadDefaultValue()
 	this->OutputDirPath = appDirPath + "/output";//检测结果存储路径
 	this->ImageFormat = ".bmp"; //图像后缀
 	this->ActualProductSize_W = 500;//产品实际宽度
-	this->ActualProductSize_H = 600;//产品实际高度
+	this->ActualProductSize_H = 300;//产品实际高度
 	this->nBasicUnitInRow = 4; //每一行中的基本单元数
 	this->nBasicUnitInCol = 6; //每一列中的基本单元数
-	this->clusterComPort = 3; //COM口
+	this->clusterComPort = "COM1"; //COM口
 }
 
 //参数有效性检查
@@ -467,9 +467,6 @@ bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
 				else { //不加密
 					obj[key] = value;
 				}
-				QString encodeKey = encrypt(key); //加密
-				QString encodeValue = encrypt(value);
-				obj[encodeKey] = encodeValue;
 				QJsonDocument document = QJsonDocument::fromVariant(obj.toVariantMap());
 				configFile->resize(0);
 				textStrteam << document.toJson();
