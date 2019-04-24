@@ -97,8 +97,6 @@ bool CameraControler::initCameras2()
 	}
 
 	errorCode = CameraControler::NoError;
-	tSdkCameraDevInfo sCameraList[12]; //最多不能超过12台相机
-	int CameraNums = 12;
 	CameraSdkStatus status;
 
 	if (CameraEnumerateDevice(sCameraList, &CameraNums) != CAMERA_STATUS_SUCCESS ||
@@ -125,6 +123,7 @@ bool CameraControler::initCameras2()
 			status = CameraInit(&sCameraList[deviceIndex[i]], -1, -1, &cameraList2[i]);
 			cameraState[i] = (status != CAMERA_STATUS_SUCCESS);
 			if (status != CAMERA_STATUS_SUCCESS) {//有任意一台相机初始化失败
+				errorCode = CameraControler::InitFailed;
 				//return false;
 			}
 		}
@@ -150,8 +149,8 @@ bool CameraControler::initCameras2()
 
 	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 		//开始采集图像
-
-		CameraSetTriggerMode(cameraList2[i], 1);//设置相机的触发模式。0表示连续采集模式；1表示软件触发模式；2表示硬件触发模式。
+		//设置相机的触发模式。0表示连续采集模式；1表示软件触发模式；2表示硬件触发模式。
+		CameraSetTriggerMode(cameraList2[i], 1);
 		CameraSetTriggerCount(cameraList2[i], 5);
 		if (CameraSetResolutionForSnap(cameraList2[i], &sImageSize) != CAMERA_STATUS_SUCCESS)
 			return false;
@@ -195,8 +194,7 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 		(*cvmatSamples)[*currentRow][iCamera] = pMat;
 		pcb::delay(200);
 
-		cv::imwrite(
-			(QString::number(*currentRow)+"_"+ QString::number(i) + ".jpg").toStdString(), *pMat);
+		//cv::imwrite((QString::number(*currentRow)+"_"+ QString::number(i) + ".jpg").toStdString(), *pMat);
 	}
 	pcb::delay(5000);
 	return errorCode;
@@ -205,44 +203,6 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 void CameraControler::takePhotos2()
 {
 	for (int i = 0; i < detectParams->nCamera; i++) {
-		//unsigned char *pRawBuffer;
-		//unsigned char *pRgbBuffer;
-		//tSdkFrameHead FrameInfo;
-
-		////CString sFileName;
-		//tSdkImageResolution sImageSize;
-		//CameraSdkStatus status;
-
-		//CameraClearBuffer(cameraList2[i]);
-		//CameraSoftTrigger(cameraList2[i]);
-
-		//CameraGetImageBuffer(cameraList2[i], &FrameInfo, &pRawBuffer, 1000);//抓一张图
-		////申请一个buffer，用来将获得的原始数据转换为RGB数据，并同时获得图像处理效果
-		//pRgbBuffer = (unsigned char *)CameraAlignMalloc(FrameInfo.iWidth*FrameInfo.iHeight * 3, 16);
-		//if (pRgbBuffer == Q_NULLPTR) {
-		//	CameraGetImageBuffer(cameraList2[i], &FrameInfo, &pRawBuffer, 1000);//抓一张图
-		//	pRgbBuffer = (unsigned char *)CameraAlignMalloc(FrameInfo.iWidth*FrameInfo.iHeight * 3, 16);//申请一个buffer
-		//	if (pRgbBuffer == Q_NULLPTR) { 
-		//		errorCode = CameraControler::TakePhotosFailed; return; 
-		//	}
-		//}
-
-		////处理图像，并得到RGB格式的数据
-		//CameraImageProcess(cameraList2[i], pRawBuffer, pRgbBuffer, &FrameInfo);
-		////释放由CameraSnapToBuffer、CameraGetImageBuffer获得的图像缓冲区
-
-		//while (CameraReleaseImageBuffer(cameraList2[i], pRawBuffer) != CAMERA_STATUS_SUCCESS);
-		////CameraReleaseImageBuffer(cameraList2[i], pRawBuffer);
-
-		////将pRgbBuffer转换为Mat类
-		//cv::Mat frame(cv::Size(adminConfig->ImageSize_W, adminConfig->ImageSize_H), CV_8UC3, pRgbBuffer);
-		//cv::flip(frame, frame, -1); //直接获取的图像时反的，这里旋转180度
-		//cv::Mat* pMat = new cv::Mat(frame.clone());
-		//(*cvmatSamples)[*currentRow][i] = pMat;
-		//CameraAlignFree(pRgbBuffer);
-
-		//pcb::delay(100);
-		////CameraUnInit(cameraList2[i]);
 		BYTE *pRawBuffer;
 		BYTE *pRgbBuffer;
 		tSdkFrameHead FrameInfo;
