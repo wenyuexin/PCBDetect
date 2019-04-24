@@ -78,11 +78,22 @@ void SettingUI::refreshSettingUI()
 	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
 	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
 
-	QString format = detectConfig->ImageFormat.toLower();
-	if (format == ".bmp") ui.comboBox_ImageFormat->setCurrentText("    *.bmp");
-	else if (format == ".jpg") ui.comboBox_ImageFormat->setCurrentText("    *.jpg");
-	else if (format == ".png") ui.comboBox_ImageFormat->setCurrentText("    *.png");
-	else if (format == ".tif" || format == ".tiff") ui.comboBox_ImageFormat->setCurrentText("    *.tif");
+	QString comPort = detectConfig->clusterComPort.toUpper();
+	if (comPort == "COM1") ui.comboBox_clusterComPort->setCurrentText("      COM1");
+	else if (comPort == "COM2") ui.comboBox_clusterComPort->setCurrentText("      COM2");
+	else if (comPort == "COM3") ui.comboBox_clusterComPort->setCurrentText("      COM3");
+	else if (comPort == "COM4") ui.comboBox_clusterComPort->setCurrentText("      COM4");
+	else if (comPort == "COM5") ui.comboBox_clusterComPort->setCurrentText("      COM5");
+	else if (comPort == "COM6") ui.comboBox_clusterComPort->setCurrentText("      COM6");
+	else if (comPort == "COM7") ui.comboBox_clusterComPort->setCurrentText("      COM7");
+	else if (comPort == "COM8") ui.comboBox_clusterComPort->setCurrentText("      COM8");
+	else if (comPort == "COM9") ui.comboBox_clusterComPort->setCurrentText("      COM9");
+
+	QString imgFormat = detectConfig->ImageFormat.toLower();
+	if (imgFormat == ".bmp") ui.comboBox_ImageFormat->setCurrentText("     *.bmp");
+	else if (imgFormat == ".jpg") ui.comboBox_ImageFormat->setCurrentText("     *.jpg");
+	else if (imgFormat == ".png") ui.comboBox_ImageFormat->setCurrentText("     *.png");
+	else if (imgFormat == ".tif" || imgFormat == ".tiff") ui.comboBox_ImageFormat->setCurrentText("     *.tif");
 
 	ui.lineEdit_ActualProductSize_W->setText(QString::number(detectConfig->ActualProductSize_W));
 	ui.lineEdit_ActualProductSize_H->setText(QString::number(detectConfig->ActualProductSize_H));
