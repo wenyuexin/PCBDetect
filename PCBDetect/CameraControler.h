@@ -43,8 +43,11 @@ private:
 
 	std::vector<int> deviceIndex = {}; //设备号
 	std::vector<cv::VideoCapture> cameraList; //相机列表
-	std::vector<CameraHandle> cameraList2;
 	std::map<int, bool> cameraState; //相机状态 <设备号,状态值>
+
+	std::vector<CameraHandle> cameraList2;
+	tSdkCameraDevInfo sCameraList[12]; //最多不能超过12台相机
+	int CameraNums = 12;
 
 	ErrorCode errorCode; //控制器的错误码
 	Operation operation; //操作指令
