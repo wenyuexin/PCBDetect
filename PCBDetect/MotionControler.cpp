@@ -99,12 +99,8 @@ bool MotionControler::initControler()
 	pcb::delay(10);
 	//2¶Ë¿Ú
 	QString _port;
-	if (detectConfig->clusterComPort.size() == 4) {
-		_port = detectConfig->clusterComPort.at(3);
-	}
-	else {
-		_port = "";
-	}
+	if (detectConfig->clusterComPort.size() != 4) _port = "";
+	else _port = detectConfig->clusterComPort.at(3);
 	const char *port = _port.toStdString().c_str();
 	if (AMC98_KZQSet_v2(0, 2, port)) { markInitFailed(); return false; }
 	pcb::delay(10);
