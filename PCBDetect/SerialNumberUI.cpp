@@ -44,6 +44,7 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 
 SerialNumberUI::~SerialNumberUI()
 {
+	qDebug() << "~SerialNumberUI";
 	deleteImageItem();
 }
 

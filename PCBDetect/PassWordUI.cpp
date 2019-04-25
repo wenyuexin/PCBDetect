@@ -15,6 +15,7 @@ PassWordUI::PassWordUI(QWidget *parent)
 
 PassWordUI::~PassWordUI()
 {
+	qDebug() << "~PassWordUI";
 }
 
 

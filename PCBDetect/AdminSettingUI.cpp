@@ -25,6 +25,7 @@ AdminSettingUI::AdminSettingUI(QWidget *parent, QRect &screenRect)
 
 AdminSettingUI::~AdminSettingUI()
 {
+	qDebug() << "~AdminSettingUI";
 }
 
 void AdminSettingUI::initAdminSettingUI()

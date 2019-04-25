@@ -53,11 +53,15 @@ DetectUI::DetectUI(QWidget *parent, QRect &screenRect)
 
 DetectUI::~DetectUI()
 {
+	qDebug() << "~DetectUI";
+
 	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
 	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
 	deletePointersInQPixmapArray(qpixmapSamples);//删除qpixmapSamples中的指针
 	delete detectThread; //删除检测线程
+	detectThread = Q_NULLPTR;
 	delete defectDetecter; //删除检测核心
+	defectDetecter = Q_NULLPTR;
 }
 
 //因为对象实例的构造和实例指针传递的时序问题

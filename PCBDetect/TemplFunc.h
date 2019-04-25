@@ -23,7 +23,7 @@ private:
 
 public:
 	TemplFunc();
-	~TemplFunc() = default;
+	~TemplFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }

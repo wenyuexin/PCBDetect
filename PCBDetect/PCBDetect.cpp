@@ -83,12 +83,19 @@ PCBDetect::PCBDetect(QWidget *parent)
 
 PCBDetect::~PCBDetect()
 {
+	qDebug() << "~PCBDetect";
 	delete launcher;
+	launcher = Q_NULLPTR;
 	delete settingUI;
+	settingUI = Q_NULLPTR;
 	delete templateUI;
+	templateUI = Q_NULLPTR;
 	delete detectUI;
+	detectUI = Q_NULLPTR;
 	delete motionControler;
+	motionControler = Q_NULLPTR;
 	delete cameraControler;
+	cameraControler = Q_NULLPTR;
 }
 
 

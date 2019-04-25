@@ -22,9 +22,11 @@ SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 	detectParams = Q_NULLPTR;//运行参数
 	detectConfig = Q_NULLPTR; //用户参数
 	adminConfig = Q_NULLPTR; //系统参数
+	adminSettingUI = Q_NULLPTR; //系统设置界面
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
+	connect(ui.comboBox_clusterComPort, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_comPort()));
 
 	//系统参数设置的登录界面
 	passWordUI.setWindowFlags(passWordUI.windowFlags() | Qt::Dialog);
@@ -35,6 +37,8 @@ SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 
 SettingUI::~SettingUI()
 {
+	qDebug() << "~SettingUI";
+	delete adminSettingUI;
 }
 
 void SettingUI::doConnect()
@@ -270,7 +274,7 @@ void SettingUI::setPushButtonsToEnabled(bool code)
 //串口号
 void SettingUI::on_currentIndexChanged_comPort()
 {
-	switch (ui.comboBox_ImageFormat->currentIndex())
+	switch (ui.comboBox_clusterComPort->currentIndex())
 	{
 	case 0:
 		tempConfig.clusterComPort = ""; break;
