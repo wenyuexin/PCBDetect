@@ -175,6 +175,9 @@ bool SysInitThread::initCameraControler()
 {
 	emit sysInitStatus_initThread(pcb::chinese("正在初始化相机 ..."));
 	pcb::delay(800);
+
+
+
 	cameraControler->setOperation(CameraControler::InitCameras);
 	cameraControler->start(); //启动线程
 	cameraControler->wait(); //线程等待
