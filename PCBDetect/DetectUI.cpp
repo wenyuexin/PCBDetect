@@ -306,6 +306,8 @@ void DetectUI::on_pushButton_start_clicked()
 		//重置检测子模块
 		this->resetDetectUI();
 		//运动到初始拍照位置
+		ui.label_status->setText(pcb::chinese("运动结构前进中"));
+		qApp->processEvents();
 		motionControler->setOperation(MotionControler::MoveToInitialPos);
 		motionControler->start();
 	}
@@ -320,6 +322,8 @@ void DetectUI::on_pushButton_return_clicked()
 	this->resetDetectUI(); 
 
 	//运动结构复位
+	ui.label_status->setText(pcb::chinese("运动结构复位中"));
+	qApp->processEvents();
 	motionControler->setOperation(MotionControler::ResetControler);
 	motionControler->start();
 	while (motionControler->isRunning()) pcb::delay(100);//等待复位结束
@@ -341,9 +345,6 @@ void DetectUI::on_pushButton_return_clicked()
 //暂时使用敲击键盘按键模拟外部信号
 void DetectUI::keyPressEvent(QKeyEvent *event)
 {
-	detectParams->serialNum = "01010005"; //产品序号
-	detectParams->parseSerialNum(); //产品序号解析
-
 	switch (event->key())
 	{
 	case Qt::Key_PageUp:
@@ -360,6 +361,8 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Down:
 		qDebug() << ">>>>>>>>>> Down";
+		detectParams->serialNum = "01010005"; //产品序号
+		detectParams->parseSerialNum(); //产品序号解析
 		if (detectParams->currentRow_detect == detectParams->nPhotographing - 1 && !detectThread->isRunning())
 			resetDetectUI();//重置检测子模块
 
@@ -610,14 +613,16 @@ void DetectUI::on_convertFinished_convertThread()
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
-		//运动结构前进
+		ui.label_status->setText(pcb::chinese("运动结构前进中"));
+		qApp->processEvents();
 		motionControler->setOperation(MotionControler::MoveForward);
-		motionControler->start();
+		motionControler->start(); //运动结构前进
 	}
 	else { //当前PCB已拍完
-		//运动结构复位
+		ui.label_status->setText(pcb::chinese("运动结构复位中"));
+		qApp->processEvents();
 		motionControler->setOperation(MotionControler::ResetControler);
-		motionControler->start();
+		motionControler->start(); //运动结构复位
 
 		//如果此时还没开始提取，则可以点击返回按键
 		if (detectParams->currentRow_detect == -1) {

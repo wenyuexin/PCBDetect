@@ -287,6 +287,8 @@ void TemplateUI::on_pushButton_start_clicked()
 		//重置模板提取子模块
 		this->resetTemplateUI();
 		//运动到初始拍照位置
+		ui.label_status->setText(pcb::chinese("运动结构运动中"));
+		qApp->processEvents();
 		motionControler->setOperation(MotionControler::MoveToInitialPos);
 		motionControler->start();
 	}
@@ -301,6 +303,8 @@ void TemplateUI::on_pushButton_return_clicked()
 	this->resetTemplateUI(); 
 
 	//运动结构复位
+	ui.label_status->setText(pcb::chinese("运动结构复位中"));
+	qApp->processEvents();
 	motionControler->setOperation(MotionControler::ResetControler);
 	motionControler->start(); 
 	while (motionControler->isRunning()) pcb::delay(100);
@@ -477,25 +481,12 @@ void TemplateUI::do_showPreviousUI_serialNumUI()
 
 /******************** 运动控制 ********************/
 
-//运动结构前进结束
-void TemplateUI::on_moveForwardFinished_motion()
+//复位结束
+void TemplateUI::on_resetControlerFinished_motion()
 {
-	//检查运动结构的状态
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
-		pcb::delay(10); return;
-	}
-
-	//调用相机进行拍照
-	if (currentRow_show + 1 < detectParams->nPhotographing) {
-		currentRow_show += 1; //更新显示行号
-
-		ui.label_status->setText(pcb::chinese("正在拍摄第") +
-			QString::number(currentRow_show + 1) + 
-			pcb::chinese("行分图"));//更新状态
-		qApp->processEvents();
-
-		cameraControler->start(); //拍照
+		pcb::delay(10);
 	}
 }
 
@@ -521,12 +512,25 @@ void TemplateUI::on_moveToInitialPosFinished_motion()
 	}
 }
 
-//复位结束
-void TemplateUI::on_resetControlerFinished_motion()
+//运动结构前进结束
+void TemplateUI::on_moveForwardFinished_motion()
 {
+	//检查运动结构的状态
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
-		pcb::delay(10);
+		pcb::delay(10); return;
+	}
+
+	//调用相机进行拍照
+	if (currentRow_show + 1 < detectParams->nPhotographing) {
+		currentRow_show += 1; //更新显示行号
+
+		ui.label_status->setText(pcb::chinese("正在拍摄第") +
+			QString::number(currentRow_show + 1) + 
+			pcb::chinese("行分图"));//更新状态
+		qApp->processEvents();
+
+		cameraControler->start(); //拍照
 	}
 }
 
@@ -587,14 +591,16 @@ void TemplateUI::on_convertFinished_convertThread()
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
 	if (currentRow_show + 1 < detectParams->nPhotographing) {
-		//运动结构前进
+		ui.label_status->setText(pcb::chinese("运动结构前进中"));
+		qApp->processEvents();
 		motionControler->setOperation(MotionControler::MoveForward);
-		motionControler->start(); 
+		motionControler->start(); //运动结构前进
 	}
 	else { //当前PCB拍完
-		//运动结构复位
+		ui.label_status->setText(pcb::chinese("运动结构复位中"));
+		qApp->processEvents();
 		motionControler->setOperation(MotionControler::ResetControler);
-		motionControler->start();
+		motionControler->start(); //运动结构复位
 		
 		//如果此时还没开始提取，则可以点击返回按键
 		if (detectParams->currentRow_extract == -1) {
