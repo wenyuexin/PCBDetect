@@ -647,9 +647,10 @@ void TemplateUI::update_extractState_extractor(int state)
 		qApp->processEvents();
 
 		//检查是否有未处理的事件
-		while (templThread->isRunning()) pcb::delay(50); //等待线程结束
+		while (templThread->isRunning()) pcb::delay(50); //等待提取线程结束
+		while (motionControler->isRunning()) pcb::delay(100); //等待运动线程结束
 		if (detectParams->currentRow_extract == detectParams->nPhotographing - 1) { //当前PCB提取结束
-			detectParams->currentRow_extract = detectParams->nPhotographing;
+			detectParams->currentRow_extract = -1;
 			this->setPushButtonsEnabled(true); //启用按键
 		}
 		else { //当前PCB未提取完

@@ -26,8 +26,8 @@ DetectUI::DetectUI(QWidget *parent, QRect &screenRect)
 
 	//加载并显示默认的指示灯图标
 	IconFolder = QDir::currentPath() + "/Icons";
-	QImage greyIcon = QImage(IconFolder + "/grey.png"); //grey
-	QPixmap defaultIcon = QPixmap::fromImage(greyIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio));
+	QPixmap greyIcon = QPixmap(IconFolder + "/grey.png"); //grey
+	QPixmap defaultIcon = greyIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 	ui.label_indicator->setPixmap(defaultIcon); //加载
 	
 	//加载其他指示灯图标
@@ -128,6 +128,8 @@ void DetectUI::resetDetectUI()
 	serialNumberUI.resetSerialNumberUI();//重置序号识别界面
 
 	ui.label_status->setText(""); //清空状态栏
+	ui.label_indicator->setPixmap(defaultIcon); //切换指示灯
+	ui.label_result->setText("-"); //检测结果
 	removeItemsFromGraphicsScene(); //移除场景中已经加载的图元
 	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
 	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
@@ -667,9 +669,10 @@ void DetectUI::do_updateDetectState_detecter(int state)
 		qApp->processEvents();
 
 		//检查是否有未处理的事件
-		while (detectThread->isRunning()) pcb::delay(50); //等待线程结束
+		while (templThread->isRunning()) pcb::delay(50); //等待提取线程结束
+		while (motionControler->isRunning()) pcb::delay(100); //等待运动线程结束
 		if (detectParams->currentRow_detect == detectParams->nPhotographing - 1) { //当前PCB检测结束
-			detectParams->currentRow_detect = detectParams->nPhotographing;
+			detectParams->currentRow_detect = -1;
 			this->setPushButtonsEnabled(true); //启用按键
 		}
 		else { //当前PCB未检测完
