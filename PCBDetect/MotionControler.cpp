@@ -2,14 +2,14 @@
 //#include "WinNT.h"
 
 //PortIndex 控制器编号0,1,2,3,4
-typedef int(*Uart_AMC98_GetNewDataType)(int, unsigned char *, int);
-int CallBack_UartNetGetNewData(int PortIndex, unsigned char *pGetData, int lth);
-int CallBack_UartNetGetNewData(int PortIndex, unsigned char *pGetData, int lth)
-{
-	//getMotionData(PortIndex);
-	//emit UartNetGetNewData_motion();
-	return 0;
-}
+//typedef int(*Uart_AMC98_GetNewDataType)(int, unsigned char *, int);
+//int CallBack_UartNetGetNewData(int PortIndex, unsigned char *pGetData, int lth);
+//int CallBack_UartNetGetNewData(int PortIndex, unsigned char *pGetData, int lth)
+//{
+//	//getMotionData(PortIndex);
+//	//emit UartNetGetNewData_motion();
+//	return 0;
+//}
 
 
 //控制器的构造函数
@@ -188,7 +188,7 @@ bool MotionControler::moveForward()
 {
 	//QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Uncheck;
-	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
+	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) { 
@@ -236,7 +236,7 @@ bool MotionControler::returnToZero()
 {
 	//QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Uncheck;
-	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
+	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器
 	if (AMC98_Connect(Q_NULLPTR, 0) != 0) { 
@@ -284,7 +284,7 @@ bool MotionControler::moveToInitialPos()
 {
 	QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Uncheck;
-	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
+	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) { 
@@ -333,7 +333,7 @@ bool MotionControler::resetControler()
 {
 	QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Uncheck;
-	Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
+	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) {

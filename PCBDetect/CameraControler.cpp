@@ -93,14 +93,13 @@ CameraControler::ErrorCode CameraControler::initCameras()
 //相机初始化 - 迈德威视
 bool CameraControler::initCameras2()
 {
+	errorCode = CameraControler::NoError;
 	if (CameraSdkInit(1) != CAMERA_STATUS_SUCCESS) { //相机sdk初始化失败
 		errorCode = CameraControler::InitFailed;
 		return false;
 	}
 
-	errorCode = CameraControler::NoError;
 	CameraSdkStatus status;
-
 	if (CameraEnumerateDevice(sCameraList, &CameraNums) != CAMERA_STATUS_SUCCESS ||
 		CameraNums < adminConfig->MaxCameraNum)
 	{
@@ -109,6 +108,7 @@ bool CameraControler::initCameras2()
 		return false;
 	}
 
+	cameraList2.clear(); //清空列表
 	if (deviceIndex.empty() || deviceIndex.size() < adminConfig->MaxCameraNum) {
 		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 			cameraList2.push_back(-1);
@@ -121,7 +121,7 @@ bool CameraControler::initCameras2()
 	}
 	else {
 		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
-			cameraList.push_back(-1);
+			cameraList2.push_back(-1);
 			status = CameraInit(&sCameraList[deviceIndex[i]], -1, -1, &cameraList2[i]);
 			cameraState[i] = (status == CAMERA_STATUS_SUCCESS);
 			if (status != CAMERA_STATUS_SUCCESS) {//有任意一台相机初始化失败
@@ -176,7 +176,7 @@ QString CameraControler::cameraStatusMapToString()
 	return available;
 }
 
-//拍摄图像
+//拍摄图像 - OpenCV
 CameraControler::ErrorCode CameraControler::takePhotos()
 {
 	errorCode = CameraControler::NoError;
@@ -206,9 +206,12 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 	return errorCode;
 }
 
+//拍摄图像 - 迈德威视
 void CameraControler::takePhotos2()
 {
 	for (int i = 0; i < detectParams->nCamera; i++) {
+		int iCamera = detectParams->nCamera - i - 1;
+
 		BYTE *pRawBuffer;
 		BYTE *pRgbBuffer;
 		tSdkFrameHead FrameInfo;
@@ -223,19 +226,19 @@ void CameraControler::takePhotos2()
 		//CameraGetInformation(camList[i], &FrameInfo)
 		//CameraSoftTrigger(camList[i]);//执行一次软触发。执行后，会触发由CameraSetTriggerCount指定的帧数。
 		//CameraGetImageBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一张图
-		CameraClearBuffer(cameraList2[i]);
-		CameraSoftTrigger(cameraList2[i]);
+		CameraClearBuffer(cameraList2[iCamera]);
+		CameraSoftTrigger(cameraList2[iCamera]);
 		double t0 = clock();
-		CameraGetImageBuffer(cameraList2[i], &FrameInfo, &pRawBuffer, 10000);//抓一张图
+		CameraGetImageBuffer(cameraList2[iCamera], &FrameInfo, &pRawBuffer, 10000);//抓一张图
 
 		//CameraSnapToBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一整图
 
 		//申请一个buffer，用来将获得的原始数据转换为RGB数据，并同时获得图像处理效果
 		pRgbBuffer = (unsigned char *)CameraAlignMalloc(FrameInfo.iWidth*FrameInfo.iHeight * 3, 16);
-
-		CameraImageProcess(cameraList2[i], pRawBuffer, pRgbBuffer, &FrameInfo);//处理图像，并得到RGB格式的数据
-
-		while (CameraReleaseImageBuffer(cameraList2[i], pRawBuffer) != CAMERA_STATUS_SUCCESS);//释放由CameraSnapToBuffer、CameraGetImageBuffer获得的图像缓冲区
+		//处理图像，并得到RGB格式的数据
+		CameraImageProcess(cameraList2[iCamera], pRawBuffer, pRgbBuffer, &FrameInfo);
+		//释放由CameraSnapToBuffer、CameraGetImageBuffer获得的图像缓冲区
+		while (CameraReleaseImageBuffer(cameraList2[iCamera], pRawBuffer) != CAMERA_STATUS_SUCCESS);
 		cv::Mat fram( //将pRgbBuffer转换为Mat类
 			cv::Size(adminConfig->ImageSize_W, adminConfig->ImageSize_H), //width，height
 			//FrameInfo.uiMediaType == CAMERA_MEDIA_TYPE_MONO8 ? CV_8UC1 : CV_8UC3,
@@ -245,8 +248,7 @@ void CameraControler::takePhotos2()
 		cv::flip(fram, fram, -1); //直接获取的图像时反的，这里旋转180度
 		cv::flip(fram, fram, 1);
 		cv::Mat* pMat = new cv::Mat(fram.clone());
-		int iCamera = detectParams->nCamera - i - 1;
-		(*cvmatSamples)[*currentRow][iCamera] = pMat;
+		(*cvmatSamples)[*currentRow][i] = pMat;
 		CameraAlignFree(pRgbBuffer);
 	}
 
