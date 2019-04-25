@@ -20,6 +20,11 @@ AdminConfig::AdminConfig()
 	ImageAspectRatio = -1; //图像宽高比
 }
 
+AdminConfig::~AdminConfig()
+{
+	qDebug() << "~AdminConfig";
+}
+
 //加载默认参数
 void AdminConfig::loadDefaultValue()
 {
@@ -36,9 +41,6 @@ void AdminConfig::loadDefaultValue()
 //参数有效性检查
 AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index)
 {
-	if (errorCode == ValidConfig) 
-		return this->errorCode;
-
 	AdminConfig::ErrorCode code = Uncheck;
 	switch (index)
 	{
@@ -77,9 +79,9 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 }
 
 //判断参数是否有效
-bool AdminConfig::isValid() 
+bool AdminConfig::isValid(bool doCheck) 
 {
-	if (errorCode == AdminConfig::Uncheck)
+	if (doCheck && errorCode == AdminConfig::Uncheck)
 		checkValidity(Index_All);
 	return errorCode == ValidConfig;
 }
@@ -222,6 +224,11 @@ DetectConfig::DetectConfig()
 	nBasicUnitInCol = -1; //每一列中的基本单元数
 }
 
+DetectConfig::~DetectConfig()
+{
+	qDebug() << "~DetectConfig";
+}
+
 //加载默认值
 void DetectConfig::loadDefaultValue()
 {
@@ -235,17 +242,15 @@ void DetectConfig::loadDefaultValue()
 	this->OutputDirPath = appDirPath + "/output";//检测结果存储路径
 	this->ImageFormat = ".bmp"; //图像后缀
 	this->ActualProductSize_W = 500;//产品实际宽度
-	this->ActualProductSize_H = 600;//产品实际高度
+	this->ActualProductSize_H = 300;//产品实际高度
 	this->nBasicUnitInRow = 4; //每一行中的基本单元数
 	this->nBasicUnitInCol = 6; //每一列中的基本单元数
+	this->clusterComPort = "COM1"; //COM口
 }
 
 //参数有效性检查
 DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConfig *adminConfig)
 {
-	if (this->errorCode == ValidConfig)
-		return this->errorCode;
-
 	ErrorCode code = Uncheck;
 	switch (index)
 	{
@@ -283,6 +288,8 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConf
 		if (nBasicUnitInCol < 1)
 			code = Invalid_nBasicUnitInCol;
 		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectConfig::Index_clusterComPort: //COM串口
+		if (code != Uncheck || index != Index_All) break;
 	}
 
 	if (code == Uncheck) code = ValidConfig;
@@ -291,8 +298,8 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConf
 }
 
 //判断参数是否有效
-bool DetectConfig::isValid(AdminConfig *adminConfig) {
-	if (this->errorCode == DetectConfig::Uncheck)
+bool DetectConfig::isValid(AdminConfig *adminConfig, bool doCheck) {
+	if (doCheck && this->errorCode == DetectConfig::Uncheck)
 		checkValidity(Index_All, adminConfig);
 	return this->errorCode == ValidConfig;
 }
@@ -320,6 +327,8 @@ DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code)
 		return Index_nBasicUnitInRow;
 	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
 		return Index_nBasicUnitInCol;
+	case pcb::DetectConfig::Invalid_clusterComPort:
+		return Index_clusterComPort;
 	}
 	return Index_None;
 }
@@ -356,6 +365,8 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
 	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
 		valueName = pcb::chinese("\"基本单元数\""); break;
+	case pcb::DetectConfig::Invalid_clusterComPort:
+		valueName = pcb::chinese("\"运动控制串口\""); break;
 	default:
 		valueName = ""; break;
 	}
@@ -377,6 +388,7 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 	if (this->ActualProductSize_H != other.ActualProductSize_H) return Index_ActualProductSize_H;
 	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
 	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
+	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
 	return Index_None;
 }
 
@@ -404,6 +416,7 @@ void DetectConfig::copyTo(DetectConfig *dst)
 	dst->ActualProductSize_H = this->ActualProductSize_H; //产品实际高度
 	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
 	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
+	dst->clusterComPort = this->clusterComPort; //COM口
 }
 
 
@@ -420,6 +433,7 @@ Configurator::Configurator(QFile *file)
 
 Configurator::~Configurator()
 {
+	qDebug() << "~Configurator";
 }
 
 /************** 生成默认的参数配置文件 **************/
@@ -464,9 +478,6 @@ bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
 				else { //不加密
 					obj[key] = value;
 				}
-				QString encodeKey = encrypt(key); //加密
-				QString encodeValue = encrypt(value);
-				obj[encodeKey] = encodeValue;
 				QJsonDocument document = QJsonDocument::fromVariant(obj.toVariantMap());
 				configFile->resize(0);
 				textStrteam << document.toJson();
@@ -626,6 +637,7 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H, false);
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
+		configurator.jsonReadValue("clusterComPort", config->clusterComPort, false);
 		configFile.close();
 	}
 	return success;
@@ -655,6 +667,7 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 		configurator.jsonSetValue("ActualProductSize_H", QString::number(config->ActualProductSize_H), false);
 		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow), false);
 		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol), false);
+		configurator.jsonSetValue("clusterComPort", config->clusterComPort, false);
 		configFile.close();
 	}
 	return success;
@@ -715,17 +728,17 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 /******************* 暂时没用 ********************/
 
 //获取当前磁盘剩余空间
-quint64 Configurator::getDiskFreeSpace(QString driver)
-{
-	LPCWSTR lpcwstrDriver = (LPCWSTR)driver.utf16();
-	ULARGE_INTEGER liFreeBytesAvailable, liTotalBytes, liTotalFreeBytes;
-
-	if (!GetDiskFreeSpaceEx(lpcwstrDriver, &liFreeBytesAvailable, &liTotalBytes, &liTotalFreeBytes)) {
-		qDebug() << "ERROR: Call to GetDiskFreeSpaceEx() failed.";
-		return 0;
-	}
-	return (quint64)liTotalFreeBytes.QuadPart / 1024 / 1024 / 1024;
-}
+//quint64 Configurator::getDiskFreeSpace(QString driver)
+//{
+//	LPCWSTR lpcwstrDriver = (LPCWSTR)driver.utf16();
+//	ULARGE_INTEGER liFreeBytesAvailable, liTotalBytes, liTotalFreeBytes;
+//
+//	if (!GetDiskFreeSpaceEx(lpcwstrDriver, &liFreeBytesAvailable, &liTotalBytes, &liTotalFreeBytes)) {
+//		qDebug() << "ERROR: Call to GetDiskFreeSpaceEx() failed.";
+//		return 0;
+//	}
+//	return (quint64)liTotalFreeBytes.QuadPart / 1024 / 1024 / 1024;
+//}
 
 //暂时没用
 bool Configurator::checkDir(QString dirpath)

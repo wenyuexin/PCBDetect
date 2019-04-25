@@ -1,6 +1,6 @@
 #pragma once
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "direct.h"
 #include <io.h>
 #include <string>
@@ -23,11 +23,9 @@ private:
 	cv::Mat big_templ; //´óÄ£°å;
 
 
-
-
 public:
 	DetectFunc();
-	~DetectFunc() = default;
+	~DetectFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }

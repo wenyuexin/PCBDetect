@@ -1,7 +1,7 @@
 #pragma once
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include <string>
 #include "direct.h"
 #include <io.h>
@@ -23,7 +23,7 @@ private:
 
 public:
 	TemplFunc();
-	~TemplFunc() = default;
+	~TemplFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }

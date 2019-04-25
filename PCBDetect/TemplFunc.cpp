@@ -21,6 +21,11 @@ TemplFunc::TemplFunc()
 	detectParams = Q_NULLPTR;
 }
 
+TemplFunc::~TemplFunc()
+{
+	qDebug() << "~TemplFunc";
+}
+
 /***************** 提取 ******************/
 
 //生成完整尺寸的模板图像

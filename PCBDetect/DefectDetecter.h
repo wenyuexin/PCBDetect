@@ -1,7 +1,7 @@
 #pragma once
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "DetectFunc.h"
 
 
@@ -11,11 +11,19 @@ class DefectDetecter : public QObject
 	Q_OBJECT
 
 public:
+	//¼ì²â×´Ì¬
 	enum DetectState {
 		InitialState,
 		Start,
 		Finished,
-		Default
+		Error
+	};
+
+	//´íÎó´úÂë
+	enum ErrorCode {
+		NoError = 0x000,
+		Uncheck = 0x900,
+		Default = 0x9FF
 	};
 
 private:

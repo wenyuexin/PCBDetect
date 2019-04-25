@@ -75,12 +75,17 @@ public:
     QSpacerItem *horizontalSpacer_10;
     QLabel *label_roiHeight_L_10;
     QLineEdit *lineEdit_ActualProductSize_H;
+    QWidget *layoutWidget_9;
+    QHBoxLayout *horizontalLayout_9;
+    QLabel *label_roiHeight_L_6;
+    QSpacerItem *horizontalSpacer_11;
+    QComboBox *comboBox_clusterComPort;
 
     void setupUi(QWidget *SettingUI)
     {
         if (SettingUI->objectName().isEmpty())
             SettingUI->setObjectName(QStringLiteral("SettingUI"));
-        SettingUI->resize(1366, 768);
+        SettingUI->resize(1440, 900);
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -88,7 +93,7 @@ public:
         SettingUI->setSizePolicy(sizePolicy);
         label_title = new QLabel(SettingUI);
         label_title->setObjectName(QStringLiteral("label_title"));
-        label_title->setGeometry(QRect(560, 0, 271, 41));
+        label_title->setGeometry(QRect(580, 0, 271, 41));
         sizePolicy.setHeightForWidth(label_title->sizePolicy().hasHeightForWidth());
         label_title->setSizePolicy(sizePolicy);
         label_title->setMinimumSize(QSize(60, 30));
@@ -103,16 +108,16 @@ public:
         label_title->setAlignment(Qt::AlignCenter);
         label_3 = new QLabel(SettingUI);
         label_3->setObjectName(QStringLiteral("label_3"));
-        label_3->setGeometry(QRect(0, -1, 1371, 41));
+        label_3->setGeometry(QRect(0, -1, 1441, 41));
         label_3->setStyleSheet(QStringLiteral("background-color: rgb(240, 240, 250);"));
         line = new QFrame(SettingUI);
         line->setObjectName(QStringLiteral("line"));
-        line->setGeometry(QRect(0, 30, 1371, 20));
+        line->setGeometry(QRect(0, 30, 1441, 20));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
         pushButton_return = new QPushButton(SettingUI);
         pushButton_return->setObjectName(QStringLiteral("pushButton_return"));
-        pushButton_return->setGeometry(QRect(640, 710, 120, 40));
+        pushButton_return->setGeometry(QRect(660, 830, 120, 40));
         sizePolicy.setHeightForWidth(pushButton_return->sizePolicy().hasHeightForWidth());
         pushButton_return->setSizePolicy(sizePolicy);
         QFont font1;
@@ -120,7 +125,7 @@ public:
         pushButton_return->setFont(font1);
         pushButton_confirm = new QPushButton(SettingUI);
         pushButton_confirm->setObjectName(QStringLiteral("pushButton_confirm"));
-        pushButton_confirm->setGeometry(QRect(430, 710, 120, 40));
+        pushButton_confirm->setGeometry(QRect(450, 830, 120, 40));
         sizePolicy.setHeightForWidth(pushButton_confirm->sizePolicy().hasHeightForWidth());
         pushButton_confirm->setSizePolicy(sizePolicy);
         pushButton_confirm->setFont(font1);
@@ -272,7 +277,7 @@ public:
 
         layoutWidget_6 = new QWidget(SettingUI);
         layoutWidget_6->setObjectName(QStringLiteral("layoutWidget_6"));
-        layoutWidget_6->setGeometry(QRect(70, 400, 358, 37));
+        layoutWidget_6->setGeometry(QRect(70, 450, 356, 37));
         horizontalLayout_6 = new QHBoxLayout(layoutWidget_6);
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setContentsMargins(11, 11, 11, 11);
@@ -345,7 +350,7 @@ public:
 
         layoutWidget_7 = new QWidget(SettingUI);
         layoutWidget_7->setObjectName(QStringLiteral("layoutWidget_7"));
-        layoutWidget_7->setGeometry(QRect(70, 270, 331, 37));
+        layoutWidget_7->setGeometry(QRect(70, 330, 331, 37));
         horizontalLayout_7 = new QHBoxLayout(layoutWidget_7);
         horizontalLayout_7->setSpacing(6);
         horizontalLayout_7->setContentsMargins(11, 11, 11, 11);
@@ -355,8 +360,8 @@ public:
         label_roiHeight_L_4->setObjectName(QStringLiteral("label_roiHeight_L_4"));
         sizePolicy.setHeightForWidth(label_roiHeight_L_4->sizePolicy().hasHeightForWidth());
         label_roiHeight_L_4->setSizePolicy(sizePolicy);
-        label_roiHeight_L_4->setMinimumSize(QSize(90, 35));
-        label_roiHeight_L_4->setMaximumSize(QSize(90, 35));
+        label_roiHeight_L_4->setMinimumSize(QSize(125, 35));
+        label_roiHeight_L_4->setMaximumSize(QSize(125, 35));
         label_roiHeight_L_4->setFont(font2);
         label_roiHeight_L_4->setAlignment(Qt::AlignCenter);
 
@@ -384,13 +389,13 @@ public:
 
         pushButton_admin = new QPushButton(SettingUI);
         pushButton_admin->setObjectName(QStringLiteral("pushButton_admin"));
-        pushButton_admin->setGeometry(QRect(850, 710, 120, 40));
+        pushButton_admin->setGeometry(QRect(870, 830, 120, 40));
         sizePolicy.setHeightForWidth(pushButton_admin->sizePolicy().hasHeightForWidth());
         pushButton_admin->setSizePolicy(sizePolicy);
         pushButton_admin->setFont(font1);
         layoutWidget_8 = new QWidget(SettingUI);
         layoutWidget_8->setObjectName(QStringLiteral("layoutWidget_8"));
-        layoutWidget_8->setGeometry(QRect(70, 340, 351, 37));
+        layoutWidget_8->setGeometry(QRect(70, 390, 351, 37));
         horizontalLayout_8 = new QHBoxLayout(layoutWidget_8);
         horizontalLayout_8->setSpacing(6);
         horizontalLayout_8->setContentsMargins(11, 11, 11, 11);
@@ -459,6 +464,50 @@ public:
 
         horizontalLayout_8->addWidget(lineEdit_ActualProductSize_H);
 
+        layoutWidget_9 = new QWidget(SettingUI);
+        layoutWidget_9->setObjectName(QStringLiteral("layoutWidget_9"));
+        layoutWidget_9->setGeometry(QRect(70, 270, 331, 37));
+        horizontalLayout_9 = new QHBoxLayout(layoutWidget_9);
+        horizontalLayout_9->setSpacing(6);
+        horizontalLayout_9->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_9->setObjectName(QStringLiteral("horizontalLayout_9"));
+        horizontalLayout_9->setContentsMargins(0, 0, 0, 0);
+        label_roiHeight_L_6 = new QLabel(layoutWidget_9);
+        label_roiHeight_L_6->setObjectName(QStringLiteral("label_roiHeight_L_6"));
+        sizePolicy.setHeightForWidth(label_roiHeight_L_6->sizePolicy().hasHeightForWidth());
+        label_roiHeight_L_6->setSizePolicy(sizePolicy);
+        label_roiHeight_L_6->setMinimumSize(QSize(125, 35));
+        label_roiHeight_L_6->setMaximumSize(QSize(125, 35));
+        label_roiHeight_L_6->setFont(font2);
+        label_roiHeight_L_6->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_9->addWidget(label_roiHeight_L_6);
+
+        horizontalSpacer_11 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        horizontalLayout_9->addItem(horizontalSpacer_11);
+
+        comboBox_clusterComPort = new QComboBox(layoutWidget_9);
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->addItem(QString());
+        comboBox_clusterComPort->setObjectName(QStringLiteral("comboBox_clusterComPort"));
+        sizePolicy.setHeightForWidth(comboBox_clusterComPort->sizePolicy().hasHeightForWidth());
+        comboBox_clusterComPort->setSizePolicy(sizePolicy);
+        comboBox_clusterComPort->setMinimumSize(QSize(160, 35));
+        comboBox_clusterComPort->setMaximumSize(QSize(160, 35));
+        comboBox_clusterComPort->setFont(font3);
+        comboBox_clusterComPort->setLayoutDirection(Qt::LeftToRight);
+
+        horizontalLayout_9->addWidget(comboBox_clusterComPort);
+
         label_3->raise();
         label_title->raise();
         line->raise();
@@ -471,6 +520,7 @@ public:
         layoutWidget_7->raise();
         pushButton_admin->raise();
         layoutWidget_8->raise();
+        layoutWidget_9->raise();
 
         retranslateUi(SettingUI);
 
@@ -494,16 +544,28 @@ public:
         label_roiHeight_L_7->setText(QApplication::translate("SettingUI", "\350\241\214", nullptr));
         label_roiHeight_L_8->setText(QApplication::translate("SettingUI", "\345\210\227", nullptr));
         label_roiHeight_L_4->setText(QApplication::translate("SettingUI", "\345\233\276\345\203\217\346\240\274\345\274\217", nullptr));
-        comboBox_ImageFormat->setItemText(0, QApplication::translate("SettingUI", "      -", nullptr));
-        comboBox_ImageFormat->setItemText(1, QApplication::translate("SettingUI", "    *.bmp", nullptr));
-        comboBox_ImageFormat->setItemText(2, QApplication::translate("SettingUI", "    *.jpg", nullptr));
-        comboBox_ImageFormat->setItemText(3, QApplication::translate("SettingUI", "    *.png", nullptr));
-        comboBox_ImageFormat->setItemText(4, QApplication::translate("SettingUI", "    *.tif", nullptr));
+        comboBox_ImageFormat->setItemText(0, QApplication::translate("SettingUI", "       -", nullptr));
+        comboBox_ImageFormat->setItemText(1, QApplication::translate("SettingUI", "     *.bmp", nullptr));
+        comboBox_ImageFormat->setItemText(2, QApplication::translate("SettingUI", "     *.jpg", nullptr));
+        comboBox_ImageFormat->setItemText(3, QApplication::translate("SettingUI", "     *.png", nullptr));
+        comboBox_ImageFormat->setItemText(4, QApplication::translate("SettingUI", "     *.tif", nullptr));
 
         pushButton_admin->setText(QApplication::translate("SettingUI", "\347\263\273\347\273\237\350\256\276\347\275\256", nullptr));
         label_roiHeight_L_5->setText(QApplication::translate("SettingUI", "\344\272\247\345\223\201\345\260\272\345\257\270(mm)", nullptr));
         label_roiHeight_L_9->setText(QApplication::translate("SettingUI", "\345\256\275", nullptr));
         label_roiHeight_L_10->setText(QApplication::translate("SettingUI", "\351\253\230", nullptr));
+        label_roiHeight_L_6->setText(QApplication::translate("SettingUI", "\350\277\220\345\212\250\346\216\247\345\210\266\344\270\262\345\217\243", nullptr));
+        comboBox_clusterComPort->setItemText(0, QApplication::translate("SettingUI", "       -", nullptr));
+        comboBox_clusterComPort->setItemText(1, QApplication::translate("SettingUI", "      COM1", nullptr));
+        comboBox_clusterComPort->setItemText(2, QApplication::translate("SettingUI", "      COM2", nullptr));
+        comboBox_clusterComPort->setItemText(3, QApplication::translate("SettingUI", "      COM3", nullptr));
+        comboBox_clusterComPort->setItemText(4, QApplication::translate("SettingUI", "      COM4", nullptr));
+        comboBox_clusterComPort->setItemText(5, QApplication::translate("SettingUI", "      COM5", nullptr));
+        comboBox_clusterComPort->setItemText(6, QApplication::translate("SettingUI", "      COM6", nullptr));
+        comboBox_clusterComPort->setItemText(7, QApplication::translate("SettingUI", "      COM7", nullptr));
+        comboBox_clusterComPort->setItemText(8, QApplication::translate("SettingUI", "      COM8", nullptr));
+        comboBox_clusterComPort->setItemText(9, QApplication::translate("SettingUI", "      COM9", nullptr));
+
     } // retranslateUi
 
 };

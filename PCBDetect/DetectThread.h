@@ -2,7 +2,7 @@
 
 #include <QThread>
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "ImageConverter.h"
 #include "DefectDetecter.h"
 

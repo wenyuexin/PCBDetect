@@ -4,7 +4,7 @@
 #include "ui_LaunchUI.h"
 #include "SysInitThread.h"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
 #include <QDesktopWidget>
@@ -28,7 +28,7 @@ private:
 	CameraControler *cameraControler; //Ïà»ú¿ØÖÆÆ÷
 
 public:
-	LaunchUI(QWidget *parent = Q_NULLPTR);
+	LaunchUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
 	~LaunchUI();
 
 	inline void setAdminConfig(pcb::AdminConfig* ptr) { adminConfig = ptr; }

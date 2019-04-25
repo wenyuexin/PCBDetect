@@ -43,7 +43,7 @@ private:
 	TemplateExtractor *templExtractor; //模板提取器
 
 public:
-	TemplateUI(QWidget *parent = Q_NULLPTR);
+	TemplateUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
 	~TemplateUI();
 	
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
@@ -55,6 +55,8 @@ public:
 	void doConnect();
 	void initGraphicsView();
 	void resetTemplateUI();
+	void setPushButtonsEnabled(bool enable);
+	void refreshCameraControler();
 
 private:
 	void initItemGrid(pcb::ItemGrid &grid);//初始化图元网格
@@ -67,14 +69,12 @@ private:
 	void removeItemsFromGraphicsScene();//移除场景中的图元
 
 	void showSampleImages();
-	void nextRowOfSampleImages();
 	void readSampleImages2();
-	void nextRowOfSampleImages2();
 	void extractTemplateImages();
 
 Q_SIGNALS:
 	void showDetectMainUI();
-	void invalidNummberOfSampleImage();
+	void invalidNumberOfSampleImage();
 
 private Q_SLOTS:
 	void on_pushButton_start_clicked();//开始键
@@ -82,14 +82,15 @@ private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
 	void update_extractState_extractor(int state);
 
-	void on_moveForwardFinished_motion();
-	void on_resetControlerFinished_motion(int);
-	void on_initCamerasFinished_camera(int);
-	void on_takePhotosFinished_camera(int);
-	void on_convertFinished_convertThread();
+	void on_moveForwardFinished_motion();//前进结束
+	void on_resetControlerFinished_motion();//复位结束
+	void on_moveToInitialPosFinished_motion();//到达初始拍照位置
+
+	void on_initCamerasFinished_camera(int);//相机初始化结束
+	void on_takePhotosFinished_camera(int);//拍照结束
+	void on_convertFinished_convertThread();//图像转换结束
 
 	void mouseDoubleClickEvent(QMouseEvent *event);
-	void on_switchImage_serialNumUI();
 	void on_recognizeFinished_serialNumUI();
 	void do_showPreviousUI_serialNumUI();
 };

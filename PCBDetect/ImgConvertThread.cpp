@@ -21,6 +21,7 @@ ImgConvertThread::ImgConvertThread(QObject *parent)
 
 ImgConvertThread::~ImgConvertThread()
 {
+	qDebug() << "~ImgConvertThread";
 	deleteImageConverters();
 }
 
@@ -39,7 +40,9 @@ void ImgConvertThread::run()
 		errorCode = ImageConverter::ErrorCode::Invalid_ImageNum;
 		return; 
 	}
-	if ((cvmats->at(*currentRow))[0]->size().width < 1) {
+	if ((cvmats->at(*currentRow))[0] == Q_NULLPTR || 
+		(cvmats->at(*currentRow))[0]->size().width < 1) 
+	{
 		qDebug() << "warning: invalid imageSize"; 
 		errorCode = ImageConverter::ErrorCode::Invalid_ImageSize;
 		return;
