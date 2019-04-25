@@ -271,3 +271,4 @@ OpenCV_contrib_x64_Release_PS.props
 PCBDetect.vcxproj
 PCBDetect.vcxproj.filters
 PCBDetect.vcxproj.user
+/PCBDetect
