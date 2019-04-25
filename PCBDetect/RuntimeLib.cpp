@@ -29,6 +29,7 @@ DetectParams::DetectParams()
 
 DetectParams::~DetectParams()
 {
+	qDebug() << "~DetectParams";
 }
 
 

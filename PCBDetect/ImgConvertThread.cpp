@@ -21,6 +21,7 @@ ImgConvertThread::ImgConvertThread(QObject *parent)
 
 ImgConvertThread::~ImgConvertThread()
 {
+	qDebug() << "~ImgConvertThread";
 	deleteImageConverters();
 }
 

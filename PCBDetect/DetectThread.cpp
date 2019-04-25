@@ -20,6 +20,7 @@ DetectThread::DetectThread()
 
 DetectThread::~DetectThread()
 {
+	qDebug() << "~DetectThread";
 }
 
 //³õÊ¼»¯È±ÏÝ¼ì²âÆ÷
