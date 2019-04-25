@@ -374,9 +374,11 @@ void DetectFunc::markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat
 
 			int defect_flag = 0;
 			if (lack_flag) {
+				//断路或者缺失
 				defect_flag = trans_num > 2 ? 1 : 2;
 			}
 			else {
+				//短路或者凸起
 				defect_flag = trans_num > 2 ? 3 : 4;
 			}
 
