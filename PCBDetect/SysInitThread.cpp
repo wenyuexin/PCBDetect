@@ -18,6 +18,7 @@ SysInitThread::SysInitThread()
 
 SysInitThread::~SysInitThread()
 {
+	qDebug() << "~SysInitThread";
 }
 
 

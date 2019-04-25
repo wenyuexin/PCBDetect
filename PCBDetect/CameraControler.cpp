@@ -18,6 +18,8 @@ CameraControler::CameraControler(QThread *parent)
 
 CameraControler::~CameraControler()
 {
+	qDebug() << "~CameraControler";
+
 	//关闭相机设备
 	for (int i = 0; i < cameraList.size(); i++)
 		cameraList[i].release();

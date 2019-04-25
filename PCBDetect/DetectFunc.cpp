@@ -27,6 +27,11 @@ DetectFunc::DetectFunc()
 	detectResult = Q_NULLPTR; //检测结果
 }
 
+DetectFunc::~DetectFunc()
+{
+	qDebug() << "~DetectFunc";
+}
+
 //生成完整尺寸的缺陷检测图像
 void DetectFunc::generateBigTempl()
 {

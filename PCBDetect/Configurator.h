@@ -80,7 +80,7 @@ namespace pcb
 
 	public:
 		AdminConfig();
-		~AdminConfig() = default;
+		~AdminConfig();
 		void loadDefaultValue(); //加载默认参数
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
@@ -153,7 +153,7 @@ namespace pcb
 
 	public:
 		DetectConfig();
-		~DetectConfig() = default;
+		~DetectConfig();
 		void loadDefaultValue(); //加载默认参数
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
