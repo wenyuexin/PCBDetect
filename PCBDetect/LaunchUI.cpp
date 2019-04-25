@@ -26,6 +26,8 @@ LaunchUI::LaunchUI(QWidget *parent, QRect &screenRect)
 
 LaunchUI::~LaunchUI()
 {
+	delete initThread;
+	initThread = Q_NULLPTR;
 }
 
 

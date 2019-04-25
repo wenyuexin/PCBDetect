@@ -13,6 +13,7 @@ TemplateThread::TemplateThread(QObject *parent)
 
 TemplateThread::~TemplateThread()
 {
+	qDebug() << "~TemplateThread";
 }
 
 

@@ -24,7 +24,9 @@ DefectDetecter::DefectDetecter()
 
 DefectDetecter::~DefectDetecter() 
 {
+	qDebug() << "~DefectDetecter";
 	delete detectFunc;
+	detectFunc = Q_NULLPTR;
 }
 
 //³õÊ¼»¯templFunc

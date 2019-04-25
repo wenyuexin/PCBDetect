@@ -28,7 +28,9 @@ TemplateExtractor::TemplateExtractor(QObject *parent)
 
 TemplateExtractor::~TemplateExtractor()
 {
+	qDebug() << "~TemplateExtractor";
 	delete templFunc;
+	templFunc = Q_NULLPTR;
 }
 
 //³õÊ¼»¯templFunc

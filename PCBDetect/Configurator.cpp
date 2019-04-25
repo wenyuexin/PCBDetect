@@ -20,6 +20,11 @@ AdminConfig::AdminConfig()
 	ImageAspectRatio = -1; //图像宽高比
 }
 
+AdminConfig::~AdminConfig()
+{
+	qDebug() << "~AdminConfig";
+}
+
 //加载默认参数
 void AdminConfig::loadDefaultValue()
 {
@@ -219,6 +224,11 @@ DetectConfig::DetectConfig()
 	nBasicUnitInCol = -1; //每一列中的基本单元数
 }
 
+DetectConfig::~DetectConfig()
+{
+	qDebug() << "~DetectConfig";
+}
+
 //加载默认值
 void DetectConfig::loadDefaultValue()
 {
@@ -406,7 +416,7 @@ void DetectConfig::copyTo(DetectConfig *dst)
 	dst->ActualProductSize_H = this->ActualProductSize_H; //产品实际高度
 	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
 	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
-	dst->clusterComPort != this->clusterComPort; //COM口
+	dst->clusterComPort = this->clusterComPort; //COM口
 }
 
 
@@ -423,6 +433,7 @@ Configurator::Configurator(QFile *file)
 
 Configurator::~Configurator()
 {
+	qDebug() << "~Configurator";
 }
 
 /************** 生成默认的参数配置文件 **************/

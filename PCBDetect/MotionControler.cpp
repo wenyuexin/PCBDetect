@@ -26,6 +26,7 @@ MotionControler::MotionControler(QThread *parent)
 
 MotionControler::~MotionControler()
 {
+	qDebug() << "~MotionControler";
 }
 
 //Æô¶¯Ïß³Ì

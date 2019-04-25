@@ -3,6 +3,7 @@
 #include "ui_PassWordUI.h"
 #include <QWidget>
 #include <QMessageBox>
+#include <qDebug>
 
 
 //系统设置登录界面

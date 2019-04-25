@@ -23,11 +23,9 @@ private:
 	cv::Mat big_templ; //´óÄ£°å;
 
 
-
-
 public:
 	DetectFunc();
-	~DetectFunc() = default;
+	~DetectFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
