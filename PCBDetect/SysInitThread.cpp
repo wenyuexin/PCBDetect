@@ -135,13 +135,19 @@ bool SysInitThread::initDetectParams()
 	pcb::delay(1000);
 	
 	DetectParams::ErrorCode code;
+
+	//计算单步前进距离
 	code = detectParams->calcSingleMotionStroke(adminConfig);
 	if (code != DetectParams::ValidValue) {
 		emit detectParamsError_initThread(); return false;
 	}
-	pcb::delay(10);
-
+	//计算相机个数、拍照次数
 	code = detectParams->calcItemGridSize(adminConfig, detectConfig);
+	if (code != DetectParams::ValidValue) {
+		emit detectParamsError_initThread(); return false;
+	}
+	//计算初始拍照位置
+	code = detectParams->calcInitialPhotoPos(adminConfig);
 	if (code != DetectParams::ValidValue) {
 		emit detectParamsError_initThread(); return false;
 	}
@@ -175,8 +181,6 @@ bool SysInitThread::initCameraControler()
 {
 	emit sysInitStatus_initThread(pcb::chinese("正在初始化相机 ..."));
 	pcb::delay(800);
-
-
 
 	cameraControler->setOperation(CameraControler::InitCameras);
 	cameraControler->start(); //启动线程

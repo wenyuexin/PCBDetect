@@ -34,8 +34,8 @@ void AdminSettingUI::initAdminSettingUI()
 	this->setCursorLocation(AdminConfig::Index_None);
 
 	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
-	this->setPushButtonsToEnabled(false);
-	this->setPushButtonsToEnabled(true);
+	this->setPushButtonsEnabled(false);
+	this->setPushButtonsEnabled(true);
 
 	//限制参数的输入范围
 	QIntValidator intValidator;
@@ -72,7 +72,7 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 	AdminConfig::ErrorCode code = tempConfig.checkValidity(AdminConfig::Index_All);
 	if (code != AdminConfig::ValidConfig) { //参数无效则报错
 		tempConfig.showMessageBox(this);
-		this->setPushButtonsToEnabled(true);//将按键设为可点击
+		this->setPushButtonsEnabled(true);//将按键设为可点击
 		AdminConfig::ConfigIndex index = AdminConfig::convertCodeToIndex(code);
 		this->setCursorLocation(index); //将光标定位到无效参数的输入框上
 		return;
@@ -90,21 +90,49 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 		//将参数保存到config文件中
 		Configurator::saveConfigFile(configFileName, adminConfig);
 		//更新运行参数
+
+
 		if (detectConfig->isValid(adminConfig, false)) {
-			sysResetCode |= detectParams->calcItemGridSize(adminConfig, detectConfig);
-			if (!detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
-				detectParams->showMessageBox(this);
+			detectParams->copyTo(&tempParams);
+
+			DetectParams::ErrorCode code;
+			//计算单步前进距离
+			code = tempParams.calcSingleMotionStroke(adminConfig);
+			if (code != DetectParams::ValidValue) {
+				tempParams.showMessageBox(this); return;
+			}
+			//计算相机个数、拍照次数
+			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
+			if (code != DetectParams::ValidValues) {
+				tempParams.showMessageBox(this); return;
+			}
+			//计算初始拍照位置
+			code = tempParams.calcInitialPhotoPos(adminConfig);
+			if (code != DetectParams::ValidValue) {
+				tempParams.showMessageBox(this); return;
+			}
+
+			if (!tempParams.isValid(DetectParams::Index_All_SysInit, true, adminConfig)) {
+				tempParams.showMessageBox(this); return;
+			}
+			sysResetCode |= detectParams->getSystemResetCode(tempParams);
+			tempParams.copyTo(detectParams);
 		}
-		//发送检测系统重置信号
-		emit resetDetectSystem_adminUI(sysResetCode);
+
+		//判断是否重置检测系统
+		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
+			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
+		{
+			emit resetDetectSystem_adminUI(sysResetCode);
+		}
 	}
-	if (adminConfig->getErrorCode() != tempConfig.getErrorCode()) {
+	else if (adminConfig->getErrorCode() != tempConfig.getErrorCode()) {
 		//将临时配置拷贝到系统参数对象中
 		tempConfig.copyTo(adminConfig);
 	}
 	
 	//将本界面上的按键设为可点击
-	this->setPushButtonsToEnabled(true);
+	this->setPushButtonsEnabled(true);
 }
 
 //返回
@@ -118,7 +146,7 @@ void AdminSettingUI::on_pushButton_return_clicked()
 }
 
 //设置按键的可点击状态
-void AdminSettingUI::setPushButtonsToEnabled(bool code)
+void AdminSettingUI::setPushButtonsEnabled(bool code)
 {
 	ui.pushButton_confirm->setEnabled(code);//确认
 	ui.pushButton_return->setEnabled(code);//返回

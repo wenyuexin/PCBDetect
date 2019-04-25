@@ -16,9 +16,11 @@ private:
 	Ui::AdminSettingUI ui;
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::AdminConfig tempConfig; //临时的系统参数类，暂存界面上的值
+	const QString configFileName= ".admin.config";//配置文件的文件名
+
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectParams *detectParams; //运行参数
-	const QString configFileName= ".admin.config";//配置文件的文件名
+	pcb::DetectParams tempParams;//临时的运行参数
 	int sysResetCode = 0b000000000; //系统重置代码
 
 public:
@@ -30,7 +32,7 @@ public:
 	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
 	void refreshAdminSettingUI(); //更新界面上的参数
-	void setPushButtonsToEnabled(bool code); //按键设置
+	void setPushButtonsEnabled(bool code); //按键设置
 
 private:
 	void initAdminSettingUI();

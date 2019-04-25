@@ -52,9 +52,10 @@ void DetectParams::loadDefaultValue()
 	currentRow_extract = -1; //提取行号
 
 	errorCode_sysInit = Uncheck;
-	singleMotionStroke = 80; //运功动结构的单步行程
+	singleMotionStroke = 79.0; //运功动结构的单步行程
 	nCamera = 5; //相机个数
 	nPhotographing = 4; //拍照次数
+	initialPhotoPos = 245.0; //初始拍照位置
 }
 
 //计算机械结构的单步运动距离 singleMotionStroke
@@ -65,24 +66,12 @@ DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminC
 	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
 	double stroke = 1.0 * adminConfig->ImageSize_H * (1 - overlap);
 	stroke /= adminConfig->PixelsNumPerUnitLength;
-	this->singleMotionStroke = (int) ceil(stroke);
-
-	this->singleMotionStroke = 79;
+	this->singleMotionStroke = stroke;
+	//this->singleMotionStroke = 79;
 
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Uncheck;
 	code = checkValidity(ParamsIndex::Index_singleMotionStroke, adminConfig);
-	return code;
-}
-
-//计算初始拍照位置
-DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(AdminConfig *adminConfig, DetectConfig *detectConfig)
-{
-	if (!adminConfig->isValid(true) || !detectConfig->isValid(adminConfig)) return Default;
-
-	//判断参数有效性
-	ErrorCode code = ErrorCode::Uncheck;
-	code = checkValidity(ParamsIndex::Index_initialPhotoPos, adminConfig);
 	return code;
 }
 
@@ -92,20 +81,18 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	if (!adminConfig->isValid(true) || !detectConfig->isValid(adminConfig)) return Default;
 
 	//计算需要开启的相机个数
-	double overlap_W = 0.213959; //该值由相机之间的距离决定
+	double overlap_W = 345.0 / 4384.0; //该值由相机之间的距离决定
 	double nPixels_W = detectConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
 	double nW = nPixels_W / adminConfig->ImageSize_W;
 	this->nCamera = (int) ceil((nW - overlap_W) / (1 - overlap_W));
-	
-	this->nCamera = 3;
+	//this->nCamera = 3;
 
 	//计算拍摄次数
 	double overlap_H = adminConfig->ImageOverlappingRate; //图像重叠率
 	double nPixels_H = detectConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
 	this->nPhotographing = (int) ceil((nH - overlap_H) / (1 - overlap_H));
-	
-	this->nPhotographing = 3;
+	//this->nPhotographing = 3;
 
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Uncheck;
@@ -116,6 +103,22 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 
 	return ValidValue;
 }
+
+//计算初始拍照位置
+DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(pcb::AdminConfig *adminConfig)
+{
+	if (!adminConfig->isValid(true)) return Default;
+
+	double initPos = 522;
+	initPos -= ((nPhotographing - 0.5) * singleMotionStroke); 
+	this->initialPhotoPos = initPos;
+
+	//判断参数有效性
+	ErrorCode code = ErrorCode::Uncheck;
+	code = checkValidity(ParamsIndex::Index_initialPhotoPos, adminConfig);
+	return code;
+}
+
 
 //产品序号解析
 DetectParams::ErrorCode DetectParams::parseSerialNum()
