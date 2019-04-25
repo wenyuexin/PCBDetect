@@ -111,9 +111,6 @@ bool MotionControler::initControler()
 	pcb::delay(10);
 
 	//连接控制器 - 方式1
-	//getSafeHwnd
-	//FindWindow();
-	//this->GetSafeHwnd()
 	if (AMC98_Connect(NULL, 0) != 0) { markInitFailed(); return false; }
 	pcb::delay(100);
 
@@ -123,11 +120,11 @@ bool MotionControler::initControler()
 	//if (AMC98_Connect((HWND)(&funcPtr), 0) != 0) return false;
 
 	//进一步检查运动结构的最大行程
-	int maxDist = adminConfig->MaxMotionStroke;
-	if (maxDist > 500) { qDebug() << "invalid maxDist"; }
+	double maxDist = adminConfig->MaxMotionStroke;
+	if (maxDist > 550) { qDebug() << "invalid maxDist"; }
 
 	//设置控制指令 - X轴
-	if (!_AMC98_AddParamPC2CNC(138, maxDist * 10000)) return false; //轴最大值
+	if (!_AMC98_AddParamPC2CNC(138, int(maxDist * 10000))) return false; //轴最大值
 	if (!_AMC98_AddParamPC2CNC(145, 0 * 10000)) return false;//轴最小值
 	if (!_AMC98_AddParamPC2CNC(139, 10 * 10000)) return false;//轴开始速度
 	if (!_AMC98_AddParamPC2CNC(140, 50 * 10000)) return false;//轴结束数度
@@ -294,7 +291,7 @@ bool MotionControler::moveToInitialPos()
 	}
 
 	//发送控制指令
-	int endingPos = 245 - 80; //后期需要根据板子的尺寸计算得到
+	int endingPos = detectParams->initialPhotoPos; //初始拍照位置
 	if (AMC98_start_sr_move(2, 0, endingPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
 		errorCode = ErrorCode::MoveToInitialPosFailed;
 		emit moveToInitialPosFinished_motion(errorCode);

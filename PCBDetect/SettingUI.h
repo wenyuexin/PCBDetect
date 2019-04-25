@@ -17,19 +17,20 @@ class SettingUI : public QWidget
 
 private:
 	Ui::SettingUI ui;
-	pcb::DetectParams *detectParams;//运行参数
-	pcb::DetectParams tempParams;//临时的运行参数
+	QRect screenRect; //屏幕显示区域
+	
+	pcb::AdminConfig *adminConfig; //系统参数
+	PassWordUI passWordUI; //系统设置登录界面
+	AdminSettingUI *adminSettingUI; //系统设置界面
 
 	pcb::DetectConfig *detectConfig; //用户参数
 	pcb::DetectConfig tempConfig; //临时的用户参数类
 	const QString configFileName = ".user.config";//配置文件的文件名
 
-	pcb::AdminConfig *adminConfig; //系统参数
-	PassWordUI passWordUI; //系统设置登录界面
+	pcb::DetectParams *detectParams;//运行参数
+	pcb::DetectParams tempParams;//临时的运行参数
 
-	QRect screenRect; //屏幕显示区域
-	AdminSettingUI *adminSettingUI; //系统设置界面
-	int sysResetCode = 0b00000000;
+	int sysResetCode; //系统重置代码
 
 public:
 	SettingUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
@@ -41,7 +42,7 @@ public:
 
 	void doConnect(); //信号连接
 	void refreshSettingUI(); //更新设置界面
-	void setPushButtonsToEnabled(bool code); //按键设置
+	void setPushButtonsEnabled(bool code); //按键设置
 
 private:
 	void initSettingUI();
