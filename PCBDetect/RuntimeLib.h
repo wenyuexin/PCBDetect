@@ -76,10 +76,10 @@ namespace pcb
 		int currentRow_detect; //检测行号
 		int currentRow_extract; //提取行号
 
-		int singleMotionStroke; //运功动结构的单步行程 mm
-		int initialPhotoPos; //初始拍照位置
+		double singleMotionStroke; //运功动结构的单步行程 mm
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
+		double initialPhotoPos; //初始拍照位置
 
 		QString bufferDirPath; //缓存文件夹
 
@@ -98,9 +98,9 @@ namespace pcb
 			//初始化相关
 			Index_All_SysInit,
 			Index_singleMotionStroke,
-			Index_initialPhotoPos,
 			Index_nCamera,
 			Index_nPhotographing,
+			Index_initialPhotoPos,
 			//其他
 			Index_bufferDirPath
 		};
@@ -117,9 +117,9 @@ namespace pcb
 			Invalid_currentRow_detect = 0x305,
 			Invalid_currentRow_extract = 0x306,
 			Invalid_singleMotionStroke = 0x307,
-			Invalid_initialPhotoPos = 0x308,
-			Invalid_nCamera = 0x309,
-			Invalid_nPhotographing = 0x30A,
+			Invalid_nCamera = 0x308,
+			Invalid_nPhotographing = 0x309,
+			Invalid_initialPhotoPos = 0x30A,
 			Invalid_bufferDirPath = 0x30B,
 			Default = 0x3FF
 		};
@@ -145,7 +145,7 @@ namespace pcb
 		void resetSerialNum();
 		void loadDefaultValue();
 		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
-		ErrorCode calcInitialPhotoPos(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
+		ErrorCode calcInitialPhotoPos(pcb::AdminConfig *adminConfig);
 		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
 		ErrorCode parseSerialNum();
 

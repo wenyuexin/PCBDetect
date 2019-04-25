@@ -23,6 +23,7 @@ SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 	detectConfig = Q_NULLPTR; //用户参数
 	adminConfig = Q_NULLPTR; //系统参数
 	adminSettingUI = Q_NULLPTR; //系统设置界面
+	sysResetCode = 0b00000000; //系统重置代码
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
@@ -64,8 +65,8 @@ void SettingUI::initSettingUI()
 	this->setCursorLocation(DetectConfig::Index_None);
 
 	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
-	this->setPushButtonsToEnabled(false);
-	this->setPushButtonsToEnabled(true);
+	this->setPushButtonsEnabled(false);
+	this->setPushButtonsEnabled(true);
 
 	//限制参数的输入范围
 	QIntValidator intValidator;
@@ -164,7 +165,7 @@ void SettingUI::on_pushButton_OutputDirPath_clicked()
 void SettingUI::on_pushButton_confirm_clicked()
 {
 	//将参数设置界面的确认按键、返回按键设为不可点击
-	this->setPushButtonsToEnabled(false);
+	this->setPushButtonsEnabled(false);
 
 	//获取界面上的config参数
 	getConfigFromSettingUI();
@@ -174,7 +175,7 @@ void SettingUI::on_pushButton_confirm_clicked()
 	code = tempConfig.checkValidity(DetectConfig::Index_All, adminConfig);
 	if (code != DetectConfig::ValidConfig) { //参数无效则报错
 		tempConfig.showMessageBox(this); //弹窗警告
-		this->setPushButtonsToEnabled(true);//将按键设为可点击
+		this->setPushButtonsEnabled(true);//将按键设为可点击
 		DetectConfig::ConfigIndex index = DetectConfig::convertCodeToIndex(code);
 		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
 		return;
@@ -184,6 +185,7 @@ void SettingUI::on_pushButton_confirm_clicked()
 	this->setCursorLocation(DetectConfig::Index_None);
 
 	//判断参数是否已经修改
+	sysResetCode = 0b00000000; //系统重置代码
 	if (detectConfig->unequals(tempConfig) != DetectConfig::Index_None) {
 		//判断是否重置检测系统
 		sysResetCode |= detectConfig->getSystemResetCode(tempConfig);
@@ -200,26 +202,26 @@ void SettingUI::on_pushButton_confirm_clicked()
 			//计算单步运动距离
 			code = tempParams.calcSingleMotionStroke(adminConfig);
 			if (code != DetectParams::ValidValue) {
-				detectParams->showMessageBox(this); return;
+				tempParams.showMessageBox(this); return;
 			}
 			//计算相机个数和拍照次数
 			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
 			if (code != DetectParams::ValidValue) {
-				detectParams->showMessageBox(this); return;
+				tempParams.showMessageBox(this); return;
 			}
 			//计算初始拍照位置
-			//code = tempParams.calcInitialPhotoPos(adminConfig, detectConfig);
-			//if (code != DetectParams::ValidValue) {
-			//	detectParams->showMessageBox(this); return;
-			//}
+			code = tempParams.calcInitialPhotoPos(adminConfig);
+			if (code != DetectParams::ValidValue) {
+				tempParams.showMessageBox(this); return;
+			}
 
-			tempParams.copyTo(detectParams);
 			if (!tempParams.isValid(DetectParams::Index_All_SysInit, true, adminConfig)) {
-				tempParams.showMessageBox(this);
+				tempParams.showMessageBox(this); return;
 			}
 			sysResetCode |= detectParams->getSystemResetCode(tempParams);
 			tempParams.copyTo(detectParams);
 		}
+
 		//判断是否重置检测系统
 		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
 			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
@@ -239,7 +241,7 @@ void SettingUI::on_pushButton_confirm_clicked()
 	pcb::delay(10);
 	
 	//将本界面上的按键设为可点击
-	this->setPushButtonsToEnabled(true);
+	this->setPushButtonsEnabled(true);
 }
 
 //返回键
@@ -258,11 +260,11 @@ void SettingUI::on_pushButton_admin_clicked()
 	//设置窗口始终置顶
 	passWordUI.show();
 	//设置按键
-	this->setPushButtonsToEnabled(false);
+	this->setPushButtonsEnabled(false);
 }
 
 //设置按键的可点击状态
-void SettingUI::setPushButtonsToEnabled(bool code)
+void SettingUI::setPushButtonsEnabled(bool code)
 {
 	ui.pushButton_confirm->setEnabled(code);//确认
 	ui.pushButton_return->setEnabled(code);//返回
@@ -342,7 +344,7 @@ void SettingUI::getConfigFromSettingUI()
 void SettingUI::on_closePassWordUI_pswdUI()
 {
 	//将系统参数按键设为可点击
-	this->setPushButtonsToEnabled(true);//设置按键
+	this->setPushButtonsEnabled(true);//设置按键
 }
 
 //显示系统参数设置界面
@@ -354,7 +356,7 @@ void SettingUI::do_showAdminSettingUI_pswdUI()
 	adminSettingUI->showFullScreen();
 	pcb::delay(10);
 	this->hide(); //隐藏参数设置界面
-	this->setPushButtonsToEnabled(true);//设置按键
+	this->setPushButtonsEnabled(true);//设置按键
 }
 
 
