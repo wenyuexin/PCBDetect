@@ -105,6 +105,7 @@ bool CameraControler::initCameras2()
 		CameraNums < adminConfig->MaxCameraNum)
 	{
 		//枚举设备失败或者系统中的设备数量少于设定值
+		errorCode = CameraControler::InitFailed;
 		return false;
 	}
 
@@ -112,10 +113,9 @@ bool CameraControler::initCameras2()
 		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 			cameraList2.push_back(-1);
 			status = CameraInit(&sCameraList[i], -1, -1, &cameraList2[i]);
-			cameraState[i] = (status != CAMERA_STATUS_SUCCESS);
+			cameraState[i] = (status == CAMERA_STATUS_SUCCESS);
 			if (status != CAMERA_STATUS_SUCCESS) { //有任意一台相机初始化失败
 				errorCode = CameraControler::InitFailed;
-				//return false;
 			}
 		}
 	}
@@ -123,13 +123,13 @@ bool CameraControler::initCameras2()
 		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 			cameraList.push_back(-1);
 			status = CameraInit(&sCameraList[deviceIndex[i]], -1, -1, &cameraList2[i]);
-			cameraState[i] = (status != CAMERA_STATUS_SUCCESS);
+			cameraState[i] = (status == CAMERA_STATUS_SUCCESS);
 			if (status != CAMERA_STATUS_SUCCESS) {//有任意一台相机初始化失败
 				errorCode = CameraControler::InitFailed;
-				//return false;
 			}
 		}
 	}
+	if (errorCode != CameraControler::NoError) return false;
 
 	double *pfExposureTime = NULL;
 	tSdkImageResolution sImageSize;
@@ -150,12 +150,16 @@ bool CameraControler::initCameras2()
 	sImageSize.iHeightZoomSw = 0;
 
 	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
+		//设置曝光时间，单位us
+		CameraSetExposureTime(cameraList2[i], 200 * 1000);
 		//开始采集图像
 		//设置相机的触发模式。0表示连续采集模式；1表示软件触发模式；2表示硬件触发模式。
 		CameraSetTriggerMode(cameraList2[i], 1);
 		CameraSetTriggerCount(cameraList2[i], 5);
-		if (CameraSetResolutionForSnap(cameraList2[i], &sImageSize) != CAMERA_STATUS_SUCCESS)
+		if (CameraSetResolutionForSnap(cameraList2[i], &sImageSize) != CAMERA_STATUS_SUCCESS) {
+			errorCode = CameraControler::InitFailed;
 			return false;
+		}
 		CameraPlay(cameraList2[i]);
 	}
 	return true;
