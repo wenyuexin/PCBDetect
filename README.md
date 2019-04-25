@@ -25,7 +25,7 @@
 | LaunchUI | .h / .cpp | 启动界面 |
 | LaunchUI | .ui | 启动界面的外观设计和控件布局 |
 | SysInitThread | .h / .cpp | 系统初始化线程，启动过程中在后台执行初始化操作 |
-|  |  |  |
+| - |  |  |
 | SettingUI | .h / .cpp | 参数设置界面 |
 | SettingUI | .ui | 参数设置界面的外观设计和控件布局 |
 | PassWordUI | .h / .cpp | 系统参数登录界面 |
@@ -72,7 +72,6 @@
 | SerialNumberUI | 产品序号识别 | 0x700 ~ 0x7FF |
 | TemplateUI<br/>TemplateThread<br/>TemplateExtractor<br/>TemplFunc | 模板提取 | 0x800 ~ 0x8FF |
 | DetectUI<br/>DetectThread<br/>DefectDetecter<br/>DetectFunc | 检测 | 0x900 ~ 0x9FF |
-|                                                              |              |               |
 |  |  |  |
 
 
