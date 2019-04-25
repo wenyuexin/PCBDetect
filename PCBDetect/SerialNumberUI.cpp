@@ -11,9 +11,9 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	this->setMouseTracking(true);
 
 	//多屏状态下选择在副屏全屏显示
-	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);
-	this->setGeometry(screenRect);
+	//QDesktopWidget* desktop = QApplication::desktop();
+	//QRect screenRect = desktop->screenGeometry(1);
+	//this->setGeometry(screenRect);
 
 	//成员变量的初始化
 	errorCode = ErrorCode::Default;
@@ -22,9 +22,15 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	cvmatSamples = Q_NULLPTR; //用于检测的样本图
 	qpixmapSamples = Q_NULLPTR; //用于显示的样本图
 	imageItem = Q_NULLPTR; 
-	imageScalingRatio = 0;
 	gridRowIdx = -1; //当前分图所在行
 	gridColIdx = -1; //当前分图所在列
+	graphicsScenePos.setX(0);//场景左上角坐标
+	graphicsScenePos.setY(0);
+	roiRect_tl.setX(0);//roi左上角
+	roiRect_tl.setY(0);
+	roiRect_br.setX(0);//roi右下角
+	roiRect_br.setY(0);
+	imageScalingRatio = 0;//图像缩放比例
 
 	//获取绘图控件QGraphicsView的位置
 	QPoint graphicsViewPos = ui.graphicsView->pos();
@@ -38,6 +44,7 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 
 SerialNumberUI::~SerialNumberUI()
 {
+	qDebug() << "~SerialNumberUI";
 	deleteImageItem();
 }
 
@@ -109,7 +116,11 @@ void SerialNumberUI::resetSerialNumberUI()
 	ui.checkBox_roi_br->setChecked(false);
 	ui.lineEdit_serialNum->setText("");
 
+	//删除图元
 	deleteImageItem();
+
+	//重置产品序号等
+	detectParams->resetSerialNum();
 
 	//删除buffer文件夹中的roi图片
 	QFile file(roiFilePath);
@@ -129,8 +140,8 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 	cv::Point tl(roiRect_tl.x(), roiRect_tl.y());
 	cv::Point br(roiRect_br.x(), roiRect_br.y());
 	cv::Rect roiRect = cv::Rect(tl, br);
-	if (roiRect.width > adminConfig->ImageSize_W || 
-		roiRect.height > adminConfig->ImageSize_H) 
+	if (roiRect.width >= adminConfig->ImageSize_W || 
+		roiRect.height >= adminConfig->ImageSize_H) 
 	{
 		showMessageBox(this, Invalid_RoiRect); return;
 	}
@@ -164,22 +175,35 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 	}
 
 	QString serialNum = QString(text);
+	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
 	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
 	this->setSerialNumberUIEnabled(true);
 
-	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
-	DetectParams::ErrorCode code = detectParams->parseSerialNum(); //解析产品序号
+	//检查产品序号是否有效
+	DetectParams::ErrorCode code = DetectParams::Uncheck;
+	code = detectParams->checkValidity(DetectParams::Index_serialNum);
 	if (code != DetectParams::ValidValue) {
 		detectParams->showMessageBox(this, code); return;
 	}
 }
 
-//确定
+//确定按键
 void SerialNumberUI::on_pushButton_confirm_clicked()
 {
-	QString serialNum = ui.lineEdit_serialNum->text();
-	if (serialNum == "") {
-		showMessageBox(this, Invalid_SerialNum); return;
+	QString serialNum = ui.lineEdit_serialNum->text(); //读取产品序号
+	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
+
+	DetectParams::ErrorCode code = DetectParams::Uncheck;
+	code = detectParams->parseSerialNum(); //解析产品序号
+	if (code != DetectParams::ValidValue) {
+		detectParams->showMessageBox(this, code); return;
+	}
+	//检查型号、批次号、编号是否有效
+	code = detectParams->checkValidity(DetectParams::Index_All_SerialNum);
+	if (code != DetectParams::ValidValue) {
+		detectParams->showMessageBox(this, code); return;
 	}
 
 	//返回上一级界面，并执行下一步处理
@@ -194,19 +218,6 @@ void SerialNumberUI::on_pushButton_return_clicked()
 
 
 /**************** 显示分图与鼠标框选 ****************/
-
-//删除graphicsView中显示的的图像
-void SerialNumberUI::deleteImageItem()
-{
-	delete imageItem;
-	imageItem = Q_NULLPTR;
-
-	//从场景中移除
-	QList<QGraphicsItem *> itemList = graphicsScene.items();
-	for (int i = 0; i < itemList.size(); i++) {
-		graphicsScene.removeItem(itemList[i]);
-	}
-}
 
 //在graphicView中显示分图
 void SerialNumberUI::showSampleImage(int row, int col)
@@ -229,6 +240,24 @@ void SerialNumberUI::showSampleImage(int row, int col)
 	graphicsScenePos = scenePosToView - QPointF(scaledImg.width()/2.0, scaledImg.height()/2.0);
 
 	ui.graphicsView->show();//显示
+}
+
+//删除graphicsView中显示的的图像
+void SerialNumberUI::deleteImageItem()
+{
+	//回收内存
+	delete imageItem;
+	imageItem = Q_NULLPTR;
+
+	//从场景中移除
+	QList<QGraphicsItem *> itemList = graphicsScene.items();
+	for (int i = 0; i < itemList.size(); i++) {
+		graphicsScene.removeItem(itemList[i]);
+	}
+
+	//重置场景相对于视图的位置
+	graphicsScenePos.setX(0);
+	graphicsScenePos.setY(0);
 }
 
 //鼠标按下事件

@@ -1,70 +1,164 @@
 #include "CameraControler.h"
 
+using cv::Mat;
+using pcb::CvMatVector;
+
+#ifdef _WIN64
+#pragma comment(lib, ".\\MVCAMSDK_X64.lib")
+#else
+#pragma comment(lib, ".\\MVCAMSDK.lib")
+#endif
 
 CameraControler::CameraControler(QThread *parent)
 	: QThread(parent)
 {
+	errorCode = Uncheck; //控制器的错误码
+	operation = NoOperation;//操作指令
 }
 
 CameraControler::~CameraControler()
 {
+	qDebug() << "~CameraControler";
+
 	//关闭相机设备
 	for (int i = 0; i < cameraList.size(); i++)
 		cameraList[i].release();
+
+	for (int i = 0; i < cameraList2.size(); i++)
+		CameraUnInit(cameraList2[i]);
 }
 
 //启动线程
 void CameraControler::run()
 {
 	switch (operation) {
+	case Operation::NoOperation: //无操作
+		break;
 	case Operation::InitCameras: //初始化
-		initCameras();
+		this->initCameras2();
 		emit initCamerasFinished_camera(errorCode);
 		break;
-	case Operation::TakePhoto: //拍照
-	    //拍摄结束后将结果存入 (*cvmatSamples)[*currentRow] 中
-		takePhotos();
+	case Operation::TakePhotos: //拍照
+		this->takePhotos2();
 		emit takePhotosFinished_camera(errorCode);
-		break;
-	case Operation::NoOperation:
-	default:
 		break;
 	}
 }
 
-/******************* 相机 *********************/
+/******************* 相机初始化与拍照 *********************/
 
-//相机初始化
+//相机初始化 - OpenCV
 //相机排列顺序与设备顺序不一致时，需要使用第二个参数
 //输入相机实际排列顺序对应的设备编号进行初始化,系统设备编号从0开始
 CameraControler::ErrorCode CameraControler::initCameras()
 {
-	if (*nCamera <= 0)
+	if (detectParams->nCamera <= 0)
 		return errorCode = CameraControler::InvalidCameraNum;
 
+	//初始化相机列表
 	errorCode = CameraControler::NoError;
 	if (deviceIndex.size() == 0) { //使用默认的设备号初始化
-		if (*nCamera > *MaxCameraNum) //判断调用的相机个数是否过多
+		if (detectParams->nCamera > adminConfig->MaxCameraNum) //判断调用的相机个数是否过多
 			return errorCode = CameraControler::InvalidCameraNum;
 
-		//availableCameras.put(*nCamera); 
-		for (int i = 0; i < *nCamera; i++) { //添加相机
+		for (int i = 0; i < detectParams->nCamera; i++) { //添加相机
 			cameraList.push_back(cv::VideoCapture(i));
 			cameraState[i] = cameraList[i].isOpened(); //判断相机是否能打开
 			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
+			else {
+				cameraList[i].set(cv::CAP_PROP_FRAME_HEIGHT, adminConfig->ImageSize_H);
+				cameraList[i].set(cv::CAP_PROP_FRAME_WIDTH, adminConfig->ImageSize_W);
+				//cameraList[i].set(cv::CAP_PROP_BUFFERSIZE, 0);
+			}
 		}
 	}
 	else { //使用设定的设备号初始化
-		if (*nCamera > deviceIndex.size()) //判断调用的相机个数是否过多
+		if (detectParams->nCamera > deviceIndex.size()) //判断调用的相机个数是否过多
 			return errorCode = CameraControler::InvalidCameraNum;
 
 		for (int i = 0; i < deviceIndex.size(); i++) { //添加相机
 			cameraList.push_back(cv::VideoCapture(deviceIndex[i]));
 			cameraState[i] = cameraList[i].isOpened(); //判断相机是否能打开
 			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
+			else {
+				cameraList[i].set(cv::CAP_PROP_FRAME_HEIGHT, adminConfig->ImageSize_H);
+				cameraList[i].set(cv::CAP_PROP_FRAME_WIDTH, adminConfig->ImageSize_W);
+				//cameraList[i].set(cv::CAP_PROP_BUFFERSIZE, 0);
+			}
 		}
 	}
 	return errorCode;
+}
+
+//相机初始化 - 迈德威视
+bool CameraControler::initCameras2()
+{
+	if (CameraSdkInit(1) != CAMERA_STATUS_SUCCESS) { //相机sdk初始化失败
+		errorCode = CameraControler::InitFailed;
+		return false;
+	}
+
+	errorCode = CameraControler::NoError;
+	CameraSdkStatus status;
+
+	if (CameraEnumerateDevice(sCameraList, &CameraNums) != CAMERA_STATUS_SUCCESS ||
+		CameraNums < adminConfig->MaxCameraNum)
+	{
+		//枚举设备失败或者系统中的设备数量少于设定值
+		return false;
+	}
+
+	if (deviceIndex.empty() || deviceIndex.size() < adminConfig->MaxCameraNum) {
+		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
+			cameraList2.push_back(-1);
+			status = CameraInit(&sCameraList[i], -1, -1, &cameraList2[i]);
+			cameraState[i] = (status != CAMERA_STATUS_SUCCESS);
+			if (status != CAMERA_STATUS_SUCCESS) { //有任意一台相机初始化失败
+				errorCode = CameraControler::InitFailed;
+				//return false;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
+			cameraList.push_back(-1);
+			status = CameraInit(&sCameraList[deviceIndex[i]], -1, -1, &cameraList2[i]);
+			cameraState[i] = (status != CAMERA_STATUS_SUCCESS);
+			if (status != CAMERA_STATUS_SUCCESS) {//有任意一台相机初始化失败
+				errorCode = CameraControler::InitFailed;
+				//return false;
+			}
+		}
+	}
+
+	double *pfExposureTime = NULL;
+	tSdkImageResolution sImageSize;
+	sImageSize.iIndex = 255;
+	sImageSize.uBinSumMode = 0;
+	sImageSize.uBinAverageMode = 0;
+	sImageSize.uSkipMode = 0;
+	sImageSize.uResampleMask = 0;
+	sImageSize.iHOffsetFOV = 0;
+	sImageSize.iVOffsetFOV = 0;
+	sImageSize.iWidthFOV = adminConfig->ImageSize_W;
+	sImageSize.iHeightFOV = adminConfig->ImageSize_H;
+	sImageSize.iWidth = adminConfig->ImageSize_W;
+	sImageSize.iHeight = adminConfig->ImageSize_H;
+	sImageSize.iWidthZoomHd = 0;
+	sImageSize.iHeightZoomHd = 0;
+	sImageSize.iWidthZoomSw = 0;
+	sImageSize.iHeightZoomSw = 0;
+
+	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
+		//开始采集图像
+		//设置相机的触发模式。0表示连续采集模式；1表示软件触发模式；2表示硬件触发模式。
+		CameraSetTriggerMode(cameraList2[i], 1);
+		CameraSetTriggerCount(cameraList2[i], 5);
+		if (CameraSetResolutionForSnap(cameraList2[i], &sImageSize) != CAMERA_STATUS_SUCCESS)
+			return false;
+		CameraPlay(cameraList2[i]);
+	}
+	return true;
 }
 
 //将相机状态map转为字符串
@@ -83,14 +177,80 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 {
 	errorCode = CameraControler::NoError;
 
-	cv::Mat frame;
-	for (int i = 0; i < *nCamera; i++) {
-		cameraList[i] >> frame;
-		cv::Mat* pMat = new cv::Mat(frame);
-		(*cvmatSamples)[*currentRow][i] = pMat;
+	if (true || *currentRow == 0) {
+		for (int i = 0; i < detectParams->nCamera; i++) {
+			Mat frame;
+			cameraList[i] >> frame;
+			pcb::delay(200);
+		}
 	}
+	pcb::delay(8000);
+
+	for (int i = 0; i < detectParams->nCamera; i++) {
+		int iCamera = detectParams->nCamera - i - 1;
+		Mat frame;
+		cameraList[i] >> frame;
+		pcb::delay(5000);
+		cv::Mat* pMat = new cv::Mat(frame.clone());
+		pcb::delay(200);
+		(*cvmatSamples)[*currentRow][iCamera] = pMat;
+		pcb::delay(200);
+
+		//cv::imwrite((QString::number(*currentRow)+"_"+ QString::number(i) + ".jpg").toStdString(), *pMat);
+	}
+	pcb::delay(5000);
 	return errorCode;
 }
+
+void CameraControler::takePhotos2()
+{
+	for (int i = 0; i < detectParams->nCamera; i++) {
+		BYTE *pRawBuffer;
+		BYTE *pRgbBuffer;
+		tSdkFrameHead FrameInfo;
+
+		//CString sFileName;
+		tSdkImageResolution sImageSize;
+
+		CameraSdkStatus status;
+		//CString msg;
+		//memset(&sImageSize, 0, sizeof(tSdkImageResolution));
+		//sImageSize.iIndex = 0xff;
+		//CameraGetInformation(camList[i], &FrameInfo)
+		//CameraSoftTrigger(camList[i]);//执行一次软触发。执行后，会触发由CameraSetTriggerCount指定的帧数。
+		//CameraGetImageBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一张图
+		CameraClearBuffer(cameraList2[i]);
+		CameraSoftTrigger(cameraList2[i]);
+		double t0 = clock();
+		CameraGetImageBuffer(cameraList2[i], &FrameInfo, &pRawBuffer, 10000);//抓一张图
+
+		//CameraSnapToBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一整图
+
+		//申请一个buffer，用来将获得的原始数据转换为RGB数据，并同时获得图像处理效果
+		pRgbBuffer = (unsigned char *)CameraAlignMalloc(FrameInfo.iWidth*FrameInfo.iHeight * 3, 16);
+
+		CameraImageProcess(cameraList2[i], pRawBuffer, pRgbBuffer, &FrameInfo);//处理图像，并得到RGB格式的数据
+
+		while (CameraReleaseImageBuffer(cameraList2[i], pRawBuffer) != CAMERA_STATUS_SUCCESS);//释放由CameraSnapToBuffer、CameraGetImageBuffer获得的图像缓冲区
+		cv::Mat fram( //将pRgbBuffer转换为Mat类
+			cv::Size(adminConfig->ImageSize_W, adminConfig->ImageSize_H), //width，height
+			//FrameInfo.uiMediaType == CAMERA_MEDIA_TYPE_MONO8 ? CV_8UC1 : CV_8UC3,
+			CV_8UC3,
+			pRgbBuffer
+		);
+		cv::flip(fram, fram, -1); //直接获取的图像时反的，这里旋转180度
+		cv::flip(fram, fram, 1);
+		cv::Mat* pMat = new cv::Mat(fram.clone());
+		int iCamera = detectParams->nCamera - i - 1;
+		(*cvmatSamples)[*currentRow][iCamera] = pMat;
+		CameraAlignFree(pRgbBuffer);
+	}
+
+	return;
+}
+
+
+/********************* 其他 ********************/
 
 //设置设备号
 CameraControler::ErrorCode CameraControler::resetDeviceIndex(std::vector<int> iv)
@@ -117,6 +277,8 @@ bool CameraControler::showMessageBox(QWidget *parent)
 	case CameraControler::InitFailed:
 		warningMessage = QString::fromLocal8Bit("相机初始化失败！     \n");
 		warningMessage += "CameraState: " + cameraStatusMapToString(); break;
+	case CameraControler::TakePhotosFailed:
+		warningMessage = QString::fromLocal8Bit("拍照失败！"); break;
 	default:
 		warningMessage = QString::fromLocal8Bit("未知错误！"); break;
 	}

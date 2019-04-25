@@ -5,14 +5,12 @@ using pcb::DetectConfig;
 using pcb::DetectParams;
 
 
-LaunchUI::LaunchUI(QWidget *parent)
+LaunchUI::LaunchUI(QWidget *parent, QRect &screenRect)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//多屏状态下选择在副屏全屏显示
-	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);
+	//多屏状态下选择在主屏还是副屏上显示
 	this->setGeometry(screenRect);
 
 	//启动界面不显示鼠标
@@ -28,6 +26,8 @@ LaunchUI::LaunchUI(QWidget *parent)
 
 LaunchUI::~LaunchUI()
 {
+	delete initThread;
+	initThread = Q_NULLPTR;
 }
 
 
@@ -95,7 +95,6 @@ void LaunchUI::on_detectConfigError_initThread()
 	emit launchFinished_launchUI(detectConfig->getErrorCode());
 }
 
-
 //运行参数adminConfig的初始化错误提示
 void LaunchUI::on_detectParamsError_initThread()
 {
@@ -106,16 +105,16 @@ void LaunchUI::on_detectParamsError_initThread()
 	emit launchFinished_launchUI(detectParams->getErrorCode());
 }
 
+
 //运动结构的的初始化错误提示
 void LaunchUI::on_motionError_initThread(int code)
 {
 	//弹窗警告
-	if (code == MotionControler::Default) {
+	if (code == MotionControler::Default) 
 		motionControler->showMessageBox(this); 
-	}
-	else {
+	else 
 		motionControler->showMessageBox(this, (MotionControler::ErrorCode) code);
-	}
+	
 	pcb::delay(10); //延时
 	update_sysInitStatus_initThread(pcb::chinese("运动结构初始化结束    "));
 	pcb::delay(600); //延时

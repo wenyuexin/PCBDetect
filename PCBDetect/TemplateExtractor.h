@@ -2,7 +2,7 @@
 #include <QObject>
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "TemplFunc.h"
 
 
@@ -17,7 +17,14 @@ public:
 		InitialState,
 		Start,
 		Finished,
-		Default
+		Error
+	};
+
+	//´íÎó´úÂë
+	enum ErrorCode {
+		NoError = 0x000,
+		Uncheck = 0x800,
+		Default = 0x8FF
 	};
 	
 private:

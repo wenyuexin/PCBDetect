@@ -5,7 +5,7 @@
 #include "LaunchUI.h"
 #include "SysInitThread.h"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "DetectUI.h"
 #include "SettingUI.h"
 #include "TemplateUI.h"
@@ -64,7 +64,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
-	void setPushButtonsToEnabled(bool code);
+	void setPushButtonsEnabled(bool code, bool all = false);
 
 	void on_pushButton_set_clicked();
 	void on_pushButton_set2_clicked();

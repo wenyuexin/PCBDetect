@@ -53,8 +53,20 @@ typedef double F64;
 
 //========================================================
 #define DllExport		__declspec(dllexport)
+
+#ifndef WINVER
+#define WINVER 0x0502
+#endif
+
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0502
+#endif
+//#include <sdkddkver.h>
+
 #include<afx.h>
 #include "windows.h"
+
+
 
 ////////////////////////////////////////////////////////////////
 //程序获取数据成功的函数

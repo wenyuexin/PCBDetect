@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1366</width>
-    <height>768</height>
+    <width>1440</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <rect>
      <x>0</x>
      <y>30</y>
-     <width>1371</width>
+     <width>1441</width>
      <height>20</height>
     </rect>
    </property>
@@ -29,7 +29,7 @@
   <widget class="QLabel" name="label_title">
    <property name="geometry">
     <rect>
-     <x>520</x>
+     <x>560</x>
      <y>1</y>
      <width>331</width>
      <height>41</height>
@@ -71,7 +71,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1371</width>
+     <width>1441</width>
      <height>41</height>
     </rect>
    </property>
@@ -86,9 +86,9 @@
    <property name="geometry">
     <rect>
      <x>1209</x>
-     <y>100</y>
-     <width>131</width>
-     <height>100</height>
+     <y>129</y>
+     <width>171</width>
+     <height>121</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -123,8 +123,8 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>1220</x>
-     <y>200</y>
+     <x>1240</x>
+     <y>260</y>
      <width>111</width>
      <height>31</height>
     </rect>
@@ -151,9 +151,9 @@
   <widget class="QPushButton" name="pushButton_start">
    <property name="geometry">
     <rect>
-     <x>1220</x>
-     <y>390</y>
-     <width>112</width>
+     <x>1230</x>
+     <y>500</y>
+     <width>131</width>
      <height>40</height>
     </rect>
    </property>
@@ -175,9 +175,9 @@
   <widget class="QPushButton" name="pushButton_return">
    <property name="geometry">
     <rect>
-     <x>1220</x>
-     <y>470</y>
-     <width>112</width>
+     <x>1230</x>
+     <y>580</y>
+     <width>131</width>
      <height>40</height>
     </rect>
    </property>
@@ -200,9 +200,9 @@
    <property name="geometry">
     <rect>
      <x>1190</x>
-     <y>680</y>
-     <width>173</width>
-     <height>51</height>
+     <y>790</y>
+     <width>221</width>
+     <height>60</height>
     </rect>
    </property>
    <property name="font">
@@ -228,8 +228,8 @@
     <rect>
      <x>0</x>
      <y>40</y>
-     <width>1181</width>
-     <height>731</height>
+     <width>1161</width>
+     <height>861</height>
     </rect>
    </property>
    <property name="styleSheet">

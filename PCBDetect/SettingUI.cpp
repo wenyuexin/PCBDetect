@@ -6,14 +6,13 @@ using pcb::DetectParams;
 using pcb::Configurator;
 
 
-SettingUI::SettingUI(QWidget *parent)
+SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//多屏状态下选择在副屏全屏显示
-	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);
+	//多屏状态下选择在主屏还是副屏上显示
+	this->screenRect = screenRect;
 	this->setGeometry(screenRect);
 
 	//设置界面初始化
@@ -23,9 +22,11 @@ SettingUI::SettingUI(QWidget *parent)
 	detectParams = Q_NULLPTR;//运行参数
 	detectConfig = Q_NULLPTR; //用户参数
 	adminConfig = Q_NULLPTR; //系统参数
+	adminSettingUI = Q_NULLPTR; //系统设置界面
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
+	connect(ui.comboBox_clusterComPort, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_comPort()));
 
 	//系统参数设置的登录界面
 	passWordUI.setWindowFlags(passWordUI.windowFlags() | Qt::Dialog);
@@ -36,17 +37,20 @@ SettingUI::SettingUI(QWidget *parent)
 
 SettingUI::~SettingUI()
 {
+	qDebug() << "~SettingUI";
+	delete adminSettingUI;
 }
 
 void SettingUI::doConnect()
 {
 	//系统参数设置界面
-	adminSettingUI.setAdminConfig(adminConfig);
-	adminSettingUI.setDetectConfig(detectConfig);
-	adminSettingUI.setDetectParams(detectParams);
-	connect(&adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
-	connect(&adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
-	connect(&adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
+	adminSettingUI = new AdminSettingUI(Q_NULLPTR, screenRect);
+	adminSettingUI->setAdminConfig(adminConfig);
+	adminSettingUI->setDetectConfig(detectConfig);
+	adminSettingUI->setDetectParams(detectParams);
+	connect(adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
+	connect(adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
+	connect(adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
 }
 
 /************* 界面的设置、输入、更新 **************/
@@ -78,11 +82,22 @@ void SettingUI::refreshSettingUI()
 	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
 	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
 
-	QString format = detectConfig->ImageFormat.toLower();
-	if (format == ".bmp") ui.comboBox_ImageFormat->setCurrentText("    *.bmp");
-	else if (format == ".jpg") ui.comboBox_ImageFormat->setCurrentText("    *.jpg");
-	else if (format == ".png") ui.comboBox_ImageFormat->setCurrentText("    *.png");
-	else if (format == ".tif" || format == ".tiff") ui.comboBox_ImageFormat->setCurrentText("    *.tif");
+	QString comPort = detectConfig->clusterComPort.toUpper();
+	if (comPort == "COM1") ui.comboBox_clusterComPort->setCurrentText("      COM1");
+	else if (comPort == "COM2") ui.comboBox_clusterComPort->setCurrentText("      COM2");
+	else if (comPort == "COM3") ui.comboBox_clusterComPort->setCurrentText("      COM3");
+	else if (comPort == "COM4") ui.comboBox_clusterComPort->setCurrentText("      COM4");
+	else if (comPort == "COM5") ui.comboBox_clusterComPort->setCurrentText("      COM5");
+	else if (comPort == "COM6") ui.comboBox_clusterComPort->setCurrentText("      COM6");
+	else if (comPort == "COM7") ui.comboBox_clusterComPort->setCurrentText("      COM7");
+	else if (comPort == "COM8") ui.comboBox_clusterComPort->setCurrentText("      COM8");
+	else if (comPort == "COM9") ui.comboBox_clusterComPort->setCurrentText("      COM9");
+
+	QString imgFormat = detectConfig->ImageFormat.toLower();
+	if (imgFormat == ".bmp") ui.comboBox_ImageFormat->setCurrentText("     *.bmp");
+	else if (imgFormat == ".jpg") ui.comboBox_ImageFormat->setCurrentText("     *.jpg");
+	else if (imgFormat == ".png") ui.comboBox_ImageFormat->setCurrentText("     *.png");
+	else if (imgFormat == ".tif" || imgFormat == ".tiff") ui.comboBox_ImageFormat->setCurrentText("     *.tif");
 
 	ui.lineEdit_ActualProductSize_W->setText(QString::number(detectConfig->ActualProductSize_W));
 	ui.lineEdit_ActualProductSize_H->setText(QString::number(detectConfig->ActualProductSize_H));
@@ -178,28 +193,36 @@ void SettingUI::on_pushButton_confirm_clicked()
 		Configurator::saveConfigFile(configFileName, detectConfig);
 
 		//更新运行参数
-		detectParams->copyTo(&tempParams);
+		if (adminConfig->isValid(false)) {
+			detectParams->copyTo(&tempParams);
 
-		DetectParams::ErrorCode code;
-		code = tempParams.calcSingleMotionStroke(adminConfig);
-		if (code != DetectParams::ValidValue) {
-			detectParams->showMessageBox(this); return;
-		}
-		code = tempParams.calcItemGridSize(adminConfig, detectConfig);
-		if (code != DetectParams::ValidValue) {
-			detectParams->showMessageBox(this); return;
-		}
+			DetectParams::ErrorCode code;
+			//计算单步运动距离
+			code = tempParams.calcSingleMotionStroke(adminConfig);
+			if (code != DetectParams::ValidValue) {
+				detectParams->showMessageBox(this); return;
+			}
+			//计算相机个数和拍照次数
+			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
+			if (code != DetectParams::ValidValue) {
+				detectParams->showMessageBox(this); return;
+			}
+			//计算初始拍照位置
+			//code = tempParams.calcInitialPhotoPos(adminConfig, detectConfig);
+			//if (code != DetectParams::ValidValue) {
+			//	detectParams->showMessageBox(this); return;
+			//}
 
-		tempParams.copyTo(detectParams);
-		if (!tempParams.isValid(adminConfig)) {
-			tempParams.showMessageBox(this);
+			tempParams.copyTo(detectParams);
+			if (!tempParams.isValid(DetectParams::Index_All_SysInit, true, adminConfig)) {
+				tempParams.showMessageBox(this);
+			}
+			sysResetCode |= detectParams->getSystemResetCode(tempParams);
+			tempParams.copyTo(detectParams);
 		}
-		sysResetCode |= detectParams->getSystemResetCode(tempParams);
-		tempParams.copyTo(detectParams);
-
 		//判断是否重置检测系统
-		if (adminConfig->isValid() && detectConfig->isValid(adminConfig)
-			&& detectParams->isValid(adminConfig)) 
+		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
+			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
 		{
 			emit resetDetectSystem_settingUI(sysResetCode);
 		}
@@ -248,6 +271,37 @@ void SettingUI::setPushButtonsToEnabled(bool code)
 
 /************** 获取界面上的参数 *****************/
 
+//串口号
+void SettingUI::on_currentIndexChanged_comPort()
+{
+	switch (ui.comboBox_clusterComPort->currentIndex())
+	{
+	case 0:
+		tempConfig.clusterComPort = ""; break;
+	case 1:
+		tempConfig.clusterComPort = "COM1"; break;
+	case 2:
+		tempConfig.clusterComPort = "COM2"; break;
+	case 3:
+		tempConfig.clusterComPort = "COM3"; break;
+	case 4:
+		tempConfig.clusterComPort = "COM4"; break;
+	case 5:
+		tempConfig.clusterComPort = "COM5"; break;
+	case 6:
+		tempConfig.clusterComPort = "COM6"; break;
+	case 7:
+		tempConfig.clusterComPort = "COM7"; break;
+	case 8:
+		tempConfig.clusterComPort = "COM8"; break;
+	case 9:
+		tempConfig.clusterComPort = "COM9"; break;
+	default:
+		break;
+	}
+}
+
+//图像格式
 void SettingUI::on_currentIndexChanged_imgFormat()
 {
 	switch ((pcb::ImageFormat) ui.comboBox_ImageFormat->currentIndex())
@@ -294,10 +348,10 @@ void SettingUI::on_closePassWordUI_pswdUI()
 //显示系统参数设置界面
 void SettingUI::do_showAdminSettingUI_pswdUI()
 {
-	adminSettingUI.setAdminConfig(adminConfig);
-	adminSettingUI.refreshAdminSettingUI();
+	adminSettingUI->setAdminConfig(adminConfig);
+	adminSettingUI->refreshAdminSettingUI();
 	pcb::delay(10);
-	adminSettingUI.showFullScreen();
+	adminSettingUI->showFullScreen();
 	pcb::delay(10);
 	this->hide(); //隐藏参数设置界面
 	this->setPushButtonsToEnabled(true);//设置按键
@@ -312,7 +366,7 @@ void SettingUI::do_showSettingUI_adminUI()
 	this->setCursorLocation(DetectConfig::Index_None);
 	this->showFullScreen();
 	pcb::delay(10);
-	adminSettingUI.hide();
+	adminSettingUI->hide();
 }
 
 //转发由系统设置界面发出的重置信号
@@ -324,8 +378,8 @@ void SettingUI::do_resetDetectSystem_adminUI(int code)
 //转发由系统设置界面发出的系统状态检查信号
 void SettingUI::do_checkSystemWorkingState_adminUI()
 {
-	if (adminConfig->isValid() && detectConfig->isValid(adminConfig) 
-		&& detectParams->isValid(adminConfig)) 
+	if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
+		&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
 	{
 		emit checkSystemState_settingUI();
 		pcb::delay(10);

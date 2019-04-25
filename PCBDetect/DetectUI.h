@@ -1,9 +1,10 @@
 #pragma once
 
+#include "AMC98C.h"
 #include <QWidget>
 #include "ui_DetectUI.h"
 #include "Configurator.h"
-#include "RuntimeLibrary.h"
+#include "RuntimeLib.h"
 #include "DetectThread.h"
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
@@ -56,7 +57,7 @@ private:
 	int detectState; //¼ì²â×´Ì¬
 
 public:
-	DetectUI(QWidget *parent = Q_NULLPTR);
+	DetectUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
 	~DetectUI();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
@@ -68,6 +69,8 @@ public:
 	void doConnect();
 	void initGraphicsView();
 	void resetDetectUI();
+	void setPushButtonsEnabled(bool enable);
+	void refreshCameraControler();
 
 private:
 	void initItemGrid(pcb::ItemGrid &grid);//³õÊ¼»¯Í¼ÔªÍø¸ñ
@@ -80,14 +83,12 @@ private:
 	void removeItemsFromGraphicsScene();//ÒÆ³ý³¡¾°ÖÐµÄÍ¼Ôª
 
 	void showSampleImages();
-	void nextRowOfSampleImages();
 	void readSampleImages2();
-	void nextRowOfSampleImages2();
 	void detectSampleImages(); //¼ì²â
 
 Q_SIGNALS:
 	void showDetectMainUI();
-	void invalidNummberOfSampleImage();
+	void invalidNumberOfSampleImage();
 
 private Q_SLOTS:
 	void on_pushButton_start_clicked();
@@ -97,13 +98,14 @@ private Q_SLOTS:
 	void do_updateDetectState_detecter(int state);
 	void on_detectFinished_detectThread(bool qualified);
 
-	void on_moveForwardFinished_motion();
 	void on_resetControlerFinished_motion(int);
+	void on_moveToInitialPosFinished_motion();
+	void on_moveForwardFinished_motion();
 	void on_initCamerasFinished_camera(int);
 	void on_takePhotosFinished_camera(int);
 	void on_convertFinished_convertThread();
 
 	void mouseDoubleClickEvent(QMouseEvent *event);
-	void on_switchImage_serialNumUI();
 	void on_recognizeFinished_serialNumUI();
+	void do_showPreviousUI_serialNumUI();
 };

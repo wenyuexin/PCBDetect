@@ -28,14 +28,14 @@ public:
     {
         if (LaunchUI->objectName().isEmpty())
             LaunchUI->setObjectName(QStringLiteral("LaunchUI"));
-        LaunchUI->resize(1366, 768);
+        LaunchUI->resize(1440, 900);
         label_background = new QLabel(LaunchUI);
         label_background->setObjectName(QStringLiteral("label_background"));
-        label_background->setGeometry(QRect(0, 0, 1366, 768));
+        label_background->setGeometry(QRect(0, 0, 1441, 901));
         label_background->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/screen.png);"));
         label = new QLabel(LaunchUI);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(180, 169, 991, 131));
+        label->setGeometry(QRect(220, 169, 991, 131));
         QFont font;
         font.setFamily(QString::fromUtf8("\346\245\267\344\275\223"));
         font.setPointSize(76);
@@ -49,7 +49,7 @@ public:
         label->setAlignment(Qt::AlignCenter);
         label_2 = new QLabel(LaunchUI);
         label_2->setObjectName(QStringLiteral("label_2"));
-        label_2->setGeometry(QRect(400, 500, 591, 71));
+        label_2->setGeometry(QRect(420, 560, 591, 71));
         QFont font1;
         font1.setFamily(QStringLiteral("SimSun-ExtB"));
         font1.setPointSize(42);
@@ -63,7 +63,7 @@ public:
         label_2->setAlignment(Qt::AlignCenter);
         label_status = new QLabel(LaunchUI);
         label_status->setObjectName(QStringLiteral("label_status"));
-        label_status->setGeometry(QRect(330, 590, 771, 51));
+        label_status->setGeometry(QRect(340, 670, 771, 51));
         QFont font2;
         font2.setFamily(QStringLiteral("SimSun-ExtB FB"));
         font2.setPointSize(35);

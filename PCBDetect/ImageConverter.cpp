@@ -10,6 +10,7 @@ ImageConverter::ImageConverter(QObject *parent)
 
 ImageConverter::~ImageConverter()
 {
+	qDebug() << "~ImageConverter";
 }
 
 

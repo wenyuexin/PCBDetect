@@ -27,6 +27,11 @@ DetectFunc::DetectFunc()
 	detectResult = Q_NULLPTR; //检测结果
 }
 
+DetectFunc::~DetectFunc()
+{
+	qDebug() << "~DetectFunc";
+}
+
 //生成完整尺寸的缺陷检测图像
 void DetectFunc::generateBigTempl()
 {
@@ -118,7 +123,7 @@ bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 		cout << "匹配并获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
 
 
-		H = findHomography(samp_points, temp_points, CV_RANSAC, 5.0);
+		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
 		H.at<double>(0, 2) *= 8;
 		H.at<double>(1, 2) *= 8;
 		H.at<double>(2, 0) /= 8;
@@ -662,6 +667,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		if (rect1.y + rect1.height > imgSeg.rows - 1)
 			rect1.height = imgSeg.rows - 1 - rect1.y;
 
+		cvtColor(imgSeg, imgSeg, COLOR_GRAY2BGR);
 		rectangle(imgSeg, rect1, CV_RGB(255, 0, 0), 2);
 		Size sz = diffBw.size();
 		defectNum++;//增加缺陷计数
@@ -670,8 +676,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 
 		//在配准后的样本图的克隆上绘制缺陷(排除所有伪缺陷后再绘制
-		drawContours(sampGrayRegCopy, contours, i, cv::Scalar(0, 0, 255), 2, 8);
-		rectangle(sampGrayRegCopy, rect_out, Scalar(0, 255, 0));
+		//drawContours(sampGrayRegCopy, contours, i, cv::Scalar(0, 0, 255), 2, 8);
+		rectangle(sampGrayRegCopy, rect_out, Scalar(0, 0, 255),2);
 		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + detectConfig->ImageFormat.toStdString(), diffSeg);
 		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + detectConfig->ImageFormat.toStdString(), templSeg);
 		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + detectConfig->ImageFormat.toStdString(), imgSeg);
