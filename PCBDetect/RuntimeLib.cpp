@@ -109,8 +109,8 @@ DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(pcb::AdminConfig *admi
 {
 	if (!adminConfig->isValid(true)) return Default;
 
-	double initPos = 519; //参照位置，需保证刚好露出限制PCB板位置的金属条
-	initPos -= ((nPhotographing - 0.5) * singleMotionStroke); 
+	double initPos = 5; //参照位置，需保证刚好露出限制PCB板位置的金属条
+	initPos += ((nPhotographing - 1) * singleMotionStroke); //计算
 	this->initialPhotoPos = initPos;
 
 	this->initialPhotoPos = 245 - 80;
