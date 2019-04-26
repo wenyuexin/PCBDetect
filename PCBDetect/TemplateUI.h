@@ -26,11 +26,11 @@ private:
 	MotionControler *motionControler; //运动控制器
 	CameraControler *cameraControler; //相机控制器
 
-	const int itemSpacing = 3; //图元间距
-	QSize itemSize; //图元尺寸
-	QSize gridSize; //网格尺寸
+	const qreal itemSpacing = 0; //图元间距（单位:pix）
+	QSizeF itemSize; //图元尺寸
+	QSizeF gridSize; //网格尺寸
 	QGraphicsScene scene; //绘图场景
-	QSize sceneSize; //场景尺寸
+	QSizeF sceneSize; //场景尺寸
 	pcb::ItemGrid itemGrid; //绘图网点
 	pcb::ItemArray itemArray; //场景中的图元阵列
 
