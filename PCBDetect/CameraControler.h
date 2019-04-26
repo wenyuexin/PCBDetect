@@ -49,6 +49,9 @@ private:
 	tSdkCameraDevInfo sCameraList[12]; //最多不能超过12台相机
 	int CameraNums = 12;
 
+	double *pfExposureTime = NULL;
+	tSdkImageResolution sImageSize;
+
 	ErrorCode errorCode; //控制器的错误码
 	Operation operation; //操作指令
 
@@ -67,7 +70,7 @@ public:
 	inline void setOperation(Operation op) { operation = op; }
 
 	ErrorCode resetDeviceIndex(std::vector<int> iv = {}); //设定接入的总设备数
-	inline bool checkCameraState(int index) { return cameraState[index]; }
+	inline bool getCameraState(int index) { return cameraState[index]; }
 
 	inline bool isReady() { return errorCode == NoError; }
 	inline ErrorCode getErrorCode() { return errorCode; } //获取当前的错误代码
@@ -77,9 +80,12 @@ private:
 	ErrorCode initCameras();//初始化
 	bool initCameras2();
 	QString cameraStatusMapToString(); //相机状态转字符串
+
+	bool isCamerasInitialized(); //判断相机是否已经初始化
+	void closeCameras();//关闭已经打开的相机
+
 	ErrorCode takePhotos();//拍摄
 	void takePhotos2();
-	void closeCameras();//关闭已经打开的相机
 
 protected:
 	void run();
