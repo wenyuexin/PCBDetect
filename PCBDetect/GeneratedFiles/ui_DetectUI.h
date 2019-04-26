@@ -56,7 +56,7 @@ public:
         line->setFrameShadow(QFrame::Sunken);
         label_logo = new QLabel(DetectUI);
         label_logo->setObjectName(QStringLiteral("label_logo"));
-        label_logo->setGeometry(QRect(1239, 89, 151, 111));
+        label_logo->setGeometry(QRect(1249, 89, 151, 111));
         sizePolicy.setHeightForWidth(label_logo->sizePolicy().hasHeightForWidth());
         label_logo->setSizePolicy(sizePolicy);
         label_logo->setMaximumSize(QSize(16777215, 16000000));
@@ -89,12 +89,12 @@ public:
         label_title->setAlignment(Qt::AlignCenter);
         graphicsView = new QGraphicsView(DetectUI);
         graphicsView->setObjectName(QStringLiteral("graphicsView"));
-        graphicsView->setGeometry(QRect(0, 40, 1201, 861));
+        graphicsView->setGeometry(QRect(0, 40, 1221, 861));
         graphicsView->setStyleSheet(QStringLiteral("background-color: rgb(250, 250, 250);"));
         graphicsView->setFrameShape(QFrame::NoFrame);
         pushButton_start = new QPushButton(DetectUI);
         pushButton_start->setObjectName(QStringLiteral("pushButton_start"));
-        pushButton_start->setGeometry(QRect(1260, 420, 112, 40));
+        pushButton_start->setGeometry(QRect(1270, 420, 115, 40));
         sizePolicy.setHeightForWidth(pushButton_start->sizePolicy().hasHeightForWidth());
         pushButton_start->setSizePolicy(sizePolicy);
         QFont font2;
@@ -103,13 +103,13 @@ public:
         pushButton_start->setStyleSheet(QStringLiteral(""));
         pushButton_return = new QPushButton(DetectUI);
         pushButton_return->setObjectName(QStringLiteral("pushButton_return"));
-        pushButton_return->setGeometry(QRect(1260, 490, 112, 40));
+        pushButton_return->setGeometry(QRect(1270, 490, 115, 40));
         sizePolicy.setHeightForWidth(pushButton_return->sizePolicy().hasHeightForWidth());
         pushButton_return->setSizePolicy(sizePolicy);
         pushButton_return->setFont(font2);
         label_status = new QLabel(DetectUI);
         label_status->setObjectName(QStringLiteral("label_status"));
-        label_status->setGeometry(QRect(1220, 800, 201, 51));
+        label_status->setGeometry(QRect(1230, 800, 201, 61));
         QFont font3;
         font3.setPointSize(15);
         label_status->setFont(font3);
@@ -118,7 +118,7 @@ public:
         label_status->setAlignment(Qt::AlignCenter);
         label = new QLabel(DetectUI);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(1260, 220, 111, 31));
+        label->setGeometry(QRect(1270, 220, 111, 31));
         QFont font4;
         font4.setFamily(QString::fromUtf8("\346\245\267\344\275\223"));
         font4.setPointSize(19);
@@ -130,7 +130,7 @@ public:
         label->setAlignment(Qt::AlignCenter);
         layoutWidget = new QWidget(DetectUI);
         layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(1250, 700, 141, 61));
+        layoutWidget->setGeometry(QRect(1260, 700, 141, 61));
         horizontalLayout = new QHBoxLayout(layoutWidget);
         horizontalLayout->setSpacing(6);
         horizontalLayout->setContentsMargins(11, 11, 11, 11);
