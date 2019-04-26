@@ -113,6 +113,8 @@ DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(pcb::AdminConfig *admi
 	initPos -= ((nPhotographing - 0.5) * singleMotionStroke); 
 	this->initialPhotoPos = initPos;
 
+	this->initialPhotoPos = 245 - 80;
+
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Uncheck;
 	code = checkValidity(ParamsIndex::Index_initialPhotoPos, adminConfig);

@@ -291,13 +291,15 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 {
 	//重新初始化运动控制模块
 	if (code & 0b000100000 == 0b000100000) {
-		motionControler->initControler();
+		motionControler->setOperation(MotionControler::InitControler);
+		motionControler->start();
 		while (motionControler->isRunning()) pcb::delay(50);
 		motionControler->showMessageBox(settingUI);
 	}
 
 	//重新初始化相机
 	if (code & 0b000010000 == 0b000010000) {
+		cameraControler->setOperation(CameraControler::InitCameras);
 		cameraControler->start();
 		while (cameraControler->isRunning()) pcb::delay(50);
 		cameraControler->showMessageBox(settingUI);
