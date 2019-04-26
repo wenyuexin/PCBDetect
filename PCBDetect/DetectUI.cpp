@@ -515,7 +515,7 @@ void DetectUI::on_resetControlerFinished_motion(int caller)
 
 	//已经拍完所有分图，但未开始检测
 	if (currentRow_show == detectParams->nPhotographing - 1
-		&& detectParams->currentRow_extract == -1)
+		&& detectParams->currentRow_detect == -1)
 	{
 		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
 			+ pcb::chinese("获取产品序号"));
