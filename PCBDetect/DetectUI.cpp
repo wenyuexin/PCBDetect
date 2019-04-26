@@ -27,7 +27,7 @@ DetectUI::DetectUI(QWidget *parent, QRect &screenRect)
 	//加载并显示默认的指示灯图标
 	IconFolder = QDir::currentPath() + "/Icons";
 	QPixmap greyIcon = QPixmap(IconFolder + "/grey.png"); //grey
-	QPixmap defaultIcon = greyIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
+	defaultIcon = greyIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 	ui.label_indicator->setPixmap(defaultIcon); //加载
 	
 	//加载其他指示灯图标
@@ -674,7 +674,7 @@ void DetectUI::do_updateDetectState_detecter(int state)
 		qApp->processEvents();
 
 		//检查是否有未处理的事件
-		while (templThread->isRunning()) pcb::delay(50); //等待提取线程结束
+		while (detectThread->isRunning()) pcb::delay(50); //等待提取线程结束
 		while (motionControler->isRunning()) pcb::delay(100); //等待运动线程结束
 		if (detectParams->currentRow_detect == detectParams->nPhotographing - 1) { //当前PCB检测结束
 			detectParams->currentRow_detect = -1;
