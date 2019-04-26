@@ -164,6 +164,8 @@ void PCBDetect::on_pushButton_getTempl_clicked()
 		motionControler->showMessageBox(this);//错误提示
 	}
 
+	//重置提取界面
+	templateUI->resetTemplateUI();
 	//更新相机参数
 	templateUI->refreshCameraControler();
 	//显示模板提取界面
@@ -183,6 +185,9 @@ void PCBDetect::on_pushButton_getTempl2_clicked()
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
 	}
+
+	//重置提取界面
+	templateUI->resetTemplateUI();
 	//根据模板提取的参数更新相机控制器
 	templateUI->refreshCameraControler();
 	//显示模板提取界面
@@ -204,6 +209,8 @@ void PCBDetect::on_pushButton_detect_clicked()
 		motionControler->showMessageBox(this);
 	}
 
+	//重置检测界面
+	detectUI->resetDetectUI();
 	//根据检测的参数更新相机控制器
 	detectUI->refreshCameraControler();
 	//显示检测界面
@@ -223,6 +230,9 @@ void PCBDetect::on_pushButton_detect2_clicked()
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
 	}
+
+	//重置检测界面
+	detectUI->resetDetectUI();
 	//根据检测的参数更新相机控制器
 	detectUI->refreshCameraControler();
 	//显示检测界面
