@@ -210,7 +210,7 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 void CameraControler::takePhotos2()
 {
 	for (int i = 0; i < detectParams->nCamera; i++) {
-		int iCamera = detectParams->nCamera - i - 1;
+		int iCamera = adminConfig->MaxCameraNum - i - 1;
 
 		BYTE *pRawBuffer;
 		BYTE *pRgbBuffer;
