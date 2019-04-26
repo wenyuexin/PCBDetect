@@ -77,8 +77,9 @@ private:
 	ErrorCode initCameras();//初始化
 	bool initCameras2();
 	QString cameraStatusMapToString(); //相机状态转字符串
-	ErrorCode takePhotos();//进行拍摄
+	ErrorCode takePhotos();//拍摄
 	void takePhotos2();
+	void closeCameras();//关闭已经打开的相机
 
 protected:
 	void run();

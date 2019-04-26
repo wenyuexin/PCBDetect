@@ -99,21 +99,25 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 			//计算单步前进距离
 			code = tempParams.calcSingleMotionStroke(adminConfig);
 			if (code != DetectParams::ValidValue) {
-				tempParams.showMessageBox(this); return;
+				tempParams.showMessageBox(this); 
+				this->setPushButtonsEnabled(true); return;
 			}
 			//计算相机个数、拍照次数
 			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
 			if (code != DetectParams::ValidValues) {
-				tempParams.showMessageBox(this); return;
+				tempParams.showMessageBox(this); 
+				this->setPushButtonsEnabled(true); return;
 			}
 			//计算初始拍照位置
 			code = tempParams.calcInitialPhotoPos(adminConfig);
 			if (code != DetectParams::ValidValue) {
-				tempParams.showMessageBox(this); return;
+				tempParams.showMessageBox(this); 
+				this->setPushButtonsEnabled(true); return;
 			}
 
 			if (!tempParams.isValid(DetectParams::Index_All_SysInit, true, adminConfig)) {
-				tempParams.showMessageBox(this); return;
+				tempParams.showMessageBox(this); 
+				this->setPushButtonsEnabled(true); return;
 			}
 			sysResetCode |= detectParams->getSystemResetCode(tempParams);
 			tempParams.copyTo(detectParams);

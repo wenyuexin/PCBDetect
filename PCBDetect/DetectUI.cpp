@@ -504,25 +504,23 @@ void DetectUI::do_showPreviousUI_serialNumUI()
 
 /******************** 运动控制 ********************/
 
-//运动结构前进结束
-void DetectUI::on_moveForwardFinished_motion()
+//复位结束
+void DetectUI::on_resetControlerFinished_motion(int caller)
 {
-	//检查运动结构的状态
+	//复位失败
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
 		pcb::delay(10); return;
 	}
 
-	//调用相机进行拍照
-	if (currentRow_show + 1 < detectParams->nPhotographing) {
-		currentRow_show += 1; //更新显示行号
-
-		ui.label_status->setText(pcb::chinese("正在拍摄第") +
-			QString::number(currentRow_show + 1) +
-			pcb::chinese("行分图"));//更新状态
+	//已经拍完所有分图，但未开始检测
+	if (currentRow_show == detectParams->nPhotographing - 1
+		&& detectParams->currentRow_extract == -1)
+	{
+		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+			+ pcb::chinese("获取产品序号"));
 		qApp->processEvents();
-
-		cameraControler->start(); //拍照
+		pcb::delay(10); //延迟
 	}
 }
 
@@ -548,12 +546,25 @@ void DetectUI::on_moveToInitialPosFinished_motion()
 	}
 }
 
-//复位结束
-void DetectUI::on_resetControlerFinished_motion(int caller)
+//运动结构前进结束
+void DetectUI::on_moveForwardFinished_motion()
 {
+	//检查运动结构的状态
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
-		pcb::delay(10);
+		pcb::delay(10); return;
+	}
+
+	//调用相机进行拍照
+	if (currentRow_show + 1 < detectParams->nPhotographing) {
+		currentRow_show += 1; //更新显示行号
+
+		ui.label_status->setText(pcb::chinese("正在拍摄第") +
+			QString::number(currentRow_show + 1) +
+			pcb::chinese("行分图"));//更新状态
+		qApp->processEvents();
+
+		cameraControler->start(); //拍照
 	}
 }
 
