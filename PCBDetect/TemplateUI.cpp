@@ -325,9 +325,6 @@ void TemplateUI::on_pushButton_return_clicked()
 //暂时使用敲击键盘按键模拟外部信号
 void TemplateUI::keyPressEvent(QKeyEvent *event)
 {
-	detectParams->serialNum = "01010004"; //产品序号
-	detectParams->parseSerialNum(); //产品序号解析
-
 	switch (event->key())
 	{
 	case Qt::Key_PageUp:
@@ -340,6 +337,9 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Down:
 		qDebug() << "===== Down";
+		detectParams->serialNum = "01010004"; //产品序号
+		detectParams->parseSerialNum(); //产品序号解析
+
 		if (detectParams->currentRow_extract == detectParams->nPhotographing - 1 && !templThread->isRunning())
 			resetTemplateUI();//重置模板提取子模块
 
