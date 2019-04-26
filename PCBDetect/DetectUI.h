@@ -29,6 +29,7 @@ private:
 	QString IconFolder; //图标文件夹
 	QPixmap lightOnIcon; //亮灯图标 red
 	QPixmap lightOffIcon; //灭灯图标 grey
+	QPixmap defaultIcon; //默认图标
 	SerialNumberUI serialNumberUI; //产品序号识别界面
 
 	pcb::AdminConfig *adminConfig; //参数配置
