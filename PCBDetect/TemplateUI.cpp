@@ -484,9 +484,20 @@ void TemplateUI::do_showPreviousUI_serialNumUI()
 //复位结束
 void TemplateUI::on_resetControlerFinished_motion()
 {
-	if (!motionControler->isReady()) {
+	//复位失败
+	if (!motionControler->isReady()) { 
 		motionControler->showMessageBox(this);
-		pcb::delay(10);
+		pcb::delay(10); return;
+	}
+
+	//已经拍完所有分图，但未开始提取
+	if (currentRow_show == detectParams->nPhotographing - 1
+		&& detectParams->currentRow_extract == -1)
+	{
+		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+			+ pcb::chinese("获取产品序号"));
+		qApp->processEvents();
+		pcb::delay(10); //延迟
 	}
 }
 

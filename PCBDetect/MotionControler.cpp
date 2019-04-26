@@ -180,6 +180,7 @@ void MotionControler::markInitFailed()
 }
 
 
+
 //运动结构前进
 bool MotionControler::moveForward()
 {
@@ -226,6 +227,7 @@ bool MotionControler::moveForward()
 	emit moveForwardFinished_motion(errorCode);
 	return true;
 }
+
 
 
 //运动结构归零
@@ -322,10 +324,9 @@ bool MotionControler::moveToInitialPos()
 	return true;
 }
 
-/**
- * 功能：运动结构复位
- * 参数：caller 调用者的标识
- */
+
+
+//运动结构复位
 bool MotionControler::resetControler()
 {
 	QMutexLocker locker(&mutex);
@@ -373,6 +374,7 @@ bool MotionControler::resetControler()
 	emit resetControlerFinished_motion(errorCode);
 	return true;
 }
+
 
 
 /******************* 其他 ******************/
