@@ -109,11 +109,14 @@ DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(pcb::AdminConfig *admi
 {
 	if (!adminConfig->isValid(true)) return Default;
 
-	double initPos = 5; //参照位置，需保证刚好露出限制PCB板位置的金属条
-	initPos += ((nPhotographing - 1) * singleMotionStroke); //计算
-	this->initialPhotoPos = initPos;
+	//参照位置，需保证刚好露出限制PCB板位置的金属条
+	//还需保证在拍摄最后一行分图时，运动结构不会与限位器碰撞
+	double initPos = 5; 
 
-	this->initialPhotoPos = 245 - 80;
+	//计算初始拍照位置
+	initPos += ((nPhotographing - 1) * singleMotionStroke); 
+	this->initialPhotoPos = initPos;
+	//this->initialPhotoPos = 245 - 80;
 
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Uncheck;
@@ -155,9 +158,7 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 	//产品序号相关参数
 	case pcb::DetectParams::Index_All_SerialNum:
 	case pcb::DetectParams::Index_serialNum:
-		if (serialNum.size() != serialNumSlice[0]
-			|| serialNum.toDouble() == 0)
-		{
+		if (serialNum.size() != serialNumSlice[0] || serialNum.toDouble() == 0) {
 			code = Invalid_serialNum;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
@@ -192,13 +193,6 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 			code = Invalid_singleMotionStroke;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
-	case pcb::DetectParams::Index_initialPhotoPos: //初始拍照位置
-		if (adminConfig == Q_NULLPTR)
-			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
-		if (initialPhotoPos <= 0 || initialPhotoPos > adminConfig->MaxMotionStroke) {
-			code = Invalid_initialPhotoPos;
-		}
-		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
 	case pcb::DetectParams::Index_nCamera: //相机个数
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
@@ -213,6 +207,15 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 			code = Invalid_nPhotographing; 
 		}
 		if (code != Uncheck || index != Index_All) break;
+	case pcb::DetectParams::Index_initialPhotoPos: //初始拍照位置
+		if (adminConfig == Q_NULLPTR)
+			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
+		if (initialPhotoPos <= 0 || initialPhotoPos > adminConfig->MaxMotionStroke
+			|| (initialPhotoPos - (nPhotographing - 1) * singleMotionStroke) < 3)
+		{
+			code = Invalid_initialPhotoPos;
+		}
+		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
 	}
 
 	//代码值等于Uncheck表示检测的参数有效
@@ -305,16 +308,16 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 		valueName = pcb::chinese("\"产品序号\""); break;
 	case pcb::DetectParams::Invalid_singleMotionStroke:
 		valueName = pcb::chinese("\"单步前进距离\""); break;
-	case pcb::DetectParams::Invalid_initialPhotoPos:
-		valueName = pcb::chinese("\"初始拍照位置\""); break;
 	case pcb::DetectParams::Invalid_nCamera:
 		valueName = pcb::chinese("\"相机个数\""); break;
 	case pcb::DetectParams::Invalid_nPhotographing:
 		valueName = pcb::chinese("\"拍照次数\""); break;
+	case pcb::DetectParams::Invalid_initialPhotoPos:
+		valueName = pcb::chinese("\"初始拍照位置\""); break;
 	case pcb::DetectParams::Default:
 		valueName = pcb::chinese("\"未知错误\""); break;
 	default:
-		valueName = "--"; break;
+		valueName = "-"; break;
 	}
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
