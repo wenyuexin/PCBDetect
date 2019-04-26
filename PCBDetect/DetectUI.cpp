@@ -160,23 +160,23 @@ void DetectUI::initItemGrid(pcb::ItemGrid &grid)
 	QString SampleDirPath = detectConfig->SampleDirPath; //sample文件夹的路径 
 
 	//计算总间距
-	QSize totalSpacing; //总间距
+	QSizeF totalSpacing; //总间距
 	totalSpacing.setWidth(itemSpacing * (nCamera + 1)); //间距总宽度
 	totalSpacing.setHeight(itemSpacing * (nPhotographing + 1)); //间距总高度
 
 	//计算图元尺寸
-	QSize viewSize = ui.graphicsView->size(); //视图尺寸
-	itemSize.setWidth(int((viewSize.width() - totalSpacing.width()) / nCamera)); //图元宽度
+	QSizeF viewSize = ui.graphicsView->size(); //视图尺寸
+	itemSize.setWidth(1.0 * (viewSize.width() - totalSpacing.width()) / nCamera); //图元宽度
 	qreal itemAspectRatio = adminConfig->ImageAspectRatio; //宽高比
-	itemSize.setHeight(int(itemSize.width() / itemAspectRatio)); //图元高度
+	itemSize.setHeight(1.0 * itemSize.width() / itemAspectRatio); //图元高度
 
 	//计算场景尺寸
 	sceneSize = totalSpacing;
-	sceneSize += QSize(itemSize.width()*nCamera, itemSize.height()*nPhotographing);
+	sceneSize += QSizeF(itemSize.width()*nCamera, itemSize.height()*nPhotographing);
 	scene.setSceneRect(0, 0, sceneSize.width(), sceneSize.height());
 
-	//生成绘图网点 -- 这里需要修改，不是第一次运行就需要清空itemGrid
-	QSize spacingBlock = QSize(itemSpacing, itemSpacing);
+	//生成绘图网点
+	QSizeF spacingBlock = QSizeF(itemSpacing, itemSpacing);
 	gridSize = itemSize + spacingBlock; //每个网格的尺寸
 
 	//判断itemGrid是否执行过初始化
@@ -436,8 +436,10 @@ void DetectUI::readSampleImages2()
 //显示相机组拍摄的一组分图（图像显示网格中的一行）
 void DetectUI::showSampleImages()
 {
+	QSize _itemSize(itemSize.width(), itemSize.height());
+	if (itemSpacing == 0) _itemSize += QSize(1, 1); //防止出现缝隙
 	for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
-		QPixmap scaledImg = (*qpixmapSamples[currentRow_show][iCamera]).scaled(itemSize, Qt::KeepAspectRatio);
+		QPixmap scaledImg = (*qpixmapSamples[currentRow_show][iCamera]).scaled(_itemSize, Qt::KeepAspectRatio);
 		QGraphicsPixmapItem* item = new QGraphicsPixmapItem(scaledImg); //定义图元
 		item->setPos(itemGrid[currentRow_show][iCamera]); //图元的显示位置
 		itemArray[currentRow_show][iCamera] = item; //存入图矩阵

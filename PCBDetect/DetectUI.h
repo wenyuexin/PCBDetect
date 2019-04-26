@@ -39,10 +39,10 @@ private:
 	CameraControler *cameraControler; //相机控制器
 
 	int itemSpacing = 0; //图元间距
-	QSize itemSize; //图元尺寸
-	QSize gridSize; //网格尺寸
+	QSizeF itemSize; //图元尺寸
+	QSizeF gridSize; //网格尺寸
 	QGraphicsScene scene; //绘图场景
-	QSize sceneSize; //场景尺寸
+	QSizeF sceneSize; //场景尺寸
 	pcb::ItemGrid itemGrid; //绘图网点
 	pcb::ItemArray itemArray; //场景中的图元阵列
 

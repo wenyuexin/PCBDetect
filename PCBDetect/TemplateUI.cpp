@@ -413,6 +413,7 @@ void TemplateUI::readSampleImages2()
 void TemplateUI::showSampleImages()
 {
 	QSize _itemSize(itemSize.width(), itemSize.height());
+	if (itemSpacing == 0) _itemSize += QSize(1, 1); //防止出现缝隙
 	for (int iCamera = 0; iCamera < detectParams->nCamera; iCamera++) {
 		QPixmap scaledImg = (*qpixmapSamples[currentRow_show][iCamera]).scaled(_itemSize, Qt::KeepAspectRatio);
 		QGraphicsPixmapItem* item = new QGraphicsPixmapItem(scaledImg); //定义图元
