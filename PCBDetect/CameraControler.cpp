@@ -19,13 +19,7 @@ CameraControler::CameraControler(QThread *parent)
 CameraControler::~CameraControler()
 {
 	qDebug() << "~CameraControler";
-
-	//关闭相机设备
-	for (int i = 0; i < cameraList.size(); i++)
-		cameraList[i].release();
-
-	for (int i = 0; i < cameraList2.size(); i++)
-		CameraUnInit(cameraList2[i]);
+	closeCameras(); //关闭相机并释放相机列表
 }
 
 //启动线程
@@ -45,7 +39,7 @@ void CameraControler::run()
 	}
 }
 
-/******************* 相机初始化与拍照 *********************/
+/******************* 相机初始化 *********************/
 
 //相机初始化 - OpenCV
 //相机排列顺序与设备顺序不一致时，需要使用第二个参数
@@ -108,7 +102,10 @@ bool CameraControler::initCameras2()
 		return false;
 	}
 
-	cameraList2.clear(); //清空列表
+	//关闭相机并释放相机列表
+	closeCameras();
+
+	//初始化
 	if (deviceIndex.empty() || deviceIndex.size() < adminConfig->MaxCameraNum) {
 		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 			cameraList2.push_back(-1);
@@ -175,6 +172,22 @@ QString CameraControler::cameraStatusMapToString()
 	}
 	return available;
 }
+
+//关闭已经打开的相机设备
+void CameraControler::closeCameras()
+{
+	//关闭相机设备 - OpenCV
+	for (int i = 0; i < cameraList.size(); i++)
+		cameraList[i].release();
+	cameraList.clear(); //清空列表
+
+	//关闭相机设备 - 迈德威视
+	for (int i = 0; i < cameraList2.size(); i++)
+		CameraUnInit(cameraList2[i]);
+	cameraList2.clear(); //清空列表
+}
+
+/******************* 相机拍照 ********************/
 
 //拍摄图像 - OpenCV
 CameraControler::ErrorCode CameraControler::takePhotos()
@@ -251,7 +264,6 @@ void CameraControler::takePhotos2()
 		(*cvmatSamples)[*currentRow][i] = pMat;
 		CameraAlignFree(pRgbBuffer);
 	}
-
 	return;
 }
 
