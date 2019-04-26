@@ -55,8 +55,8 @@ public:
 	void doConnect();
 	void initGraphicsView();
 	void resetTemplateUI();
-	void setPushButtonsEnabled(bool enable);
 	void refreshCameraControler();
+	void setPushButtonsEnabled(bool enable);
 
 private:
 	void initItemGrid(pcb::ItemGrid &grid);//初始化图元网格
