@@ -350,6 +350,10 @@ int DetectParams::getSystemResetCode(DetectParams &newConfig)
 	//运动结构的单步运动距离
 	if (this->singleMotionStroke != newConfig.singleMotionStroke)
 		sysResetCode |= 0b000100000;
+
+	//运动结构的初始拍照位置
+	if (this->initialPhotoPos != newConfig.initialPhotoPos)
+		sysResetCode |= 0b000100000;
 	
 	//相机个数
 	if (this->nCamera != newConfig.nCamera)

@@ -14,6 +14,23 @@ CameraControler::CameraControler(QThread *parent)
 {
 	errorCode = Uncheck; //控制器的错误码
 	operation = NoOperation;//操作指令
+
+	//相机初始化相关参数 - 迈德威视
+	sImageSize.iIndex = 255;
+	sImageSize.uBinSumMode = 0;
+	sImageSize.uBinAverageMode = 0;
+	sImageSize.uSkipMode = 0;
+	sImageSize.uResampleMask = 0;
+	sImageSize.iHOffsetFOV = 0;
+	sImageSize.iVOffsetFOV = 0;
+	sImageSize.iWidthFOV = adminConfig->ImageSize_W;
+	sImageSize.iHeightFOV = adminConfig->ImageSize_H;
+	sImageSize.iWidth = adminConfig->ImageSize_W;
+	sImageSize.iHeight = adminConfig->ImageSize_H;
+	sImageSize.iWidthZoomHd = 0;
+	sImageSize.iHeightZoomHd = 0;
+	sImageSize.iWidthZoomSw = 0;
+	sImageSize.iHeightZoomSw = 0;
 }
 
 CameraControler::~CameraControler()
@@ -39,7 +56,8 @@ void CameraControler::run()
 	}
 }
 
-/******************* 相机初始化 *********************/
+
+/**************** 相机初始化与关闭 ******************/
 
 //相机初始化 - OpenCV
 //相机排列顺序与设备顺序不一致时，需要使用第二个参数
@@ -88,32 +106,33 @@ CameraControler::ErrorCode CameraControler::initCameras()
 bool CameraControler::initCameras2()
 {
 	errorCode = CameraControler::NoError;
-	if (CameraSdkInit(1) != CAMERA_STATUS_SUCCESS) { //相机sdk初始化失败
+
+	//若相机已经初始化，则直接跳过后续步骤
+	if (isCamerasInitialized()) return true;
+
+	//关闭已经打开的相机并释放相机列表
+	this->closeCameras();
+
+	//相机sdk初始化
+	if (CameraSdkInit(1) != CAMERA_STATUS_SUCCESS) { 
 		errorCode = CameraControler::InitFailed;
 		return false;
 	}
 
-	CameraSdkStatus status;
+	//判断是否存在：枚举设备失败或者系统中的设备数量少于设定值
 	if (CameraEnumerateDevice(sCameraList, &CameraNums) != CAMERA_STATUS_SUCCESS ||
 		CameraNums < adminConfig->MaxCameraNum)
 	{
-		//枚举设备失败或者系统中的设备数量少于设定值
-		errorCode = CameraControler::InitFailed;
-		return false;
+		errorCode = CameraControler::InitFailed; return false;
 	}
 
-	//关闭相机并释放相机列表
-	closeCameras();
-
-	//初始化
+	//获取相机列表
+	CameraSdkStatus status;
 	if (deviceIndex.empty() || deviceIndex.size() < adminConfig->MaxCameraNum) {
 		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 			cameraList2.push_back(-1);
 			status = CameraInit(&sCameraList[i], -1, -1, &cameraList2[i]);
 			cameraState[i] = (status == CAMERA_STATUS_SUCCESS);
-			if (status != CAMERA_STATUS_SUCCESS) { //有任意一台相机初始化失败
-				errorCode = CameraControler::InitFailed;
-			}
 		}
 	}
 	else {
@@ -121,32 +140,13 @@ bool CameraControler::initCameras2()
 			cameraList2.push_back(-1);
 			status = CameraInit(&sCameraList[deviceIndex[i]], -1, -1, &cameraList2[i]);
 			cameraState[i] = (status == CAMERA_STATUS_SUCCESS);
-			if (status != CAMERA_STATUS_SUCCESS) {//有任意一台相机初始化失败
-				errorCode = CameraControler::InitFailed;
-			}
 		}
 	}
-	if (errorCode != CameraControler::NoError) return false;
 
-	double *pfExposureTime = NULL;
-	tSdkImageResolution sImageSize;
-	sImageSize.iIndex = 255;
-	sImageSize.uBinSumMode = 0;
-	sImageSize.uBinAverageMode = 0;
-	sImageSize.uSkipMode = 0;
-	sImageSize.uResampleMask = 0;
-	sImageSize.iHOffsetFOV = 0;
-	sImageSize.iVOffsetFOV = 0;
-	sImageSize.iWidthFOV = adminConfig->ImageSize_W;
-	sImageSize.iHeightFOV = adminConfig->ImageSize_H;
-	sImageSize.iWidth = adminConfig->ImageSize_W;
-	sImageSize.iHeight = adminConfig->ImageSize_H;
-	sImageSize.iWidthZoomHd = 0;
-	sImageSize.iHeightZoomHd = 0;
-	sImageSize.iWidthZoomSw = 0;
-	sImageSize.iHeightZoomSw = 0;
-
+	//设置相机参数
 	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
+		//如果相机没有打开，则直接跳过
+		if (!cameraState[i]) continue;
 		//设置曝光时间，单位us
 		CameraSetExposureTime(cameraList2[i], 200 * 1000);
 		//开始采集图像
@@ -154,10 +154,15 @@ bool CameraControler::initCameras2()
 		CameraSetTriggerMode(cameraList2[i], 1);
 		CameraSetTriggerCount(cameraList2[i], 5);
 		if (CameraSetResolutionForSnap(cameraList2[i], &sImageSize) != CAMERA_STATUS_SUCCESS) {
-			errorCode = CameraControler::InitFailed;
-			return false;
+			cameraState[i] = false; continue;
 		}
 		CameraPlay(cameraList2[i]);
+	}
+
+	//检查相机是否已经成功初始化
+	if (!isCamerasInitialized()) {
+		errorCode = CameraControler::InitFailed;
+		return false;
 	}
 	return true;
 }
@@ -166,11 +171,26 @@ bool CameraControler::initCameras2()
 QString CameraControler::cameraStatusMapToString()
 {
 	QString available = "";
-	std::map<int, bool>::iterator iter;
-	for (iter = cameraState.begin(); iter != cameraState.end(); iter++) {
-		available += (iter->second) ? "1" : "0";
+	if (cameraState.size() == 0) return available;
+
+	int nC = min(detectParams->nCamera, cameraState.size());
+	for (int i = 0; i < nC; i++) {
+		int iCamera = adminConfig->MaxCameraNum - i - 1;
+		available += (cameraState[iCamera]) ? "1" : "0";
 	}
-	return available;
+	return available + " (" + QString::number(detectParams->nCamera) + ")";
+}
+
+//判断相机是否已经初始化
+bool CameraControler::isCamerasInitialized()
+{
+	if (cameraState.size() < detectParams->nCamera) return false;
+
+	for (int i = 0; i < detectParams->nCamera; i++) {
+		int iCamera = adminConfig->MaxCameraNum - i - 1;
+		if (!cameraState[iCamera]) return false;
+	}
+	return true;
 }
 
 //关闭已经打开的相机设备
@@ -185,7 +205,11 @@ void CameraControler::closeCameras()
 	for (int i = 0; i < cameraList2.size(); i++)
 		CameraUnInit(cameraList2[i]);
 	cameraList2.clear(); //清空列表
+
+	//清空相机状态
+	cameraState.clear();
 }
+
 
 /******************* 相机拍照 ********************/
 

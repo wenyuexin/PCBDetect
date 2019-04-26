@@ -155,7 +155,7 @@ void TemplateUI::initItemGrid(pcb::ItemGrid &grid)
 	//计算场景尺寸
 	sceneSize = totalSpacing;
 	sceneSize += QSizeF(itemSize.width()*nCamera, itemSize.height()*nPhotographing);
-	scene.setSceneRect(0, 0, sceneSize.width(), sceneSize.height());
+	scene.setSceneRect(1, 1, sceneSize.width() + 1, sceneSize.height() + 1);
 
 	//生成绘图网点
 	QSizeF spacingBlock = QSizeF(itemSpacing, itemSpacing);
@@ -465,8 +465,8 @@ void TemplateUI::mouseDoubleClickEvent(QMouseEvent *event)
 void TemplateUI::on_recognizeFinished_serialNumUI()
 {
 	//判断是否执行检测操作
-	if (detectParams->isValid(DetectParams::Index_All_SerialNum, true)
-		&& eventCounter >= 1 && !templThread->isRunning())
+	if (eventCounter >= 1 && !templThread->isRunning()
+		&& detectParams->isValid(DetectParams::Index_All_SerialNum, true))
 	{
 		extractTemplateImages(); //提取
 	}
