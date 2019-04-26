@@ -287,7 +287,7 @@ void TemplateUI::on_pushButton_start_clicked()
 		//重置模板提取子模块
 		this->resetTemplateUI();
 		//运动到初始拍照位置
-		ui.label_status->setText(pcb::chinese("运动结构运动中"));
+		ui.label_status->setText(pcb::chinese("运动结构前进中"));
 		qApp->processEvents();
 		motionControler->setOperation(MotionControler::MoveToInitialPos);
 		motionControler->start();
