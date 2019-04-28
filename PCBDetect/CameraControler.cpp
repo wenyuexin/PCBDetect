@@ -14,23 +14,6 @@ CameraControler::CameraControler(QThread *parent)
 {
 	errorCode = Uncheck; //控制器的错误码
 	operation = NoOperation;//操作指令
-
-	//相机初始化相关参数 - 迈德威视
-	sImageSize.iIndex = 255;
-	sImageSize.uBinSumMode = 0;
-	sImageSize.uBinAverageMode = 0;
-	sImageSize.uSkipMode = 0;
-	sImageSize.uResampleMask = 0;
-	sImageSize.iHOffsetFOV = 0;
-	sImageSize.iVOffsetFOV = 0;
-	sImageSize.iWidthFOV = adminConfig->ImageSize_W;
-	sImageSize.iHeightFOV = adminConfig->ImageSize_H;
-	sImageSize.iWidth = adminConfig->ImageSize_W;
-	sImageSize.iHeight = adminConfig->ImageSize_H;
-	sImageSize.iWidthZoomHd = 0;
-	sImageSize.iHeightZoomHd = 0;
-	sImageSize.iWidthZoomSw = 0;
-	sImageSize.iHeightZoomSw = 0;
 }
 
 CameraControler::~CameraControler()
@@ -144,6 +127,23 @@ bool CameraControler::initCameras2()
 	}
 
 	//设置相机参数
+	//相机初始化相关参数 - 迈德威视
+	sImageSize.iIndex = 255;
+	sImageSize.uBinSumMode = 0;
+	sImageSize.uBinAverageMode = 0;
+	sImageSize.uSkipMode = 0;
+	sImageSize.uResampleMask = 0;
+	sImageSize.iHOffsetFOV = 0;
+	sImageSize.iVOffsetFOV = 0;
+	sImageSize.iWidthFOV = adminConfig->ImageSize_W;
+	sImageSize.iHeightFOV = adminConfig->ImageSize_H;
+	sImageSize.iWidth = adminConfig->ImageSize_W;
+	sImageSize.iHeight = adminConfig->ImageSize_H;
+	sImageSize.iWidthZoomHd = 0;
+	sImageSize.iHeightZoomHd = 0;
+	sImageSize.iWidthZoomSw = 0;
+	sImageSize.iHeightZoomSw = 0;
+
 	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 		//如果相机没有打开，则直接跳过
 		if (!cameraState[i]) continue;
