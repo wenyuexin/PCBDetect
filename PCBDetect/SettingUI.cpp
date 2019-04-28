@@ -230,6 +230,10 @@ void SettingUI::on_pushButton_confirm_clicked()
 		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
 			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
 		{
+			QMessageBox::warning(this, pcb::chinese("警告"),
+				pcb::chinese("您已修改关键参数，系统即将重置！ \n"),
+				pcb::chinese("确定"));
+			pcb::delay(10);
 			emit resetDetectSystem_settingUI(sysResetCode);
 		}
 	}
