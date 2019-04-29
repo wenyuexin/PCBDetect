@@ -63,7 +63,7 @@ DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminC
 {
 	if (!adminConfig->isValid(true)) return DetectParams::Default;
 
-	double overlap = adminConfig->ImageOverlappingRate; //图像重叠率
+	double overlap = adminConfig->ImageOverlappingRate_W; //图像重叠率
 	double stroke = 1.0 * adminConfig->ImageSize_H * (1 - overlap);
 	stroke /= adminConfig->PixelsNumPerUnitLength;
 	this->singleMotionStroke = stroke;
@@ -81,14 +81,14 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 	if (!adminConfig->isValid(true) || !detectConfig->isValid(adminConfig)) return Default;
 
 	//计算需要开启的相机个数
-	double overlap_W = 345.0 / 4384.0; //该值由相机之间的距离决定
+	double overlap_W = adminConfig->ImageOverlappingRate_W; //该值主要由相机之间的距离决定
 	double nPixels_W = detectConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
 	double nW = nPixels_W / adminConfig->ImageSize_W;
 	this->nCamera = (int) ceil((nW - overlap_W) / (1 - overlap_W));
 	//this->nCamera = 3;
 
 	//计算拍摄次数
-	double overlap_H = adminConfig->ImageOverlappingRate; //图像重叠率
+	double overlap_H = adminConfig->ImageOverlappingRate_H; //图像重叠率
 	double nPixels_H = detectConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
 	this->nPhotographing = (int) ceil((nH - overlap_H) / (1 - overlap_H));

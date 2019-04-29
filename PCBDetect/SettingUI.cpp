@@ -39,7 +39,7 @@ SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 SettingUI::~SettingUI()
 {
 	qDebug() << "~SettingUI";
-	delete adminSettingUI;
+	delete adminSettingUI; adminSettingUI = Q_NULLPTR;
 }
 
 void SettingUI::doConnect()
@@ -227,10 +227,10 @@ void SettingUI::on_pushButton_confirm_clicked()
 		}
 
 		//判断是否重置检测系统
-		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
+		if (sysResetCode != 0 && adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
 			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
 		{
-			QMessageBox::warning(this, pcb::chinese("警告"),
+			QMessageBox::warning(this, pcb::chinese("提示"),
 				pcb::chinese("您已修改关键参数，系统即将重置！ \n"),
 				pcb::chinese("确定"));
 			pcb::delay(10);

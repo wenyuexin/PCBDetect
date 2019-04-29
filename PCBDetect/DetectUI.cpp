@@ -22,6 +22,7 @@ DetectUI::DetectUI(QWidget *parent, QRect &screenRect)
 	detectParams = Q_NULLPTR;
 	motionControler = Q_NULLPTR;
 	cameraControler = Q_NULLPTR;
+	serialNumberUI = Q_NULLPTR;
 	detectState = DefectDetecter::Default;
 
 	//加载并显示默认的指示灯图标
@@ -37,9 +38,10 @@ DetectUI::DetectUI(QWidget *parent, QRect &screenRect)
 	lightOffIcon = greenIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 
 	//产品序号识别界面
-	connect(&serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
-	connect(&serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
-	connect(&serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
+	serialNumberUI = new SerialNumberUI(Q_NULLPTR, screenRect);
+	connect(serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
+	connect(serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
+	connect(serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
 
 	//检测线程的信号连接
 	defectDetecter = new DefectDetecter;
@@ -62,6 +64,8 @@ DetectUI::~DetectUI()
 	detectThread = Q_NULLPTR;
 	delete defectDetecter; //删除检测核心
 	defectDetecter = Q_NULLPTR;
+	delete serialNumberUI; //产品序号识别界面
+	serialNumberUI = Q_NULLPTR;
 }
 
 //因为对象实例的构造和实例指针传递的时序问题
@@ -102,10 +106,10 @@ void DetectUI::initGraphicsView()
 	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
 
 	//产品序号识别界面
-	serialNumberUI.setAdminConfig(adminConfig);
-	serialNumberUI.setDetectParams(detectParams);
-	serialNumberUI.setCvMatArray(&cvmatSamples);
-	serialNumberUI.setQPixmapArray(&qpixmapSamples);
+	serialNumberUI->setAdminConfig(adminConfig);
+	serialNumberUI->setDetectParams(detectParams);
+	serialNumberUI->setCvMatArray(&cvmatSamples);
+	serialNumberUI->setQPixmapArray(&qpixmapSamples);
 
 	//配置检测线程
 	detectThread->setAdminConfig(adminConfig);
@@ -125,7 +129,7 @@ void DetectUI::initGraphicsView()
 //重置检测子界面
 void DetectUI::resetDetectUI()
 {
-	serialNumberUI.resetSerialNumberUI();//重置序号识别界面
+	serialNumberUI->resetSerialNumberUI();//重置序号识别界面
 
 	ui.label_status->setText(""); //清空状态栏
 	ui.label_indicator->setPixmap(defaultIcon); //切换指示灯
@@ -477,9 +481,9 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 	int gridRowIdx = (int)ceil(relativePos.y() / gridSize.height());//点击位置在第几行
 
 	if (true && gridRowIdx <= currentRow_show) {
-		serialNumberUI.showSampleImage(gridRowIdx, gridColIdx);
+		serialNumberUI->showSampleImage(gridRowIdx, gridColIdx);
 		pcb::delay(3);//延迟
-		serialNumberUI.showFullScreen();//显示序号识别界面
+		serialNumberUI->showFullScreen();//显示序号识别界面
 		pcb::delay(10);//延迟
 		this->hide();
 	}
@@ -501,7 +505,7 @@ void DetectUI::do_showPreviousUI_serialNumUI()
 {
 	this->showFullScreen();
 	pcb::delay(10);//延迟
-	serialNumberUI.hide();
+	serialNumberUI->hide();
 }
 
 /******************** 运动控制 ********************/
