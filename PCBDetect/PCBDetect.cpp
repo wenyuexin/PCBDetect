@@ -84,24 +84,18 @@ PCBDetect::PCBDetect(QWidget *parent)
 PCBDetect::~PCBDetect()
 {
 	qDebug() << "~PCBDetect";
-	delete launcher;
-	launcher = Q_NULLPTR;
-	delete settingUI;
-	settingUI = Q_NULLPTR;
-	delete templateUI;
-	templateUI = Q_NULLPTR;
-	delete detectUI;
-	detectUI = Q_NULLPTR;
-	delete motionControler;
-	motionControler = Q_NULLPTR;
-	delete cameraControler;
-	cameraControler = Q_NULLPTR;
+	delete launcher; launcher = Q_NULLPTR;
+	delete settingUI; settingUI = Q_NULLPTR;
+	delete templateUI; templateUI = Q_NULLPTR;
+	delete detectUI; detectUI = Q_NULLPTR;
+	delete motionControler; motionControler = Q_NULLPTR;
+	delete cameraControler; cameraControler = Q_NULLPTR;
 }
 
 
 /**************** 启动界面 *****************/
 
-//启动结束
+//参数类初始化结束
 void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 {
 	if (launchCode == -1) { //系统参数和用户参数已经正常初始化
@@ -138,18 +132,19 @@ void PCBDetect::on_launchFinished_launchUI(int launchCode)
 
 /*************** 按键的控制与响应 *****************/
 
-//设置
+//设置 - 图标
 void PCBDetect::on_pushButton_set_clicked()
 {
 	this->showSettingUI();
 }
 
+//设置 - 按键
 void PCBDetect::on_pushButton_set2_clicked()
 {
 	this->showSettingUI();
 }
 
-//模板提取
+//模板提取 - 图标
 void PCBDetect::on_pushButton_getTempl_clicked()
 {
 	//设置按键
@@ -172,6 +167,7 @@ void PCBDetect::on_pushButton_getTempl_clicked()
 	this->showTemplateUI();
 }
 
+//模板提取 - 按键
 void PCBDetect::on_pushButton_getTempl2_clicked()
 {
 	//设置按键
@@ -194,7 +190,7 @@ void PCBDetect::on_pushButton_getTempl2_clicked()
 	this->showTemplateUI();
 }
 
-//检测
+//检测 - 图标
 void PCBDetect::on_pushButton_detect_clicked()
 {
 	//设置按键
@@ -217,6 +213,8 @@ void PCBDetect::on_pushButton_detect_clicked()
 	this->showDetectUI();
 }
 
+
+//检测 - 按键
 void PCBDetect::on_pushButton_detect2_clicked()
 {
 	//设置按键
@@ -239,16 +237,19 @@ void PCBDetect::on_pushButton_detect2_clicked()
 	this->showDetectUI();
 }
 
-//退出
+
+//退出 - 图标
 void PCBDetect::on_pushButton_exit_clicked()
 {
 	this->eixtDetectSystem();
 }
 
+//退出 - 按键
 void PCBDetect::on_pushButton_exit2_clicked()
 {
 	this->eixtDetectSystem();
 }
+
 
 //设置按键是否可点击
 void PCBDetect::setPushButtonsEnabled(bool enable, bool all)
@@ -273,6 +274,7 @@ void PCBDetect::setPushButtonsEnabled(bool enable, bool all)
 
 /****************** 设置界面 ******************/
 
+//显示主界面，隐藏设置界面
 void PCBDetect::do_showDetectMainUI_settingUI()
 {
 	this->showFullScreen(); //显示主界面
@@ -280,6 +282,7 @@ void PCBDetect::do_showDetectMainUI_settingUI()
 	settingUI->hide(); //隐藏设置界面
 }
 
+//显示设置界面，隐藏主界面
 void PCBDetect::showSettingUI()
 {
 	settingUI->showFullScreen(); //显示设置界面
@@ -287,44 +290,41 @@ void PCBDetect::showSettingUI()
 	this->hide(); //隐藏主界面
 }
 
+//重置检测系统
 void PCBDetect::do_resetDetectSystem_settingUI(int code)
 {
+	bool noError = true; //系统是否正常
+
 	//重新初始化运动控制模块
-	if (code & 0b000100000 == 0b000100000) {
+	if (noError && ((code & 0b000100000) > 0)) {
 		motionControler->setOperation(MotionControler::InitControler);
 		motionControler->start();
 		while (motionControler->isRunning()) pcb::delay(50);
-		motionControler->showMessageBox(settingUI);
 	}
+	noError &= motionControler->isReady();
 
 	//重新初始化相机
-	if (code & 0b000010000 == 0b000010000) {
+	if (noError && ((code & 0b000010000) > 0)) {
 		cameraControler->setOperation(CameraControler::InitCameras);
 		cameraControler->start();
 		while (cameraControler->isRunning()) pcb::delay(50);
-		cameraControler->showMessageBox(settingUI);
 	}
+	noError &= cameraControler->isReady();
 
 	//重置模板提取界面，并初始化其中的图像显示的空间
-	if (code & 0b000000010 == 0b000000010) {
+	if (noError && ((code & 0b000000010) > 0)) {
 		templateUI->resetTemplateUI();
 		templateUI->initGraphicsView();
 	}
 
 	//重置检测界面，并初始化其中的图像显示的空间
-	if (code & 0b000000001 == 0b000000001) {
+	if (noError && ((code & 0b000000001) > 0)) {
 		detectUI->resetDetectUI();
 		detectUI->initGraphicsView();
 	}
 
-	//将主界面的模板提取按键、检测按键设为可点击
-	if (cameraControler->isReady() && motionControler->isReady()) {
-		//若各个模块的状态正常，则设置按键
-		this->setPushButtonsEnabled(true);
-		pcb::delay(10);
-		//向设置界面发送重置操作结束的信号
-		emit resetDetectSystemFinished_mainUI();
-	}
+	//若各模块状态正常，则将模板提取按键、检测按键设为可点击
+	if (noError) { this->setPushButtonsEnabled(true); }
 }
 
 //将模板提取按键、检测按键设为可点击
@@ -336,48 +336,68 @@ void PCBDetect::do_enableButtonsOnMainUI_settingUI()
 //检查系统的工作状态
 void PCBDetect::do_checkSystemState_settingUI()
 {
-	bool enableButtonsOnMainUI = true;
+	bool noError = true; //系统是否正常
 
 	//检查系统参数
-	if (enableButtonsOnMainUI && !adminConfig.isValid(true)) {
+	if (noError && !adminConfig.isValid(true)) {
 		adminConfig.showMessageBox(settingUI);
-		enableButtonsOnMainUI = false;
+		noError = false;
 	}
 
 	//检查用户参数
-	if (enableButtonsOnMainUI && !detectConfig.isValid(&adminConfig)) {
+	if (noError && !detectConfig.isValid(&adminConfig)) {
 		detectConfig.showMessageBox(settingUI);
-		enableButtonsOnMainUI = false;
+		noError = false;
 	}
 
 	//检查运行参数
-	if (enableButtonsOnMainUI && 
-		!detectParams.isValid(DetectParams::Index_All_SysInit, true, &adminConfig)) 
-	{
+	if (noError && !detectParams.isValid(DetectParams::Index_All_SysInit, true, &adminConfig)) {
 		detectParams.showMessageBox(settingUI);
-		enableButtonsOnMainUI = false;
+		noError = false;
 	}
 
 	//检测运动结构
-	if (enableButtonsOnMainUI && !motionControler->isReady()) {
-		motionControler->showMessageBox(settingUI);
-		enableButtonsOnMainUI = false;
+	if (noError && !motionControler->isReady()) {
+		MotionControler::ErrorCode code = motionControler->getErrorCode();
+		if (code == MotionControler::InitFailed || code == MotionControler::Uncheck) {
+			//询问是否需要重新初始化
+			int choice = QMessageBox::warning(settingUI, pcb::chinese("警告"),
+				pcb::chinese("运动控制器未初始化或初始化失败，是否重新执行初始化？ \n"),
+				pcb::chinese("确定"), pcb::chinese("取消"));
+			//判断是否重新初始化
+			if (choice == 0) { do_resetDetectSystem_settingUI(0b000100000); } 
+		}
+		else { //和初始化无关的错误
+			motionControler->showMessageBox(settingUI);
+		}
 	}
+	noError &= motionControler->isReady();
 
 	//检查相机
-	if (enableButtonsOnMainUI && !cameraControler->isReady()) {
-		cameraControler->showMessageBox(settingUI);
-		enableButtonsOnMainUI = false;
+	if (noError && !cameraControler->isReady()) {
+		CameraControler::ErrorCode code = cameraControler->getErrorCode();
+		if (code == CameraControler::InitFailed || code == CameraControler::Uncheck) {
+			//询问是否需要重新初始化
+			int choice = QMessageBox::warning(settingUI, pcb::chinese("警告"),
+				pcb::chinese("相机控制器未初始化或初始化失败，是否重新执行初始化？ \n"),
+				pcb::chinese("确定"), pcb::chinese("取消"));
+			//判断是否重新初始化
+			if (choice == 0) { do_resetDetectSystem_settingUI(0b000010000); }
+		}
+		else { //和初始化无关的错误
+			cameraControler->showMessageBox(settingUI);
+		}
 	}
+	noError &= cameraControler->isReady();
 
 	//判断是否要启用主界面上的模板提取和检测按键
-	if (enableButtonsOnMainUI) { //系统正常
-		this->setPushButtonsEnabled(true);
-	}
+	if (noError) { this->setPushButtonsEnabled(true); }
 }
+
 
 /***************** 模板提取界面 *****************/
 
+//显示主界面，隐藏模板提取界面
 void PCBDetect::do_showDetectMainUI_templateUI()
 {
 	this->setPushButtonsEnabled(true, true);
@@ -387,6 +407,7 @@ void PCBDetect::do_showDetectMainUI_templateUI()
 	templateUI->hide(); //隐藏模板提取界面
 }
 
+//显示模板提取界面，隐藏主界面
 void PCBDetect::showTemplateUI()
 {
 	templateUI->showFullScreen(); //显示模板提取界面
@@ -397,6 +418,7 @@ void PCBDetect::showTemplateUI()
 
 /******************* 检测界面 ******************/
 
+//显示主界面，隐藏检测界面
 void PCBDetect::do_showDetectMainUI_detectUI()
 {
 	this->setPushButtonsEnabled(true, true);
@@ -406,6 +428,7 @@ void PCBDetect::do_showDetectMainUI_detectUI()
 	detectUI->hide(); //隐藏检测界面
 }
 
+//显示检测界面，隐藏主界面
 void PCBDetect::showDetectUI()
 {
 	detectUI->showFullScreen(); //显示检测界面
@@ -419,20 +442,27 @@ void PCBDetect::showDetectUI()
 //退出检测系统
 void PCBDetect::eixtDetectSystem()
 {
-	this->close();
-	qApp->exit(0);
+	//询问是否需要退出系统
+	int choice = QMessageBox::question(settingUI, pcb::chinese("询问"),
+		pcb::chinese("确定退出PCB缺陷检测系统？ \n"),
+		pcb::chinese("确定"), pcb::chinese("取消"));
+	//判断是否需要退出
+	if (choice == 0) { 
+		//this->close();
+		qApp->exit(0);
+	}
 }
 
 //测试后门 - 切换主界面按键的可点击状态
 void PCBDetect::keyPressEvent(QKeyEvent *event)
 {
-	bool buttonsEnabled = false;
-	switch (event->key())
-	{
-	case Qt::Key_Shift:
-		if (ui.pushButton_detect->isEnabled())
-			setPushButtonsEnabled(false);
-		else 
-			setPushButtonsEnabled(true);
-	}
+	//bool buttonsEnabled = false;
+	//switch (event->key())
+	//{
+	//case Qt::Key_Shift:
+	//	if (ui.pushButton_detect->isEnabled())
+	//		setPushButtonsEnabled(false);
+	//	else 
+	//		setPushButtonsEnabled(true);
+	//}
 }

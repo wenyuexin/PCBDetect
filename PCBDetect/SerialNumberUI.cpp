@@ -3,17 +3,13 @@
 using pcb::DetectParams;
 
 
-SerialNumberUI::SerialNumberUI(QWidget *parent)
+SerialNumberUI::SerialNumberUI(QWidget *parent, QRect &screenRect)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	this->setMouseTracking(true);
-
 	//多屏状态下选择在副屏全屏显示
-	//QDesktopWidget* desktop = QApplication::desktop();
-	//QRect screenRect = desktop->screenGeometry(1);
-	//this->setGeometry(screenRect);
+	this->setGeometry(screenRect);
 
 	//成员变量的初始化
 	errorCode = ErrorCode::Default;
@@ -31,6 +27,7 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	roiRect_br.setX(0);//roi右下角
 	roiRect_br.setY(0);
 	imageScalingRatio = 0;//图像缩放比例
+	ocrHandle = Q_NULLPTR;
 
 	//获取绘图控件QGraphicsView的位置
 	QPoint graphicsViewPos = ui.graphicsView->pos();
@@ -76,8 +73,8 @@ void SerialNumberUI::initSerialNumberUI()
 	ui.graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	//初始化OCR模块
-	handle = TessBaseAPICreate();
-	if (TessBaseAPIInit3(handle, NULL, "eng") != 0) {
+	ocrHandle = TessBaseAPICreate();
+	if (TessBaseAPIInit3(ocrHandle, NULL, "eng") != 0) {
 		showMessageBox(this, InitFailed); return;
 		//die("Error initialising tesseract\n");
 	}
@@ -162,14 +159,14 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 	char *text = NULL;
 
 	//加载图像
-	TessBaseAPISetImage2(handle, img);
-	if (TessBaseAPIRecognize(handle, NULL) != 0) {
+	TessBaseAPISetImage2(ocrHandle, img);
+	if (TessBaseAPIRecognize(ocrHandle, NULL) != 0) {
 		showMessageBox(this, Invalid_RoiData); return;
 		//die("Error in Tesseract recognition\n");
 	}
 
 	//识别产品序号
-	if ((text = TessBaseAPIGetUTF8Text(handle)) == NULL) {
+	if ((text = TessBaseAPIGetUTF8Text(ocrHandle)) == NULL) {
 		showMessageBox(this, RecognizeFailed); return;
 		//die("Error getting text\n");
 	}
@@ -231,7 +228,7 @@ void SerialNumberUI::showSampleImage(int row, int col)
 	imageScalingRatio = 1.0 * scaledImg.width() / img->width();
 
 	//在场景中加载新的图元
-	deleteImageItem(); //删除当前的图元
+	deleteImageItem(); //删除之前的图元
 	imageItem = new QGraphicsPixmapItem(scaledImg); //定义新图元
 	graphicsScene.addItem(imageItem);
 

@@ -59,9 +59,6 @@ private:
 	void showTemplateUI();
 	void eixtDetectSystem();
 
-Q_SIGNALS:
-	void resetDetectSystemFinished_mainUI();
-
 private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
 	void setPushButtonsEnabled(bool code, bool all = false);

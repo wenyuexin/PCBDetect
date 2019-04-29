@@ -41,8 +41,9 @@ namespace pcb
 	public:
 		int MaxMotionStroke; //机械结构的最大运动行程 mm
 		int MaxCameraNum; //可用相机总数
-		int PixelsNumPerUnitLength; //单位长度的像素 pix/mm
-		double ImageOverlappingRate; //分图重叠率
+		double PixelsNumPerUnitLength; //单位长度的像素数 pix/mm
+		double ImageOverlappingRate_W; //分图重叠率(宽)
+		double ImageOverlappingRate_H; //分图重叠率(高)
 		int ImageSize_W; //分图宽度
 		int ImageSize_H; //分图高度
 		double ImageAspectRatio; //图像宽高比
@@ -53,7 +54,8 @@ namespace pcb
 			Index_MaxMotionStroke,
 			Index_MaxCameraNum,
 			Index_PixelsNumPerUnitLength,
-			Index_ImageOverlappingRate,
+			Index_ImageOverlappingRate_W,
+			Index_ImageOverlappingRate_H,
 			Index_ImageSize_W,
 			Index_ImageSize_H,
 			Index_ImageAspectRatio
@@ -68,10 +70,11 @@ namespace pcb
 			Invalid_MaxMotionStroke = 0x102,
 			Invalid_MaxCameraNum = 0x103,
 			Invalid_PixelsNumPerUnitLength = 0x104,
-			Invalid_ImageOverlappingRate = 0x105,
-			Invalid_ImageSize_W = 0x106,
-			Invalid_ImageSize_H = 0x107,
-			Invalid_ImageAspectRatio = 0x108,
+			Invalid_ImageOverlappingRate_W = 0x105,
+			Invalid_ImageOverlappingRate_H = 0x106,
+			Invalid_ImageSize_W = 0x107,
+			Invalid_ImageSize_H = 0x108,
+			Invalid_ImageAspectRatio = 0x109,
 			Default = 0x1FF
 		};
 
