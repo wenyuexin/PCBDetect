@@ -43,7 +43,8 @@ void AdminSettingUI::initAdminSettingUI()
 	ui.lineEdit_MaxMotionStroke->setValidator(&intValidator);
 	ui.lineEdit_MaxCameraNum->setValidator(&intValidator);
 	ui.lineEdit_PixelsNumPerUnitLength->setValidator(&intValidator);
-	ui.lineEdit_ImageOverlappingRate->setValidator(&doubleValidator);
+	ui.lineEdit_ImageOverlappingRate_W->setValidator(&doubleValidator);
+	ui.lineEdit_ImageOverlappingRate_H->setValidator(&doubleValidator);
 	ui.lineEdit_ImageSize_W->setValidator(&intValidator);
 	ui.lineEdit_ImageSize_H->setValidator(&intValidator);
 }
@@ -53,8 +54,9 @@ void AdminSettingUI::refreshAdminSettingUI()
 {
 	ui.lineEdit_MaxMotionStroke->setText(QString::number(adminConfig->MaxMotionStroke));
 	ui.lineEdit_MaxCameraNum->setText(QString::number(adminConfig->MaxCameraNum));
-	ui.lineEdit_PixelsNumPerUnitLength->setText(QString::number(adminConfig->PixelsNumPerUnitLength));
-	ui.lineEdit_ImageOverlappingRate->setText(QString::number(adminConfig->ImageOverlappingRate));
+	ui.lineEdit_PixelsNumPerUnitLength->setText(QString::number(adminConfig->PixelsNumPerUnitLength, 'f', 6));
+	ui.lineEdit_ImageOverlappingRate_W->setText(QString::number(adminConfig->ImageOverlappingRate_W, 'f', 6));
+	ui.lineEdit_ImageOverlappingRate_H->setText(QString::number(adminConfig->ImageOverlappingRate_H, 'f', 6));
 	ui.lineEdit_ImageSize_W->setText(QString::number(adminConfig->ImageSize_W));
 	ui.lineEdit_ImageSize_H->setText(QString::number(adminConfig->ImageSize_H));
 }
@@ -124,10 +126,10 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 		}
 
 		//判断是否重置检测系统
-		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
+		if (sysResetCode != 0 && adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
 			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
 		{
-			QMessageBox::warning(this, pcb::chinese("警告"),
+			QMessageBox::warning(this, pcb::chinese("提示"),
 				pcb::chinese("您已修改关键参数，系统即将重置！ \n"),
 				pcb::chinese("确定"));
 			pcb::delay(10);
@@ -170,8 +172,9 @@ void AdminSettingUI::getConfigFromAdminSettingUI()
 
 	tempConfig.MaxMotionStroke = ui.lineEdit_MaxMotionStroke->text().toInt();
 	tempConfig.MaxCameraNum = ui.lineEdit_MaxCameraNum->text().toInt();
-	tempConfig.PixelsNumPerUnitLength = ui.lineEdit_PixelsNumPerUnitLength->text().toInt();
-	tempConfig.ImageOverlappingRate = ui.lineEdit_ImageOverlappingRate->text().toDouble();
+	tempConfig.PixelsNumPerUnitLength = ui.lineEdit_PixelsNumPerUnitLength->text().toDouble();
+	tempConfig.ImageOverlappingRate_W = ui.lineEdit_ImageOverlappingRate_W->text().toDouble();
+	tempConfig.ImageOverlappingRate_H = ui.lineEdit_ImageOverlappingRate_H->text().toDouble();
 	tempConfig.ImageSize_W = ui.lineEdit_ImageSize_W->text().toInt();
 	tempConfig.ImageSize_H = ui.lineEdit_ImageSize_H->text().toInt();
 
@@ -195,8 +198,10 @@ void AdminSettingUI::setCursorLocation(AdminConfig::ConfigIndex code)
 		ui.lineEdit_MaxCameraNum->setFocus(); break;
 	case pcb::AdminConfig::Index_PixelsNumPerUnitLength:
 		ui.lineEdit_PixelsNumPerUnitLength->setFocus(); break;
-	case pcb::AdminConfig::Index_ImageOverlappingRate:
-		ui.lineEdit_ImageOverlappingRate->setFocus(); break;
+	case pcb::AdminConfig::Index_ImageOverlappingRate_W:
+		ui.lineEdit_ImageOverlappingRate_W->setFocus(); break;
+	case pcb::AdminConfig::Index_ImageOverlappingRate_H:
+		ui.lineEdit_ImageOverlappingRate_H->setFocus(); break;
 	case pcb::AdminConfig::Index_ImageSize_W:
 		ui.lineEdit_ImageSize_W->setFocus(); break;
 	case pcb::AdminConfig::Index_ImageSize_H:

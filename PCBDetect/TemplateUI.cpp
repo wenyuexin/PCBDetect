@@ -43,10 +43,8 @@ TemplateUI::~TemplateUI()
 	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
 	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
 	deletePointersInQPixmapArray(qpixmapSamples);//删除qpixmapSamples中的指针
-	delete templThread;
-	templThread = Q_NULLPTR;
-	delete templExtractor;
-	templExtractor = Q_NULLPTR;
+	delete templThread; templThread = Q_NULLPTR;
+	delete templExtractor; templExtractor = Q_NULLPTR;
 }
 
 //因为对象实例的构造和实例指针传递的时序问题

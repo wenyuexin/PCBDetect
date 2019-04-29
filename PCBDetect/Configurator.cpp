@@ -14,7 +14,8 @@ AdminConfig::AdminConfig()
 	MaxMotionStroke = -1; //机械结构的最大运动行程
 	MaxCameraNum = -1; //可用相机总数
 	PixelsNumPerUnitLength = -1; //单位长度的像素 pix/mm
-	ImageOverlappingRate = -1; //分图重叠率
+	ImageOverlappingRate_W = -1; //分图重叠率(宽)
+	ImageOverlappingRate_H = -1; //分图重叠率(高)
 	ImageSize_W = -1; //分图宽度
 	ImageSize_H = -1; //分图高度
 	ImageAspectRatio = -1; //图像宽高比
@@ -29,10 +30,11 @@ AdminConfig::~AdminConfig()
 void AdminConfig::loadDefaultValue()
 {
 	this->errorCode = Uncheck; //错误代码
-	this->MaxMotionStroke = 80*5; //机械结构的最大运动行程
+	this->MaxMotionStroke = 80 * 5; //机械结构的最大运动行程
 	this->MaxCameraNum = 5; //可用相机的总数
 	this->PixelsNumPerUnitLength = 40; //单位长度内的像素个数
-	this->ImageOverlappingRate = 0.05; //分图重叠率
+	this->ImageOverlappingRate_W = 345.0 / 4384.0; //分图重叠率(宽)
+	this->ImageOverlappingRate_H = 0.050000; //分图重叠率(高)
 	this->ImageSize_W = 4384; //宽高比中的宽
 	this->ImageSize_H = 3288; //宽高比中的高
 	this->ImageAspectRatio = 1.0 * ImageSize_W / ImageSize_H; //样本图像的宽高比
@@ -57,9 +59,13 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 		if (PixelsNumPerUnitLength <= 0) 
 			code = Invalid_PixelsNumPerUnitLength;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageOverlappingRate: //分图重叠率
-		if (ImageOverlappingRate <= 0 || ImageOverlappingRate >= 1) 
-			code = Invalid_ImageOverlappingRate;
+	case pcb::AdminConfig::Index_ImageOverlappingRate_W: //分图重叠率(宽)
+		if (ImageOverlappingRate_W <= 0 || ImageOverlappingRate_W >= 1) 
+			code = Invalid_ImageOverlappingRate_W;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::AdminConfig::Index_ImageOverlappingRate_H: //分图重叠率(高)
+		if (ImageOverlappingRate_H <= 0 || ImageOverlappingRate_H >= 1)
+			code = Invalid_ImageOverlappingRate_H;
 		if (code != Uncheck || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageSize_W: //分图宽度
 		if (ImageSize_W <= 0)
@@ -99,8 +105,10 @@ AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
 			return Index_MaxCameraNum;
 		case pcb::AdminConfig::Invalid_PixelsNumPerUnitLength:
 			return Index_PixelsNumPerUnitLength;
-		case pcb::AdminConfig::Invalid_ImageOverlappingRate:
-			return Index_ImageOverlappingRate;
+		case pcb::AdminConfig::Invalid_ImageOverlappingRate_W:
+			return Index_ImageOverlappingRate_W;
+		case pcb::AdminConfig::Invalid_ImageOverlappingRate_H:
+			return Index_ImageOverlappingRate_H;
 		case pcb::AdminConfig::Invalid_ImageSize_W:
 			return Index_ImageSize_W;
 		case pcb::AdminConfig::Invalid_ImageSize_H:
@@ -135,8 +143,10 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 		valueName = pcb::chinese("\"可用相机总数\""); break;
 	case pcb::AdminConfig::Invalid_PixelsNumPerUnitLength:
 		valueName = pcb::chinese("\"每毫米像素数\""); break;
-	case pcb::AdminConfig::Invalid_ImageOverlappingRate:
-		valueName = pcb::chinese("\"分图重叠率\""); break;
+	case pcb::AdminConfig::Invalid_ImageOverlappingRate_W:
+		valueName = pcb::chinese("\"分图重叠率(宽)\""); break;
+	case pcb::AdminConfig::Invalid_ImageOverlappingRate_H:
+		valueName = pcb::chinese("\"分图重叠率(高)\""); break;
 	case pcb::AdminConfig::Invalid_ImageSize_W:
 	case pcb::AdminConfig::Invalid_ImageSize_H:
 	case pcb::AdminConfig::Invalid_ImageAspectRatio:
@@ -169,7 +179,8 @@ AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 	if (this->MaxMotionStroke != other.MaxMotionStroke) return Index_MaxMotionStroke;
 	if (this->MaxCameraNum != other.MaxCameraNum) return Index_MaxCameraNum;
 	if (this->PixelsNumPerUnitLength != other.PixelsNumPerUnitLength) return Index_PixelsNumPerUnitLength;
-	if (this->ImageOverlappingRate != other.ImageOverlappingRate) return Index_ImageOverlappingRate;
+	if (this->ImageOverlappingRate_W != other.ImageOverlappingRate_W) return Index_ImageOverlappingRate_W;
+	if (this->ImageOverlappingRate_H != other.ImageOverlappingRate_H) return Index_ImageOverlappingRate_H;
 	if (this->ImageSize_W != other.ImageSize_W) return Index_ImageSize_W;
 	if (this->ImageSize_H != other.ImageSize_H) return Index_ImageSize_H;
 	return Index_None;
@@ -200,7 +211,7 @@ void AdminConfig::copyTo(AdminConfig *dst)
 	dst->MaxMotionStroke = this->MaxMotionStroke;
 	dst->MaxCameraNum = this->MaxCameraNum;
 	dst->PixelsNumPerUnitLength = this->PixelsNumPerUnitLength;
-	dst->ImageOverlappingRate = this->ImageOverlappingRate;
+	dst->ImageOverlappingRate_W = this->ImageOverlappingRate_W;
 	dst->ImageSize_W = this->ImageSize_W;
 	dst->ImageSize_H = this->ImageSize_H;
 	dst->ImageAspectRatio = this->ImageAspectRatio;
@@ -501,7 +512,7 @@ bool Configurator::jsonSetValue(const QString &key, int &value, bool encode)
 //将参数写入配置文件中 - double
 bool Configurator::jsonSetValue(const QString &key, double &value, bool encode)
 {
-	return jsonSetValue(key, QString::number(value, 'g', 7), encode);
+	return jsonSetValue(key, QString::number(value, 'f', 6), encode);
 }
 
 
@@ -613,6 +624,61 @@ QString Configurator::decrypt(const char* origin) const
 
 /****************** 配置类的读写 ********************/
 
+//将配置文件中的参数加载到 AdminConfig 中
+bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
+{
+	bool success = true;
+	QString configFilePath = QDir::currentPath() + "/" + fileName;
+	QFile configFile(configFilePath);
+	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
+		createConfigFile(configFilePath);//创建配置文件
+		config->loadDefaultValue();//加载默认值
+		config->markConfigFileMissing();//标记文件丢失
+		saveConfigFile(fileName, config);//保存默认config
+		success = false;
+	}
+	else { //文件存在，并且可以正常读写
+		Configurator configurator(&configFile);
+		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
+		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum, true);
+		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
+		configurator.jsonReadValue("ImageOverlappingRate_W", config->ImageOverlappingRate_W, true);
+		configurator.jsonReadValue("ImageOverlappingRate_H", config->ImageOverlappingRate_H, true);
+		configurator.jsonReadValue("ImageSize_W", config->ImageSize_W, true);
+		configurator.jsonReadValue("ImageSize_H", config->ImageSize_H, true);
+		configFile.close();
+	}
+	return success;
+}
+
+//将 AdminConfig 中的参数保存到配置文件中
+bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
+{
+	bool success = true;
+	QString configFilePath = QDir::currentPath() + "/" + fileName;
+	QFile configFile(configFilePath);
+	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
+		createConfigFile(configFilePath);
+		DetectConfig defaultConfig;
+		defaultConfig.loadDefaultValue();//加载默认值
+		saveConfigFile(fileName, &defaultConfig);//保存默认config
+		success = false;
+	}
+	else { //文件存在，并且可以正常读写
+		Configurator configurator(&configFile);
+		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke, true);
+		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum, true);
+		configurator.jsonSetValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
+		configurator.jsonSetValue("ImageOverlappingRate_W", config->ImageOverlappingRate_W, true);
+		configurator.jsonSetValue("ImageOverlappingRate_H", config->ImageOverlappingRate_H, true);
+		configurator.jsonSetValue("ImageSize_W", config->ImageSize_W, true);
+		configurator.jsonSetValue("ImageSize_H", config->ImageSize_H, true);
+		configFile.close();
+	}
+	return success;
+}
+
+
 //将配置文件中的参数加载到DetectConfig中
 bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 {
@@ -673,57 +739,6 @@ bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
 	return success;
 }
 
-//将配置文件中的参数加载到 AdminConfig 中
-bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
-{
-	bool success = true;
-	QString configFilePath = QDir::currentPath() + "/" + fileName;
-	QFile configFile(configFilePath);
-	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
-		createConfigFile(configFilePath);//创建配置文件
-		config->loadDefaultValue();//加载默认值
-		config->markConfigFileMissing();//标记文件丢失
-		saveConfigFile(fileName, config);//保存默认config
-		success = false;
-	}
-	else { //文件存在，并且可以正常读写
-		Configurator configurator(&configFile);
-		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
-		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum, true);
-		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
-		configurator.jsonReadValue("ImageOverlappingRate", config->ImageOverlappingRate, true);
-		configurator.jsonReadValue("ImageSize_W", config->ImageSize_W, true);
-		configurator.jsonReadValue("ImageSize_H", config->ImageSize_H, true);
-		configFile.close();
-	}
-	return success;
-}
-
-//将 AdminConfig 中的参数保存到配置文件中
-bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
-{
-	bool success = true;
-	QString configFilePath = QDir::currentPath() + "/" + fileName;
-	QFile configFile(configFilePath);
-	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
-		createConfigFile(configFilePath);
-		DetectConfig defaultConfig;
-		defaultConfig.loadDefaultValue();//加载默认值
-		saveConfigFile(fileName, &defaultConfig);//保存默认config
-		success = false;
-	}
-	else { //文件存在，并且可以正常读写
-		Configurator configurator(&configFile);
-		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke, true);
-		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum, true);
-		configurator.jsonSetValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
-		configurator.jsonSetValue("ImageOverlappingRate", config->ImageOverlappingRate, true);
-		configurator.jsonSetValue("ImageSize_W", config->ImageSize_W, true);
-		configurator.jsonSetValue("ImageSize_H", config->ImageSize_H, true);
-		configFile.close();
-	}
-	return success;
-}
 
 /******************* 暂时没用 ********************/
 
