@@ -44,7 +44,7 @@ private:
 	QRect graphicsViewRect;
 	QGraphicsScene graphicsScene;//绘图场景
 	QPointF graphicsScenePos;//场景左上角点在屏幕中的位置
-	QGraphicsPixmapItem* imageItem;//图元
+	QGraphicsPixmapItem *imageItem;//图元
 
 	QButtonGroup checkBoxGroup;
 	QPointF roiRect_tl;
@@ -59,11 +59,11 @@ private:
 	enum CaptureStatus { InitCapture, BeginCapture, BeginMove, CaptureFinished };
 	int captureStatus = InitCapture;
 
-	TessBaseAPI *handle;
+	TessBaseAPI *ocrHandle;
 	QString roiFilePath;
 
 public:
-	SerialNumberUI(QWidget *parent = Q_NULLPTR);
+	SerialNumberUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
 	~SerialNumberUI();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
