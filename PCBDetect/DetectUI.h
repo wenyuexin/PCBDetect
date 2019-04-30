@@ -34,7 +34,7 @@ private:
 
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数
-	pcb::RuntimeParams *runtimeParams; //临时参数
+	pcb::RuntimeParams *runtimeParams; //运行参数
 	MotionControler *motionControler; //运动控制器
 	CameraControler *cameraControler; //相机控制器
 
