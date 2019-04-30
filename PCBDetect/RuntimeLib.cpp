@@ -21,10 +21,8 @@ RuntimeParams::RuntimeParams()
 	nCamera = 0; //相机个数
 	nPhotographing = 0; //拍照次数
 
-	//缓存文件夹
-	bufferDirPath = QDir::currentPath() + "/buffer"; 
-	QDir bufferDir(bufferDirPath);
-	if (!bufferDir.exists()) bufferDir.mkdir(bufferDirPath);
+	AppDirPath = ""; //程序所在目录
+	BufferDirPath = ""; //缓存文件夹
 }
 
 RuntimeParams::~RuntimeParams()
@@ -56,6 +54,11 @@ void RuntimeParams::loadDefaultValue()
 	nCamera = 5; //相机个数
 	nPhotographing = 4; //拍照次数
 	initialPhotoPos = 245.0; //初始拍照位置
+
+	AppDirPath = QDir::currentPath(); //程序所在目录
+	BufferDirPath = QDir::currentPath() + "/buffer"; //缓存文件夹
+	QDir bufferDir(BufferDirPath);
+	if (!bufferDir.exists()) bufferDir.mkdir(BufferDirPath);
 }
 
 //计算机械结构的单步运动距离 singleMotionStroke
@@ -340,6 +343,8 @@ void RuntimeParams::copyTo(RuntimeParams *dst)
 	dst->singleMotionStroke = this->singleMotionStroke; //运功动结构的单步行程 mm
 	dst->nCamera = this->nCamera; //相机个数
 	dst->nPhotographing = this->nPhotographing; //拍照次数
+	dst->AppDirPath = this->AppDirPath; //程序所在目录
+	dst->BufferDirPath = this->BufferDirPath; //缓存文件夹
 }
 
 //获取系统重置代码
