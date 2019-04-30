@@ -4,8 +4,8 @@
 #include <qDebug>
 
 
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 using std::vector;
 using std::string;
 using std::to_string;
@@ -22,8 +22,8 @@ using namespace cv::xfeatures2d;
 DetectFunc::DetectFunc()
 {
 	adminConfig = Q_NULLPTR; //系统参数
-	detectConfig = Q_NULLPTR; //用户参数
-	detectParams = Q_NULLPTR; //运行参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 	detectResult = Q_NULLPTR; //检测结果
 }
 
@@ -35,8 +35,8 @@ DetectFunc::~DetectFunc()
 //生成完整尺寸的缺陷检测图像
 void DetectFunc::generateBigTempl()
 {
-	Size templSize = Size(adminConfig->ImageSize_W * detectParams->nCamera,
-		adminConfig->ImageSize_H * detectParams->nPhotographing);
+	Size templSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera,
+		adminConfig->ImageSize_H * runtimeParams->nPhotographing);
 	big_templ = Mat(templSize, CV_8UC3);
 }
 
@@ -250,19 +250,19 @@ void DetectFunc::markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat
 	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
 	if (contours.size() == 0)
 		return;
-	string batch_path = (detectConfig->OutputDirPath).toStdString() + "\\" + detectParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
+	string batch_path = (userConfig->OutputDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
 	if (0 != _access(batch_path.c_str(), 0))
 		_mkdir(batch_path.c_str());
-	string num_path = batch_path + "\\" + detectParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
+	string num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
 	if (0 != _access(num_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(num_path.c_str());
-	string out_path = num_path + "\\" + detectParams->sampleNum.toStdString();//检查编号文件夹是否存在
+	string out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//检查编号文件夹是否存在
 	if (0 != _access(out_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(out_path.c_str());
 
 
 	for (int i = 0; i < contours.size(); i++) {
-		if (currentCol == 4 && detectParams->currentRow_detect == 0 && i == 87)
+		if (currentCol == 4 && runtimeParams->currentRow_detect == 0 && i == 87)
 			qDebug() << endl;
 		int w_b = 300, h_b = 300;//缺陷分图的大小
 		if (contourArea(contours[i], false) <= 50 && contourArea(contours[i], false) >= 200)//缺陷的最大和最小面积
@@ -410,11 +410,11 @@ void DetectFunc::markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat
 			Size sz = diffBw.size();
 			defectNum++;//增加缺陷计数
 			pos_x = sz.width*currentCol + pos_x;//缺陷在整体图像中的横坐标
-			pos_y = sz.height*detectParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
+			pos_y = sz.height*runtimeParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
 
-			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + detectConfig->ImageFormat.toStdString(), diffSeg);
-			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + detectConfig->ImageFormat.toStdString(), templSeg);
-			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + detectConfig->ImageFormat.toStdString(), imgSeg);
+			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + userConfig->ImageFormat.toStdString(), diffSeg);
+			//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + userConfig->ImageFormat.toStdString(), templSeg);
+			imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + userConfig->ImageFormat.toStdString(), imgSeg);
 
 		}
 	}
@@ -443,19 +443,19 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
 	if (contours.size() == 0) {
-		Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, detectParams->currentRow_detect*adminConfig->ImageSize_H,
+		Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, runtimeParams->currentRow_detect*adminConfig->ImageSize_H,
 			adminConfig->ImageSize_W, adminConfig->ImageSize_H);
 		Mat roi = getBigTempl(roiRect);
 		sampGrayRegCopy.copyTo(roi);
 		return;
 	}
-	batch_path = (detectConfig->OutputDirPath).toStdString() + "\\" + detectParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
+	batch_path = (userConfig->OutputDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
 	if (0 != _access(batch_path.c_str(), 0))
 		_mkdir(batch_path.c_str());
-	num_path = batch_path + "\\" + detectParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
+	num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
 	if (0 != _access(num_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(num_path.c_str());
-	out_path = num_path + "\\" + detectParams->sampleNum.toStdString();//检查编号文件夹是否存在
+	out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//检查编号文件夹是否存在
 	if (0 != _access(out_path.c_str(), 0) && contours.size() > 0)
 		_mkdir(out_path.c_str());
 
@@ -674,18 +674,18 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		Size sz = diffBw.size();
 		defectNum++;//增加缺陷计数
 		pos_x = sz.width*currentCol + pos_x;//缺陷在整体图像中的横坐标
-		pos_y = sz.height*detectParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
+		pos_y = sz.height*runtimeParams->currentRow_detect + pos_y;//缺陷在整体图像中的纵坐标
 
 
 		//在配准后的样本图的克隆上绘制缺陷(排除所有伪缺陷后再绘制
 		//drawContours(sampGrayRegCopy, contours, i, cv::Scalar(0, 0, 255), 2, 8);
 		rectangle(sampGrayRegCopy, rect_out, Scalar(0, 0, 255),2);
-		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + detectConfig->ImageFormat.toStdString(), diffSeg);
-		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + detectConfig->ImageFormat.toStdString(), templSeg);
-		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + detectConfig->ImageFormat.toStdString(), imgSeg);
+		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + defect_str[defect_flag] + "." + userConfig->ImageFormat.toStdString(), diffSeg);
+		//imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(trans_num) + "_模板." + userConfig->ImageFormat.toStdString(), templSeg);
+		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + userConfig->ImageFormat.toStdString(), imgSeg);
 	}
 
-	Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, detectParams->currentRow_detect*adminConfig->ImageSize_H,
+	Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, runtimeParams->currentRow_detect*adminConfig->ImageSize_H,
 		adminConfig->ImageSize_W, adminConfig->ImageSize_H);
 	Mat roi = getBigTempl(roiRect);
 	sampGrayRegCopy.copyTo(roi);

@@ -16,8 +16,8 @@ class DetectFunc {
 
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectParams *detectParams; //运行参数
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::RuntimeParams *runtimeParams; //运行参数
 	pcb::DetectResult *detectResult; //检测结果
 
 	cv::Mat big_templ; //大模板;
@@ -28,8 +28,8 @@ public:
 	~DetectFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 
 

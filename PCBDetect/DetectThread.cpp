@@ -1,8 +1,8 @@
 #include "DetectThread.h"
 
 using pcb::CvMatVector;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 using pcb::DetectResult;
 using pcb::QPixmapVector;
 using pcb::QImageVector;
@@ -12,8 +12,8 @@ using pcb::QImageArray;
 DetectThread::DetectThread()
 {
 	adminConfig = Q_NULLPTR; //系统参数
-	detectConfig = Q_NULLPTR; //用户参数
-	detectParams = Q_NULLPTR; //运行参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 	cvmatSamples = Q_NULLPTR; //用于提取的样本图
 	defectDetecter = Q_NULLPTR; //提取器
 }
@@ -27,8 +27,8 @@ DetectThread::~DetectThread()
 void DetectThread::initDefectDetecter()
 {
 	defectDetecter->setAdminConfig(adminConfig);
-	defectDetecter->setDetectConfig(detectConfig);
-	defectDetecter->setDetectParams(detectParams);
+	defectDetecter->setUserConfig(userConfig);
+	defectDetecter->setRuntimeParams(runtimeParams);
 	defectDetecter->setSampleImages(cvmatSamples);
 	defectDetecter->setDetectResult(detectResult);
 	defectDetecter->initDetectFunc();

@@ -1,6 +1,6 @@
 #include "SerialNumberUI.h"
 
-using pcb::DetectParams;
+using pcb::RuntimeParams;
 
 
 SerialNumberUI::SerialNumberUI(QWidget *parent, QRect &screenRect)
@@ -14,7 +14,7 @@ SerialNumberUI::SerialNumberUI(QWidget *parent, QRect &screenRect)
 	//成员变量的初始化
 	errorCode = ErrorCode::Default;
 	adminConfig = Q_NULLPTR; //系统参数
-	detectParams = Q_NULLPTR; //运行时的临时参数
+	runtimeParams = Q_NULLPTR; //运行时的临时参数
 	cvmatSamples = Q_NULLPTR; //用于检测的样本图
 	qpixmapSamples = Q_NULLPTR; //用于显示的样本图
 	imageItem = Q_NULLPTR; 
@@ -117,7 +117,7 @@ void SerialNumberUI::resetSerialNumberUI()
 	deleteImageItem();
 
 	//重置产品序号等
-	detectParams->resetSerialNum();
+	runtimeParams->resetSerialNum();
 
 	//删除buffer文件夹中的roi图片
 	QFile file(roiFilePath);
@@ -145,7 +145,7 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 
 	//保存区域图片
 	cv::Mat roiImg = (*(*cvmatSamples)[gridRowIdx][gridColIdx])(roiRect);
-	roiFilePath = detectParams->bufferDirPath + "/serialNumRoi.bmp";
+	roiFilePath = runtimeParams->bufferDirPath + "/serialNumRoi.bmp";
 	cv::imwrite(roiFilePath.toStdString(), roiImg);
 
 	this->setSerialNumberUIEnabled(true);
@@ -172,16 +172,16 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 	}
 
 	QString serialNum = QString(text);
-	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
-	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
+	runtimeParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
 	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
 	this->setSerialNumberUIEnabled(true);
 
 	//检查产品序号是否有效
-	DetectParams::ErrorCode code = DetectParams::Uncheck;
-	code = detectParams->checkValidity(DetectParams::Index_serialNum);
-	if (code != DetectParams::ValidValue) {
-		detectParams->showMessageBox(this, code); return;
+	RuntimeParams::ErrorCode code = RuntimeParams::Uncheck;
+	code = runtimeParams->checkValidity(RuntimeParams::Index_serialNum);
+	if (code != RuntimeParams::ValidValue) {
+		runtimeParams->showMessageBox(this, code); return;
 	}
 }
 
@@ -189,18 +189,18 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 void SerialNumberUI::on_pushButton_confirm_clicked()
 {
 	QString serialNum = ui.lineEdit_serialNum->text(); //读取产品序号
-	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
-	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
+	runtimeParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
 
-	DetectParams::ErrorCode code = DetectParams::Uncheck;
-	code = detectParams->parseSerialNum(); //解析产品序号
-	if (code != DetectParams::ValidValue) {
-		detectParams->showMessageBox(this, code); return;
+	RuntimeParams::ErrorCode code = RuntimeParams::Uncheck;
+	code = runtimeParams->parseSerialNum(); //解析产品序号
+	if (code != RuntimeParams::ValidValue) {
+		runtimeParams->showMessageBox(this, code); return;
 	}
 	//检查型号、批次号、编号是否有效
-	code = detectParams->checkValidity(DetectParams::Index_All_SerialNum);
-	if (code != DetectParams::ValidValue) {
-		detectParams->showMessageBox(this, code); return;
+	code = runtimeParams->checkValidity(RuntimeParams::Index_All_SerialNum);
+	if (code != RuntimeParams::ValidValue) {
+		runtimeParams->showMessageBox(this, code); return;
 	}
 
 	//返回上一级界面，并执行下一步处理

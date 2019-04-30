@@ -1,11 +1,11 @@
 #include "RuntimeLib.h"
 
 using pcb::AdminConfig;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 
 
-DetectParams::DetectParams()
+RuntimeParams::RuntimeParams()
 {
 	errorCode = Uncheck;
 	errorCode_serialNum = Uncheck;
@@ -27,14 +27,14 @@ DetectParams::DetectParams()
 	if (!bufferDir.exists()) bufferDir.mkdir(bufferDirPath);
 }
 
-DetectParams::~DetectParams()
+RuntimeParams::~RuntimeParams()
 {
-	qDebug() << "~DetectParams";
+	qDebug() << "~RuntimeParams";
 }
 
 
 //重置产品序号
-void DetectParams::resetSerialNum()
+void RuntimeParams::resetSerialNum()
 {
 	errorCode_serialNum = Uncheck;
 	serialNum = ""; //样本编号
@@ -44,7 +44,7 @@ void DetectParams::resetSerialNum()
 }
 
 //加载默认的运行参数
-void DetectParams::loadDefaultValue()
+void RuntimeParams::loadDefaultValue()
 {
 	errorCode = Uncheck;
 	resetSerialNum(); //重置产品序号
@@ -59,9 +59,9 @@ void DetectParams::loadDefaultValue()
 }
 
 //计算机械结构的单步运动距离 singleMotionStroke
-DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminConfig)
+RuntimeParams::ErrorCode RuntimeParams::calcSingleMotionStroke(AdminConfig *adminConfig)
 {
-	if (!adminConfig->isValid(true)) return DetectParams::Default;
+	if (!adminConfig->isValid(true)) return RuntimeParams::Default;
 
 	double overlap = adminConfig->ImageOverlappingRate_W; //图像重叠率
 	double stroke = 1.0 * adminConfig->ImageSize_H * (1 - overlap);
@@ -76,20 +76,20 @@ DetectParams::ErrorCode DetectParams::calcSingleMotionStroke(AdminConfig *adminC
 }
 
 //计算nCamera、nPhotographing
-DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig, DetectConfig *detectConfig)
+RuntimeParams::ErrorCode RuntimeParams::calcItemGridSize(AdminConfig *adminConfig, UserConfig *userConfig)
 {
-	if (!adminConfig->isValid(true) || !detectConfig->isValid(adminConfig)) return Default;
+	if (!adminConfig->isValid(true) || !userConfig->isValid(adminConfig)) return Default;
 
 	//计算需要开启的相机个数
 	double overlap_W = adminConfig->ImageOverlappingRate_W; //该值主要由相机之间的距离决定
-	double nPixels_W = detectConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
+	double nPixels_W = userConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
 	double nW = nPixels_W / adminConfig->ImageSize_W;
 	this->nCamera = (int) ceil((nW - overlap_W) / (1 - overlap_W));
 	//this->nCamera = 3;
 
 	//计算拍摄次数
 	double overlap_H = adminConfig->ImageOverlappingRate_H; //图像重叠率
-	double nPixels_H = detectConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
+	double nPixels_H = userConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
 	this->nPhotographing = (int) ceil((nH - overlap_H) / (1 - overlap_H));
 	//this->nPhotographing = 3;
@@ -105,7 +105,7 @@ DetectParams::ErrorCode DetectParams::calcItemGridSize(AdminConfig *adminConfig,
 }
 
 //计算初始拍照位置
-DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(pcb::AdminConfig *adminConfig)
+RuntimeParams::ErrorCode RuntimeParams::calcInitialPhotoPos(pcb::AdminConfig *adminConfig)
 {
 	if (!adminConfig->isValid(true)) return Default;
 
@@ -126,7 +126,7 @@ DetectParams::ErrorCode DetectParams::calcInitialPhotoPos(pcb::AdminConfig *admi
 
 
 //产品序号解析
-DetectParams::ErrorCode DetectParams::parseSerialNum()
+RuntimeParams::ErrorCode RuntimeParams::parseSerialNum()
 {
 	if (checkValidity(Index_serialNum) != ValidValue) {
 		return ErrorCode::Invalid_serialNum;
@@ -148,68 +148,68 @@ DetectParams::ErrorCode DetectParams::parseSerialNum()
 }
 
 //参数有效性检查
-DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConfig *adminConfig)
+RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminConfig *adminConfig)
 {
 	ErrorCode code = ErrorCode::Uncheck;
 	switch (index)
 	{
-	case pcb::DetectParams::Index_All:
+	case pcb::RuntimeParams::Index_All:
 
 	//产品序号相关参数
-	case pcb::DetectParams::Index_All_SerialNum:
-	case pcb::DetectParams::Index_serialNum:
+	case pcb::RuntimeParams::Index_All_SerialNum:
+	case pcb::RuntimeParams::Index_serialNum:
 		if (serialNum.size() != serialNumSlice[0] || serialNum.toDouble() == 0) {
 			code = Invalid_serialNum;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
-	case pcb::DetectParams::Index_sampleModelNum:
+	case pcb::RuntimeParams::Index_sampleModelNum:
 		if (sampleModelNum == "" || sampleModelNum.size() > serialNumSlice[1]) {
 			code = Invalid_sampleModelNum;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
-	case pcb::DetectParams::Index_sampleBatchNum:
+	case pcb::RuntimeParams::Index_sampleBatchNum:
 		if (sampleBatchNum == "" || sampleBatchNum.size() > serialNumSlice[2]) {
 			code = Invalid_sampleBatchNum;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
-	case pcb::DetectParams::Index_sampleNum:
+	case pcb::RuntimeParams::Index_sampleNum:
 		if (sampleNum == "" || sampleNum.size() > serialNumSlice[3]) {
 			code = Invalid_sampleNum;
 		}
 		if (code != Uncheck || index != Index_All) break;
 
 	//检测行号与提取行号
-	case pcb::DetectParams::Index_currentRow_detect:
+	case pcb::RuntimeParams::Index_currentRow_detect:
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectParams::Index_currentRow_extract:
+	case pcb::RuntimeParams::Index_currentRow_extract:
 		if (code != Uncheck || index != Index_All) break;
 
 	//初始化相关参数
-	case pcb::DetectParams::Index_All_SysInit:
-	case pcb::DetectParams::Index_singleMotionStroke: //单步前进距离
+	case pcb::RuntimeParams::Index_All_SysInit:
+	case pcb::RuntimeParams::Index_singleMotionStroke: //单步前进距离
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
+			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
 		if (singleMotionStroke <= 0 || singleMotionStroke > adminConfig->MaxMotionStroke) {
 			code = Invalid_singleMotionStroke;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
-	case pcb::DetectParams::Index_nCamera: //相机个数
+	case pcb::RuntimeParams::Index_nCamera: //相机个数
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
+			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
 		if (nCamera <= 0 || nCamera > adminConfig->MaxCameraNum) {
 			code = Invalid_nCamera;
 		}
 		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
-	case pcb::DetectParams::Index_nPhotographing: //拍照次数
+	case pcb::RuntimeParams::Index_nPhotographing: //拍照次数
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
+			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
 		if (nPhotographing * singleMotionStroke > adminConfig->MaxMotionStroke) {
 			code = Invalid_nPhotographing; 
 		}
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectParams::Index_initialPhotoPos: //初始拍照位置
+	case pcb::RuntimeParams::Index_initialPhotoPos: //初始拍照位置
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "Warning: DetectParams: checkValidity: adminConfig is NULL !";
+			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
 		if (initialPhotoPos <= 0 || initialPhotoPos > adminConfig->MaxMotionStroke
 			|| (initialPhotoPos - (nPhotographing - 1) * singleMotionStroke) < 3)
 		{
@@ -246,27 +246,27 @@ DetectParams::ErrorCode DetectParams::checkValidity(ParamsIndex index, AdminConf
 //参数：index 需要判断有效性的参数范围
 //      doCheck 当值为true时，如果未检查过有效性，则先检查
 //      adminConfig 判断初始化相关参数的有效性时，需要读取系统参数
-bool DetectParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminConfig)
+bool RuntimeParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminConfig)
 {
 	if (errorCode == ValidParams) return true;
 	
 	//所有参数
 	if (index == Index_All) {
-		if (doCheck && errorCode == DetectParams::Uncheck)
+		if (doCheck && errorCode == RuntimeParams::Uncheck)
 			checkValidity(index, adminConfig);
 		return (errorCode == ValidParams);
 	}
 
 	//初始化相关参数
 	if (index == Index_All_SysInit) {
-		if (doCheck && errorCode_sysInit == DetectParams::Uncheck)
+		if (doCheck && errorCode_sysInit == RuntimeParams::Uncheck)
 			checkValidity(index, adminConfig);
 		return (errorCode_sysInit == ValidValues);
 	}
 
 	//产品序号相关参数
 	if (index == Index_All_SerialNum) {
-		if (doCheck && errorCode_serialNum == DetectParams::Uncheck)
+		if (doCheck && errorCode_serialNum == RuntimeParams::Uncheck)
 			checkValidity(index);
 		return (errorCode_serialNum == ValidValues);
 	}
@@ -274,7 +274,7 @@ bool DetectParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminCo
 }
 
 //获取错误代码
-DetectParams::ErrorCode DetectParams::getErrorCode(ParamsIndex index)
+RuntimeParams::ErrorCode RuntimeParams::getErrorCode(ParamsIndex index)
 { 
 	if (index == Index_All) return errorCode;
 	else if (index == Index_All_SysInit) return errorCode_sysInit;
@@ -283,7 +283,7 @@ DetectParams::ErrorCode DetectParams::getErrorCode(ParamsIndex index)
 }
 
 //重置错误代码
-void DetectParams::resetErrorCode(ParamsIndex index)
+void RuntimeParams::resetErrorCode(ParamsIndex index)
 { 
 	if (index == Index_All) errorCode = Uncheck; 
 	else if (index == Index_All_SysInit) errorCode_sysInit = Uncheck;
@@ -291,30 +291,30 @@ void DetectParams::resetErrorCode(ParamsIndex index)
 }
 
 //弹窗报错
-bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
+bool RuntimeParams::showMessageBox(QWidget *parent, ErrorCode code)
 {
 	ErrorCode tempCode = (code == Default) ? errorCode : code;
-	if (tempCode == DetectConfig::ValidConfig) return false;
+	if (tempCode == UserConfig::ValidConfig) return false;
 
 	QString valueName;
 	switch (tempCode)
 	{
-	case pcb::DetectParams::Uncheck:
+	case pcb::RuntimeParams::Uncheck:
 		valueName = pcb::chinese("\"参数未验证\""); break;
-	case pcb::DetectParams::Invalid_serialNum:
-	case pcb::DetectParams::Invalid_sampleModelNum:
-	case pcb::DetectParams::Invalid_sampleBatchNum:
-	case pcb::DetectParams::Invalid_sampleNum:
+	case pcb::RuntimeParams::Invalid_serialNum:
+	case pcb::RuntimeParams::Invalid_sampleModelNum:
+	case pcb::RuntimeParams::Invalid_sampleBatchNum:
+	case pcb::RuntimeParams::Invalid_sampleNum:
 		valueName = pcb::chinese("\"产品序号\""); break;
-	case pcb::DetectParams::Invalid_singleMotionStroke:
+	case pcb::RuntimeParams::Invalid_singleMotionStroke:
 		valueName = pcb::chinese("\"单步前进距离\""); break;
-	case pcb::DetectParams::Invalid_nCamera:
+	case pcb::RuntimeParams::Invalid_nCamera:
 		valueName = pcb::chinese("\"相机个数\""); break;
-	case pcb::DetectParams::Invalid_nPhotographing:
+	case pcb::RuntimeParams::Invalid_nPhotographing:
 		valueName = pcb::chinese("\"拍照次数\""); break;
-	case pcb::DetectParams::Invalid_initialPhotoPos:
+	case pcb::RuntimeParams::Invalid_initialPhotoPos:
 		valueName = pcb::chinese("\"初始拍照位置\""); break;
-	case pcb::DetectParams::Default:
+	case pcb::RuntimeParams::Default:
 		valueName = pcb::chinese("\"未知错误\""); break;
 	default:
 		valueName = "-"; break;
@@ -329,7 +329,7 @@ bool DetectParams::showMessageBox(QWidget *parent, ErrorCode code)
 }
 
 //拷贝参数
-void DetectParams::copyTo(DetectParams *dst)
+void RuntimeParams::copyTo(RuntimeParams *dst)
 {
 	dst->errorCode = this->errorCode;
 	dst->sampleModelNum = this->sampleModelNum; //型号
@@ -343,7 +343,7 @@ void DetectParams::copyTo(DetectParams *dst)
 }
 
 //获取系统重置代码
-int DetectParams::getSystemResetCode(DetectParams &newConfig)
+int RuntimeParams::getSystemResetCode(RuntimeParams &newConfig)
 {
 	int sysResetCode = 0b000000000; //系统重置代码
 

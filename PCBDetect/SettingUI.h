@@ -23,12 +23,12 @@ private:
 	PassWordUI passWordUI; //系统设置登录界面
 	AdminSettingUI *adminSettingUI; //系统设置界面
 
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectConfig tempConfig; //临时的用户参数类
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::UserConfig tempConfig; //临时的用户参数类
 	const QString configFileName = ".user.config";//配置文件的文件名
 
-	pcb::DetectParams *detectParams;//运行参数
-	pcb::DetectParams tempParams;//临时的运行参数
+	pcb::RuntimeParams *runtimeParams;//运行参数
+	pcb::RuntimeParams tempParams;//临时的运行参数
 
 	int sysResetCode; //系统重置代码
 
@@ -37,8 +37,8 @@ public:
 	~SettingUI();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 
 	void doConnect(); //信号连接
 	void refreshSettingUI(); //更新设置界面
@@ -47,7 +47,7 @@ public:
 private:
 	void initSettingUI();
 	void getConfigFromSettingUI();
-	void setCursorLocation(pcb::DetectConfig::ConfigIndex code);
+	void setCursorLocation(pcb::UserConfig::ConfigIndex code);
 
 Q_SIGNALS:
 	void showDetectMainUI();
