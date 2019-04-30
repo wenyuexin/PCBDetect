@@ -145,7 +145,7 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 
 	//±£´æÇøÓòÍ¼Æ¬
 	cv::Mat roiImg = (*(*cvmatSamples)[gridRowIdx][gridColIdx])(roiRect);
-	roiFilePath = runtimeParams->bufferDirPath + "/serialNumRoi.bmp";
+	roiFilePath = runtimeParams->BufferDirPath + "/serialNumRoi.bmp";
 	cv::imwrite(roiFilePath.toStdString(), roiImg);
 
 	this->setSerialNumberUIEnabled(true);

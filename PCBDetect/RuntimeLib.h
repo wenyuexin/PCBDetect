@@ -81,7 +81,8 @@ namespace pcb
 		int nPhotographing; //拍照次数
 		double initialPhotoPos; //初始拍照位置
 
-		QString bufferDirPath; //缓存文件夹
+		QString AppDirPath; //程序所在目录
+		QString BufferDirPath; //缓存文件夹
 
 		enum ParamsIndex {
 			Index_All,
@@ -102,7 +103,8 @@ namespace pcb
 			Index_nPhotographing,
 			Index_initialPhotoPos,
 			//其他
-			Index_bufferDirPath
+			Index_AppDirPath,
+			Index_BufferDirPath
 		};
 
 		enum ErrorCode {
@@ -120,7 +122,8 @@ namespace pcb
 			Invalid_nCamera = 0x308,
 			Invalid_nPhotographing = 0x309,
 			Invalid_initialPhotoPos = 0x30A,
-			Invalid_bufferDirPath = 0x30B,
+			Invalid_AppDirPath = 0x30B,
+			Invalid_BufferDirPath = 0x30C,
 			Default = 0x3FF
 		};
 
