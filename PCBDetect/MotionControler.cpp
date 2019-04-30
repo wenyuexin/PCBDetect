@@ -17,8 +17,8 @@ MotionControler::MotionControler(QThread *parent)
 	: QThread(parent)
 {
 	adminConfig = Q_NULLPTR; //系统参数
-	detectConfig = Q_NULLPTR; //用户参数
-	detectParams = Q_NULLPTR; //运行参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 	xMotionPos = 0; //X轴的位置
 	errorCode = Uncheck; //控制器的错误码
 	operation = NoOperation;//操作指令
@@ -100,8 +100,8 @@ bool MotionControler::initControler()
 	pcb::delay(10);
 	//2端口
 	QString _port = "";
-	if (detectConfig->clusterComPort.size() == 4) 
-		_port = detectConfig->clusterComPort.at(3);
+	if (userConfig->clusterComPort.size() == 4) 
+		_port = userConfig->clusterComPort.at(3);
 	std::string port = _port.toStdString();
 	if (AMC98_KZQSet_v2(0, 2, port.c_str())) { markInitFailed(); return false; }
 	pcb::delay(10);
@@ -197,7 +197,7 @@ bool MotionControler::moveForward()
 	pcb::delay(100);
 
 	//发送控制指令
-	double dist = -detectParams->singleMotionStroke;
+	double dist = -runtimeParams->singleMotionStroke;
 	if (AMC98_start_sr_move(2, 0, dist, WeizhiType_XD, 10, 50, 100, 100, 0, 0) != 0) {
 		errorCode = ErrorCode::MoveForwardFailed;
 		emit moveForwardFinished_motion(errorCode);
@@ -293,7 +293,7 @@ bool MotionControler::moveToInitialPos()
 	}
 
 	//发送控制指令
-	int endingPos = detectParams->initialPhotoPos; //初始拍照位置
+	int endingPos = runtimeParams->initialPhotoPos; //初始拍照位置
 	if (AMC98_start_sr_move(2, 0, endingPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
 		errorCode = ErrorCode::MoveToInitialPosFailed;
 		emit moveToInitialPosFinished_motion(errorCode);

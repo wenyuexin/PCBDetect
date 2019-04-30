@@ -35,7 +35,7 @@ private:
 	ErrorCode errorCode;
 
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectParams *detectParams; //运行时的临时参数
+	pcb::RuntimeParams *runtimeParams; //运行时的临时参数
 	pcb::CvMatArray *cvmatSamples; //用于检测的样本图
 	pcb::QPixmapArray *qpixmapSamples; //用于显示的样本图
 	int gridRowIdx; //点击的分图在第几列
@@ -67,7 +67,7 @@ public:
 	~SerialNumberUI();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setCvMatArray(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setQPixmapArray(pcb::QPixmapArray *ptr) { qpixmapSamples = ptr; }
 	inline void setGridIndex(int row, int col) { gridRowIdx = row; gridColIdx = col; }

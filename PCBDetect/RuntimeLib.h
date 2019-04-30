@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QString>
 #include <QWidget>
+#include <QString>
 #include "Configurator.h"
 
 
@@ -65,7 +65,7 @@ namespace pcb
 #ifndef STRUCT_DETECT_PARAMS
 #define STRUCT_DETECT_PARAMS
 	//运行参数
-	class DetectParams
+	class RuntimeParams
 	{
 	public:
 		QString serialNum;
@@ -130,7 +130,7 @@ namespace pcb
 		ErrorCode errorCode_sysInit;
 
 		//系统状态值 0x123456789
-		//adminConfig 1， detectConfig 2, DetectParams 3
+		//adminConfig 1， userConfig 2, RuntimeParams 3
 		//MotionControler 4, CameraControler 5, ImageConvert 6
 		//SerialNumber 7, TemplateExtract 8, Detect 9
 		long systemState = 0x000000000;
@@ -139,14 +139,14 @@ namespace pcb
 		const int serialNumSlice[4] = { 8, 2, 2, 4 }; //产品序号组成
 
 	public:
-		DetectParams();
-		~DetectParams();
+		RuntimeParams();
+		~RuntimeParams();
 
 		void resetSerialNum();
 		void loadDefaultValue();
 		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
 		ErrorCode calcInitialPhotoPos(pcb::AdminConfig *adminConfig);
-		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::DetectConfig *detectConfig);
+		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::UserConfig *userConfig);
 		ErrorCode parseSerialNum();
 
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
@@ -155,8 +155,8 @@ namespace pcb
 		void resetErrorCode(ParamsIndex index = Index_All);//重置错误代码
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
-		void copyTo(DetectParams *dst); //拷贝参数
-		int getSystemResetCode(DetectParams &newConfig); //获取系统重置代码
+		void copyTo(RuntimeParams *dst); //拷贝参数
+		int getSystemResetCode(RuntimeParams &newConfig); //获取系统重置代码
 	};
 #endif //STRUCT_DETECT_PARAMS
 }

@@ -1,8 +1,8 @@
 #include "PCBDetect.h"
 
 using pcb::AdminConfig;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 
 
 PCBDetect::PCBDetect(QWidget *parent)
@@ -27,19 +27,19 @@ PCBDetect::PCBDetect(QWidget *parent)
 	//运动控制器
 	motionControler = new MotionControler;//运动控制器
 	motionControler->setAdminConfig(&adminConfig);
-	motionControler->setDetectConfig(&detectConfig);
-	motionControler->setDetectParams(&detectParams);
+	motionControler->setUserConfig(&userConfig);
+	motionControler->setRuntimeParams(&runtimeParams);
 
 	//相机控制器
 	cameraControler = new CameraControler;
 	cameraControler->setAdminConfig(&adminConfig);
-	cameraControler->setDetectParams(&detectParams);
+	cameraControler->setRuntimeParams(&runtimeParams);
 
 	//启动界面
 	launcher = new LaunchUI(Q_NULLPTR, screenRect);
 	launcher->setAdminConfig(&adminConfig);
-	launcher->setDetectConfig(&detectConfig);
-	launcher->setDetectParams(&detectParams);
+	launcher->setUserConfig(&userConfig);
+	launcher->setRuntimeParams(&runtimeParams);
 	launcher->setMotionControler(motionControler);
 	launcher->setCameraControler(cameraControler);
 	launcher->runInitThread(); //运行初始化线程
@@ -49,8 +49,8 @@ PCBDetect::PCBDetect(QWidget *parent)
 	//参数设置界面
 	settingUI = new SettingUI(Q_NULLPTR, screenRect);
 	settingUI->setAdminConfig(&adminConfig);
-	settingUI->setDetectConfig(&detectConfig);
-	settingUI->setDetectParams(&detectParams);
+	settingUI->setUserConfig(&userConfig);
+	settingUI->setRuntimeParams(&runtimeParams);
 	settingUI->doConnect();//信号连接
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
 	connect(settingUI, SIGNAL(resetDetectSystem_settingUI(int)), this, SLOT(do_resetDetectSystem_settingUI(int)));
@@ -60,8 +60,8 @@ PCBDetect::PCBDetect(QWidget *parent)
 	//模板提取界面
 	templateUI = new TemplateUI(Q_NULLPTR, screenRect);
 	templateUI->setAdminConfig(&adminConfig);
-	templateUI->setDetectConfig(&detectConfig);
-	templateUI->setDetectParams(&detectParams);
+	templateUI->setUserConfig(&userConfig);
+	templateUI->setRuntimeParams(&runtimeParams);
 	templateUI->setMotionControler(motionControler);
 	templateUI->setCameraControler(cameraControler);
 	templateUI->doConnect();//信号连接
@@ -70,8 +70,8 @@ PCBDetect::PCBDetect(QWidget *parent)
 	//检测界面
 	detectUI = new DetectUI(Q_NULLPTR, screenRect);
 	detectUI->setAdminConfig(&adminConfig);
-	detectUI->setDetectConfig(&detectConfig);
-	detectUI->setDetectParams(&detectParams);
+	detectUI->setUserConfig(&userConfig);
+	detectUI->setRuntimeParams(&runtimeParams);
 	detectUI->setMotionControler(motionControler);
 	detectUI->setCameraControler(cameraControler);
 	detectUI->doConnect();//信号连接
@@ -107,7 +107,7 @@ void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 	}
 	else { //存在错误
 		//用户参数配置文件丢失，生成了默认文件
-		if (detectConfig.getErrorCode() != DetectConfig::Uncheck) {
+		if (userConfig.getErrorCode() != UserConfig::Uncheck) {
 			settingUI->refreshSettingUI();//更新参数设置界面的信息
 		}
 	}
@@ -345,14 +345,14 @@ void PCBDetect::do_checkSystemState_settingUI()
 	}
 
 	//检查用户参数
-	if (noError && !detectConfig.isValid(&adminConfig)) {
-		detectConfig.showMessageBox(settingUI);
+	if (noError && !userConfig.isValid(&adminConfig)) {
+		userConfig.showMessageBox(settingUI);
 		noError = false;
 	}
 
 	//检查运行参数
-	if (noError && !detectParams.isValid(DetectParams::Index_All_SysInit, true, &adminConfig)) {
-		detectParams.showMessageBox(settingUI);
+	if (noError && !runtimeParams.isValid(RuntimeParams::Index_All_SysInit, true, &adminConfig)) {
+		runtimeParams.showMessageBox(settingUI);
 		noError = false;
 	}
 

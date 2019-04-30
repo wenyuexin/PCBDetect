@@ -2,8 +2,8 @@
 
 using pcb::Configurator;
 using pcb::AdminConfig;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 
 
 AdminSettingUI::AdminSettingUI(QWidget *parent, QRect &screenRect)
@@ -16,8 +16,8 @@ AdminSettingUI::AdminSettingUI(QWidget *parent, QRect &screenRect)
 
 	//变量初始化
 	adminConfig = Q_NULLPTR; //系统参数
-	detectConfig = Q_NULLPTR; //用户参数
-	detectParams = Q_NULLPTR; //运行参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 
 	//一些初始化操作
 	this->initAdminSettingUI();
@@ -94,40 +94,40 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 		//更新运行参数
 
 
-		if (detectConfig->isValid(adminConfig, false)) {
-			detectParams->copyTo(&tempParams);
+		if (userConfig->isValid(adminConfig, false)) {
+			runtimeParams->copyTo(&tempParams);
 
-			DetectParams::ErrorCode code;
+			RuntimeParams::ErrorCode code;
 			//计算单步前进距离
 			code = tempParams.calcSingleMotionStroke(adminConfig);
-			if (code != DetectParams::ValidValue) {
+			if (code != RuntimeParams::ValidValue) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
 			//计算相机个数、拍照次数
-			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
-			if (code != DetectParams::ValidValues) {
+			code = tempParams.calcItemGridSize(adminConfig, userConfig);
+			if (code != RuntimeParams::ValidValues) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
 			//计算初始拍照位置
 			code = tempParams.calcInitialPhotoPos(adminConfig);
-			if (code != DetectParams::ValidValue) {
+			if (code != RuntimeParams::ValidValue) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
 
-			if (!tempParams.isValid(DetectParams::Index_All_SysInit, true, adminConfig)) {
+			if (!tempParams.isValid(RuntimeParams::Index_All_SysInit, true, adminConfig)) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
-			sysResetCode |= detectParams->getSystemResetCode(tempParams);
-			tempParams.copyTo(detectParams);
+			sysResetCode |= runtimeParams->getSystemResetCode(tempParams);
+			tempParams.copyTo(runtimeParams);
 		}
 
 		//判断是否重置检测系统
-		if (sysResetCode != 0 && adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
-			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
+		if (sysResetCode != 0 && adminConfig->isValid(true) && userConfig->isValid(adminConfig)
+			&& runtimeParams->isValid(RuntimeParams::Index_All_SysInit, true, adminConfig))
 		{
 			QMessageBox::warning(this, pcb::chinese("提示"),
 				pcb::chinese("您已修改关键参数，系统即将重置！ \n"),
@@ -188,8 +188,8 @@ void AdminSettingUI::setCursorLocation(AdminConfig::ConfigIndex code)
 {
 	switch (code)
 	{
-	case pcb::DetectConfig::Index_All:
-	case pcb::DetectConfig::Index_None:
+	case pcb::UserConfig::Index_All:
+	case pcb::UserConfig::Index_None:
 		ui.lineEdit_MaxMotionStroke->setFocus();
 		ui.lineEdit_MaxMotionStroke->clearFocus(); break;
 	case pcb::AdminConfig::Index_MaxMotionStroke:
