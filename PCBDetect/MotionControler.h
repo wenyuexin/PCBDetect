@@ -47,8 +47,8 @@ public:
 
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectParams *detectParams; //运行参数
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::RuntimeParams *runtimeParams; //运行参数
 
 	int xMotionPos; //X轴的位置
 
@@ -71,8 +71,8 @@ public:
 	~MotionControler();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } 
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; } 
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; } 
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 
 	bool initControler(); //初始化
 	bool moveForward(); //前进

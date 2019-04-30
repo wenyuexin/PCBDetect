@@ -4,8 +4,8 @@
 #include "opencv2/features2d.hpp"
 #include "opencv2/xfeatures2d.hpp"
 
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 using cv::Mat;
 using namespace std;
 using namespace cv;
@@ -17,8 +17,8 @@ using namespace cv::xfeatures2d;
 TemplFunc::TemplFunc()
 {
 	adminConfig = Q_NULLPTR;
-	detectConfig = Q_NULLPTR;
-	detectParams = Q_NULLPTR;
+	userConfig = Q_NULLPTR;
+	runtimeParams = Q_NULLPTR;
 }
 
 TemplFunc::~TemplFunc()
@@ -31,8 +31,8 @@ TemplFunc::~TemplFunc()
 //生成完整尺寸的模板图像
 void TemplFunc::generateBigTempl()
 {
-	Size templSize = Size(adminConfig->ImageSize_W * detectParams->nCamera,
-		adminConfig->ImageSize_H * detectParams->nPhotographing);
+	Size templSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera,
+		adminConfig->ImageSize_H * runtimeParams->nPhotographing);
 	big_templ = Mat(templSize, CV_8UC3);
 }
 
@@ -45,9 +45,9 @@ void TemplFunc::generateBigTempl()
 
 Mat TemplFunc::find1(int col, cv::Mat &image) {
 	int currentCol = col + 1;
-	int currentRow = detectParams->currentRow_extract + 1;
-	int nCamera = detectParams->nCamera;
-	int nPhotographing = detectParams->nPhotographing;
+	int currentRow = runtimeParams->currentRow_extract + 1;
+	int nCamera = runtimeParams->nCamera;
+	int nPhotographing = runtimeParams->nPhotographing;
 
 	shape = Mat::zeros(Size(100, 100), CV_8UC1);//创建一个像素值全为0的图像，位深8位无符号整数，单通道的灰度图
 

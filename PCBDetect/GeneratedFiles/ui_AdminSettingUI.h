@@ -248,7 +248,7 @@ public:
 
         layoutWidget_6 = new QWidget(AdminSettingUI);
         layoutWidget_6->setObjectName(QStringLiteral("layoutWidget_6"));
-        layoutWidget_6->setGeometry(QRect(70, 430, 371, 37));
+        layoutWidget_6->setGeometry(QRect(70, 430, 361, 37));
         horizontalLayout_6 = new QHBoxLayout(layoutWidget_6);
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setContentsMargins(11, 11, 11, 11);

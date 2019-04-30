@@ -28,8 +28,8 @@ public:
 
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectParams *detectParams; //运行参数
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::RuntimeParams *runtimeParams; //运行参数
 
 	DetectFunc *detectFunc;
 	pcb::CvMatArray *cvmatSamples; //正在检测的样本
@@ -42,8 +42,8 @@ public:
 	~DefectDetecter();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } //系统参数
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; } //用户参数
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; } //运行参数
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; } //用户参数
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; } //运行参数
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; } //样本图
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; } //检测结果
 

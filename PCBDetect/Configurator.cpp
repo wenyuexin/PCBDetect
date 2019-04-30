@@ -1,6 +1,6 @@
 #include "Configurator.h"
 
-using pcb::DetectConfig;
+using pcb::UserConfig;
 using pcb::AdminConfig;
 using pcb::Configurator;
 
@@ -123,7 +123,7 @@ AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
 bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 {
 	AdminConfig::ErrorCode tempCode = (code == Default) ? errorCode : code;
-	if (tempCode == DetectConfig::ValidConfig) return false;
+	if (tempCode == UserConfig::ValidConfig) return false;
 
 	QString valueName;
 	if (tempCode == AdminConfig::ConfigFileMissing) {
@@ -220,14 +220,14 @@ void AdminConfig::copyTo(AdminConfig *dst)
 
 
 /****************************************************/
-/*                   DetectConfig                   */
+/*                   UserConfig                   */
 /****************************************************/
 
-DetectConfig::DetectConfig()
+UserConfig::UserConfig()
 {
-	SampleDirPath = "";//样本文件存储路径
-	TemplDirPath = ""; //模板文件的存储路径
-	OutputDirPath = "";//检测结果存储路径
+	TemplDirPath = ""; //模板路径
+	SampleDirPath = "";//样本路径
+	OutputDirPath = "";//结果路径
 	ImageFormat = ""; //图像后缀
 	ActualProductSize_W = -1;//产品实际宽度,单位mm
 	ActualProductSize_H = -1;//产品实际高度,单位mm
@@ -235,22 +235,22 @@ DetectConfig::DetectConfig()
 	nBasicUnitInCol = -1; //每一列中的基本单元数
 }
 
-DetectConfig::~DetectConfig()
+UserConfig::~UserConfig()
 {
-	qDebug() << "~DetectConfig";
+	qDebug() << "~UserConfig";
 }
 
 //加载默认值
-void DetectConfig::loadDefaultValue()
+void UserConfig::loadDefaultValue()
 {
 	QDir dir(QDir::currentPath());
 	dir.cdUp(); //转到上一级目录
 	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
 
 	this->errorCode = Uncheck; //错误代码
-	this->SampleDirPath = appDirPath + "/sample"; //样本文件存储路径
-	this->TemplDirPath = appDirPath + "/template";//模板文件的存储路径
-	this->OutputDirPath = appDirPath + "/output";//检测结果存储路径
+	this->TemplDirPath = appDirPath + "/template";//模板路径
+	this->SampleDirPath = appDirPath + "/sample"; //样本路径
+	this->OutputDirPath = appDirPath + "/output"; //结果路径
 	this->ImageFormat = ".bmp"; //图像后缀
 	this->ActualProductSize_W = 500;//产品实际宽度
 	this->ActualProductSize_H = 300;//产品实际高度
@@ -260,46 +260,46 @@ void DetectConfig::loadDefaultValue()
 }
 
 //参数有效性检查
-DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConfig *adminConfig)
+UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *adminConfig)
 {
 	ErrorCode code = Uncheck;
 	switch (index)
 	{
-	case pcb::DetectConfig::Index_All:
-	case pcb::DetectConfig::Index_SampleDirPath: //样本路径
-		if (SampleDirPath == "" || !QFileInfo(SampleDirPath).isDir())
-			code = Invalid_SampleDirPath;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_TemplDirPath: //模板路径
+	case pcb::UserConfig::Index_All:
+	case pcb::UserConfig::Index_TemplDirPath: //模板路径
 		if (TemplDirPath == "" || !QFileInfo(TemplDirPath).isDir())
 			code = Invalid_TemplDirPath;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_OutputDirPath: //输出路径
+	case pcb::UserConfig::Index_SampleDirPath: //样本路径
+		if (SampleDirPath == "" || !QFileInfo(SampleDirPath).isDir())
+			code = Invalid_SampleDirPath;
+		if (code != Uncheck || index != Index_All) break;
+	case pcb::UserConfig::Index_OutputDirPath: //输出路径
 		if (OutputDirPath == "" || !QFileInfo(OutputDirPath).isDir())
 			code = Invalid_OutputDirPath;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_ImageFormat: //图像格式
+	case pcb::UserConfig::Index_ImageFormat: //图像格式
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_ActualProductSize_W: //产品实际宽度
+	case pcb::UserConfig::Index_ActualProductSize_W: //产品实际宽度
 		if (ActualProductSize_W < 1)
 			code = Invalid_ActualProductSize_W;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_ActualProductSize_H: //产品实际高度
+	case pcb::UserConfig::Index_ActualProductSize_H: //产品实际高度
 		if (adminConfig == Q_NULLPTR)
-			qDebug() << "Warning: DetectConfig: checkValidity: adminConfig is null !";
+			qDebug() << "Warning: UserConfig: checkValidity: adminConfig is null !";
 		if (ActualProductSize_H < 1 || 
 			ActualProductSize_H > adminConfig->MaxMotionStroke)
 			code = Invalid_ActualProductSize_H;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_nBasicUnitInRow: //每一行中的基本单元数
+	case pcb::UserConfig::Index_nBasicUnitInRow: //每一行中的基本单元数
 		if (nBasicUnitInRow < 1)
 			code = Invalid_nBasicUnitInRow;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_nBasicUnitInCol: //每一列中的基本单元数
+	case pcb::UserConfig::Index_nBasicUnitInCol: //每一列中的基本单元数
 		if (nBasicUnitInCol < 1)
 			code = Invalid_nBasicUnitInCol;
 		if (code != Uncheck || index != Index_All) break;
-	case pcb::DetectConfig::Index_clusterComPort: //COM串口
+	case pcb::UserConfig::Index_clusterComPort: //COM串口
 		if (code != Uncheck || index != Index_All) break;
 	}
 
@@ -309,46 +309,46 @@ DetectConfig::ErrorCode DetectConfig::checkValidity(ConfigIndex index, AdminConf
 }
 
 //判断参数是否有效
-bool DetectConfig::isValid(AdminConfig *adminConfig, bool doCheck) {
-	if (doCheck && this->errorCode == DetectConfig::Uncheck)
+bool UserConfig::isValid(AdminConfig *adminConfig, bool doCheck) {
+	if (doCheck && this->errorCode == UserConfig::Uncheck)
 		checkValidity(Index_All, adminConfig);
 	return this->errorCode == ValidConfig;
 }
 
 //将错误代码转为参数索引
-DetectConfig::ConfigIndex DetectConfig::convertCodeToIndex(ErrorCode code)
+UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 {
 	switch (code)
 	{
-	case pcb::DetectConfig::ValidConfig:
+	case pcb::UserConfig::ValidConfig:
 		return Index_None;
-	case pcb::DetectConfig::Invalid_SampleDirPath:
-		return Index_SampleDirPath;
-	case pcb::DetectConfig::Invalid_TemplDirPath:
+	case pcb::UserConfig::Invalid_TemplDirPath:
 		return Index_TemplDirPath;
-	case pcb::DetectConfig::Invalid_OutputDirPath:
+	case pcb::UserConfig::Invalid_SampleDirPath:
+		return Index_SampleDirPath;
+	case pcb::UserConfig::Invalid_OutputDirPath:
 		return Index_OutputDirPath;
-	case pcb::DetectConfig::Invalid_ImageFormat:
+	case pcb::UserConfig::Invalid_ImageFormat:
 		return Index_ImageFormat;
-	case pcb::DetectConfig::Invalid_ActualProductSize_W:
+	case pcb::UserConfig::Invalid_ActualProductSize_W:
 		return Index_ActualProductSize_W;
-	case pcb::DetectConfig::Invalid_ActualProductSize_H:
+	case pcb::UserConfig::Invalid_ActualProductSize_H:
 		return Index_ActualProductSize_H;
-	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
+	case pcb::UserConfig::Invalid_nBasicUnitInRow:
 		return Index_nBasicUnitInRow;
-	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
+	case pcb::UserConfig::Invalid_nBasicUnitInCol:
 		return Index_nBasicUnitInCol;
-	case pcb::DetectConfig::Invalid_clusterComPort:
+	case pcb::UserConfig::Invalid_clusterComPort:
 		return Index_clusterComPort;
 	}
 	return Index_None;
 }
 
 //参数报错
-bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
+bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 {
 	ErrorCode tempCode = (code == Default) ? errorCode : code;
-	if (tempCode == DetectConfig::ValidConfig) return false;
+	if (tempCode == UserConfig::ValidConfig) return false;
 
 	QString valueName;
 	if (tempCode == ConfigFileMissing) {
@@ -362,21 +362,21 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 
 	switch (tempCode)
 	{
-	case pcb::DetectConfig::Invalid_SampleDirPath:
-		valueName = pcb::chinese("\"样本路径\""); break;
-	case pcb::DetectConfig::Invalid_TemplDirPath:
+	case pcb::UserConfig::Invalid_SampleDirPath:
 		valueName = pcb::chinese("\"模板路径\""); break;
-	case pcb::DetectConfig::Invalid_OutputDirPath:
+	case pcb::UserConfig::Invalid_OutputDirPath:
+		valueName = pcb::chinese("\"样本路径\""); break;
+	case pcb::UserConfig::Invalid_TemplDirPath:
 		valueName = pcb::chinese("\"输出路径\""); break;
-	case pcb::DetectConfig::Invalid_ImageFormat:
+	case pcb::UserConfig::Invalid_ImageFormat:
 		valueName = pcb::chinese("\"图像格式\""); break;
-	case pcb::DetectConfig::Invalid_ActualProductSize_W:
-	case pcb::DetectConfig::Invalid_ActualProductSize_H:
+	case pcb::UserConfig::Invalid_ActualProductSize_W:
+	case pcb::UserConfig::Invalid_ActualProductSize_H:
 		valueName = pcb::chinese("\"产品实际尺寸\""); break;
-	case pcb::DetectConfig::Invalid_nBasicUnitInRow:
-	case pcb::DetectConfig::Invalid_nBasicUnitInCol:
+	case pcb::UserConfig::Invalid_nBasicUnitInRow:
+	case pcb::UserConfig::Invalid_nBasicUnitInCol:
 		valueName = pcb::chinese("\"基本单元数\""); break;
-	case pcb::DetectConfig::Invalid_clusterComPort:
+	case pcb::UserConfig::Invalid_clusterComPort:
 		valueName = pcb::chinese("\"运动控制串口\""); break;
 	default:
 		valueName = ""; break;
@@ -390,9 +390,9 @@ bool DetectConfig::showMessageBox(QWidget *parent, ErrorCode code)
 }
 
 //不相等判断
-DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
-	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
+UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
 	if (this->TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
+	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
 	if (this->OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
 	if (this->ImageFormat != other.ImageFormat) return Index_ImageFormat;
 	if (this->ActualProductSize_W != other.ActualProductSize_W) return Index_ActualProductSize_W;
@@ -404,23 +404,21 @@ DetectConfig::ConfigIndex DetectConfig::unequals(DetectConfig &other) {
 }
 
 //功能：获取系统重置代码
-int DetectConfig::getSystemResetCode(DetectConfig &newConfig)
+int UserConfig::getSystemResetCode(UserConfig &newConfig)
 {
 	int resetCode = 0b000000000;
-	if (ActualProductSize_W != newConfig.ActualProductSize_W ||
-		ActualProductSize_H != newConfig.ActualProductSize_H)
-	{
-		//resetCode |= 0b1100;
+	if (clusterComPort != newConfig.clusterComPort) {
+		resetCode |= 0b000100000;
 	}
 	return resetCode;
 }
 
 //拷贝结构体
-void DetectConfig::copyTo(DetectConfig *dst)
+void UserConfig::copyTo(UserConfig *dst)
 {
 	dst->errorCode = this->errorCode; //参数有效性
-	dst->SampleDirPath = this->SampleDirPath; //样本文件存储路径
 	dst->TemplDirPath = this->TemplDirPath;//模板文件的存储路径
+	dst->SampleDirPath = this->SampleDirPath;//样本文件存储路径
 	dst->OutputDirPath = this->OutputDirPath;//检测结果存储路径
 	dst->ImageFormat = this->ImageFormat; //图像后缀
 	dst->ActualProductSize_W = this->ActualProductSize_W; //产品实际宽度
@@ -651,7 +649,7 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	return success;
 }
 
-//将 AdminConfig 中的参数保存到配置文件中
+//将AdminConfig中的参数保存到配置文件中
 bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 {
 	bool success = true;
@@ -659,7 +657,7 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 	QFile configFile(configFilePath);
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
 		createConfigFile(configFilePath);
-		DetectConfig defaultConfig;
+		UserConfig defaultConfig;
 		defaultConfig.loadDefaultValue();//加载默认值
 		saveConfigFile(fileName, &defaultConfig);//保存默认config
 		success = false;
@@ -679,8 +677,8 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 }
 
 
-//将配置文件中的参数加载到DetectConfig中
-bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
+//将配置文件中的参数加载到UserConfig中
+bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 {
 	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
@@ -709,15 +707,15 @@ bool Configurator::loadConfigFile(const QString &fileName, DetectConfig *config)
 	return success;
 }
 
-//将 DetectConfig 中的参数保存到配置文件中
-bool Configurator::saveConfigFile(const QString &fileName, DetectConfig *config)
+//将 UserConfig 中的参数保存到配置文件中
+bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 {
 	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
 	QFile configFile(configFilePath);
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
 		createConfigFile(configFilePath);
-		DetectConfig defaultConfig;
+		UserConfig defaultConfig;
 		defaultConfig.loadDefaultValue();//加载默认值
 		saveConfigFile(fileName, &defaultConfig);//保存默认config
 		success = false;

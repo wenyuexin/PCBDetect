@@ -2,8 +2,8 @@
 #include <exception>
 
 using pcb::CvMatVector;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 using pcb::DetectResult;
 using pcb::QImageVector;
 using cv::Mat;
@@ -13,8 +13,8 @@ using std::string;
 DefectDetecter::DefectDetecter() 
 {
 	adminConfig = Q_NULLPTR; //系统参数
-	detectConfig = Q_NULLPTR; //用户参数
-	detectParams = Q_NULLPTR; //运行参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 	detectResult = Q_NULLPTR; //检测结果
 	cvmatSamples = Q_NULLPTR; //正在检测的一行样本
 	detectFunc = Q_NULLPTR; //检测辅助类
@@ -34,8 +34,8 @@ void DefectDetecter::initDetectFunc()
 {
 	detectFunc = new DetectFunc;
 	detectFunc->setAdminConfig(adminConfig);
-	detectFunc->setDetectConfig(detectConfig);
-	detectFunc->setDetectParams(detectParams);
+	detectFunc->setUserConfig(userConfig);
+	detectFunc->setRuntimeParams(runtimeParams);
 	detectFunc->setDetectResult(detectResult);
 	detectFunc->generateBigTempl();
 }
@@ -46,47 +46,47 @@ void DefectDetecter::initDetectFunc()
 void DefectDetecter::detect()
 {
 	qDebug() << ">>>>>>>>>> " << pcb::chinese("开始检测 ... ") <<
-		"( currentRow_detect -" << detectParams->currentRow_detect << ")";
+		"( currentRow_detect -" << runtimeParams->currentRow_detect << ")";
 
 	detectState = DetectState::Start; //设置检测状态
 	emit updateDetectState_detecter(detectState);
 	double t1 = clock();
 
 	//开始检测
-	int currentRow_detect = detectParams->currentRow_detect;
-	for (int i = 0; i < (*cvmatSamples)[detectParams->currentRow_detect].size(); i++) {
+	int currentRow_detect = runtimeParams->currentRow_detect;
+	for (int i = 0; i < (*cvmatSamples)[runtimeParams->currentRow_detect].size(); i++) {
 		double t1 = clock();
 
 		//读取模板图片
-		string templPath = (detectConfig->TemplDirPath + "/" + detectParams->sampleModelNum + "/subtempl/"
+		string templPath = (userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
 			+ QString::number(currentRow_detect + 1) + "_" + QString::number(i + 1)  
-			+ detectConfig->ImageFormat).toStdString();
+			+ userConfig->ImageFormat).toStdString();
 		Mat templ_gray = cv::imread(templPath, 0);
 
 		//读取模板二值图
-		std::string templBwPath = detectConfig->TemplDirPath.toStdString() + "/" + detectParams->sampleModelNum.toStdString() + "/bw/"
-		+ to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1)+"_bw" + detectConfig->ImageFormat.toStdString();
+		std::string templBwPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/bw/"
+		+ to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1)+"_bw" + userConfig->ImageFormat.toStdString();
 		Mat templBw = cv::imread(templBwPath,0);
 
 
 
 		//获取样本图片
-		Mat samp = *((*cvmatSamples)[detectParams->currentRow_detect][i]);
+		Mat samp = *((*cvmatSamples)[runtimeParams->currentRow_detect][i]);
 		Mat samp_gray;
 		cvtColor(samp, samp_gray, COLOR_BGR2GRAY);
 
 	
 		//保存样本图片
-		string batch_path = (detectConfig->SampleDirPath).toStdString() + "\\" + detectParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
+		string batch_path = (userConfig->SampleDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
 		if (0 != _access(batch_path.c_str(), 0))
 			_mkdir(batch_path.c_str());
-		string num_path = batch_path + "\\" + detectParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
+		string num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
 		if (0 != _access(num_path.c_str(), 0))
 			_mkdir(num_path.c_str());
-		string out_path = num_path + "\\" + detectParams->sampleNum.toStdString();//检查编号文件夹是否存在
+		string out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//检查编号文件夹是否存在
 		if (0 != _access(out_path.c_str(), 0))
 			_mkdir(out_path.c_str());
-		std::string sampPath = out_path + "\\" + to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + detectConfig->ImageFormat.toStdString();
+		std::string sampPath = out_path + "\\" + to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + userConfig->ImageFormat.toStdString();
 		imwrite(sampPath,samp);
 
 
@@ -107,8 +107,8 @@ void DefectDetecter::detect()
 			cv::Mat samp_gray_reg, h;
 			cv::Mat imMatches;
 			//detectFunc.alignImages(samp_gray, templ_gray, samp_gray_reg, h, imMatches);
-			string bin_path = detectConfig->TemplDirPath.toStdString() + "/" + detectParams->sampleModelNum.toStdString()
-				+ "/bin/" + to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + ".bin";
+			string bin_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
+				+ "/bin/" + to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + ".bin";
 			detectFunc->load(bin_path);
 			detectFunc->alignImages_test_load(detectFunc->keypoints, detectFunc->descriptors, samp_gray, samp_gray_reg, h, imMatches);
 			double t3 = clock();
@@ -122,8 +122,8 @@ void DefectDetecter::detect()
 			cv::add(samp_gray_reg, templ_gray, samp_gray_reg, templRoiReverse);
 
 			//边缘有一个roi
-			string mask_path = detectConfig->TemplDirPath.toStdString() + "/" + detectParams->sampleModelNum.toStdString()
-				+ "/mask/" + to_string(detectParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_mask" + detectConfig->ImageFormat.toStdString();
+			string mask_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
+				+ "/mask/" + to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_mask" + userConfig->ImageFormat.toStdString();
 			cv::Mat mask_roi = cv::imread(mask_path, 0);
 
 			//总的roi
@@ -179,7 +179,7 @@ void DefectDetecter::detect()
 
 			}
 
-			string name_head = to_string(detectParams->currentRow_detect + 1) + "_" + to_string(i + 1);
+			string name_head = to_string(runtimeParams->currentRow_detect + 1) + "_" + to_string(i + 1);
 			string testPath = "D:\\tr_project\\project\\pcb_detect_new\\detectfunc_test_res\\res_05\\diff_new\\";
 			cv::imwrite(testPath + name_head + "_5diff.jpg", diff);
 			cv::imwrite(testPath + name_head + "_2templBw.jpg", templBw);
@@ -189,11 +189,11 @@ void DefectDetecter::detect()
 
 
 		}catch (std::exception e) {
-			qDebug() << detectParams->currentRow_detect + 1 << "_" << i + 1 << "_" <<
+			qDebug() << runtimeParams->currentRow_detect + 1 << "_" << i + 1 << "_" <<
 				QString::fromLocal8Bit("出现异常");
 		}	
 	}
-	if (detectParams->currentRow_detect + 1 == detectParams->nPhotographing) {
+	if (runtimeParams->currentRow_detect + 1 == runtimeParams->nPhotographing) {
 		if (defectNum > 0) {
 			cv::Size sz = detectFunc->getBigTempl().size();
 			cv::Mat dst;
@@ -209,14 +209,14 @@ void DefectDetecter::detect()
 	//检测结束
 	double t2 = clock();
 	qDebug() << ">>>>>>>>>> " << pcb::chinese("当前行检测结束") << 
-		(t2 - t1) << "ms  ( currentRow_detect -" << detectParams->currentRow_detect << ")";
+		(t2 - t1) << "ms  ( currentRow_detect -" << runtimeParams->currentRow_detect << ")";
 	
 	detectState = DetectState::Finished;
 	emit updateDetectState_detecter(detectState);
 	pcb::delay(10);
 	bool qualified = (defectNum < 100);
 
-	if (detectParams->currentRow_detect == detectParams->nPhotographing-1)
+	if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing-1)
 		emit detectFinished_detectThread(qualified);
 }
 

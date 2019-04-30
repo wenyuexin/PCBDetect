@@ -105,12 +105,12 @@ namespace pcb
 #ifndef CLASS_DETECT_CONFIG
 #define CLASS_DETECT_CONFIG
 	//用户参数类
-	class DetectConfig
+	class UserConfig
 	{
 	public:
-		QString SampleDirPath;//样本文件存储路径
-		QString TemplDirPath; //模板文件的存储路径
-		QString OutputDirPath;//检测结果存储路径
+		QString TemplDirPath; //模板路径
+		QString SampleDirPath;//样本路径
+		QString OutputDirPath;//结果路径
 		QString ImageFormat; //图像后缀
 		int ActualProductSize_W;//产品实际宽度,单位mm
 		int ActualProductSize_H;//产品实际高度,单位mm
@@ -122,8 +122,8 @@ namespace pcb
 		enum ConfigIndex {
 			Index_All,
 			Index_None,
-			Index_SampleDirPath,
 			Index_TemplDirPath,
+			Index_SampleDirPath,
 			Index_OutputDirPath,
 			Index_ImageFormat,
 			Index_ActualProductSize_W,
@@ -139,8 +139,8 @@ namespace pcb
 			ValidValue = 0x000,
 			Uncheck = 0x200,
 			ConfigFileMissing = 0x201,
-			Invalid_SampleDirPath = 0x202,
-			Invalid_TemplDirPath = 0x203,
+			Invalid_TemplDirPath = 0x202,
+			Invalid_SampleDirPath = 0x203,
 			Invalid_OutputDirPath = 0x204,
 			Invalid_ImageFormat = 0x205,
 			Invalid_ActualProductSize_W = 0x206,
@@ -155,21 +155,21 @@ namespace pcb
 		ErrorCode errorCode = Uncheck;
 
 	public:
-		DetectConfig();
-		~DetectConfig();
+		UserConfig();
+		~UserConfig();
 		void loadDefaultValue(); //加载默认参数
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
 		bool isValid(AdminConfig *adminConfig = Q_NULLPTR, bool doCheck = false);
-		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
-		inline void resetErrorCode() { errorCode = Uncheck; }
+		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; } //标记文件丢失
+		inline void resetErrorCode() { errorCode = Uncheck; } //重置错误代码
 		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
 		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转索引
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
-		ConfigIndex unequals(DetectConfig &other); //不等性判断
-		int getSystemResetCode(DetectConfig &newConfig); //获取系统重置代码
-		void copyTo(DetectConfig *dst); //拷贝参数
+		ConfigIndex unequals(UserConfig &other); //不等性判断
+		int getSystemResetCode(UserConfig &newConfig); //获取系统重置代码
+		void copyTo(UserConfig *dst); //拷贝参数
 	};
 #endif //CLASS_DETECT_CONFIG
 
@@ -199,8 +199,8 @@ namespace pcb
 		bool jsonReadValue(const QString &key, int &value, bool decode); //读int
 		bool jsonReadValue(const QString &key, double &value, bool decode); //读double
 
-		static bool loadConfigFile(const QString &fileName, DetectConfig *config);
-		static bool saveConfigFile(const QString &fileName, DetectConfig *config);
+		static bool loadConfigFile(const QString &fileName, UserConfig *config);
+		static bool saveConfigFile(const QString &fileName, UserConfig *config);
 		static bool loadConfigFile(const QString &fileName, AdminConfig *config);
 		static bool saveConfigFile(const QString &fileName, AdminConfig *config);
 
@@ -208,11 +208,11 @@ namespace pcb
 		bool checkDir(QString dirpath);
 
 	private:
-		void updateKeys();
-		QString encrypt(QString origin) const;
-		QString encrypt(const char* origin) const;
-		QString decrypt(QString origin) const;
-		QString decrypt(const char* origin) const;
+		void updateKeys(); //更新秘钥
+		QString encrypt(QString origin) const; //加密
+		QString encrypt(const char* origin) const; //加密
+		QString decrypt(QString origin) const; //解密
+		QString decrypt(const char* origin) const; //解密
 	};
 #endif //CLASS_CONFIGURATOR
 }

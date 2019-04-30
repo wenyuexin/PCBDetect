@@ -21,8 +21,8 @@ private:
 	Ui::TemplateUI ui;
 	SerialNumberUI serialNumberUI; //产品序号识别界面
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectParams *detectParams; //运行参数
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::RuntimeParams *runtimeParams; //运行参数
 	MotionControler *motionControler; //运动控制器
 	CameraControler *cameraControler; //相机控制器
 
@@ -47,8 +47,8 @@ public:
 	~TemplateUI();
 	
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setMotionControler(MotionControler *ptr) { motionControler = ptr; }
 	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 

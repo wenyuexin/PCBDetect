@@ -5,8 +5,8 @@ TemplateThread::TemplateThread(QObject *parent)
 	: QThread(parent)
 {
 	adminConfig = Q_NULLPTR; //系统参数
-	detectConfig = Q_NULLPTR; //用户参数
-	detectParams = Q_NULLPTR; //运行参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 	cvmatSamples = Q_NULLPTR; //用于提取的样本图
 	templExtractor = Q_NULLPTR; //提取器
 }
@@ -21,8 +21,8 @@ TemplateThread::~TemplateThread()
 void TemplateThread::initTemplateExtractor()
 {
 	templExtractor->setAdminConfig(adminConfig);
-	templExtractor->setDetectConfig(detectConfig);
-	templExtractor->setDetectParams(detectParams);
+	templExtractor->setUserConfig(userConfig);
+	templExtractor->setRuntimeParams(runtimeParams);
 	templExtractor->setSampleImages(cvmatSamples);
 	templExtractor->initTemplFunc();
 }
