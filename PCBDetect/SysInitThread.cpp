@@ -1,16 +1,16 @@
 #include "SysInitThread.h"
 
 using pcb::AdminConfig;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 using pcb::Configurator;
 
 
 SysInitThread::SysInitThread()
 {
 	adminConfig = Q_NULLPTR; //系统参数配置
-	detectConfig = Q_NULLPTR; //用户参数配置
-	detectParams = Q_NULLPTR; //用户参数配置
+	userConfig = Q_NULLPTR; //用户参数配置
+	runtimeParams = Q_NULLPTR; //用户参数配置
 	motionControler = Q_NULLPTR; //运动控制器
 	cameraControler = Q_NULLPTR; //相机控制器
 	bootStatus = 0x0000; //启动状态
@@ -30,12 +30,12 @@ void SysInitThread::run()
 	if (bootStatus == 0x0000) {  
 		//参数类的初始化
 		if (!initAdminConfig()) { bootStatus |= 0x0100; return; }
-		if (!initDetectConfig()) { bootStatus |= 0x0100; return; }
+		if (!initUserConfig()) { bootStatus |= 0x0100; return; }
 		emit initGraphicsView_initThread(-1);
 		qApp->processEvents();
 
 		//更新运行参数
-		if (!initDetectParams()) { bootStatus |= 0x1100; return; }
+		if (!initRuntimeParams()) { bootStatus |= 0x1100; return; }
 		emit initGraphicsView_initThread(0);
 		qApp->processEvents();
 
@@ -51,9 +51,9 @@ void SysInitThread::run()
 	//	if (!initAdminConfig()) { bootStatus |= 0x1000; return; }
 	//	else { bootStatus &= 0x0FFF; }
 	//}
-	////用户参数detectConfig初始化异常
+	////用户参数userConfig初始化异常
 	//if (!((bootStatus & 0x0F00) >> 8)) { 
-	//	if (!initDetectConfig()) { bootStatus |= 0x0100; return; }
+	//	if (!initUserConfig()) { bootStatus |= 0x0100; return; }
 	//	else                     { bootStatus &= 0xF0FF; }
 	//}
 	////运动结构初始化异常
@@ -103,22 +103,22 @@ bool SysInitThread::initAdminConfig()
 	return true;
 }
 
-//对DetectConfig进行初始化
-bool SysInitThread::initDetectConfig()
+//对UserConfig进行初始化
+bool SysInitThread::initUserConfig()
 {
 	emit sysInitStatus_initThread(pcb::chinese("正在获取用户参数 ..."));
 	qApp->processEvents();
 	pcb::delay(1000);
 
-	if (!Configurator::loadConfigFile("/.user.config", detectConfig)) {
-		emit detectConfigError_initThread(); return false;
+	if (!Configurator::loadConfigFile("/.user.config", userConfig)) {
+		emit userConfigError_initThread(); return false;
 	}
 	else {
-		DetectConfig::ErrorCode code;//错误代码
+		UserConfig::ErrorCode code;//错误代码
 		//参数有效性判断
-		code = detectConfig->checkValidity(DetectConfig::Index_All, adminConfig);
-		if (code != DetectConfig::ValidConfig) { 
-			emit detectConfigError_initThread(); return false; 
+		code = userConfig->checkValidity(UserConfig::Index_All, adminConfig);
+		if (code != UserConfig::ValidConfig) { 
+			emit userConfigError_initThread(); return false; 
 		}
 	}
 
@@ -127,29 +127,29 @@ bool SysInitThread::initDetectConfig()
 	return true;
 }
 
-//对DetectParams进行初始化
-bool SysInitThread::initDetectParams()
+//对RuntimeParams进行初始化
+bool SysInitThread::initRuntimeParams()
 {
 	emit sysInitStatus_initThread(pcb::chinese("正在更新运行参数 ..."));
 	qApp->processEvents();
 	pcb::delay(1000);
 	
-	DetectParams::ErrorCode code;
+	RuntimeParams::ErrorCode code;
 
 	//计算单步前进距离
-	code = detectParams->calcSingleMotionStroke(adminConfig);
-	if (code != DetectParams::ValidValue) {
-		emit detectParamsError_initThread(); return false;
+	code = runtimeParams->calcSingleMotionStroke(adminConfig);
+	if (code != RuntimeParams::ValidValue) {
+		emit runtimeParamsError_initThread(); return false;
 	}
 	//计算相机个数、拍照次数
-	code = detectParams->calcItemGridSize(adminConfig, detectConfig);
-	if (code != DetectParams::ValidValue) {
-		emit detectParamsError_initThread(); return false;
+	code = runtimeParams->calcItemGridSize(adminConfig, userConfig);
+	if (code != RuntimeParams::ValidValue) {
+		emit runtimeParamsError_initThread(); return false;
 	}
 	//计算初始拍照位置
-	code = detectParams->calcInitialPhotoPos(adminConfig);
-	if (code != DetectParams::ValidValue) {
-		emit detectParamsError_initThread(); return false;
+	code = runtimeParams->calcInitialPhotoPos(adminConfig);
+	if (code != RuntimeParams::ValidValue) {
+		emit runtimeParamsError_initThread(); return false;
 	}
 
 	emit sysInitStatus_initThread(pcb::chinese("运行参数更新结束    "));
