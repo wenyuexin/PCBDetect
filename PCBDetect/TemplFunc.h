@@ -15,10 +15,9 @@ private:
 	pcb::DetectConfig *detectConfig;
 	pcb::DetectParams *detectParams;
 
-	cv::Point minloc, maxloc;//最小值位置，最大值位置，
-	int i, j;
-	cv::Mat roi, roi_gray, roi_bw, match, shape, mask, image_mask;//匹配的感兴趣区域及其灰度图，二值图，匹配图，L形的模板图，掩模，结果图
-	cv::Point lf1, lf2, br1, br2;//左上角，左下角，右上角，右下角
+	int roi_x, roi_y, length = 1000;
+	cv::Point minloc, maxloc, point_leftup, point_rightup, point_left, point_right;//最小值位置，最大值位置，
+	cv::Mat roi_image, roi_gray, roi_bw, match, mask, image_mask,shape, roi_shape;//匹配的感兴趣区域及其灰度图，二值图，匹配图，L形的模板图，掩模，结果图
 	cv::Mat big_templ; //大模板;
 
 public:
@@ -30,7 +29,11 @@ public:
 	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
 
 	void generateBigTempl();
-	cv::Mat find1(int currentCol, cv::Mat &image);
+	void str2int(int &int_temp, const std::string &string_temp);
+	cv::Point corner_lf(cv::Mat &image, int lf_x, int lf_y);
+	cv::Point corner_br(cv::Mat &image, int br_x, int br_y);
+	cv::Mat cutting(int num_cols, int num_rows, int cols, int rows, cv::Mat &image, cv::Point point_left, cv::Point point_right);
+	//cv::Mat find1(int currentCol, cv::Mat &image);
 
 	inline cv::Mat getBigTempl() { return big_templ; }
 	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect); }

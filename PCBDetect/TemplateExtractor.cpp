@@ -69,16 +69,14 @@ void TemplateExtractor::extract()
 	if (0 != _access(subtempl_path.c_str(), 0))
 		_mkdir(subtempl_path.c_str());
 
+
+
 	for (int col = 0; col < detectParams->nCamera; col++) {
 		Mat src = *((*cvmatSamples)[detectParams->currentRow_extract][col]);
 
 		//保存模版图片
 		cv::imwrite(subtempl_path + "/" + std::to_string(detectParams->currentRow_extract + 1) + "_" + std::to_string(col + 1) + detectConfig->ImageFormat.toStdString(), src);//保存模板图片
 		
-		//保存掩膜图片
-		Mat mask = templFunc->find1(col, src);
-		cv::imwrite(mask_path + "/" + std::to_string(detectParams->currentRow_extract + 1) + "_" 
-			+ std::to_string(col + 1) + "_mask" + detectConfig->ImageFormat.toStdString(), mask);
 
 		//保存二值化图片
 		Mat srcGray, templbw;
@@ -101,6 +99,55 @@ void TemplateExtractor::extract()
 	}
 
 	if (detectParams->currentRow_extract+ 1 == detectParams->nPhotographing) {
+
+
+		Point point_left, point_right;
+		int lf_x = 175, lf_y = 3285, br_x = 0, br_y = 0;/* lf_x = 168, lf_y = 3276,*//* br_x = 3043, br_y = 325*/
+		br_x = (lf_x + detectConfig->ActualProductSize_W*adminConfig->PixelsNumPerUnitLength + int(adminConfig->ImageOverlappingRate_W * adminConfig->ImageSize_W) * (detectParams->nCamera - 1)) % adminConfig->ImageSize_W + 160;//pcb板右上角在图像中的位置,160为偏移量
+		br_y = adminConfig->ImageSize_H - ((adminConfig->ImageSize_H - lf_y + detectConfig->ActualProductSize_H*adminConfig->PixelsNumPerUnitLength + int(adminConfig->ImageOverlappingRate_H * adminConfig->ImageSize_H)* (detectParams->nPhotographing - 1)) % adminConfig->ImageSize_H);
+		Mat image_lf = cv::imread(subtempl_path + "/" + std::to_string(detectParams->nPhotographing) + "_1" + detectConfig->ImageFormat.toStdString());
+		point_left = templFunc->corner_lf(image_lf, lf_x, lf_y);
+		Mat image_br = cv::imread(subtempl_path + "/" + std::to_string(1) + "_" + std::to_string(detectParams->nCamera) + detectConfig->ImageFormat.toStdString());
+		point_right = templFunc->corner_br(image_br, br_x, br_y);
+
+		Mat image;//n1,n2文件中的图像
+		int num_cols = 0, num_rows = 0, num = detectParams->nCamera * detectParams->nPhotographing;
+
+		std::vector<cv::String> image_name(num);//用来存放图像名
+
+		cv::String path = subtempl_path;
+		int rowLen_path = path.length() + 1, colLen_path = rowLen_path + 2;
+		vector<cv::String> filename;//创建一个数组，存放文件名，即图像名
+		cv::glob(path, filename);//将path路径下的所用文件名放在filename
+
+		for (num = 0; num < filename.size(); num++)
+		{
+
+
+			image_name[num] = filename[num];
+			templFunc->str2int(num_rows, image_name[num].substr(rowLen_path, 1));//图像行数
+			templFunc->str2int(num_cols, image_name[num].substr(colLen_path, 1));//图像列数
+
+			std::stringstream stream1(image_name[num].substr(rowLen_path, 1));
+			stream1 >> num_rows;
+			std::stringstream stream2(image_name[num].substr(colLen_path, 1));
+			stream2 >> num_cols;
+
+			//str2int(num_rows, image_name1[num].substr(47, 1));//图像行数
+			//str2int(num_cols, image_name1[num].substr(49, 1));//图像列数
+
+			//stringstream stream1(image_name1[num].substr(47, 1));
+			//stream1 >> num_rows;
+
+
+			image = cv::imread(filename[num]);//读图像
+			Mat mask = templFunc->cutting(num_cols, num_rows, detectParams->nCamera, detectParams->nPhotographing, image, point_left, point_right);//调函数
+			string resPath = mask_path + "/" + std::to_string(num_rows) + "_" + std::to_string(num_cols) + "_mask" + detectConfig->ImageFormat.toStdString();
+			/*	imwrite(mask_path + "/2.jpg", mask);*/
+			cv::imwrite(resPath, mask);
+
+		}
+
 		cv::Size sz = templFunc->getBigTempl().size();
 		cv::Mat dst;
 		cv::resize(templFunc->getBigTempl(), dst, cv::Size(sz.width*0.25,sz.height*0.25), (0, 0), (0, 0), cv::INTER_LINEAR);
