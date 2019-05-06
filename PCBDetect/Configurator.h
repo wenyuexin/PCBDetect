@@ -41,8 +41,10 @@ namespace pcb
 	public:
 		int MaxMotionStroke; //机械结构的最大运动行程 mm
 		int MaxCameraNum; //可用相机总数
-		int PixelsNumPerUnitLength; //单位长度的像素 pix/mm
-		double ImageOverlappingRate; //分图重叠率
+		int PixelsNumPerUnitLength = 40; //单位长度的像素 pix/mm
+		double ImageOverlappingRate_W = 345.0 / 4384.0; //分图重叠率(宽)
+		double ImageOverlappingRate_H = 0.050000; //分图重叠率（高）
+		
 		int ImageSize_W; //分图宽度
 		int ImageSize_H; //分图高度
 		double ImageAspectRatio; //图像宽高比

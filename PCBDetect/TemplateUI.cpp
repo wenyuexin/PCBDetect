@@ -337,7 +337,7 @@ void TemplateUI::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Down:
 		qDebug() << "===== Down";
-		detectParams->serialNum = "01010004"; //产品序号
+		detectParams->serialNum = "01010001"; //产品序号
 		detectParams->parseSerialNum(); //产品序号解析
 
 		if (detectParams->currentRow_extract == detectParams->nPhotographing - 1 && !templThread->isRunning())
