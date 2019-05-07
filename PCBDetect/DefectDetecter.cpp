@@ -45,6 +45,7 @@ void DefectDetecter::initDetectFunc()
 
 void DefectDetecter::detect()
 {
+	//测试是否提交到chenhua分支
 	qDebug() << ">>>>>>>>>> " << pcb::chinese("开始检测 ... ") <<
 		"( currentRow_detect -" << runtimeParams->currentRow_detect << ")";
 
