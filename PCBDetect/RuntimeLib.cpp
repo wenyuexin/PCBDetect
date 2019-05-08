@@ -400,3 +400,14 @@ QString pcb::selectDirPath(QWidget *parent, QString windowTitle)
 	delete fileDialog;
 	return path;
 }
+
+//É¾³ý×Ö·û´®Ê×Î²µÄ·ÇÊý×Ö×Ö·û
+QString pcb::eraseNonDigitalCharInHeadAndTail(QString s)
+{
+	if (s == "") return "";
+	int begin = 0;
+	for (; begin < s.size() && !s.at(begin).isDigit(); begin++) {}
+	int end = s.size() - 1;
+	for (; end > begin && !s.at(end).isDigit(); end--) {}
+	return s.mid(begin, end - begin + 1);
+}
