@@ -21,7 +21,7 @@ class SerialNumberUI : public QWidget
 public:
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x700,
+		Unchecked = 0x700,
 		InitFailed = 0x701,
 		Invalid_RoiRect = 0x702,
 		Invalid_RoiData = 0x703,

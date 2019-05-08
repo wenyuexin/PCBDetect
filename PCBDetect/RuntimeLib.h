@@ -16,6 +16,7 @@ namespace pcb
 #define PCB_FUNCTIONS
 	void delay(unsigned long msec);//非阻塞延迟
 	QString selectDirPath(QWidget *parent, QString windowTitle = "");//交互式文件夹路径选择
+	QString eraseNonDigitalCharInHeadAndTail(QString s); //删除字符串首尾的非数字字符
 #endif //PCB_FUNCTIONS
 
 

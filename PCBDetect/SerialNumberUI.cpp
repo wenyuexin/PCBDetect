@@ -172,12 +172,14 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 	}
 
 	QString serialNum = QString(text);
-	runtimeParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
-	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
+	serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	serialNum = pcb::eraseNonDigitalCharInHeadAndTail(serialNum);//删除首尾的非数字字符
 	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
 	this->setSerialNumberUIEnabled(true);
 
 	//检查产品序号是否有效
+	runtimeParams->serialNum = serialNum;
+	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
 	RuntimeParams::ErrorCode code = RuntimeParams::Uncheck;
 	code = runtimeParams->checkValidity(RuntimeParams::Index_serialNum);
 	if (code != RuntimeParams::ValidValue) {
@@ -189,7 +191,9 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 void SerialNumberUI::on_pushButton_confirm_clicked()
 {
 	QString serialNum = ui.lineEdit_serialNum->text(); //读取产品序号
-	runtimeParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	serialNum = pcb::eraseNonDigitalCharInHeadAndTail(serialNum);//删除首尾的非数字字符
+	runtimeParams->serialNum = serialNum;
 	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
 
 	RuntimeParams::ErrorCode code = RuntimeParams::Uncheck;
@@ -362,7 +366,7 @@ bool SerialNumberUI::showMessageBox(QWidget *parent, ErrorCode code)
 	QString valueName;
 	switch (tempCode)
 	{
-	case SerialNumberUI::Uncheck:
+	case SerialNumberUI::Unchecked:
 		valueName = pcb::chinese("\"状态未验证\""); break;
 	case SerialNumberUI::InitFailed:
 		valueName = pcb::chinese("\"初始化失败\""); break;
