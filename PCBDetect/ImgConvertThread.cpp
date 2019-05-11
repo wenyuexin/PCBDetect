@@ -34,7 +34,7 @@ void ImgConvertThread::run()
 		<< "( currentRow_show -" << *currentRow << ")";
 
 	clock_t t1 = clock();
-	errorCode = ImageConverter::Uncheck;
+	errorCode = ImageConverter::Unchecked;
 
 	if (*currentRow < 0) { qDebug() << "Warning: ImgConvertThread: currentRow < 0"; return; }
 	if (cvmats->size() < 1 || (cvmats->at(*currentRow)).size() < 1) { 

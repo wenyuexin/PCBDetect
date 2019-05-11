@@ -43,8 +43,9 @@ private:
 	TemplateExtractor *templExtractor; //Ä£°åÌáÈ¡Æ÷
 
 public:
-	TemplateUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
+	TemplateUI(QWidget *parent = Q_NULLPTR);
 	~TemplateUI();
+	void init();
 	
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
@@ -52,7 +53,6 @@ public:
 	inline void setMotionControler(MotionControler *ptr) { motionControler = ptr; }
 	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 
-	void doConnect();
 	void initGraphicsView();
 	void resetTemplateUI();
 	void refreshCameraControler();

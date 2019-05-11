@@ -3,13 +3,10 @@
 using pcb::RuntimeParams;
 
 
-SerialNumberUI::SerialNumberUI(QWidget *parent, QRect &screenRect)
+SerialNumberUI::SerialNumberUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
-
-	//多屏状态下选择在副屏全屏显示
-	this->setGeometry(screenRect);
 
 	//成员变量的初始化
 	errorCode = ErrorCode::Default;
@@ -28,6 +25,12 @@ SerialNumberUI::SerialNumberUI(QWidget *parent, QRect &screenRect)
 	roiRect_br.setY(0);
 	imageScalingRatio = 0;//图像缩放比例
 	ocrHandle = Q_NULLPTR;
+}
+
+void SerialNumberUI::init()
+{
+	//多屏状态下选择在副屏全屏显示
+	this->setGeometry(runtimeParams->screenRect);
 
 	//获取绘图控件QGraphicsView的位置
 	QPoint graphicsViewPos = ui.graphicsView->pos();
@@ -180,7 +183,7 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 	//检查产品序号是否有效
 	runtimeParams->serialNum = serialNum;
 	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
-	RuntimeParams::ErrorCode code = RuntimeParams::Uncheck;
+	RuntimeParams::ErrorCode code = RuntimeParams::Unchecked;
 	code = runtimeParams->checkValidity(RuntimeParams::Index_serialNum);
 	if (code != RuntimeParams::ValidValue) {
 		runtimeParams->showMessageBox(this, code); return;
@@ -196,7 +199,7 @@ void SerialNumberUI::on_pushButton_confirm_clicked()
 	runtimeParams->serialNum = serialNum;
 	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
 
-	RuntimeParams::ErrorCode code = RuntimeParams::Uncheck;
+	RuntimeParams::ErrorCode code = RuntimeParams::Unchecked;
 	code = runtimeParams->parseSerialNum(); //解析产品序号
 	if (code != RuntimeParams::ValidValue) {
 		runtimeParams->showMessageBox(this, code); return;

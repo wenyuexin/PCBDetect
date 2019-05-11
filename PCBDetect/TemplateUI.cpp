@@ -5,16 +5,10 @@ using pcb::RuntimeParams;
 using cv::Mat;
 
 
-TemplateUI::TemplateUI(QWidget *parent, QRect &screenRect)
+TemplateUI::TemplateUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
-
-	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(screenRect);
-
-	//设置检测界面的聚焦策略
-	this->setFocusPolicy(Qt::ClickFocus);
 
 	//成员变量初始化
 	adminConfig = Q_NULLPTR;
@@ -22,18 +16,56 @@ TemplateUI::TemplateUI(QWidget *parent, QRect &screenRect)
 	runtimeParams = Q_NULLPTR;
 	motionControler = Q_NULLPTR;
 	cameraControler = Q_NULLPTR;
+}
+
+void TemplateUI::init()
+{
+	//多屏状态下选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->screenRect);
+
+	//设置检测界面的聚焦策略
+	this->setFocusPolicy(Qt::ClickFocus);
+
+	//对绘图控件GraphicsView的初始化设置
+	this->initGraphicsView();
 
 	//产品序号识别界面
+	serialNumberUI.setAdminConfig(adminConfig);
+	serialNumberUI.setRuntimeParams(runtimeParams);
+	serialNumberUI.setCvMatArray(&cvmatSamples);
+	serialNumberUI.setQPixmapArray(&qpixmapSamples);
 	connect(&serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
 	connect(&serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
 	connect(&serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
 
-	//模板提取线程
+	//模板提取器
 	templExtractor = new TemplateExtractor;
 	connect(templExtractor, SIGNAL(extractState_extractor(int)), this, SLOT(update_extractState_extractor(int)));
 
+	//模板提取线程
 	templThread = new TemplateThread();
+	templThread->setAdminConfig(adminConfig);
+	templThread->setUserConfig(userConfig);
+	templThread->setRuntimeParams(runtimeParams);
+	templThread->setSampleImages(&cvmatSamples);
 	templThread->setTemplateExtractor(templExtractor);
+	templThread->initTemplateExtractor();
+
+	//运动控制
+	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion()));
+	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()));
+	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()));
+
+	//相机控制
+	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
+	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
+	
+	//转换线程
+	imgConvertThread.setCvMats(&cvmatSamples);
+	imgConvertThread.setQPixmaps(&qpixmapSamples);
+	imgConvertThread.setCurrentRow(&currentRow_show);
+	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
+	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()));
 }
 
 TemplateUI::~TemplateUI()
@@ -43,23 +75,10 @@ TemplateUI::~TemplateUI()
 	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
 	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
 	deletePointersInQPixmapArray(qpixmapSamples);//删除qpixmapSamples中的指针
-	delete templThread; templThread = Q_NULLPTR;
-	delete templExtractor; templExtractor = Q_NULLPTR;
-}
-
-//因为对象实例的构造和实例指针传递的时序问题
-//部分信号和槽函数不能直接在构造函数里连接，单独放这里
-void TemplateUI::doConnect()
-{
-	//运动控制
-	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion()));
-	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()));
-	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()));
-	//相机控制
-	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
-	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
-	//转换线程
-	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()));
+	delete templThread; 
+	templThread = Q_NULLPTR;
+	delete templExtractor; 
+	templExtractor = Q_NULLPTR;
 }
 
 
@@ -77,25 +96,6 @@ void TemplateUI::initGraphicsView()
 	currentRow_show = -1; //显示行号
 	runtimeParams->currentRow_extract = -1; //检测行号
 	eventCounter = 0; //事件计数器
-
-	//配置转换线程
-	imgConvertThread.setCvMats(&cvmatSamples);
-	imgConvertThread.setQPixmaps(&qpixmapSamples);
-	imgConvertThread.setCurrentRow(&currentRow_show);
-	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
-
-	//产品序号识别界面
-	serialNumberUI.setAdminConfig(adminConfig);
-	serialNumberUI.setRuntimeParams(runtimeParams);
-	serialNumberUI.setCvMatArray(&cvmatSamples);
-	serialNumberUI.setQPixmapArray(&qpixmapSamples);
-
-	//配置提取线程
-	templThread->setAdminConfig(adminConfig);
-	templThread->setUserConfig(userConfig);
-	templThread->setRuntimeParams(runtimeParams);
-	templThread->setSampleImages(&cvmatSamples);
-	templThread->initTemplateExtractor();
 
 	//视图控件的设置
 	ui.graphicsView->setFocusPolicy(Qt::NoFocus); //设置聚焦策略

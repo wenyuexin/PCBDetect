@@ -5,16 +5,10 @@ using pcb::UserConfig;
 using pcb::RuntimeParams;
 
 
-LaunchUI::LaunchUI(QWidget *parent, QRect &screenRect)
+LaunchUI::LaunchUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
-
-	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(screenRect);
-
-	//启动界面不显示鼠标
-	this->setCursor(Qt::BlankCursor);
 
 	//成员变量初始化
 	initThread = Q_NULLPTR; //系统初始化线程
@@ -22,6 +16,15 @@ LaunchUI::LaunchUI(QWidget *parent, QRect &screenRect)
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
 	cameraControler = Q_NULLPTR; //相机控制器
+}
+
+void LaunchUI::init()
+{
+	//多屏状态下选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->screenRect);
+
+	//启动界面不显示鼠标
+	this->setCursor(Qt::BlankCursor);
 }
 
 LaunchUI::~LaunchUI()

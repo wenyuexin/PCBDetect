@@ -23,7 +23,7 @@ public:
 	//´íÎó´úÂë
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x800,
+		Unchecked = 0x800,
 		Default = 0x8FF
 	};
 	

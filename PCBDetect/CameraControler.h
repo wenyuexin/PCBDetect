@@ -26,7 +26,7 @@ public:
 	//相机的错误代码
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x500,
+		Unchecked = 0x500,
 		InitFailed = 0x501,
 		InvalidCameraNum = 0x502,
 		TakePhotosFailed = 0x503,

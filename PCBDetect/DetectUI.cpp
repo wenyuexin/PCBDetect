@@ -5,16 +5,10 @@ using pcb::UserConfig;
 using pcb::RuntimeParams;
 
 
-DetectUI::DetectUI(QWidget *parent, QRect &screenRect)
+DetectUI::DetectUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
-
-	//选择在主屏还是副屏上显示
-	this->setGeometry(screenRect);
-
-	//设置检测界面的聚焦策略
-	this->setFocusPolicy(Qt::ClickFocus);
 	
 	//成员变量初始化
 	adminConfig = Q_NULLPTR;
@@ -24,34 +18,73 @@ DetectUI::DetectUI(QWidget *parent, QRect &screenRect)
 	cameraControler = Q_NULLPTR;
 	serialNumberUI = Q_NULLPTR;
 	detectState = DefectDetecter::Default;
+}
+
+void DetectUI::init()
+{
+	//选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->screenRect);
+
+	//设置检测界面的聚焦策略
+	this->setFocusPolicy(Qt::ClickFocus);
 
 	//加载并显示默认的指示灯图标
 	IconFolder = QDir::currentPath() + "/Icons";
 	QPixmap greyIcon = QPixmap(IconFolder + "/grey.png"); //grey
 	defaultIcon = greyIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 	ui.label_indicator->setPixmap(defaultIcon); //加载
-	
+
 	//加载其他指示灯图标
 	QPixmap redIcon = QPixmap(IconFolder + "/red.png"); //red
 	lightOnIcon = redIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 	QPixmap greenIcon = QPixmap(IconFolder + "/green.png"); //grey
 	lightOffIcon = greenIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 
+	//对绘图控件GraphicsView的初始化设置
+	this->initGraphicsView();
+
 	//产品序号识别界面
-	serialNumberUI = new SerialNumberUI(Q_NULLPTR, screenRect);
+	serialNumberUI = new SerialNumberUI();
+	serialNumberUI->setAdminConfig(adminConfig);
+	serialNumberUI->setRuntimeParams(runtimeParams);
+	serialNumberUI->setCvMatArray(&cvmatSamples);
+	serialNumberUI->setQPixmapArray(&qpixmapSamples);
+	serialNumberUI->init();
 	connect(serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
 	connect(serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
 	connect(serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
 
-	//检测线程的信号连接
+	//缺陷检测器
 	defectDetecter = new DefectDetecter;
 	connect(defectDetecter, SIGNAL(updateDetectState_detecter(int)), this, SLOT(do_updateDetectState_detecter(int)));
 	connect(defectDetecter, SIGNAL(detectFinished_detectThread(bool)), this, SLOT(on_detectFinished_detectThread(bool)));
 
+	//检测线程
 	detectThread = new DetectThread;
+	detectThread->setAdminConfig(adminConfig);
+	detectThread->setUserConfig(userConfig);
+	detectThread->setRuntimeParams(runtimeParams);
+	detectThread->setSampleImages(&cvmatSamples);
+	detectThread->setDetectResult(&detectResult);
 	detectThread->setDefectDetecter(defectDetecter);
-}
+	detectThread->initDefectDetecter();
 
+	//运动控制
+	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion(int)));
+	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()));
+	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()));
+	
+	//相机控制
+	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
+	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
+	
+	//转换线程
+	imgConvertThread.setCvMats(&cvmatSamples);
+	imgConvertThread.setQPixmaps(&qpixmapSamples);
+	imgConvertThread.setCurrentRow(&currentRow_show);
+	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
+	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()));
+}
 
 DetectUI::~DetectUI()
 {
@@ -66,21 +99,6 @@ DetectUI::~DetectUI()
 	defectDetecter = Q_NULLPTR;
 	delete serialNumberUI; //产品序号识别界面
 	serialNumberUI = Q_NULLPTR;
-}
-
-//因为对象实例的构造和实例指针传递的时序问题
-//部分信号和槽函数不能直接在构造函数里连接，单独放这里
-void DetectUI::doConnect()
-{
-	//运动控制
-	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion(int)));
-	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()));
-	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()));
-	//相机控制
-	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
-	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
-	//转换线程
-	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()));
 }
 
 
@@ -98,26 +116,6 @@ void DetectUI::initGraphicsView()
 	currentRow_show = -1; //显示行号
 	runtimeParams->currentRow_detect = -1; //检测行号
 	eventCounter = 0; //事件计数器
-
-	//配置转换线程
-	imgConvertThread.setCvMats(&cvmatSamples);
-	imgConvertThread.setQPixmaps(&qpixmapSamples);
-	imgConvertThread.setCurrentRow(&currentRow_show);
-	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
-
-	//产品序号识别界面
-	serialNumberUI->setAdminConfig(adminConfig);
-	serialNumberUI->setRuntimeParams(runtimeParams);
-	serialNumberUI->setCvMatArray(&cvmatSamples);
-	serialNumberUI->setQPixmapArray(&qpixmapSamples);
-
-	//配置检测线程
-	detectThread->setAdminConfig(adminConfig);
-	detectThread->setUserConfig(userConfig);
-	detectThread->setRuntimeParams(runtimeParams);
-	detectThread->setSampleImages(&cvmatSamples);
-	detectThread->setDetectResult(&detectResult);
-	detectThread->initDefectDetecter();
 
 	//视图控件的设置
 	ui.graphicsView->setFocusPolicy(Qt::NoFocus); //设置聚焦策略
