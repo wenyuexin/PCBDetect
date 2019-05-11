@@ -63,8 +63,9 @@ private:
 	QString roiFilePath;
 
 public:
-	SerialNumberUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
+	SerialNumberUI(QWidget *parent = Q_NULLPTR);
 	~SerialNumberUI();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }

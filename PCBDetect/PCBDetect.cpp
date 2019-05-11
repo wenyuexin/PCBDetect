@@ -22,7 +22,11 @@ PCBDetect::PCBDetect(QWidget *parent)
 	if (screenRect.width() < 1440 || screenRect.height() < 900) {
 		screenRect = desktop->screenGeometry(0);//主屏区域
 	}
+	runtimeParams.screenRect = screenRect;
 	this->setGeometry(screenRect);
+
+	//启用开发者模式，此模式将开启测试后门以便于调试
+	runtimeParams.DeveloperModeEnabled = true;
 
 	//运动控制器
 	motionControler = new MotionControler;//运动控制器
@@ -36,45 +40,46 @@ PCBDetect::PCBDetect(QWidget *parent)
 	cameraControler->setRuntimeParams(&runtimeParams);
 
 	//启动界面
-	launcher = new LaunchUI(Q_NULLPTR, screenRect);
+	launcher = new LaunchUI();
 	launcher->setAdminConfig(&adminConfig);
 	launcher->setUserConfig(&userConfig);
 	launcher->setRuntimeParams(&runtimeParams);
 	launcher->setMotionControler(motionControler);
 	launcher->setCameraControler(cameraControler);
+	launcher->init();
 	launcher->runInitThread(); //运行初始化线程
 	connect(launcher, SIGNAL(initGraphicsView_launchUI(int)), this, SLOT(on_initGraphicsView_launchUI(int)));
 	connect(launcher, SIGNAL(launchFinished_launchUI(int)), this, SLOT(on_launchFinished_launchUI(int)));
 
 	//参数设置界面
-	settingUI = new SettingUI(Q_NULLPTR, screenRect);
+	settingUI = new SettingUI();
 	settingUI->setAdminConfig(&adminConfig);
 	settingUI->setUserConfig(&userConfig);
 	settingUI->setRuntimeParams(&runtimeParams);
-	settingUI->doConnect();//信号连接
+	settingUI->init();
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
 	connect(settingUI, SIGNAL(resetDetectSystem_settingUI(int)), this, SLOT(do_resetDetectSystem_settingUI(int)));
 	connect(settingUI, SIGNAL(enableButtonsOnMainUI_settingUI()), this, SLOT(do_enableButtonsOnMainUI_settingUI()));
 	connect(settingUI, SIGNAL(checkSystemState_settingUI()), this, SLOT(do_checkSystemState_settingUI()));
 	
 	//模板提取界面
-	templateUI = new TemplateUI(Q_NULLPTR, screenRect);
+	templateUI = new TemplateUI();
 	templateUI->setAdminConfig(&adminConfig);
 	templateUI->setUserConfig(&userConfig);
 	templateUI->setRuntimeParams(&runtimeParams);
 	templateUI->setMotionControler(motionControler);
 	templateUI->setCameraControler(cameraControler);
-	templateUI->doConnect();//信号连接
+	templateUI->init();
 	connect(templateUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_templateUI()));
 
 	//检测界面
-	detectUI = new DetectUI(Q_NULLPTR, screenRect);
+	detectUI = new DetectUI();
 	detectUI->setAdminConfig(&adminConfig);
 	detectUI->setUserConfig(&userConfig);
 	detectUI->setRuntimeParams(&runtimeParams);
 	detectUI->setMotionControler(motionControler);
 	detectUI->setCameraControler(cameraControler);
-	detectUI->doConnect();//信号连接
+	detectUI->init();
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
 
 	//显示启动界面
@@ -107,7 +112,7 @@ void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 	}
 	else { //存在错误
 		//用户参数配置文件丢失，生成了默认文件
-		if (userConfig.getErrorCode() != UserConfig::Uncheck) {
+		if (userConfig.getErrorCode() != UserConfig::Unchecked) {
 			settingUI->refreshSettingUI();//更新参数设置界面的信息
 		}
 	}
@@ -359,7 +364,7 @@ void PCBDetect::do_checkSystemState_settingUI()
 	//检测运动结构
 	if (noError && !motionControler->isReady()) {
 		MotionControler::ErrorCode code = motionControler->getErrorCode();
-		if (code == MotionControler::InitFailed || code == MotionControler::Uncheck) {
+		if (code == MotionControler::InitFailed || code == MotionControler::Unchecked) {
 			//询问是否需要重新初始化
 			int choice = QMessageBox::warning(settingUI, pcb::chinese("警告"),
 				pcb::chinese("运动控制器未初始化或初始化失败，是否重新执行初始化？ \n"),
@@ -376,7 +381,7 @@ void PCBDetect::do_checkSystemState_settingUI()
 	//检查相机
 	if (noError && !cameraControler->isReady()) {
 		CameraControler::ErrorCode code = cameraControler->getErrorCode();
-		if (code == CameraControler::InitFailed || code == CameraControler::Uncheck) {
+		if (code == CameraControler::InitFailed || code == CameraControler::Unchecked) {
 			//询问是否需要重新初始化
 			int choice = QMessageBox::warning(settingUI, pcb::chinese("警告"),
 				pcb::chinese("相机控制器未初始化或初始化失败，是否重新执行初始化？ \n"),

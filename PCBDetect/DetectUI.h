@@ -58,8 +58,9 @@ private:
 	int detectState; //¼ì²â×´Ì¬
 
 public:
-	DetectUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
+	DetectUI(QWidget *parent = Q_NULLPTR);
 	~DetectUI();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
@@ -67,7 +68,6 @@ public:
 	inline void setMotionControler(MotionControler *ptr) { motionControler = ptr; }
 	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 
-	void doConnect();
 	void initGraphicsView();
 	void resetDetectUI();
 	void setPushButtonsEnabled(bool enable);

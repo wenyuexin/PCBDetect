@@ -20,7 +20,7 @@ MotionControler::MotionControler(QThread *parent)
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
 	xMotionPos = 0; //X轴的位置
-	errorCode = Uncheck; //控制器的错误码
+	errorCode = Unchecked; //控制器的错误码
 	operation = NoOperation;//操作指令
 }
 
@@ -87,7 +87,7 @@ void MotionControler::getMotionData(int portIndex)
 bool MotionControler::initControler()
 {
 	//QMutexLocker locker(&mutex);
-	errorCode = ErrorCode::Uncheck; //控制器的错误码
+	errorCode = ErrorCode::Unchecked; //控制器的错误码
 
 	//设置端口数据更新的回调函数
 	//Uart_AMC98_GetNewData(CallBack_UartNetGetNewData);
@@ -185,7 +185,7 @@ void MotionControler::markInitFailed()
 bool MotionControler::moveForward()
 {
 	//QMutexLocker locker(&mutex);
-	errorCode = ErrorCode::Uncheck;
+	errorCode = ErrorCode::Unchecked;
 	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
@@ -234,7 +234,7 @@ bool MotionControler::moveForward()
 bool MotionControler::returnToZero()
 {
 	//QMutexLocker locker(&mutex);
-	errorCode = ErrorCode::Uncheck;
+	errorCode = ErrorCode::Unchecked;
 	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器
@@ -282,7 +282,7 @@ bool MotionControler::returnToZero()
 bool MotionControler::moveToInitialPos()
 {
 	QMutexLocker locker(&mutex);
-	errorCode = ErrorCode::Uncheck;
+	errorCode = ErrorCode::Unchecked;
 	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
@@ -330,7 +330,7 @@ bool MotionControler::moveToInitialPos()
 bool MotionControler::resetControler()
 {
 	QMutexLocker locker(&mutex);
-	errorCode = ErrorCode::Uncheck;
+	errorCode = ErrorCode::Unchecked;
 	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
 
 	//连接控制器 - 方式1
@@ -388,7 +388,7 @@ bool MotionControler::showMessageBox(QWidget *parent, ErrorCode code)
 	QString warningMessage;
 	switch (tempCode)
 	{
-	case MotionControler::Uncheck:
+	case MotionControler::Unchecked:
 		warningMessage = pcb::chinese("未确认运动结构的工作状态！"); break;
 	case MotionControler::InitFailed:
 		warningMessage = pcb::chinese("运动结构初始化失败！  "); break;

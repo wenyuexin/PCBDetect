@@ -6,17 +6,10 @@ using pcb::RuntimeParams;
 using pcb::Configurator;
 
 
-SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
+SettingUI::SettingUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
-
-	//多屏状态下选择在主屏还是副屏上显示
-	this->screenRect = screenRect;
-	this->setGeometry(screenRect);
-
-	//设置界面初始化
-	this->initSettingUI();
 
 	//成员变量初始化
 	runtimeParams = Q_NULLPTR;//运行参数
@@ -24,40 +17,14 @@ SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 	adminConfig = Q_NULLPTR; //系统参数
 	adminSettingUI = Q_NULLPTR; //系统设置界面
 	sysResetCode = 0b00000000; //系统重置代码
-
-	//参数下拉框的槽函数连接
-	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
-	connect(ui.comboBox_clusterComPort, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_comPort()));
-
-	//系统参数设置的登录界面
-	passWordUI.setWindowFlags(passWordUI.windowFlags() | Qt::Dialog);
-	passWordUI.setWindowModality(Qt::ApplicationModal);
-	connect(&passWordUI, SIGNAL(showAdminSettingUI_pswdUI()), this, SLOT(do_showAdminSettingUI_pswdUI()));
-	connect(&passWordUI, SIGNAL(closePassWordUI_pswdUI()), this, SLOT(on_closePassWordUI_pswdUI()));
+	NumberValidator = Q_NULLPTR;
 }
 
-SettingUI::~SettingUI()
+void SettingUI::init()
 {
-	qDebug() << "~SettingUI";
-	delete adminSettingUI; adminSettingUI = Q_NULLPTR;
-}
+	//多屏状态下选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->screenRect);
 
-void SettingUI::doConnect()
-{
-	//系统参数设置界面
-	adminSettingUI = new AdminSettingUI(Q_NULLPTR, screenRect);
-	adminSettingUI->setAdminConfig(adminConfig);
-	adminSettingUI->setUserConfig(userConfig);
-	adminSettingUI->setRuntimeParams(runtimeParams);
-	connect(adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
-	connect(adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
-	connect(adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
-}
-
-/************* 界面的设置、输入、更新 **************/
-
-void SettingUI::initSettingUI()
-{
 	//设置聚焦策略
 	this->setFocusPolicy(Qt::ClickFocus);
 
@@ -69,41 +36,81 @@ void SettingUI::initSettingUI()
 	this->setPushButtonsEnabled(true);
 
 	//限制参数的输入范围
-	QIntValidator intValidator;
-	ui.lineEdit_ActualProductSize_W->setValidator(&intValidator);
-	ui.lineEdit_ActualProductSize_H->setValidator(&intValidator);
-	ui.lineEdit_nBasicUnitInRow->setValidator(&intValidator);
-	ui.lineEdit_nBasicUnitInCol->setValidator(&intValidator);
+	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
+	ui.lineEdit_ActualProductSize_W->setValidator(NumberValidator);
+	ui.lineEdit_ActualProductSize_H->setValidator(NumberValidator);
+	ui.lineEdit_nBasicUnitInRow->setValidator(NumberValidator);
+	ui.lineEdit_nBasicUnitInCol->setValidator(NumberValidator);
+	ui.lineEdit_concaveRateThresh->setValidator(NumberValidator);
+	ui.lineEdit_convexRateThresh->setValidator(NumberValidator);
+
+	//将匹配精度的确认框设为一组
+	QPushButton button;
+	matchingCheckBoxGroup.addButton(&button);
+	matchingCheckBoxGroup.addButton(ui.checkBox_matchingAccuracy_high, 1);
+	matchingCheckBoxGroup.addButton(ui.checkBox_matchingAccuracy_low, 2);
+
+	//参数下拉框的槽函数连接
+	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
+	connect(ui.comboBox_clusterComPort, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_comPort()));
+
+	//系统参数设置的登录界面
+	passWordUI.setWindowFlags(passWordUI.windowFlags() | Qt::Dialog);
+	passWordUI.setWindowModality(Qt::ApplicationModal);
+	connect(&passWordUI, SIGNAL(showAdminSettingUI_pswdUI()), this, SLOT(do_showAdminSettingUI_pswdUI()));
+	connect(&passWordUI, SIGNAL(closePassWordUI_pswdUI()), this, SLOT(on_closePassWordUI_pswdUI()));
+
+	//系统参数设置界面
+	adminSettingUI = new AdminSettingUI();
+	adminSettingUI->setAdminConfig(adminConfig);
+	adminSettingUI->setUserConfig(userConfig);
+	adminSettingUI->setRuntimeParams(runtimeParams);
+	adminSettingUI->init();
+	connect(adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
+	connect(adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
+	connect(adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
 }
+
+SettingUI::~SettingUI()
+{
+	qDebug() << "~SettingUI";
+	delete adminSettingUI; 
+	adminSettingUI = Q_NULLPTR;
+	delete NumberValidator;
+	NumberValidator = Q_NULLPTR;
+}
+
+
+/************* 界面的设置、输入、更新 **************/
 
 //更新界面
 void SettingUI::refreshSettingUI()
 {
-	ui.lineEdit_SampleDirPath->setText(userConfig->SampleDirPath);
-	ui.lineEdit_TemplDirPath->setText(userConfig->TemplDirPath);
-	ui.lineEdit_OutputDirPath->setText(userConfig->OutputDirPath);
+	ui.lineEdit_SampleDirPath->setText(userConfig->SampleDirPath); //样本路径
+	ui.lineEdit_TemplDirPath->setText(userConfig->TemplDirPath); //模板路径
+	ui.lineEdit_OutputDirPath->setText(userConfig->OutputDirPath); //输出路径
 
-	QString comPort = userConfig->clusterComPort.toUpper();
-	if (comPort == "COM1") ui.comboBox_clusterComPort->setCurrentText("      COM1");
-	else if (comPort == "COM2") ui.comboBox_clusterComPort->setCurrentText("      COM2");
-	else if (comPort == "COM3") ui.comboBox_clusterComPort->setCurrentText("      COM3");
-	else if (comPort == "COM4") ui.comboBox_clusterComPort->setCurrentText("      COM4");
-	else if (comPort == "COM5") ui.comboBox_clusterComPort->setCurrentText("      COM5");
-	else if (comPort == "COM6") ui.comboBox_clusterComPort->setCurrentText("      COM6");
-	else if (comPort == "COM7") ui.comboBox_clusterComPort->setCurrentText("      COM7");
-	else if (comPort == "COM8") ui.comboBox_clusterComPort->setCurrentText("      COM8");
-	else if (comPort == "COM9") ui.comboBox_clusterComPort->setCurrentText("      COM9");
+	QString comPort = userConfig->clusterComPort.toUpper(); //运动控制串口号
+	QString headBlankChars = "    "; //开头的空字符串
+	ui.comboBox_clusterComPort->setCurrentText(headBlankChars + " " + comPort);
 
-	QString imgFormat = userConfig->ImageFormat.toLower();
-	if (imgFormat == ".bmp") ui.comboBox_ImageFormat->setCurrentText("     *.bmp");
-	else if (imgFormat == ".jpg") ui.comboBox_ImageFormat->setCurrentText("     *.jpg");
-	else if (imgFormat == ".png") ui.comboBox_ImageFormat->setCurrentText("     *.png");
-	else if (imgFormat == ".tif" || imgFormat == ".tiff") ui.comboBox_ImageFormat->setCurrentText("     *.tif");
+	QString imgFormat = userConfig->ImageFormat.toLower(); //图像格式
+	if (imgFormat == ".tiff") imgFormat = ".tif";
+	ui.comboBox_ImageFormat->setCurrentText(headBlankChars + "*" + imgFormat);
 
-	ui.lineEdit_ActualProductSize_W->setText(QString::number(userConfig->ActualProductSize_W));
-	ui.lineEdit_ActualProductSize_H->setText(QString::number(userConfig->ActualProductSize_H));
-	ui.lineEdit_nBasicUnitInRow->setText(QString::number(userConfig->nBasicUnitInRow));
-	ui.lineEdit_nBasicUnitInCol->setText(QString::number(userConfig->nBasicUnitInCol));
+	ui.lineEdit_ActualProductSize_W->setText(QString::number(userConfig->ActualProductSize_W));//产品尺寸
+	ui.lineEdit_ActualProductSize_H->setText(QString::number(userConfig->ActualProductSize_H));//产品尺寸
+	ui.lineEdit_nBasicUnitInRow->setText(QString::number(userConfig->nBasicUnitInRow));//基本单元数
+	ui.lineEdit_nBasicUnitInCol->setText(QString::number(userConfig->nBasicUnitInCol));//基本单元数
+
+	if (userConfig->matchingAccuracyLevel == 1) //匹配精度等级
+		ui.checkBox_matchingAccuracy_high->setChecked(true);
+	else if (userConfig->matchingAccuracyLevel == 2) {
+		ui.checkBox_matchingAccuracy_low->setChecked(true);
+	}
+
+	ui.lineEdit_concaveRateThresh->setText(QString::number(userConfig->concaveRateThresh)); //缺失率阈值
+	ui.lineEdit_convexRateThresh->setText(QString::number(userConfig->convexRateThresh)); //凸起率阈值
 }
 
 //设置光标的位置
@@ -116,6 +123,7 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 	case pcb::UserConfig::Index_None:
 		ui.lineEdit_SampleDirPath->setFocus(); 
 		ui.lineEdit_SampleDirPath->clearFocus(); break;
+
 	case pcb::UserConfig::Index_SampleDirPath:
 		textLen = ui.lineEdit_SampleDirPath->text().length();
 		ui.lineEdit_SampleDirPath->setCursorPosition(textLen);
@@ -125,7 +133,10 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 	case pcb::UserConfig::Index_OutputDirPath:
 		ui.lineEdit_OutputDirPath->setFocus(); break;
 	case pcb::UserConfig::Index_ImageFormat:
-		break;
+		ui.comboBox_ImageFormat->setFocus(); break;
+	case pcb::UserConfig::Index_clusterComPort:
+		ui.comboBox_clusterComPort->setFocus(); break;
+
 	case pcb::UserConfig::Index_ActualProductSize_W:
 		ui.lineEdit_ActualProductSize_W->setFocus(); break;
 	case pcb::UserConfig::Index_ActualProductSize_H:
@@ -134,6 +145,13 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 		ui.lineEdit_nBasicUnitInRow->setFocus(); break;
 	case pcb::UserConfig::Index_nBasicUnitInCol:
 		ui.lineEdit_nBasicUnitInCol->setFocus(); break;
+
+	case pcb::UserConfig::Index_matchingAccuracyLevel:
+		ui.checkBox_matchingAccuracy_high->setFocus(); break;
+	case pcb::UserConfig::Index_concaveRateThresh:
+		ui.lineEdit_concaveRateThresh->setFocus(); break;
+	case pcb::UserConfig::Index_convexRateThresh:
+		ui.lineEdit_convexRateThresh->setFocus(); break;
 	}
 }
 
@@ -344,6 +362,14 @@ void SettingUI::getConfigFromSettingUI()
 	tempConfig.ActualProductSize_H = ui.lineEdit_ActualProductSize_H->text().toInt();
 	tempConfig.nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();//每一行中的基本单元数
 	tempConfig.nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();//每一列中的基本单元数
+
+	int accuracyLevel = 0;
+	if (ui.checkBox_matchingAccuracy_high->isChecked()) accuracyLevel = 1;
+	if (ui.checkBox_matchingAccuracy_low->isChecked()) accuracyLevel = 2;
+	tempConfig.matchingAccuracyLevel = accuracyLevel; //匹配模式
+
+	tempConfig.concaveRateThresh = ui.lineEdit_concaveRateThresh->text().toInt();//缺失率阈值
+	tempConfig.convexRateThresh = ui.lineEdit_convexRateThresh->text().toInt();//凸起率阈值
 }
 
 

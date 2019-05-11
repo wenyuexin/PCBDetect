@@ -29,7 +29,7 @@ AdminConfig::~AdminConfig()
 //加载默认参数
 void AdminConfig::loadDefaultValue()
 {
-	this->errorCode = Uncheck; //错误代码
+	this->errorCode = Unchecked; //错误代码
 	this->MaxMotionStroke = 80 * 5; //机械结构的最大运动行程
 	this->MaxCameraNum = 5; //可用相机的总数
 	this->PixelsNumPerUnitLength = 40; //单位长度内的像素个数
@@ -43,43 +43,43 @@ void AdminConfig::loadDefaultValue()
 //参数有效性检查
 AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index)
 {
-	AdminConfig::ErrorCode code = Uncheck;
+	AdminConfig::ErrorCode code = Unchecked;
 	switch (index)
 	{
 	case pcb::AdminConfig::Index_All:
 	case pcb::AdminConfig::Index_MaxMotionStroke: //机械结构的最大运动行程
 		if (MaxMotionStroke <= 0) 
 			code = Invalid_MaxMotionStroke;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_MaxCameraNum: //可用相机总数
 		if (MaxCameraNum <= 0) 
 			code = Invalid_MaxCameraNum;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_PixelsNumPerUnitLength: //单位长度的像素
 		if (PixelsNumPerUnitLength <= 0) 
 			code = Invalid_PixelsNumPerUnitLength;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageOverlappingRate_W: //分图重叠率(宽)
 		if (ImageOverlappingRate_W <= 0 || ImageOverlappingRate_W >= 1) 
 			code = Invalid_ImageOverlappingRate_W;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageOverlappingRate_H: //分图重叠率(高)
 		if (ImageOverlappingRate_H <= 0 || ImageOverlappingRate_H >= 1)
 			code = Invalid_ImageOverlappingRate_H;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageSize_W: //分图宽度
 		if (ImageSize_W <= 0)
 			code = Invalid_ImageSize_W;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageSize_H: //分图高度
 		if (ImageSize_H <= 0 || ImageSize_H <= PixelsNumPerUnitLength)
 			code = Invalid_ImageSize_H;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageAspectRatio: //图像宽高比
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	}
 
-	if (code == Uncheck) code = ValidConfig;
+	if (code == Unchecked) code = ValidConfig;
 	if (code != ValidConfig || index == Index_All) errorCode = code;
 	return code;
 }
@@ -87,7 +87,7 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 //判断参数是否有效
 bool AdminConfig::isValid(bool doCheck) 
 {
-	if (doCheck && errorCode == AdminConfig::Uncheck)
+	if (doCheck && errorCode == AdminConfig::Unchecked)
 		checkValidity(Index_All);
 	return errorCode == ValidConfig;
 }
@@ -233,6 +233,10 @@ UserConfig::UserConfig()
 	ActualProductSize_H = -1;//产品实际高度,单位mm
 	nBasicUnitInRow = -1; //每一行中的基本单元数
 	nBasicUnitInCol = -1; //每一列中的基本单元数
+
+	matchingAccuracyLevel = 1; //匹配模式：1高精度 2低精度
+	concaveRateThresh = 50; //线路缺失率的阈值
+	convexRateThresh = 50; //线路凸起率的阈值
 }
 
 UserConfig::~UserConfig()
@@ -247,70 +251,87 @@ void UserConfig::loadDefaultValue()
 	dir.cdUp(); //转到上一级目录
 	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
 
-	this->errorCode = Uncheck; //错误代码
+	this->errorCode = Unchecked; //错误代码
 	this->TemplDirPath = appDirPath + "/template";//模板路径
 	this->SampleDirPath = appDirPath + "/sample"; //样本路径
 	this->OutputDirPath = appDirPath + "/output"; //结果路径
 	this->ImageFormat = ".bmp"; //图像后缀
+	this->clusterComPort = "COM1"; //COM口
+
 	this->ActualProductSize_W = 500;//产品实际宽度
 	this->ActualProductSize_H = 300;//产品实际高度
 	this->nBasicUnitInRow = 4; //每一行中的基本单元数
 	this->nBasicUnitInCol = 6; //每一列中的基本单元数
-	this->clusterComPort = "COM1"; //COM口
+
+	this->matchingAccuracyLevel = 1; //匹配精度等级：1高精度 2低精度
+	this->concaveRateThresh = 50; //线路缺失率的阈值
+	this->convexRateThresh = 50; //线路凸起率的阈值
 }
 
 //参数有效性检查
 UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *adminConfig)
 {
-	ErrorCode code = Uncheck;
+	ErrorCode code = Unchecked;
 	switch (index)
 	{
 	case pcb::UserConfig::Index_All:
 	case pcb::UserConfig::Index_TemplDirPath: //模板路径
 		if (TemplDirPath == "" || !QFileInfo(TemplDirPath).isDir())
 			code = Invalid_TemplDirPath;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_SampleDirPath: //样本路径
 		if (SampleDirPath == "" || !QFileInfo(SampleDirPath).isDir())
 			code = Invalid_SampleDirPath;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_OutputDirPath: //输出路径
 		if (OutputDirPath == "" || !QFileInfo(OutputDirPath).isDir())
 			code = Invalid_OutputDirPath;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_ImageFormat: //图像格式
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
+	case pcb::UserConfig::Index_clusterComPort: //COM串口
+		if (code != Unchecked || index != Index_All) break;
+
 	case pcb::UserConfig::Index_ActualProductSize_W: //产品实际宽度
 		if (ActualProductSize_W < 1)
 			code = Invalid_ActualProductSize_W;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_ActualProductSize_H: //产品实际高度
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: UserConfig: checkValidity: adminConfig is null !";
 		if (ActualProductSize_H < 1 || 
 			ActualProductSize_H > adminConfig->MaxMotionStroke)
 			code = Invalid_ActualProductSize_H;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_nBasicUnitInRow: //每一行中的基本单元数
 		if (nBasicUnitInRow < 1)
 			code = Invalid_nBasicUnitInRow;
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_nBasicUnitInCol: //每一列中的基本单元数
 		if (nBasicUnitInCol < 1)
 			code = Invalid_nBasicUnitInCol;
-		if (code != Uncheck || index != Index_All) break;
-	case pcb::UserConfig::Index_clusterComPort: //COM串口
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
+
+	case pcb::UserConfig::Index_matchingAccuracyLevel: //匹配模式
+		if (code != Unchecked || index != Index_All) break;
+	case pcb::UserConfig::Index_concaveRateThresh: //缺失率阈值
+		if (concaveRateThresh <= 0 || concaveRateThresh >= 100)
+			code = Invalid_concaveRateThresh;
+		if (code != Unchecked || index != Index_All) break;
+	case pcb::UserConfig::Index_convexRateThresh: //凸起率阈值
+		if (concaveRateThresh <= 0 || concaveRateThresh >= 100)
+			code = Invalid_convexRateThresh;
+		if (code != Unchecked || index != Index_All) break;
 	}
 
-	if (code == Uncheck) code = ValidConfig;
+	if (code == Unchecked) code = ValidConfig;
 	if (code != ValidConfig || index == Index_All) this->errorCode = code;
 	return code;
 }
 
 //判断参数是否有效
 bool UserConfig::isValid(AdminConfig *adminConfig, bool doCheck) {
-	if (doCheck && this->errorCode == UserConfig::Uncheck)
+	if (doCheck && this->errorCode == UserConfig::Unchecked)
 		checkValidity(Index_All, adminConfig);
 	return this->errorCode == ValidConfig;
 }
@@ -340,6 +361,12 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 		return Index_nBasicUnitInCol;
 	case pcb::UserConfig::Invalid_clusterComPort:
 		return Index_clusterComPort;
+	case pcb::UserConfig::Invalid_matchingAccuracyLevel:
+		return Index_matchingAccuracyLevel;
+	case pcb::UserConfig::Invalid_concaveRateThresh:
+		return Index_concaveRateThresh;
+	case pcb::UserConfig::Invalid_convexRateThresh:
+		return Index_convexRateThresh;
 	}
 	return Index_None;
 }
@@ -363,27 +390,28 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	switch (tempCode)
 	{
 	case pcb::UserConfig::Invalid_SampleDirPath:
-		valueName = pcb::chinese("\"模板路径\""); break;
+		valueName = pcb::chinese("模板路径"); break;
 	case pcb::UserConfig::Invalid_OutputDirPath:
-		valueName = pcb::chinese("\"样本路径\""); break;
+		valueName = pcb::chinese("样本路径"); break;
 	case pcb::UserConfig::Invalid_TemplDirPath:
-		valueName = pcb::chinese("\"输出路径\""); break;
+		valueName = pcb::chinese("输出路径"); break;
 	case pcb::UserConfig::Invalid_ImageFormat:
-		valueName = pcb::chinese("\"图像格式\""); break;
+		valueName = pcb::chinese("图像格式"); break;
 	case pcb::UserConfig::Invalid_ActualProductSize_W:
 	case pcb::UserConfig::Invalid_ActualProductSize_H:
-		valueName = pcb::chinese("\"产品实际尺寸\""); break;
+		valueName = pcb::chinese("产品实际尺寸"); break;
 	case pcb::UserConfig::Invalid_nBasicUnitInRow:
 	case pcb::UserConfig::Invalid_nBasicUnitInCol:
-		valueName = pcb::chinese("\"基本单元数\""); break;
+		valueName = pcb::chinese("基本单元数"); break;
 	case pcb::UserConfig::Invalid_clusterComPort:
-		valueName = pcb::chinese("\"运动控制串口\""); break;
+		valueName = pcb::chinese("运动控制串口"); break;
 	default:
 		valueName = ""; break;
 	}
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
-		pcb::chinese("用户参数无效，请在参数设置界面重新设置") + valueName + "!        \n" +
+		pcb::chinese("用户参数无效，请在参数设置界面重新设置") + valueName + "!  \n" +
+		pcb::chinese("错误来源：") + valueName + "\n"
 		"Config: User: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;
@@ -395,11 +423,16 @@ UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
 	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
 	if (this->OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
 	if (this->ImageFormat != other.ImageFormat) return Index_ImageFormat;
+	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
+
 	if (this->ActualProductSize_W != other.ActualProductSize_W) return Index_ActualProductSize_W;
 	if (this->ActualProductSize_H != other.ActualProductSize_H) return Index_ActualProductSize_H;
 	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
 	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
-	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
+
+	if (this->matchingAccuracyLevel != other.matchingAccuracyLevel) return Index_matchingAccuracyLevel;
+	if (this->concaveRateThresh != other.concaveRateThresh) return Index_concaveRateThresh;
+	if (this->convexRateThresh != other.convexRateThresh) return Index_convexRateThresh;
 	return Index_None;
 }
 
@@ -421,11 +454,16 @@ void UserConfig::copyTo(UserConfig *dst)
 	dst->SampleDirPath = this->SampleDirPath;//样本文件存储路径
 	dst->OutputDirPath = this->OutputDirPath;//检测结果存储路径
 	dst->ImageFormat = this->ImageFormat; //图像后缀
+	dst->clusterComPort = this->clusterComPort; //COM口
+
 	dst->ActualProductSize_W = this->ActualProductSize_W; //产品实际宽度
 	dst->ActualProductSize_H = this->ActualProductSize_H; //产品实际高度
 	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
 	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
-	dst->clusterComPort = this->clusterComPort; //COM口
+
+	dst->matchingAccuracyLevel = this->matchingAccuracyLevel; //匹配模式：0高精度 1低精度
+	dst->concaveRateThresh = this->concaveRateThresh; //线路缺失率的阈值
+	dst->convexRateThresh = this->convexRateThresh; //线路凸起率的阈值
 }
 
 
@@ -696,12 +734,16 @@ bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath, false);
 		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath, false);
 		configurator.jsonReadValue("ImageFormat", config->ImageFormat, false);
+		configurator.jsonReadValue("clusterComPort", config->clusterComPort, false);
 
 		configurator.jsonReadValue("ActualProductSize_W", config->ActualProductSize_W, false);
 		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H, false);
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
-		configurator.jsonReadValue("clusterComPort", config->clusterComPort, false);
+
+		configurator.jsonReadValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
+		configurator.jsonReadValue("concaveRateThresh", config->concaveRateThresh, false);
+		configurator.jsonReadValue("convexRateThresh", config->convexRateThresh, false);
 		configFile.close();
 	}
 	return success;
@@ -726,12 +768,16 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath, false);//模板文件夹
 		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath, false);//输出文件夹
 		configurator.jsonSetValue("ImageFormat", config->ImageFormat, false);//图像格式
-
-		configurator.jsonSetValue("ActualProductSize_W", QString::number(config->ActualProductSize_W), false);
-		configurator.jsonSetValue("ActualProductSize_H", QString::number(config->ActualProductSize_H), false);
-		configurator.jsonSetValue("nBasicUnitInRow", QString::number(config->nBasicUnitInRow), false);
-		configurator.jsonSetValue("nBasicUnitInCol", QString::number(config->nBasicUnitInCol), false);
 		configurator.jsonSetValue("clusterComPort", config->clusterComPort, false);
+
+		configurator.jsonSetValue("ActualProductSize_W", config->ActualProductSize_W, false);
+		configurator.jsonSetValue("ActualProductSize_H", config->ActualProductSize_H, false);
+		configurator.jsonSetValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
+		configurator.jsonSetValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
+
+		configurator.jsonSetValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
+		configurator.jsonSetValue("concaveRateThresh", config->concaveRateThresh, false);
+		configurator.jsonSetValue("convexRateThresh", config->convexRateThresh, false);
 		configFile.close();
 	}
 	return success;

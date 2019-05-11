@@ -12,7 +12,7 @@ using pcb::CvMatVector;
 CameraControler::CameraControler(QThread *parent)
 	: QThread(parent)
 {
-	errorCode = Uncheck; //控制器的错误码
+	errorCode = Unchecked; //控制器的错误码
 	operation = NoOperation;//操作指令
 }
 
@@ -312,7 +312,7 @@ bool CameraControler::showMessageBox(QWidget *parent)
 	QString warningMessage;
 	switch (errorCode)
 	{
-	case CameraControler::Uncheck:
+	case CameraControler::Unchecked:
 		warningMessage = QString::fromLocal8Bit("相机状态未确认！"); break;
 	case CameraControler::InvalidCameraNum:
 		warningMessage = QString::fromLocal8Bit("当前调用的相机个数无效！"); break;

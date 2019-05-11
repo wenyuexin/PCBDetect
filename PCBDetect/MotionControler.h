@@ -36,7 +36,7 @@ public:
 	//运动结构的错误代码
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x400,
+		Unchecked = 0x400,
 		InitFailed = 0x401,
 		MoveForwardFailed = 0x402,
 		ReturnToZeroFailed = 0x403,
