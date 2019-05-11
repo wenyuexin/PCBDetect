@@ -6,30 +6,22 @@ using pcb::UserConfig;
 using pcb::RuntimeParams;
 
 
-AdminSettingUI::AdminSettingUI(QWidget *parent, QRect &screenRect)
+AdminSettingUI::AdminSettingUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
-
-	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(screenRect);
 
 	//变量初始化
 	adminConfig = Q_NULLPTR; //系统参数
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
-
-	//一些初始化操作
-	this->initAdminSettingUI();
 }
 
-AdminSettingUI::~AdminSettingUI()
+void AdminSettingUI::init()
 {
-	qDebug() << "~AdminSettingUI";
-}
+	//多屏状态下选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->screenRect);
 
-void AdminSettingUI::initAdminSettingUI()
-{
 	//设置光标
 	this->setCursorLocation(AdminConfig::Index_None);
 
@@ -48,6 +40,14 @@ void AdminSettingUI::initAdminSettingUI()
 	ui.lineEdit_ImageSize_W->setValidator(&intValidator);
 	ui.lineEdit_ImageSize_H->setValidator(&intValidator);
 }
+
+AdminSettingUI::~AdminSettingUI()
+{
+	qDebug() << "~AdminSettingUI";
+}
+
+
+/***************** 更新界面 ****************/
 
 //更新界面
 void AdminSettingUI::refreshAdminSettingUI()

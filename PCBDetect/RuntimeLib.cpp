@@ -7,9 +7,9 @@ using pcb::RuntimeParams;
 
 RuntimeParams::RuntimeParams()
 {
-	errorCode = Uncheck;
-	errorCode_serialNum = Uncheck;
-	errorCode_sysInit = Uncheck;
+	errorCode = Unchecked;
+	errorCode_serialNum = Unchecked;
+	errorCode_sysInit = Unchecked;
 
 	serialNum = ""; //样本编号
 	sampleModelNum = ""; //型号
@@ -21,8 +21,16 @@ RuntimeParams::RuntimeParams()
 	nCamera = 0; //相机个数
 	nPhotographing = 0; //拍照次数
 
+	//系统辅助参数
 	AppDirPath = ""; //程序所在目录
 	BufferDirPath = ""; //缓存文件夹
+	DeveloperModeEnabled = false; //开启开发者模式
+	
+	QDesktopWidget *desktop = QApplication::desktop();
+	screenRect = desktop->screenGeometry(1); //界面所在的屏幕区域
+	if (screenRect.width() < 1440 || screenRect.height() < 900) {
+		screenRect = desktop->screenGeometry(0);//主屏区域
+	}
 }
 
 RuntimeParams::~RuntimeParams()
@@ -34,7 +42,7 @@ RuntimeParams::~RuntimeParams()
 //重置产品序号
 void RuntimeParams::resetSerialNum()
 {
-	errorCode_serialNum = Uncheck;
+	errorCode_serialNum = Unchecked;
 	serialNum = ""; //样本编号
 	sampleModelNum = ""; //型号
 	sampleBatchNum = ""; //批次号
@@ -44,12 +52,12 @@ void RuntimeParams::resetSerialNum()
 //加载默认的运行参数
 void RuntimeParams::loadDefaultValue()
 {
-	errorCode = Uncheck;
+	errorCode = Unchecked;
 	resetSerialNum(); //重置产品序号
 	currentRow_detect = -1; //检测行号
 	currentRow_extract = -1; //提取行号
 
-	errorCode_sysInit = Uncheck;
+	errorCode_sysInit = Unchecked;
 	singleMotionStroke = 79.0; //运功动结构的单步行程
 	nCamera = 5; //相机个数
 	nPhotographing = 4; //拍照次数
@@ -73,7 +81,7 @@ RuntimeParams::ErrorCode RuntimeParams::calcSingleMotionStroke(AdminConfig *admi
 	//this->singleMotionStroke = 79;
 
 	//判断参数有效性
-	ErrorCode code = ErrorCode::Uncheck;
+	ErrorCode code = ErrorCode::Unchecked;
 	code = checkValidity(ParamsIndex::Index_singleMotionStroke, adminConfig);
 	return code;
 }
@@ -98,7 +106,7 @@ RuntimeParams::ErrorCode RuntimeParams::calcItemGridSize(AdminConfig *adminConfi
 	//this->nPhotographing = 3;
 
 	//判断参数有效性
-	ErrorCode code = ErrorCode::Uncheck;
+	ErrorCode code = ErrorCode::Unchecked;
 	code = checkValidity(ParamsIndex::Index_nCamera, adminConfig);
 	if (code != ValidValue) return code;
 	code = checkValidity(ParamsIndex::Index_nPhotographing, adminConfig);
@@ -122,7 +130,7 @@ RuntimeParams::ErrorCode RuntimeParams::calcInitialPhotoPos(pcb::AdminConfig *ad
 	//this->initialPhotoPos = 245 - 80;
 
 	//判断参数有效性
-	ErrorCode code = ErrorCode::Uncheck;
+	ErrorCode code = ErrorCode::Unchecked;
 	code = checkValidity(ParamsIndex::Index_initialPhotoPos, adminConfig);
 	return code;
 }
@@ -153,7 +161,7 @@ RuntimeParams::ErrorCode RuntimeParams::parseSerialNum()
 //参数有效性检查
 RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminConfig *adminConfig)
 {
-	ErrorCode code = ErrorCode::Uncheck;
+	ErrorCode code = ErrorCode::Unchecked;
 	switch (index)
 	{
 	case pcb::RuntimeParams::Index_All:
@@ -164,28 +172,28 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 		if (serialNum.size() != serialNumSlice[0] || serialNum.toDouble() == 0) {
 			code = Invalid_serialNum;
 		}
-		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
+		if (code != Unchecked || index != Index_All || index != Index_All_SerialNum) break;
 	case pcb::RuntimeParams::Index_sampleModelNum:
 		if (sampleModelNum == "" || sampleModelNum.size() > serialNumSlice[1]) {
 			code = Invalid_sampleModelNum;
 		}
-		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
+		if (code != Unchecked || index != Index_All || index != Index_All_SerialNum) break;
 	case pcb::RuntimeParams::Index_sampleBatchNum:
 		if (sampleBatchNum == "" || sampleBatchNum.size() > serialNumSlice[2]) {
 			code = Invalid_sampleBatchNum;
 		}
-		if (code != Uncheck || index != Index_All || index != Index_All_SerialNum) break;
+		if (code != Unchecked || index != Index_All || index != Index_All_SerialNum) break;
 	case pcb::RuntimeParams::Index_sampleNum:
 		if (sampleNum == "" || sampleNum.size() > serialNumSlice[3]) {
 			code = Invalid_sampleNum;
 		}
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 
 	//检测行号与提取行号
 	case pcb::RuntimeParams::Index_currentRow_detect:
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::RuntimeParams::Index_currentRow_extract:
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 
 	//初始化相关参数
 	case pcb::RuntimeParams::Index_All_SysInit:
@@ -195,21 +203,21 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 		if (singleMotionStroke <= 0 || singleMotionStroke > adminConfig->MaxMotionStroke) {
 			code = Invalid_singleMotionStroke;
 		}
-		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
+		if (code != Unchecked || index != Index_All || index != Index_All_SysInit) break;
 	case pcb::RuntimeParams::Index_nCamera: //相机个数
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
 		if (nCamera <= 0 || nCamera > adminConfig->MaxCameraNum) {
 			code = Invalid_nCamera;
 		}
-		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
+		if (code != Unchecked || index != Index_All || index != Index_All_SysInit) break;
 	case pcb::RuntimeParams::Index_nPhotographing: //拍照次数
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
 		if (nPhotographing * singleMotionStroke > adminConfig->MaxMotionStroke) {
 			code = Invalid_nPhotographing; 
 		}
-		if (code != Uncheck || index != Index_All) break;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::RuntimeParams::Index_initialPhotoPos: //初始拍照位置
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
@@ -218,11 +226,11 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 		{
 			code = Invalid_initialPhotoPos;
 		}
-		if (code != Uncheck || index != Index_All || index != Index_All_SysInit) break;
+		if (code != Unchecked || index != Index_All || index != Index_All_SysInit) break;
 	}
 
 	//代码值等于Uncheck表示检测的参数有效
-	if (code == Uncheck) code = ValidParams;
+	if (code == Unchecked) code = ValidParams;
 
 	//更新错误代码
 	if (code != ValidParams || index == Index_All) {
@@ -255,21 +263,21 @@ bool RuntimeParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminC
 	
 	//所有参数
 	if (index == Index_All) {
-		if (doCheck && errorCode == RuntimeParams::Uncheck)
+		if (doCheck && errorCode == RuntimeParams::Unchecked)
 			checkValidity(index, adminConfig);
 		return (errorCode == ValidParams);
 	}
 
 	//初始化相关参数
 	if (index == Index_All_SysInit) {
-		if (doCheck && errorCode_sysInit == RuntimeParams::Uncheck)
+		if (doCheck && errorCode_sysInit == RuntimeParams::Unchecked)
 			checkValidity(index, adminConfig);
 		return (errorCode_sysInit == ValidValues);
 	}
 
 	//产品序号相关参数
 	if (index == Index_All_SerialNum) {
-		if (doCheck && errorCode_serialNum == RuntimeParams::Uncheck)
+		if (doCheck && errorCode_serialNum == RuntimeParams::Unchecked)
 			checkValidity(index);
 		return (errorCode_serialNum == ValidValues);
 	}
@@ -288,9 +296,9 @@ RuntimeParams::ErrorCode RuntimeParams::getErrorCode(ParamsIndex index)
 //重置错误代码
 void RuntimeParams::resetErrorCode(ParamsIndex index)
 { 
-	if (index == Index_All) errorCode = Uncheck; 
-	else if (index == Index_All_SysInit) errorCode_sysInit = Uncheck;
-	else if (index == Index_All_SerialNum) errorCode_serialNum = Uncheck;
+	if (index == Index_All) errorCode = Unchecked; 
+	else if (index == Index_All_SysInit) errorCode_sysInit = Unchecked;
+	else if (index == Index_All_SerialNum) errorCode_serialNum = Unchecked;
 }
 
 //弹窗报错
@@ -302,7 +310,7 @@ bool RuntimeParams::showMessageBox(QWidget *parent, ErrorCode code)
 	QString valueName;
 	switch (tempCode)
 	{
-	case pcb::RuntimeParams::Uncheck:
+	case pcb::RuntimeParams::Unchecked:
 		valueName = pcb::chinese("\"参数未验证\""); break;
 	case pcb::RuntimeParams::Invalid_serialNum:
 	case pcb::RuntimeParams::Invalid_sampleModelNum:

@@ -24,8 +24,9 @@ private:
 	int sysResetCode = 0b000000000; //系统重置代码
 
 public:
-	AdminSettingUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
+	AdminSettingUI(QWidget *parent = Q_NULLPTR);
 	~AdminSettingUI();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
