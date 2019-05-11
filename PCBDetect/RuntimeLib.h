@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QString>
+#include <QDesktopWidget>
 #include "Configurator.h"
 
 
@@ -69,7 +70,14 @@ namespace pcb
 	class RuntimeParams
 	{
 	public:
-		QString serialNum;
+		//系统辅助参数
+		QString AppDirPath; //程序所在目录
+		QString BufferDirPath; //缓存文件夹
+		bool DeveloperModeEnabled; //开启开发者模式
+		QRect screenRect; //界面所在的屏幕区域
+
+		//系统运行所需的关键参数
+		QString serialNum; //产品序号
 		QString sampleModelNum; //型号
 		QString sampleBatchNum; //批次号
 		QString sampleNum; //样本编号
@@ -81,9 +89,6 @@ namespace pcb
 		int nCamera; //相机个数
 		int nPhotographing; //拍照次数
 		double initialPhotoPos; //初始拍照位置
-
-		QString AppDirPath; //程序所在目录
-		QString BufferDirPath; //缓存文件夹
 
 		enum ParamsIndex {
 			Index_All,
@@ -112,7 +117,7 @@ namespace pcb
 			ValidParams = 0x000,
 			ValidValue = 0x000,
 			ValidValues = 0x000,
-			Uncheck = 0x300,
+			Unchecked = 0x300,
 			Invalid_serialNum = 0x301,
 			Invalid_sampleModelNum = 0x302,
 			Invalid_sampleBatchNum = 0x303,

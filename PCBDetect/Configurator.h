@@ -21,16 +21,15 @@
 #include <string>
 #include <vector>
 #include <iostream>
-//#include "windows.h"
 
 
+//参数类与参数配置器
 namespace pcb 
 {
 #ifndef PCB_FUNCTIONS_CHINESE
 #define PCB_FUNCTIONS_CHINESE
 	inline QString chinese(const QByteArray &src) { return QString::fromLocal8Bit(src); }
 #endif //PCB_FUNCTIONS_CHINESE
-
 
 
 #ifndef CLASS_ADMIN_CONFIG
@@ -65,7 +64,7 @@ namespace pcb
 		enum ErrorCode {
 			ValidConfig = 0x000,
 			ValidValue = 0x000,
-			Uncheck = 0x100,
+			Unchecked = 0x100,
 			ConfigFileMissing = 0x101,
 			Invalid_MaxMotionStroke = 0x102,
 			Invalid_MaxCameraNum = 0x103,
@@ -79,7 +78,7 @@ namespace pcb
 		};
 
 	private:
-		ErrorCode errorCode = Uncheck;
+		ErrorCode errorCode = Unchecked;
 
 	public:
 		AdminConfig();
@@ -89,7 +88,7 @@ namespace pcb
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
 		bool isValid(bool doCheck = false);
 		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
-		inline void resetErrorCode() { errorCode = Uncheck; }
+		inline void resetErrorCode() { errorCode = Unchecked; }
 		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
 		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转参数索引
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
@@ -112,11 +111,16 @@ namespace pcb
 		QString SampleDirPath;//样本路径
 		QString OutputDirPath;//结果路径
 		QString ImageFormat; //图像后缀
+		QString clusterComPort; //COM串口
+
 		int ActualProductSize_W;//产品实际宽度,单位mm
 		int ActualProductSize_H;//产品实际高度,单位mm
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
-		QString clusterComPort; //COM串口
+
+		int matchingAccuracyLevel; //匹配精度等级：1高精度 2低精度
+		int concaveRateThresh; //线路缺失率的阈值
+		int convexRateThresh; //线路凸起率的阈值
 
 		//参数索引
 		enum ConfigIndex {
@@ -126,33 +130,39 @@ namespace pcb
 			Index_SampleDirPath,
 			Index_OutputDirPath,
 			Index_ImageFormat,
+			Index_clusterComPort,
 			Index_ActualProductSize_W,
 			Index_ActualProductSize_H,
 			Index_nBasicUnitInRow,
 			Index_nBasicUnitInCol,
-			Index_clusterComPort
+			Index_matchingAccuracyLevel,
+			Index_concaveRateThresh,
+			Index_convexRateThresh
 		};
 
 		//错误代码
 		enum ErrorCode {
 			ValidConfig = 0x000,
 			ValidValue = 0x000,
-			Uncheck = 0x200,
+			Unchecked = 0x200,
 			ConfigFileMissing = 0x201,
 			Invalid_TemplDirPath = 0x202,
 			Invalid_SampleDirPath = 0x203,
 			Invalid_OutputDirPath = 0x204,
 			Invalid_ImageFormat = 0x205,
-			Invalid_ActualProductSize_W = 0x206,
-			Invalid_ActualProductSize_H = 0x207,
-			Invalid_nBasicUnitInRow = 0x208,
-			Invalid_nBasicUnitInCol = 0x209,
-			Invalid_clusterComPort = 0x20A,
+			Invalid_clusterComPort = 0x206,
+			Invalid_ActualProductSize_W = 0x207,
+			Invalid_ActualProductSize_H = 0x208,
+			Invalid_nBasicUnitInRow = 0x209,
+			Invalid_nBasicUnitInCol = 0x20A,
+			Invalid_matchingAccuracyLevel = 0x20B,
+			Invalid_concaveRateThresh = 0x20C,
+			Invalid_convexRateThresh = 0x20D,
 			Default = 0x2FF
 		};
 
 	private:
-		ErrorCode errorCode = Uncheck;
+		ErrorCode errorCode = Unchecked;
 
 	public:
 		UserConfig();
@@ -162,7 +172,7 @@ namespace pcb
 		ErrorCode checkValidity(ConfigIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
 		bool isValid(AdminConfig *adminConfig = Q_NULLPTR, bool doCheck = false);
 		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; } //标记文件丢失
-		inline void resetErrorCode() { errorCode = Uncheck; } //重置错误代码
+		inline void resetErrorCode() { errorCode = Unchecked; } //重置错误代码
 		inline ErrorCode getErrorCode() { return errorCode; } //获取错误代码
 		static ConfigIndex convertCodeToIndex(ErrorCode code); //错误代码转索引
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
@@ -172,7 +182,6 @@ namespace pcb
 		void copyTo(UserConfig *dst); //拷贝参数
 	};
 #endif //CLASS_DETECT_CONFIG
-
 
 
 #ifndef CLASS_CONFIGURATOR
@@ -199,10 +208,10 @@ namespace pcb
 		bool jsonReadValue(const QString &key, int &value, bool decode); //读int
 		bool jsonReadValue(const QString &key, double &value, bool decode); //读double
 
-		static bool loadConfigFile(const QString &fileName, UserConfig *config);
-		static bool saveConfigFile(const QString &fileName, UserConfig *config);
 		static bool loadConfigFile(const QString &fileName, AdminConfig *config);
 		static bool saveConfigFile(const QString &fileName, AdminConfig *config);
+		static bool loadConfigFile(const QString &fileName, UserConfig *config);
+		static bool saveConfigFile(const QString &fileName, UserConfig *config);
 
 		//quint64 getDiskFreeSpace(QString driver);
 		bool checkDir(QString dirpath);

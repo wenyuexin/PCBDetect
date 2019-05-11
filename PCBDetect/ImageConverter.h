@@ -24,7 +24,7 @@ public:
 
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x600,
+		Unchecked = 0x600,
 		Invalid_ImageNum = 0x601,
 		Invalid_ImageSize = 0x602,
 		Default = 0x6FF

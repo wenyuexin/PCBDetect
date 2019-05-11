@@ -8,6 +8,7 @@
 #include "AdminSettingUI.h"
 #include <QDesktopWidget>
 #include <QRegExpValidator>
+#include <QButtonGroup>
 
 
 //参数设置界面
@@ -18,7 +19,9 @@ class SettingUI : public QWidget
 private:
 	Ui::SettingUI ui;
 	QRect screenRect; //屏幕显示区域
-	
+	QRegExpValidator *NumberValidator;
+	QButtonGroup matchingCheckBoxGroup;
+
 	pcb::AdminConfig *adminConfig; //系统参数
 	PassWordUI passWordUI; //系统设置登录界面
 	AdminSettingUI *adminSettingUI; //系统设置界面
@@ -33,19 +36,18 @@ private:
 	int sysResetCode; //系统重置代码
 
 public:
-	SettingUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
+	SettingUI(QWidget *parent = Q_NULLPTR);
 	~SettingUI();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 
-	void doConnect(); //信号连接
 	void refreshSettingUI(); //更新设置界面
 	void setPushButtonsEnabled(bool code); //按键设置
 
 private:
-	void initSettingUI();
 	void getConfigFromSettingUI();
 	void setCursorLocation(pcb::UserConfig::ConfigIndex code);
 

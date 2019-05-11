@@ -28,8 +28,9 @@ private:
 	CameraControler *cameraControler; //Ïà»ú¿ØÖÆÆ÷
 
 public:
-	LaunchUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
+	LaunchUI(QWidget *parent = Q_NULLPTR);
 	~LaunchUI();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig* ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig* ptr) { userConfig = ptr; }
