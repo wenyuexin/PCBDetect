@@ -54,7 +54,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-image: url(:/PCBDetect/Icons/logo.png);</string>
+     <string notr="true">border-image: url(:/PCBDetect/icons/logo.png);</string>
     </property>
     <property name="text">
      <string/>
@@ -165,7 +165,7 @@
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-image: url(:/PCBDetect/Icons/set.png);</string>
+          <string notr="true">border-image: url(:/PCBDetect/icons/set.png);</string>
          </property>
          <property name="text">
           <string/>
@@ -292,7 +292,7 @@
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-image: url(:/PCBDetect/Icons/getTempl.png);</string>
+          <string notr="true">border-image: url(:/PCBDetect/icons/getTempl.png);</string>
          </property>
          <property name="text">
           <string/>
@@ -413,7 +413,7 @@
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-image: url(:/PCBDetect/Icons/detect.png);</string>
+          <string notr="true">border-image: url(:/PCBDetect/icons/detect.png);</string>
          </property>
          <property name="text">
           <string/>
@@ -534,7 +534,7 @@
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">border-image: url(:/PCBDetect/Icons/exit.png);</string>
+          <string notr="true">border-image: url(:/PCBDetect/icons/exit.png);</string>
          </property>
          <property name="text">
           <string/>
