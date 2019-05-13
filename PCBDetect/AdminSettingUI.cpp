@@ -20,7 +20,7 @@ AdminSettingUI::AdminSettingUI(QWidget *parent)
 void AdminSettingUI::init()
 {
 	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(runtimeParams->screenRect);
+	this->setGeometry(runtimeParams->ScreenRect);
 
 	//设置光标
 	this->setCursorLocation(AdminConfig::Index_None);

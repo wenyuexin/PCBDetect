@@ -30,7 +30,7 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 void SerialNumberUI::init()
 {
 	//多屏状态下选择在副屏全屏显示
-	this->setGeometry(runtimeParams->screenRect);
+	this->setGeometry(runtimeParams->ScreenRect);
 
 	//获取绘图控件QGraphicsView的位置
 	QPoint graphicsViewPos = ui.graphicsView->pos();
@@ -38,22 +38,6 @@ void SerialNumberUI::init()
 	graphicsViewRect = QRect(graphicsViewPos, graphicsViewSize);
 	ui.graphicsView->setScene(&graphicsScene);
 
-	//界面初始化
-	this->initSerialNumberUI();
-}
-
-SerialNumberUI::~SerialNumberUI()
-{
-	qDebug() << "~SerialNumberUI";
-	deleteImageItem();
-}
-
-
-/*************** 界面的初始化、设置、更新 **************/
-
-//界面初始化
-void SerialNumberUI::initSerialNumberUI()
-{
 	//限制参数的输入范围
 	QIntValidator intValidator;
 	ui.lineEdit_roi_tl_x->setValidator(&intValidator);
@@ -83,6 +67,15 @@ void SerialNumberUI::initSerialNumberUI()
 	}
 }
 
+SerialNumberUI::~SerialNumberUI()
+{
+	qDebug() << "~SerialNumberUI";
+	deleteImageItem();
+}
+
+
+/*************** 界面的初始化、设置、更新 **************/
+
 //初始化CheckBox 使得同一时刻只有一个box可以选
 void SerialNumberUI::initCheckBoxGroup()
 {
@@ -109,7 +102,7 @@ void SerialNumberUI::setSerialNumberUIEnabled(bool enable)
 }
 
 //重置序号识别界面
-void SerialNumberUI::resetSerialNumberUI()
+void SerialNumberUI::reset()
 {
 	ui.checkBox_roi_tl->setChecked(true);
 	ui.checkBox_roi_tl->setChecked(false);
@@ -132,6 +125,8 @@ void SerialNumberUI::resetSerialNumberUI()
 //获取包含产品序号的ROI区域
 void SerialNumberUI::on_pushButton_getROI_clicked()
 {
+	if (runtimeParams->DeveloperMode) return;
+
 	ui.checkBox_roi_tl->setChecked(false);
 	ui.checkBox_roi_br->setChecked(false);
 	this->setSerialNumberUIEnabled(false);
@@ -157,28 +152,34 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 //识别产品序号 - 此处调用OCR模块
 void SerialNumberUI::on_pushButton_recognize_clicked()
 {
+	if (runtimeParams->DeveloperMode) return;
+
+	//禁用部分控件
 	this->setSerialNumberUIEnabled(false);
+	
+	//加载图像
 	PIX *img = pixRead(roiFilePath.toStdString().c_str());
 	char *text = NULL;
 
-	//加载图像
+	//字符识别
 	TessBaseAPISetImage2(ocrHandle, img);
 	if (TessBaseAPIRecognize(ocrHandle, NULL) != 0) {
-		showMessageBox(this, Invalid_RoiData); return;
-		//die("Error in Tesseract recognition\n");
+		showMessageBox(this, Invalid_RoiData); 
+		this->setSerialNumberUIEnabled(true); return;
 	}
 
-	//识别产品序号
+	//序号转换
 	if ((text = TessBaseAPIGetUTF8Text(ocrHandle)) == NULL) {
-		showMessageBox(this, RecognizeFailed); return;
-		//die("Error getting text\n");
+		showMessageBox(this, RecognizeFailed); 
+		this->setSerialNumberUIEnabled(true); return;
 	}
 
+	//序号预处理
 	QString serialNum = QString(text);
 	serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
 	serialNum = pcb::eraseNonDigitalCharInHeadAndTail(serialNum);//删除首尾的非数字字符
 	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
-	this->setSerialNumberUIEnabled(true);
+	this->setSerialNumberUIEnabled(true); //启用部分控件
 
 	//检查产品序号是否有效
 	runtimeParams->serialNum = serialNum;
@@ -226,6 +227,8 @@ void SerialNumberUI::on_pushButton_return_clicked()
 //在graphicView中显示分图
 void SerialNumberUI::showSampleImage(int row, int col)
 {
+	if (runtimeParams->DeveloperMode) return;
+
 	gridRowIdx = row; //当前分图所在行
 	gridColIdx = col; //当前分图所在列
 
@@ -267,6 +270,8 @@ void SerialNumberUI::deleteImageItem()
 //鼠标按下事件
 void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 {
+	if (runtimeParams->DeveloperMode) return;
+
 	//鼠标左键单击获取左上角点
 	if (event->button() == Qt::LeftButton && ui.checkBox_roi_tl->isChecked()) { 
 		if (!graphicsViewRect.contains(event->pos())) return; //区域判断
@@ -339,7 +344,7 @@ bool SerialNumberUI::isPressPosInGraphicViewRect(QPoint mousePressPos)
 	return selectRect.contains(mousePressPos);
 }
 
-// 根据beginPoint , endPoint 获取当前选中的矩形 - 暂时没用
+//根据beginPoint和endPoint计算当前选中的矩形 - 暂时没用
 QRect SerialNumberUI::getRect(const QPoint &beginPoint, const QPoint &endPoint)
 {
 	int x, y, width, height;

@@ -84,7 +84,7 @@ private:
 	void removeItemsFromGraphicsScene();//移除场景中的图元
 
 	void showSampleImages();
-	void readSampleImages2();
+	void readSampleImages();
 	void detectSampleImages(); //检测
 
 Q_SIGNALS:
@@ -102,6 +102,7 @@ private Q_SLOTS:
 	void on_resetControlerFinished_motion(int);
 	void on_moveToInitialPosFinished_motion();
 	void on_moveForwardFinished_motion();
+
 	void on_initCamerasFinished_camera(int);
 	void on_takePhotosFinished_camera(int);
 	void on_convertFinished_convertThread();

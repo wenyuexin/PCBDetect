@@ -23,7 +23,7 @@ SettingUI::SettingUI(QWidget *parent)
 void SettingUI::init()
 {
 	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(runtimeParams->screenRect);
+	this->setGeometry(runtimeParams->ScreenRect);
 
 	//设置聚焦策略
 	this->setFocusPolicy(Qt::ClickFocus);
