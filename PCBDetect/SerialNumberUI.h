@@ -74,13 +74,12 @@ public:
 	inline void setGridIndex(int row, int col) { gridRowIdx = row; gridColIdx = col; }
 
 	void showSampleImage(int row, int col);
-	void resetSerialNumberUI();
+	void reset();
 
 private:
 	bool isPressPosInGraphicViewRect(QPoint mousePressPos);
 	QRect getRect(const QPoint &beginPoint, const QPoint &endPoint);
 
-	void initSerialNumberUI();
 	void initCheckBoxGroup();
 	void setSerialNumberUIEnabled(bool);
 
@@ -94,8 +93,8 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void on_pushButton_getROI_clicked();
-	void on_pushButton_confirm_clicked();
 	void on_pushButton_recognize_clicked();
+	void on_pushButton_confirm_clicked();
 	void on_pushButton_return_clicked();
 
 	void mousePressEvent(QMouseEvent *event);

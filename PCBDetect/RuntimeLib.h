@@ -73,8 +73,12 @@ namespace pcb
 		//系统辅助参数
 		QString AppDirPath; //程序所在目录
 		QString BufferDirPath; //缓存文件夹
-		bool DeveloperModeEnabled; //开启开发者模式
-		QRect screenRect; //界面所在的屏幕区域
+		QString currentSampleFolder; //当前样本图所在目录
+		QString currentTemplFolder; //当前模板图所在目录
+		QString currentOutputFolder; //当前的结果存储目录
+		bool DeveloperMode; //开启开发者模式
+		QRect ScreenRect; //界面所在的屏幕区域
+		//long systemState; //系统状态值
 
 		//系统运行所需的关键参数
 		QString serialNum; //产品序号

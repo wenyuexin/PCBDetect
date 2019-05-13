@@ -21,7 +21,7 @@ LaunchUI::LaunchUI(QWidget *parent)
 void LaunchUI::init()
 {
 	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(runtimeParams->screenRect);
+	this->setGeometry(runtimeParams->ScreenRect);
 
 	//启动界面不显示鼠标
 	this->setCursor(Qt::BlankCursor);

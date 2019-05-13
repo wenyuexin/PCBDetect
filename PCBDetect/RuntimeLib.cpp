@@ -24,12 +24,12 @@ RuntimeParams::RuntimeParams()
 	//系统辅助参数
 	AppDirPath = ""; //程序所在目录
 	BufferDirPath = ""; //缓存文件夹
-	DeveloperModeEnabled = false; //开启开发者模式
+	DeveloperMode = false; //开启开发者模式
 	
 	QDesktopWidget *desktop = QApplication::desktop();
-	screenRect = desktop->screenGeometry(1); //界面所在的屏幕区域
-	if (screenRect.width() < 1440 || screenRect.height() < 900) {
-		screenRect = desktop->screenGeometry(0);//主屏区域
+	ScreenRect = desktop->screenGeometry(1); //界面所在的屏幕区域
+	if (ScreenRect.width() < 1440 || ScreenRect.height() < 900) {
+		ScreenRect = desktop->screenGeometry(0);//主屏区域
 	}
 }
 
@@ -245,6 +245,11 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 	}
 
 	//更新错误代码 - 产品序号相关参数
+	//if (index == Index_All_SerialNum && code == ValidParams) {
+	//	QString dirpath = userConfig->SampleDirPath + "/" + runtimeParams->sampleModelNum + "/"
+	//		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
+	//}
+
 	if (index == Index_All_SerialNum || 
 		(code != ValidParams && index >= Index_serialNum && index <= Index_sampleNum))
 	{

@@ -21,7 +21,7 @@ TemplateUI::TemplateUI(QWidget *parent)
 void TemplateUI::init()
 {
 	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(runtimeParams->screenRect);
+	this->setGeometry(runtimeParams->ScreenRect);
 
 	//设置检测界面的聚焦策略
 	this->setFocusPolicy(Qt::ClickFocus);
@@ -107,7 +107,7 @@ void TemplateUI::initGraphicsView()
 //重置模板提取界面
 void TemplateUI::resetTemplateUI()
 {
-	serialNumberUI.resetSerialNumberUI();//重置序号识别界面
+	serialNumberUI.reset();//重置序号识别界面
 
 	ui.label_status->setText(""); //清空状态栏
 	removeItemsFromGraphicsScene(); //移除场景中已经加载的图元
