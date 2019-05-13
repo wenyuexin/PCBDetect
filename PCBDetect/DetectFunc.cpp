@@ -35,9 +35,14 @@ DetectFunc::~DetectFunc()
 //生成完整尺寸的缺陷检测图像
 void DetectFunc::generateBigTempl()
 {
-	Size templSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera,
-		adminConfig->ImageSize_H * runtimeParams->nPhotographing);
-	big_templ = Mat(templSize, CV_8UC3);
+	widthZoom = widthWholeImg / (adminConfig->ImageSize_W* runtimeParams->nCamera);
+	heightZoom = heightWholeImg / (adminConfig->ImageSize_H*runtimeParams->nPhotographing);
+	widthUnit = (int)(widthZoom * adminConfig->ImageSize_W);
+	heightUnit = (int)(heightZoom * adminConfig->ImageSize_H);
+	widthWholeImg = widthUnit * runtimeParams->nCamera;
+	heightWholeImg = heightUnit * runtimeParams->nPhotographing;
+
+	big_templ = Mat(Size(widthWholeImg, heightWholeImg), CV_8UC3);
 }
 
 
@@ -426,6 +431,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 	Mat sampGrayRegCopy = sampGrayReg.clone();
 	cvtColor(sampGrayRegCopy, sampGrayRegCopy, COLOR_GRAY2BGR);
+	cv::Mat sampGrayRegCopyZoom;
+	cv::resize(sampGrayRegCopy, sampGrayRegCopyZoom, cv::Size(widthUnit, heightUnit), (0, 0), (0, 0), cv::INTER_LINEAR);
 
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i>   hierarchy;
@@ -657,7 +664,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 
 		//在配准后的样本图的克隆上绘制缺陷(排除所有伪缺陷后再绘制
-		rectangle(sampGrayRegCopy, rect_out, Scalar(0, 0, 255),6);
+		rectangle(sampGrayRegCopyZoom, Rect((int)(rect_out.x*widthZoom), (int)(rect_out.y*heightZoom), (int)(rect_out.width*heightZoom), (int)(rect_out.height*heightZoom)), Scalar(0, 0, 255), 2);
 		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + userConfig->ImageFormat.toStdString(), imgSeg);
 	}
 
