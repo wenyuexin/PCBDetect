@@ -32,7 +32,7 @@ public:
         label_background = new QLabel(LaunchUI);
         label_background->setObjectName(QStringLiteral("label_background"));
         label_background->setGeometry(QRect(0, 0, 1441, 901));
-        label_background->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/screen.png);"));
+        label_background->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/screen.png);"));
         label = new QLabel(LaunchUI);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(220, 169, 991, 131));

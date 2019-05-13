@@ -54,10 +54,14 @@ public:
 	~PCBDetect();
 
 private:
+	bool checkSystemState(bool);
 	void showSettingUI();
-	void showDetectUI();
+	void switchToTemplateUI();
 	void showTemplateUI();
+	void switchToDetectUI();
+	void showDetectUI();
 	void eixtDetectSystem();
+	void switchDeveloperMode();
 
 private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
