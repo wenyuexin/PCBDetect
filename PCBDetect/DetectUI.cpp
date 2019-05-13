@@ -23,7 +23,7 @@ DetectUI::DetectUI(QWidget *parent)
 void DetectUI::init()
 {
 	//选择在主屏还是副屏上显示
-	this->setGeometry(runtimeParams->screenRect);
+	this->setGeometry(runtimeParams->ScreenRect);
 
 	//设置检测界面的聚焦策略
 	this->setFocusPolicy(Qt::ClickFocus);
@@ -127,7 +127,7 @@ void DetectUI::initGraphicsView()
 //重置检测子界面
 void DetectUI::resetDetectUI()
 {
-	serialNumberUI->resetSerialNumberUI();//重置序号识别界面
+	serialNumberUI->reset();//重置序号识别界面
 
 	ui.label_status->setText(""); //清空状态栏
 	ui.label_indicator->setPixmap(defaultIcon); //切换指示灯
@@ -301,17 +301,24 @@ void DetectUI::removeItemsFromGraphicsScene()
 //开始检测新的PCB板
 void DetectUI::on_pushButton_start_clicked()
 {
-	if (runtimeParams->currentRow_detect == -1 && !detectThread->isRunning()) {
-		ui.label_status->setText(pcb::chinese("开始运行"));
-		this->setPushButtonsEnabled(false); //禁用按键
-
-		//重置检测子模块
-		this->resetDetectUI();
-		//运动到初始拍照位置
-		ui.label_status->setText(pcb::chinese("运动结构前进中"));
-		qApp->processEvents();
-		motionControler->setOperation(MotionControler::MoveToInitialPos);
-		motionControler->start();
+	ui.label_status->setText(pcb::chinese("开始运行")); //更新状态
+	this->setPushButtonsEnabled(false); //禁用按键
+	this->resetDetectUI(); //重置检测子模块
+	
+	if (runtimeParams->DeveloperMode) { //开发者模式
+		serialNumberUI->reset(); //重置
+		serialNumberUI->showFullScreen(); //直接显示产品序号界面
+		pcb::delay(10);//延迟
+		this->hide(); //隐藏检测界面
+	}
+	else { //标准模式
+		if (runtimeParams->currentRow_detect == -1 && !detectThread->isRunning()) {
+			//运动到初始拍照位置
+			ui.label_status->setText(pcb::chinese("运动结构前进中"));
+			qApp->processEvents();
+			motionControler->setOperation(MotionControler::MoveToInitialPos);
+			motionControler->start();
+		}
 	}
 }
 
@@ -324,14 +331,16 @@ void DetectUI::on_pushButton_return_clicked()
 	this->resetDetectUI(); 
 
 	//运动结构复位
-	ui.label_status->setText(pcb::chinese("运动结构复位中"));
-	qApp->processEvents();
-	motionControler->setOperation(MotionControler::ResetControler);
-	motionControler->start();
-	while (motionControler->isRunning()) pcb::delay(100);//等待复位结束
-	if (!motionControler->isReady()) {
-		motionControler->showMessageBox(this);
-		pcb::delay(10);
+	if (!runtimeParams->DeveloperMode) {
+		ui.label_status->setText(pcb::chinese("运动结构复位中"));
+		qApp->processEvents();
+		motionControler->setOperation(MotionControler::ResetControler);
+		motionControler->start();
+		while (motionControler->isRunning()) pcb::delay(100);//等待复位结束
+		if (!motionControler->isReady()) {
+			motionControler->showMessageBox(this);
+			pcb::delay(10);
+		}
 	}
 
 	//设置按键
@@ -378,7 +387,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 				pcb::chinese("行分图"));//更新状态
 			qApp->processEvents();
 
-			readSampleImages2(); //读图 - 相当于相机拍照		
+			readSampleImages(); //读图 - 相当于相机拍照		
 		}
 		break;
 	case Qt::Key_Enter:
@@ -394,16 +403,18 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 /***************** 读图、显示与提取 *****************/
 
 //读取相机组拍摄的一组分图 - 直接从硬盘上读图
-void DetectUI::readSampleImages2()
+void DetectUI::readSampleImages()
 {
 	clock_t t1 = clock();
 
-	//获取对应目录的路径
-	QString dirpath = userConfig->SampleDirPath + "/" + runtimeParams->sampleModelNum + "/"
-		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
+	//更新行号和状态栏
+	ui.label_status->setText(pcb::chinese("正在读取第") +
+		QString::number(currentRow_show + 1) +
+		pcb::chinese("行分图"));//更新状态
+	qApp->processEvents();
 
 	//读取目录下的样本图像
-	QDir dir(dirpath);
+	QDir dir(runtimeParams->currentSampleFolder);
 	dir.setSorting(QDir::Time | QDir::Name | QDir::Reversed);
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
@@ -490,17 +501,42 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 //从序号识别界面获得产品序号之后
 void DetectUI::on_recognizeFinished_serialNumUI()
 {
-	//判断是否执行检测操作
-	if (eventCounter >= 1 && !detectThread->isRunning()
-		&& runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, true))
-	{
-		detectSampleImages(); //提取
+	//获取对应样本图目录
+	runtimeParams->currentSampleFolder = userConfig->SampleDirPath + "/"
+		+ runtimeParams->sampleModelNum + "/"
+		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
+	if (!QFileInfo(runtimeParams->currentSampleFolder).exists()) {
+		runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
+		return;
 	}
+
+	//判断是直接从本地读图，调用相机获取图像
+	if (runtimeParams->DeveloperMode) { //开发者模式
+		if (currentRow_show + 1 < runtimeParams->nPhotographing) { //直接显示新的样本行
+			currentRow_show += 1; //更新显示行号
+			qDebug() << "currentRow_show  - " << currentRow_show;
+			readSampleImages(); //读图 - 相当于相机拍照		
+		}
+	}
+	else { //标准模式
+		if (detectThread->isRunning()) return;
+
+		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1)
+			resetDetectUI();//重置检测子模块
+
+		if (eventCounter >= 1 && !detectThread->isRunning())
+			detectSampleImages(); //检测
+	}	
 }
 
 //显示序号识别界面的上一级界面
 void DetectUI::do_showPreviousUI_serialNumUI()
 {
+	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
+		&& runtimeParams->DeveloperMode) {
+		this->setPushButtonsEnabled(true); //启用按键
+	}
+	
 	this->showFullScreen();
 	pcb::delay(10);//延迟
 	serialNumberUI->hide();
@@ -605,9 +641,16 @@ void DetectUI::on_convertFinished_convertThread()
 	eventCounter += 1;
 
 	//更新状态栏
-	ui.label_status->setText(pcb::chinese("第") +
-		QString::number(currentRow_show + 1) +
-		pcb::chinese("行拍摄结束"));
+	if (runtimeParams->DeveloperMode) {
+		ui.label_status->setText(pcb::chinese("第") +
+			QString::number(currentRow_show + 1) +
+			pcb::chinese("行读取结束"));
+	}
+	else {
+		ui.label_status->setText(pcb::chinese("第") +
+			QString::number(currentRow_show + 1) +
+			pcb::chinese("行拍摄结束"));
+	}
 	qApp->processEvents();
 	pcb::delay(10); //延迟
 
@@ -618,7 +661,9 @@ void DetectUI::on_convertFinished_convertThread()
 	qDebug() << "showSampleImages: " << (t2 - t1) << "ms ( currentRow =" << currentRow_show << ")";
 
 	//更新状态栏
-	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)) {
+	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
+		&& !runtimeParams->DeveloperMode) 
+	{
 		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
 			+ pcb::chinese("获取产品序号"));
 		qApp->processEvents();
@@ -627,22 +672,26 @@ void DetectUI::on_convertFinished_convertThread()
 
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
-	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
-		ui.label_status->setText(pcb::chinese("运动结构前进中"));
-		qApp->processEvents();
-		motionControler->setOperation(MotionControler::MoveForward);
-		motionControler->start(); //运动结构前进
-	}
-	else { //当前PCB已拍完
-		ui.label_status->setText(pcb::chinese("运动结构复位中"));
-		qApp->processEvents();
-		motionControler->setOperation(MotionControler::ResetControler);
-		motionControler->start(); //运动结构复位
-
-		//如果此时还没开始提取，则可以点击返回按键
-		if (runtimeParams->currentRow_detect == -1) {
-			ui.pushButton_return->setEnabled(true);
+	if (!runtimeParams->DeveloperMode) {
+		if (currentRow_show + 1 < runtimeParams->nPhotographing) {
+			ui.label_status->setText(pcb::chinese("运动结构前进中"));
+			qApp->processEvents();
+			motionControler->setOperation(MotionControler::MoveForward);
+			motionControler->start(); //运动结构前进
 		}
+		else { //当前PCB已拍完
+			ui.label_status->setText(pcb::chinese("运动结构复位中"));
+			qApp->processEvents();
+			motionControler->setOperation(MotionControler::ResetControler);
+			motionControler->start(); //运动结构复位
+
+			//如果此时还没开始提取，则可以点击返回按键
+			if (runtimeParams->currentRow_detect == -1) {
+				ui.pushButton_return->setEnabled(true);
+			}
+		}
+	}
+	else { //开发者模式
 	}
 
 	//判断是否执行检测操作
@@ -687,6 +736,14 @@ void DetectUI::do_updateDetectState_detecter(int state)
 			QString::number(runtimeParams->currentRow_detect + 1) +
 			QString::fromLocal8Bit("行检测结束"));//更新状态栏
 		qApp->processEvents();
+
+		//显示新的样本行
+		if (currentRow_show + 1 < runtimeParams->nPhotographing
+			&& runtimeParams->DeveloperMode) {
+			currentRow_show += 1; //更新显示行号
+			qDebug() << "currentRow_show  - " << currentRow_show;
+			readSampleImages(); //读图 - 相当于相机拍照		
+		}
 
 		//检查是否有未处理的事件
 		while (detectThread->isRunning()) pcb::delay(50); //等待提取线程结束

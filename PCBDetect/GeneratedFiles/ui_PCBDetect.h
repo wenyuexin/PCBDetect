@@ -90,7 +90,7 @@ public:
         font1.setBold(true);
         font1.setWeight(75);
         label_logo->setFont(font1);
-        label_logo->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/logo.png);"));
+        label_logo->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/logo.png);"));
         label_logo->setAlignment(Qt::AlignBottom|Qt::AlignHCenter);
         label_title = new QLabel(centralWidget);
         label_title->setObjectName(QStringLiteral("label_title"));
@@ -133,7 +133,7 @@ public:
         pushButton_set->setSizePolicy(sizePolicy);
         pushButton_set->setMinimumSize(QSize(200, 200));
         pushButton_set->setMaximumSize(QSize(200, 200));
-        pushButton_set->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/set.png);"));
+        pushButton_set->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/set.png);"));
 
         verticalLayout->addWidget(pushButton_set);
 
@@ -184,7 +184,7 @@ public:
         pushButton_getTempl->setSizePolicy(sizePolicy);
         pushButton_getTempl->setMinimumSize(QSize(200, 200));
         pushButton_getTempl->setMaximumSize(QSize(200, 200));
-        pushButton_getTempl->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/getTempl.png);"));
+        pushButton_getTempl->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/getTempl.png);"));
 
         verticalLayout_2->addWidget(pushButton_getTempl);
 
@@ -232,7 +232,7 @@ public:
         pushButton_detect->setSizePolicy(sizePolicy);
         pushButton_detect->setMinimumSize(QSize(200, 200));
         pushButton_detect->setMaximumSize(QSize(200, 200));
-        pushButton_detect->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/detect.png);"));
+        pushButton_detect->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/detect.png);"));
 
         verticalLayout_3->addWidget(pushButton_detect);
 
@@ -280,7 +280,7 @@ public:
         pushButton_exit->setSizePolicy(sizePolicy);
         pushButton_exit->setMinimumSize(QSize(200, 200));
         pushButton_exit->setMaximumSize(QSize(200, 200));
-        pushButton_exit->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/exit.png);"));
+        pushButton_exit->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/exit.png);"));
 
         verticalLayout_4->addWidget(pushButton_exit);
 

@@ -65,7 +65,7 @@ public:
         font.setBold(false);
         font.setWeight(50);
         label_logo->setFont(font);
-        label_logo->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/logo.png);"));
+        label_logo->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/logo.png);"));
         label_logo->setAlignment(Qt::AlignCenter);
         label_3 = new QLabel(DetectUI);
         label_3->setObjectName(QStringLiteral("label_3"));
