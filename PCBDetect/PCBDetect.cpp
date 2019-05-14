@@ -111,8 +111,8 @@ void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
 	}
 	else if (launchCode == 0) { //运行参数也正常初始化（所有参数类都正常）
-		templateUI->init();//模板界面中图像显示的初始化
-		detectUI->init();//检测界面中图像显示的初始化
+		templateUI->init();//模板提取界面的实例初始化
+		detectUI->init();//检测界面的实例初始化
 	}
 	else { //存在错误
 		//用户参数配置文件丢失，生成了默认文件
