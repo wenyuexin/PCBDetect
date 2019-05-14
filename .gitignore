@@ -266,6 +266,7 @@ buffer/
 PCBDetect.sln
 .admin.config
 .user.config
+PCBRecheck.qrc
 OpenCV_contrib_x64_Debug_PS.props
 OpenCV_contrib_x64_Release_PS.props
 PCBDetect.vcxproj
