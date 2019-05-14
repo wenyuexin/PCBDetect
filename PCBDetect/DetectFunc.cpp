@@ -35,8 +35,8 @@ DetectFunc::~DetectFunc()
 //Éú³ÉÍêÕû³ß´çµÄÈ±ÏÝ¼ì²âÍ¼Ïñ
 void DetectFunc::generateBigTempl()
 {
-	widthZoom = widthWholeImg / (adminConfig->ImageSize_W* runtimeParams->nCamera);
-	heightZoom = heightWholeImg / (adminConfig->ImageSize_H*runtimeParams->nPhotographing);
+	widthZoom = widthWholeImg / (adminConfig->ImageSize_W * runtimeParams->nCamera);
+	heightZoom = heightWholeImg / (adminConfig->ImageSize_H * runtimeParams->nPhotographing);
 	widthUnit = (int)(widthZoom * adminConfig->ImageSize_W);
 	heightUnit = (int)(heightZoom * adminConfig->ImageSize_H);
 	widthWholeImg = widthUnit * runtimeParams->nCamera;

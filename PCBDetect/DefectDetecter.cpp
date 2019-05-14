@@ -62,7 +62,7 @@ void DefectDetecter::detect()
 		double t1 = clock();
 		//¶ÁÈ¡Ä£°åÑÚÄ¤
 		string mask_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/mask/" 
-			+ to_string(curRow )+ "_" + to_string(curCol) + "_mask" 
+			+ to_string(curRow+1)+ "_" + to_string(curCol+1) + "_mask" 
 			+ userConfig->ImageFormat.toStdString();
 		cv::Mat mask_roi = cv::imread(mask_path, 0);
 
