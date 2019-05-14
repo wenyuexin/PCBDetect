@@ -49,7 +49,7 @@ public:
 
 	void generateBigTempl();
 	inline cv::Mat getBigTempl() { return big_templ; }
-	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect); }
+	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect);}
 
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
