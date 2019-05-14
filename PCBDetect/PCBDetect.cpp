@@ -69,7 +69,6 @@ PCBDetect::PCBDetect(QWidget *parent)
 	templateUI->setRuntimeParams(&runtimeParams);
 	templateUI->setMotionControler(motionControler);
 	templateUI->setCameraControler(cameraControler);
-	templateUI->init();
 	connect(templateUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_templateUI()));
 
 	//检测界面
@@ -79,7 +78,6 @@ PCBDetect::PCBDetect(QWidget *parent)
 	detectUI->setRuntimeParams(&runtimeParams);
 	detectUI->setMotionControler(motionControler);
 	detectUI->setCameraControler(cameraControler);
-	detectUI->init();
 	connect(detectUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_detectUI()));
 
 	//显示启动界面
@@ -112,9 +110,9 @@ void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 	if (launchCode == -1) { //系统参数和用户参数已经正常初始化
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
 	}
-	else if (launchCode == 0) { //正常启动 (运行参数也正常初始化)
-		templateUI->initGraphicsView();//模板界面中图像显示的初始化
-		detectUI->initGraphicsView();//检测界面中图像显示的初始化
+	else if (launchCode == 0) { //运行参数也正常初始化（所有参数类都正常）
+		templateUI->init();//模板界面中图像显示的初始化
+		detectUI->init();//检测界面中图像显示的初始化
 	}
 	else { //存在错误
 		//用户参数配置文件丢失，生成了默认文件
@@ -268,23 +266,7 @@ bool PCBDetect::checkSystemState(bool showError)
 {
 	bool noErrorFlag = true; //系统是否正常
 
-	//检查系统参数
-	if (noErrorFlag && !adminConfig.isValid(true)) {
-		if (showError) adminConfig.showMessageBox(settingUI);
-		noErrorFlag = false;
-	}
-
-	//检查用户参数
-	if (noErrorFlag && !userConfig.isValid(&adminConfig)) {
-		if (showError) userConfig.showMessageBox(settingUI);
-		noErrorFlag = false;
-	}
-
-	//检查运行参数
-	if (noErrorFlag && !runtimeParams.isValid(RuntimeParams::Index_All_SysInit, true, &adminConfig)) {
-		if (showError) runtimeParams.showMessageBox(settingUI);
-		noErrorFlag = false;
-	}
+	noErrorFlag = checkParametricClasses(showError);
 
 	//检测运动结构
 	if (noErrorFlag && !motionControler->isReady()) {
@@ -326,6 +308,36 @@ bool PCBDetect::checkSystemState(bool showError)
 
 	return noErrorFlag;
 }
+
+/* 检查参数类的状态
+ * 输入：showError 若值为true，则当发现参数类存在错误时将弹窗提示
+ * 输出：noErrorFlag 系统所有的参数类是否不存在错误
+ */
+bool PCBDetect::checkParametricClasses(bool showError)
+{
+	bool noErrorFlag = true; 
+
+	//检查系统参数
+	if (noErrorFlag && !adminConfig.isValid(true)) {
+		if (showError) adminConfig.showMessageBox(settingUI);
+		noErrorFlag = false;
+	}
+
+	//检查用户参数
+	if (noErrorFlag && !userConfig.isValid(&adminConfig)) {
+		if (showError) userConfig.showMessageBox(settingUI);
+		noErrorFlag = false;
+	}
+
+	//检查运行参数
+	if (noErrorFlag && !runtimeParams.isValid(RuntimeParams::Index_All_SysInit, true, &adminConfig)) {
+		if (showError) runtimeParams.showMessageBox(settingUI);
+		noErrorFlag = false;
+	}
+
+	return noErrorFlag;
+}
+
 
 
 /***************** 模板提取界面 *****************/
@@ -470,6 +482,12 @@ void PCBDetect::keyPressEvent(QKeyEvent *event)
 //在开发者模式和非开发者模式之间切换
 void PCBDetect::switchDeveloperMode()
 {
+	//参数类存在错误
+	if (!checkParametricClasses(false)) {
+		runtimeParams.DeveloperMode = false; 
+		this->setPushButtonsEnabled(false); return;
+	}
+
 	if (runtimeParams.DeveloperMode) {
 		//模式切换的提示
 		int choice = QMessageBox::information(this, pcb::chinese("提示"),
