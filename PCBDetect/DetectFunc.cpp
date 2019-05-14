@@ -500,7 +500,6 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		if (locations.size() <= 60)
 			continue;
-		++defectNum;//缺陷计数增加
 	
 		//保存缺陷分图，并对缺陷分类
 		int w_b = 300, h_b = 300;//缺陷分图的大小
@@ -668,10 +667,9 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + userConfig->ImageFormat.toStdString(), imgSeg);
 	}
 
-	Rect roiRect = Rect(currentCol*widthWholeImg, runtimeParams->currentRow_detect*heightWholeImg,
-		widthWholeImg, heightWholeImg);
+	Rect roiRect = Rect(currentCol*widthUnit, runtimeParams->currentRow_detect*heightUnit, widthUnit, heightUnit);
 	Mat roi = getBigTempl(roiRect);
-	sampGrayRegCopy.copyTo(roi);
+	sampGrayRegCopyZoom.copyTo(roi);
 }
 
 void DetectFunc::save(const std::string& path, Mat& image_template_gray) {
