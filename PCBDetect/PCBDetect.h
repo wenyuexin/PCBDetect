@@ -54,6 +54,7 @@ public:
 	~PCBDetect();
 
 private:
+	bool checkParametricClasses(bool);
 	bool checkSystemState(bool);
 	void showSettingUI();
 	void switchToTemplateUI();
