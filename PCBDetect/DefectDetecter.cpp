@@ -22,6 +22,11 @@ DefectDetecter::DefectDetecter()
 	defectNum = 0; //È±ÏÝÊý
 }
 
+void DefectDetecter::init()
+{
+	initDetectFunc();
+}
+
 DefectDetecter::~DefectDetecter() 
 {
 	qDebug() << "~DefectDetecter";
@@ -32,6 +37,7 @@ DefectDetecter::~DefectDetecter()
 //³õÊ¼»¯templFunc
 void DefectDetecter::initDetectFunc()
 {
+	delete detectFunc;
 	detectFunc = new DetectFunc;
 	detectFunc->setAdminConfig(adminConfig);
 	detectFunc->setUserConfig(userConfig);
