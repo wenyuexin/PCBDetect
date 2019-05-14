@@ -185,8 +185,8 @@ void DefectDetecter::detect()
 	}
 	if (runtimeParams->currentRow_detect + 1 == runtimeParams->nPhotographing) {
 		if (defectNum > 0) {
-			cv::Size sz = detectFunc->getBigTempl().size();
-			cv::Mat dst;
+			cv::Size sz = Size(adminConfig->ImageSize_W*runtimeParams->nCamera, adminConfig->ImageSize_H*runtimeParams->nCamera);
+			cv::Mat dst = detectFunc->getBigTempl();
 			cv::resize(detectFunc->getBigTempl(), dst, cv::Size(sz.width*0.25, sz.height*0.25), (0, 0), (0, 0), cv::INTER_LINEAR);
 			string fullImagePath = detectFunc->out_path + "/fullImage";
 			_mkdir(fullImagePath.c_str());
