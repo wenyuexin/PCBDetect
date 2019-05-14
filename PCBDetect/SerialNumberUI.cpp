@@ -92,13 +92,17 @@ void SerialNumberUI::setSerialNumberUIEnabled(bool enable)
 	ui.lineEdit_roi_tl_y->setEnabled(enable);
 	ui.lineEdit_roi_br_x->setEnabled(enable);
 	ui.lineEdit_roi_br_y->setEnabled(enable);
+	ui.lineEdit_serialNum->setEnabled(enable); //序号输入框
+	this->setPushButtonsEnabled(enable); //按键设置
+}
 
-	ui.pushButton_getROI->setEnabled(enable);
-	ui.pushButton_recognize->setEnabled(enable);
-
-	ui.lineEdit_serialNum->setEnabled(enable);
-	ui.pushButton_confirm->setEnabled(enable);
-	ui.pushButton_return->setEnabled(enable);
+//按键设置
+void SerialNumberUI::setPushButtonsEnabled(bool enable)
+{
+	ui.pushButton_getROI->setEnabled(enable); //确认区域
+	ui.pushButton_recognize->setEnabled(enable); //识别
+	ui.pushButton_confirm->setEnabled(enable); //确定并返回
+	ui.pushButton_return->setEnabled(enable); //返回
 }
 
 //重置序号识别界面
@@ -194,6 +198,8 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 //确定按键
 void SerialNumberUI::on_pushButton_confirm_clicked()
 {
+	this->setPushButtonsEnabled(false); //禁用按键
+
 	QString serialNum = ui.lineEdit_serialNum->text(); //读取产品序号
 	serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
 	serialNum = pcb::eraseNonDigitalCharInHeadAndTail(serialNum);//删除首尾的非数字字符
@@ -203,12 +209,14 @@ void SerialNumberUI::on_pushButton_confirm_clicked()
 	RuntimeParams::ErrorCode code = RuntimeParams::Unchecked;
 	code = runtimeParams->parseSerialNum(); //解析产品序号
 	if (code != RuntimeParams::ValidValue) {
-		runtimeParams->showMessageBox(this, code); return;
+		runtimeParams->showMessageBox(this, code); 
+		this->setPushButtonsEnabled(true); return;
 	}
 	//检查型号、批次号、编号是否有效
 	code = runtimeParams->checkValidity(RuntimeParams::Index_All_SerialNum);
 	if (code != RuntimeParams::ValidValue) {
-		runtimeParams->showMessageBox(this, code); return;
+		runtimeParams->showMessageBox(this, code); 
+		this->setPushButtonsEnabled(true); return;
 	}
 
 	//向上一级界面发送识别结束的信号
@@ -216,6 +224,8 @@ void SerialNumberUI::on_pushButton_confirm_clicked()
 
 	//返回上一级界面，并执行下一步处理
 	emit on_pushButton_return_clicked();
+
+	this->setPushButtonsEnabled(true); //开启按键
 }
 
 //返回
