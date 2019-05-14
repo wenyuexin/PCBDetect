@@ -668,8 +668,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + userConfig->ImageFormat.toStdString(), imgSeg);
 	}
 
-	Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, runtimeParams->currentRow_detect*adminConfig->ImageSize_H,
-		adminConfig->ImageSize_W, adminConfig->ImageSize_H);
+	Rect roiRect = Rect(currentCol*widthWholeImg, runtimeParams->currentRow_detect*heightWholeImg,
+		widthWholeImg, heightWholeImg);
 	Mat roi = getBigTempl(roiRect);
 	sampGrayRegCopy.copyTo(roi);
 }

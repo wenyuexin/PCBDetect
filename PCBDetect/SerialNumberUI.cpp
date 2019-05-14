@@ -211,8 +211,11 @@ void SerialNumberUI::on_pushButton_confirm_clicked()
 		runtimeParams->showMessageBox(this, code); return;
 	}
 
-	//返回上一级界面，并执行下一步处理
+	//向上一级界面发送识别结束的信号
 	emit recognizeFinished_serialNumUI();
+
+	//返回上一级界面，并执行下一步处理
+	emit on_pushButton_return_clicked();
 }
 
 //返回
