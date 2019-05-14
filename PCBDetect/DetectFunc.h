@@ -19,8 +19,14 @@ private:
 	pcb::UserConfig *userConfig; //用户参数
 	pcb::RuntimeParams *runtimeParams; //运行参数
 	pcb::DetectResult *detectResult; //检测结果
-	cv::Mat big_templ; //大模板;
 
+	double widthWholeImg = 1500;
+	double heightWholeImg = 1000;
+	double widthUnit = 1500;
+	double heightUnit = 1000;
+	double widthZoom = 0.25;
+	double heightZoom = 0.25;
+	cv::Mat big_templ; //大模板;
 
 public:
 	DetectFunc();
@@ -49,15 +55,6 @@ public:
 	cv::Mat descriptors;
 
 	std::string batch_path, num_path, out_path;
-
-	//double widthWholeImg = 4384 * 3;
-	//double heightWholeImg = 3288 * 3;
-	double widthWholeImg = 1500;
-	double heightWholeImg = 1000;
-	double widthUnit = 1500;
-	double heightUnit = 1000;
-	double widthZoom = 0.25;
-	double heightZoom = 0.25;
 
 private:
 

@@ -35,8 +35,8 @@ DetectFunc::~DetectFunc()
 //Éú³ÉÍêÕû³ß´çµÄÈ±ÏÝ¼ì²âÍ¼Ïñ
 void DetectFunc::generateBigTempl()
 {
-	widthZoom = widthWholeImg / (adminConfig->ImageSize_W* runtimeParams->nCamera);
-	heightZoom = heightWholeImg / (adminConfig->ImageSize_H*runtimeParams->nPhotographing);
+	widthZoom = widthWholeImg / (adminConfig->ImageSize_W * runtimeParams->nCamera);
+	heightZoom = heightWholeImg / (adminConfig->ImageSize_H * runtimeParams->nPhotographing);
 	widthUnit = (int)(widthZoom * adminConfig->ImageSize_W);
 	heightUnit = (int)(heightZoom * adminConfig->ImageSize_H);
 	widthWholeImg = widthUnit * runtimeParams->nCamera;
@@ -668,9 +668,10 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		imwrite(out_path + "\\" + to_string(defectNum) + "_" + to_string(pos_x) + "_" + to_string(pos_y) + "_" + to_string(defect_flag) + userConfig->ImageFormat.toStdString(), imgSeg);
 	}
 
-	Rect roiRect = Rect(currentCol*widthUnit, runtimeParams->currentRow_detect*heightUnit, widthUnit, heightUnit);
+	Rect roiRect = Rect(currentCol*widthWholeImg, runtimeParams->currentRow_detect*heightWholeImg,
+		widthWholeImg, heightWholeImg);
 	Mat roi = getBigTempl(roiRect);
-	sampGrayRegCopyZoom.copyTo(roi);
+	sampGrayRegCopy.copyTo(roi);
 }
 
 void DetectFunc::save(const std::string& path, Mat& image_template_gray) {
