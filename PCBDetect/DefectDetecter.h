@@ -40,6 +40,7 @@ private:
 public:
 	DefectDetecter();
 	~DefectDetecter();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } //系统参数
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; } //用户参数
@@ -47,10 +48,10 @@ public:
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; } //样本图
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; } //检测结果
 
-	void initDetectFunc();
 	void detect();
 
 private:
+	void initDetectFunc();
 	//cv::Mat QImageToCvMat(const QImage &inImage, bool inCloneImageData = true);
 	//cv::Mat QPixmapToCvMat(const QPixmap &inPixmap, bool inCloneImageData = true);
 
