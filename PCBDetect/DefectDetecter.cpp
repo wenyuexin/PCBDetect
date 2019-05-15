@@ -59,6 +59,8 @@ void DefectDetecter::detect()
 		int curRow = runtimeParams->currentRow_detect;//当前行
 		int curCol = i;//当前列
 
+		qDebug() << curRow << "_" << curCol;
+
 		double t1 = clock();
 		//读取模板掩膜
 		string mask_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/mask/" 
@@ -152,6 +154,9 @@ void DefectDetecter::detect()
 			cv::morphologyEx(templBw, templBw, cv::MORPH_OPEN, elementTempl);
 			cv::morphologyEx(templBw, templBw, cv::MORPH_CLOSE, elementTempl);
 
+
+			qDebug() << QString::fromLocal8Bit("==========二值化完成");
+
 			//透射变换后有一个roi
 			cv::Mat templ_roi = cv::Mat::ones(templ_gray.size(), templ_gray.type()) * 255;
 			cv::warpPerspective(templ_roi, templ_roi, h, templ_roi.size());
@@ -167,12 +172,16 @@ void DefectDetecter::detect()
 			cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
 			cv::Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
 
+			
+
 			//调试时候的边缘处理
 			cv::Size szDiff = diff.size();
 			cv::Mat diff_roi = cv::Mat::zeros(szDiff, diff.type());
 			int zoom = 50;//忽略的边缘宽度
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
+
+			qDebug() << QString::fromLocal8Bit("==========差值处理完成");
 
 			//标记缺陷
 			detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
