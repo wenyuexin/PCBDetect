@@ -414,7 +414,7 @@ void DetectUI::readSampleImages()
 	qApp->processEvents();
 
 	//读取目录下的样本图像
-	QDir dir(runtimeParams->currentSampleFolder);
+	QDir dir(runtimeParams->currentSampleDir);
 	dir.setSorting(QDir::Time | QDir::Name | QDir::Reversed);
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
@@ -502,10 +502,10 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 void DetectUI::on_recognizeFinished_serialNumUI()
 {
 	//获取对应样本图目录
-	runtimeParams->currentSampleFolder = userConfig->SampleDirPath + "/"
+	runtimeParams->currentSampleDir = userConfig->SampleDirPath + "/"
 		+ runtimeParams->sampleModelNum + "/"
 		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
-	if (!QFileInfo(runtimeParams->currentSampleFolder).exists()) {
+	if (!QFileInfo(runtimeParams->currentSampleDir).exists()) {
 		runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
 		return;
 	}
