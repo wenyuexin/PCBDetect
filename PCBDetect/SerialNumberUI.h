@@ -82,6 +82,7 @@ private:
 
 	void initCheckBoxGroup();
 	void setSerialNumberUIEnabled(bool);
+	void setPushButtonsEnabled(bool);
 
 	void deleteImageItem();
 	bool showMessageBox(QWidget *parent, ErrorCode code = Default); //µ¯´°¾¯¸æ

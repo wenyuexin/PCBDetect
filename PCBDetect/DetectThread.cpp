@@ -31,7 +31,7 @@ void DetectThread::initDefectDetecter()
 	defectDetecter->setRuntimeParams(runtimeParams);
 	defectDetecter->setSampleImages(cvmatSamples);
 	defectDetecter->setDetectResult(detectResult);
-	defectDetecter->initDetectFunc();
+	defectDetecter->init();
 }
 
 
