@@ -18,6 +18,8 @@ namespace pcb
 	void delay(unsigned long msec);//非阻塞延迟
 	QString selectDirPath(QWidget *parent, QString windowTitle = "");//交互式文件夹路径选择
 	QString eraseNonDigitalCharInHeadAndTail(QString s); //删除字符串首尾的非数字字符
+	void clearFiles(const QString &folderFullPath);
+	void clearFolder(const QString &folderFullPath, bool included = false);
 #endif //PCB_FUNCTIONS
 
 
@@ -73,9 +75,9 @@ namespace pcb
 		//系统辅助参数
 		QString AppDirPath; //程序所在目录
 		QString BufferDirPath; //缓存文件夹
-		QString currentSampleFolder; //当前样本图所在目录
-		QString currentTemplFolder; //当前模板图所在目录
-		QString currentOutputFolder; //当前的结果存储目录
+		QString currentSampleDir; //当前样本图所在目录
+		QString currentTemplDir; //当前模板图所在目录
+		QString currentOutputDir; //当前的结果存储目录
 		bool DeveloperMode; //开启开发者模式
 		QRect ScreenRect; //界面所在的屏幕区域
 		//long systemState; //系统状态值

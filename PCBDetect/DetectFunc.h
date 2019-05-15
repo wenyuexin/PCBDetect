@@ -8,9 +8,6 @@
 #include "opencv2/opencv.hpp"
 #include <qDebug>
 
-using namespace std;
-using namespace cv;
-
 
 class DetectFunc {
 
@@ -20,13 +17,13 @@ private:
 	pcb::RuntimeParams *runtimeParams; //运行参数
 	pcb::DetectResult *detectResult; //检测结果
 
-	double widthWholeImg = 1500;
-	double heightWholeImg = 1000;
-	double widthUnit = 1500;
-	double heightUnit = 1000;
-	double widthZoom = 0.25;
-	double heightZoom = 0.25;
+	double scalingFactor; //缩放因子
+	cv::Size scaledFullImageSize; //经过缩放后的整图的尺寸
+	cv::Size scaledSubImageSize; //经过缩放后的分图的尺寸
 	cv::Mat big_templ; //大模板;
+
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Mat descriptors;
 
 public:
 	DetectFunc();
@@ -37,24 +34,19 @@ public:
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 
-	bool alignImages_test(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches);
-	bool alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches);//测试载入特征
-	cv::Mat sub_process_new(cv::Mat &imgTempl, cv::Mat &sampBw, Mat& mask_roi);
-	void markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol);
-	void markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol);
+	bool alignImages_test(cv::Mat &image_template_gray, cv::Mat &image_sample_gray, cv::Mat &imgReg, cv::Mat &H, cv::Mat &imMatches);
+	bool alignImages_test_load(std::vector<cv::KeyPoint> &keypoints_1, cv::Mat& descriptors_1, cv::Mat &image_sample_gray, cv::Mat &imgReg, cv::Mat &H, cv::Mat &imMatches);//测试载入特征
+	cv::Mat sub_process_new(cv::Mat &imgTempl, cv::Mat &sampBw, cv::Mat& mask_roi);
+	//void markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol);
+	void markDefect_test(cv::Mat &diffBw, cv::Mat &sampGrayReg, cv::Mat &templBw, cv::Mat &templGray, int &defectNum, int currentCol);
 	void save(const std::string& path, cv::Mat& image_template_gray);
 	void load(const std::string& path);
-	Scalar getMSSIM(const Mat& i1, const Mat& i2);
+	cv::Scalar getMSSIM(const cv::Mat& i1, const cv::Mat& i2);
 
 
 	void generateBigTempl();
 	inline cv::Mat getBigTempl() { return big_templ; }
 	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect);}
-
-	std::vector<cv::KeyPoint> keypoints;
-	cv::Mat descriptors;
-
-	std::string batch_path, num_path, out_path;
 
 private:
 
