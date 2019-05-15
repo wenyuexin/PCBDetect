@@ -6,12 +6,12 @@
 
 using pcb::UserConfig;
 using pcb::RuntimeParams;
+using std::string;
 using cv::Mat;
-using namespace std;
-using namespace cv;
 using cv::Size;
 using cv::Rect;
-using namespace cv::xfeatures2d;
+using cv::Ptr;
+using cv::xfeatures2d::SURF;
 
 
 ExtractFunc::ExtractFunc()
@@ -23,7 +23,7 @@ ExtractFunc::ExtractFunc()
 
 ExtractFunc::~ExtractFunc()
 {
-	qDebug() << "~TemplFunc";
+	qDebug() << "~ExtractFunc";
 }
 
 /***************** 提取 ******************/
@@ -31,19 +31,18 @@ ExtractFunc::~ExtractFunc()
 //生成完整尺寸的模板图像
 void ExtractFunc::generateBigTempl()
 {
-	Size templSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera,
-		adminConfig->ImageSize_H * runtimeParams->nPhotographing);
-	big_templ = Mat(templSize, CV_8UC3);
+	Size originalfullImgSize(adminConfig->ImageSize_W * runtimeParams->nCamera,
+		adminConfig->ImageSize_H * runtimeParams->nPhotographing); //整图的原始尺寸
+	big_templ = Mat(originalfullImgSize, CV_8UC3);
 }
 
 
-/**
-*功能：通过图像匹配找到图像的四个角点的位置，分别为左上，左下，右上，右下,并根据角点位置对图像进行切割（除去边角）
-*输入：图像所在列数num_cols,图像所在行数num_cols,代表图像位置的编号num，原始图像image
-*输出：显示L型角点位置的坐标，并对所切割的结果图保存，返回mask
-*/
-
-Mat ExtractFunc::find1(int col, cv::Mat &image) {
+/*
+ * 功能：通过图像匹配找到图像的四个角点的位置，分别为左上，左下，右上，右下,并根据角点位置对图像进行切割（除去边角）
+ * 输入：图像所在列数num_cols,图像所在行数num_cols,代表图像位置的编号num，原始图像image
+ * 输出：显示L型角点位置的坐标，并对所切割的结果图保存，返回mask
+ */
+Mat ExtractFunc::findLocationMark(int col, Mat &image) {
 	int currentCol = col + 1;
 	int currentRow = runtimeParams->currentRow_extract + 1;
 	int nCamera = runtimeParams->nCamera;
@@ -228,6 +227,7 @@ void ExtractFunc::save(const std::string& path, Mat& image_template_gray) {
 	store.release();
 
 }
+
 void ExtractFunc::load(const std::string& path) {
 	cv::FileStorage store(path, cv::FileStorage::READ);
 	cv::FileNode n1 = store["keypoints"];

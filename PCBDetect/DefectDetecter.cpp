@@ -10,6 +10,7 @@ using cv::Mat;
 using cv::Size;
 using cv::Rect;
 using std::string;
+using std::vector;
 using std::to_string;
 
 
@@ -18,11 +19,11 @@ DefectDetecter::DefectDetecter()
 	adminConfig = Q_NULLPTR; //系统参数
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
-	detectResult = Q_NULLPTR; //检测结果
-	cvmatSamples = Q_NULLPTR; //正在检测的一行样本
+	detectResult = Q_NULLPTR; //检测结�?
+	cvmatSamples = Q_NULLPTR; //正在检测的一行样�?
 	detectFunc = Q_NULLPTR; //检测辅助类
 	detectState = Default; //检测状态（用于界面显示和程序调试）
-	defectNum = 0; //缺陷数
+	defectNum = 0; //缺陷�?
 }
 
 void DefectDetecter::init()
@@ -50,26 +51,32 @@ void DefectDetecter::initDetectFunc()
 }
 
 
-/***************** 检测 ******************/
+/***************** 检�?******************/
 
 void DefectDetecter::detect()
 {
-	qDebug() << ">>>>>>>>>> " << pcb::chinese("开始检测 ... ") <<
+<<<<<<< HEAD
+	qDebug() << ">>>>>>>>>> " << pcb::chinese("开始检�?... ") <<
 		"( currentRow_detect -" << runtimeParams->currentRow_detect << ")";
+=======
+	qDebug() << ">>>>>>>>>> " << pcb::chinese("��ʼ��� ... ") <<
+		"( currentRow_detect =" << runtimeParams->currentRow_detect << ")" << endl;
+>>>>>>> wenyuexin
 
 
-	detectState = DetectState::Start; //设置检测状态
+	detectState = DetectState::Start; //设置检测状�?
 	emit updateDetectState_detecter(detectState);
 	double t1 = clock();
 
+<<<<<<< HEAD
 	//检测对应的输出目录是否存在
 	makeCurrentOutputDir();
 
-	//开始检测
+	//开始检�?
 	int currentRow_detect = runtimeParams->currentRow_detect;
 	for (int i = 0; i < (*cvmatSamples)[runtimeParams->currentRow_detect].size(); i++) {
-		int curRow = runtimeParams->currentRow_detect;//当前行
-		int curCol = i;//当前列
+		int curRow = runtimeParams->currentRow_detect;//当前�?
+		int curCol = i;//当前�?
 
 		qDebug() << curRow << "_" << curCol;
 
@@ -88,36 +95,64 @@ void DefectDetecter::detect()
 
 		//获取样本图片
 		Mat samp = *((*cvmatSamples)[runtimeParams->currentRow_detect][i]);
+=======
+	int currentRow_detect = runtimeParams->currentRow_detect;
+	int nCamera = runtimeParams->nCamera;
+	int nPhotographing = runtimeParams->nPhotographing;
+
+	//����Ӧ�����Ŀ¼�Ƿ����
+	vector<QString> subFolders { "fullImage" };
+	if (currentRow_detect == 0) makeCurrentOutputDir(subFolders);
+
+	//��ʼ���
+	for (int i = 0; i < (*cvmatSamples)[currentRow_detect].size(); i++) {
+		int curRow = currentRow_detect;//��ǰ��
+		int curCol = i;//��ǰ��
+
+		double t1 = clock();
+		//��ȡģ����Ĥ
+		QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/" 
+			+ QString("%1_%2_mask").arg(curRow+1).arg(curCol+1) + userConfig->ImageFormat;
+		cv::Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
+
+		//��ȡģ��ͼƬ
+		QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
+			+ QString("%1_%2").arg(currentRow_detect + 1).arg(i + 1) + userConfig->ImageFormat;
+		Mat templ_gray = cv::imread(templPath.toStdString(), 0);
+
+		//��ȡ����ͼƬ
+		Mat samp = *((*cvmatSamples)[currentRow_detect][i]);
+>>>>>>> wenyuexin
 		Mat samp_gray;
 		cvtColor(samp, samp_gray, cv::COLOR_BGR2GRAY);
 
 		//测试时后保存样本图片
-		string batch_path = (userConfig->SampleDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
+		string batch_path = (userConfig->SampleDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存�?
 		if (0 != _access(batch_path.c_str(), 0))
 			_mkdir(batch_path.c_str());
-		string num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
+		string num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存�?
 		if (0 != _access(num_path.c_str(), 0))
 			_mkdir(num_path.c_str());
 		string out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//检查编号文件夹是否存在
 		if (0 != _access(out_path.c_str(), 0))
 			_mkdir(out_path.c_str());
-		string sampPath = out_path + "\\" + to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + userConfig->ImageFormat.toStdString();
+		string sampPath = out_path + "\\" + to_string(currentRow_detect + 1) + "_" + std::to_string(i + 1) + userConfig->ImageFormat.toStdString();
 		imwrite(sampPath,samp);
 
 		double t2 = clock();
 		qDebug() << QString::fromLocal8Bit("模板形态学处理") << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
 
 		//try {
-			//样本与模板配准
+			//样本与模板配�?
 			cv::Mat samp_gray_reg, h;
 			cv::Mat imMatches;
-			//载入特征的方法
+			//载入特征的方�?
 			//string bin_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
 			//	+ "/bin/" + to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + ".bin";
 			//detectFunc->load(bin_path);
 			//detectFunc->alignImages_test_load(detectFunc->keypoints, detectFunc->descriptors, samp_gray, samp_gray_reg, h, imMatches);
 
-			//每次计算的方法
+			//每次计算的方�?
 			Mat templGrayRoi, sampGrayRoi;
 			cv::bitwise_and(mask_roi, templ_gray, templGrayRoi);
 			detectFunc->alignImages_test(templGrayRoi, samp_gray, samp_gray_reg, h, imMatches);
@@ -181,7 +216,7 @@ void DefectDetecter::detect()
 			cv::bitwise_and(templ_roi, mask_roi, roi);
 
 			//做差
-			cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
+			cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对�?
 			Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
 
 			
@@ -189,7 +224,7 @@ void DefectDetecter::detect()
 			//调试时候的边缘处理
 			Size szDiff = diff.size();
 			Mat diff_roi = Mat::zeros(szDiff, diff.type());
-			int zoom = 50;//忽略的边缘宽度
+			int zoom = 50;//忽略的边缘宽�?
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
 
@@ -204,7 +239,8 @@ void DefectDetecter::detect()
 		//}	
 	}
 
-	//如果当前检测的是最后一行图像
+<<<<<<< HEAD
+	//如果当前检测的是最后一行图�?
 	if (runtimeParams->currentRow_detect + 1 == runtimeParams->nPhotographing) {
 		if (defectNum > 0) {
 
@@ -227,26 +263,50 @@ void DefectDetecter::detect()
 			detectFunc->generateBigTempl();
 			defectNum = 0;//将整体缺陷置0
 		}
+=======
+	//�����ǰ���������һ��ͼ��
+	if (currentRow_detect + 1 == nPhotographing) {
+		Size sz(adminConfig->ImageSize_W*nCamera, adminConfig->ImageSize_H*nCamera);
+		Mat dst = detectFunc->getBigTempl();
+		QString fullImageDir = runtimeParams->currentOutputDir + "/" + subFolders[0] + "/";
+
+		QString filePath = fullImageDir;
+		filePath += QString("fullImage_%1_%2_%3").arg(sz.width).arg(sz.height).arg(defectNum);
+		filePath += userConfig->ImageFormat;
+		cv::imwrite(filePath.toStdString(), dst);
+		detectFunc->generateBigTempl();
+		defectNum = 0;//������ȱ����0
+>>>>>>> wenyuexin
 	}
 
-	//检测结束
+	//检测结�?
 	double t2 = clock();
+<<<<<<< HEAD
 	qDebug() << "" << pcb::chinese("current row finish") << 
 		(t2 - t1) << "ms  ( currentRow_detect -" << runtimeParams->currentRow_detect << ")";
+=======
+	qDebug() << ">>>>>>>>>> " << pcb::chinese("��ǰ�м�����") << 
+		(t2 - t1) << "ms  ( currentRow_detect =" << currentRow_detect << ")" << endl;
+>>>>>>> wenyuexin
 	
 	detectState = DetectState::Finished;
 	emit updateDetectState_detecter(detectState);
 	pcb::delay(10);
 	bool qualified = (defectNum < 100);
 
-	if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing-1)
+	if (currentRow_detect == nPhotographing-1)
 		emit detectFinished_detectThread(qualified);
 }
 
-//判断与产品序号对应的输出文件夹是否存在，若不存在则创建
+<<<<<<< HEAD
+//判断与产品序号对应的输出文件夹是否存在，若不存在则创�?
 void DefectDetecter::makeCurrentOutputDir()
+=======
+//�ж����Ʒ��Ŷ�Ӧ������ļ����Ƿ���ڣ����������򴴽�
+void DefectDetecter::makeCurrentOutputDir(vector<QString> &subFolders)
+>>>>>>> wenyuexin
 {
-	//判断顶层的output文件夹是否存在
+	//判断顶层的output文件夹是否存�?
 	runtimeParams->currentOutputDir = userConfig->OutputDirPath; 
 	QDir outputDir(runtimeParams->currentOutputDir);
 	if (!outputDir.exists()) outputDir.mkdir(runtimeParams->currentOutputDir);
@@ -256,7 +316,7 @@ void DefectDetecter::makeCurrentOutputDir()
 	QDir modelDir(runtimeParams->currentOutputDir);
 	if (!modelDir.exists()) modelDir.mkdir(runtimeParams->currentOutputDir);
 
-	//判断对应的批次号文件夹是否存在
+	//判断对应的批次号文件夹是否存�?
 	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleBatchNum;
 	QDir batchDir(runtimeParams->currentOutputDir);
 	if (!batchDir.exists()) batchDir.mkdir(runtimeParams->currentOutputDir);
@@ -265,11 +325,16 @@ void DefectDetecter::makeCurrentOutputDir()
 	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleNum;
 	QDir resultDir(runtimeParams->currentOutputDir);
 	if (!resultDir.exists()) {
-		//创建文件夹
+		//创建文件�?
 		resultDir.mkdir(runtimeParams->currentOutputDir);
 	}
 	else {
-		//清空文件夹
+		//清空文件�?
 		pcb::clearFolder(runtimeParams->currentOutputDir, false);
+	}
+
+	//�������ļ���
+	for (int i = 0; i < subFolders.size(); i++) {
+		resultDir.mkdir(subFolders[i]);//�������ļ���
 	}
 }
