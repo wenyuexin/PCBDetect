@@ -32,7 +32,7 @@ private:
 	pcb::UserConfig *userConfig;
 	pcb::RuntimeParams *runtimeParams;
 	pcb::CvMatArray *cvmatSamples;
-	TemplFunc *templFunc;
+	ExtractFunc *templFunc;
 	ExtractState extractState;
 
 public:
