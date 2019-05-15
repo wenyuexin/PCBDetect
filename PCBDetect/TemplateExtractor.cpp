@@ -35,7 +35,7 @@ TemplateExtractor::~TemplateExtractor()
 //³õÊ¼»¯templFunc
 void TemplateExtractor::initTemplFunc()
 {
-	templFunc = new TemplFunc;
+	templFunc = new ExtractFunc;
 	templFunc->setAdminConfig(adminConfig);
 	templFunc->setUserConfig(userConfig);
 	templFunc->setRuntimeParams(runtimeParams);

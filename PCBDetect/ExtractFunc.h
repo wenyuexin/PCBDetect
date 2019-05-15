@@ -8,8 +8,8 @@
 #include <qDebug>
 
 
-class TemplFunc {
-
+class ExtractFunc 
+{
 private:
 	pcb::AdminConfig *adminConfig;
 	pcb::UserConfig *userConfig;
@@ -22,8 +22,8 @@ private:
 	cv::Mat big_templ; //´óÄ£°å;
 
 public:
-	TemplFunc();
-	~TemplFunc();
+	ExtractFunc();
+	~ExtractFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
