@@ -55,6 +55,7 @@ void DefectDetecter::initDetectFunc()
 
 void DefectDetecter::detect()
 {
+
 	qDebug() << ">>>>>>>>>> " << pcb::chinese("¿ªÊ¼¼ì²â ... ") <<
 		"( currentRow_detect =" << runtimeParams->currentRow_detect << ")" << endl;
 
