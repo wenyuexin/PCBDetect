@@ -448,6 +448,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		Rect roiRect = Rect(currentCol*widthUnit, runtimeParams->currentRow_detect*heightUnit, widthUnit, heightUnit);
 		Mat roi = getBigTempl(roiRect);
 		sampGrayRegCopyZoom.copyTo(roi);
+
 		return;
 	}
 	batch_path = (userConfig->OutputDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
