@@ -4,10 +4,10 @@
 #include "Configurator.h"
 #include "ImageConverter.h"
 #include "TemplateExtractor.h"
-#include "TemplFunc.h"
+#include "ExtractFunc.h"
 
 
-class TemplateThread : public QThread
+class ExtractThread : public QThread
 {
 	Q_OBJECT
 
@@ -20,8 +20,8 @@ private:
 	TemplateExtractor *templExtractor; //ÌáÈ¡Æ÷
 
 public:
-	TemplateThread(QObject *parent = Q_NULLPTR);
-	~TemplateThread();
+	ExtractThread(QObject *parent = Q_NULLPTR);
+	~ExtractThread();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
