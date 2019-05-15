@@ -11,7 +11,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	ui.setupUi(this);
 	launcher = Q_NULLPTR;
 	settingUI = Q_NULLPTR;
-	templateUI = Q_NULLPTR;
+	extractUI = Q_NULLPTR;
 	detectUI = Q_NULLPTR;
 	motionControler = Q_NULLPTR;
 	cameraControler = Q_NULLPTR;
@@ -63,13 +63,13 @@ PCBDetect::PCBDetect(QWidget *parent)
 	connect(settingUI, SIGNAL(checkSystemState_settingUI()), this, SLOT(do_checkSystemState_settingUI()));
 	
 	//模板提取界面
-	templateUI = new TemplateUI();
-	templateUI->setAdminConfig(&adminConfig);
-	templateUI->setUserConfig(&userConfig);
-	templateUI->setRuntimeParams(&runtimeParams);
-	templateUI->setMotionControler(motionControler);
-	templateUI->setCameraControler(cameraControler);
-	connect(templateUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_templateUI()));
+	extractUI = new ExtractUI();
+	extractUI->setAdminConfig(&adminConfig);
+	extractUI->setUserConfig(&userConfig);
+	extractUI->setRuntimeParams(&runtimeParams);
+	extractUI->setMotionControler(motionControler);
+	extractUI->setCameraControler(cameraControler);
+	connect(extractUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_templateUI()));
 
 	//检测界面
 	detectUI = new DetectUI();
@@ -91,8 +91,8 @@ PCBDetect::~PCBDetect()
 	launcher = Q_NULLPTR;
 	delete settingUI; 
 	settingUI = Q_NULLPTR;
-	delete templateUI; 
-	templateUI = Q_NULLPTR;
+	delete extractUI; 
+	extractUI = Q_NULLPTR;
 	delete detectUI; 
 	detectUI = Q_NULLPTR;
 	delete motionControler; 
@@ -111,7 +111,7 @@ void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 		settingUI->refreshSettingUI();//更新参数设置界面的信息
 	}
 	else if (launchCode == 0) { //运行参数也正常初始化（所有参数类都正常）
-		templateUI->init();//模板提取界面的实例初始化
+		extractUI->init();//模板提取界面的实例初始化
 		detectUI->init();//检测界面的实例初始化
 	}
 	else { //存在错误
@@ -229,8 +229,8 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 
 	//重置模板提取界面，并初始化其中的图像显示的空间
 	if (noError && ((code & 0b000000010) > 0)) {
-		templateUI->resetTemplateUI();
-		templateUI->initGraphicsView();
+		extractUI->resetTemplateUI();
+		extractUI->initGraphicsView();
 	}
 
 	//重置检测界面，并初始化其中的图像显示的空间
@@ -371,15 +371,15 @@ void PCBDetect::switchToTemplateUI()
 		}
 	}
 
-	templateUI->resetTemplateUI(); //重置提取界面
-	if (!runtimeParams.DeveloperMode) templateUI->refreshCameraControler();//更新相机参数
+	extractUI->resetTemplateUI(); //重置提取界面
+	if (!runtimeParams.DeveloperMode) extractUI->refreshCameraControler();//更新相机参数
 	this->showTemplateUI(); //显示模板提取界面
 }
 
 //显示模板提取界面，隐藏主界面
 void PCBDetect::showTemplateUI()
 {
-	templateUI->showFullScreen(); //显示模板提取界面
+	extractUI->showFullScreen(); //显示模板提取界面
 	pcb::delay(10); //延时
 	this->hide(); //隐藏主界面
 }
@@ -391,7 +391,7 @@ void PCBDetect::do_showDetectMainUI_templateUI()
 	pcb::delay(10);
 	this->showFullScreen(); //显示主界面
 	pcb::delay(10); //延时
-	templateUI->hide(); //隐藏模板提取界面
+	extractUI->hide(); //隐藏模板提取界面
 }
 
 

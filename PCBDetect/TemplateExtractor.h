@@ -3,7 +3,7 @@
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
 #include "RuntimeLib.h"
-#include "TemplFunc.h"
+#include "ExtractFunc.h"
 
 
 //标准模板提取器
