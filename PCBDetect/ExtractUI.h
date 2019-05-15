@@ -13,7 +13,7 @@
 
 
 //模板提取界面
-class TemplateUI : public QWidget
+class ExtractUI : public QWidget
 {
 	Q_OBJECT
 
@@ -43,8 +43,8 @@ private:
 	TemplateExtractor *templExtractor; //模板提取器
 
 public:
-	TemplateUI(QWidget *parent = Q_NULLPTR);
-	~TemplateUI();
+	ExtractUI(QWidget *parent = Q_NULLPTR);
+	~ExtractUI();
 	void init();
 	
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
