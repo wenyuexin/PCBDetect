@@ -49,6 +49,7 @@ void DefectDetecter::detect()
 	qDebug() << ">>>>>>>>>> " << pcb::chinese("¿ªÊ¼¼ì²â ... ") <<
 		"( currentRow_detect -" << runtimeParams->currentRow_detect << ")";
 
+
 	detectState = DetectState::Start; //ÉèÖÃ¼ì²â×´Ì¬
 	emit updateDetectState_detecter(detectState);
 	double t1 = clock();
