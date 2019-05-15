@@ -73,7 +73,7 @@ void ExtractUI::init()
 
 ExtractUI::~ExtractUI()
 {
-	qDebug() << "~TemplateUI";
+	qDebug() << "~ExtractUI";
 
 	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
 	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
@@ -481,18 +481,19 @@ void ExtractUI::mouseDoubleClickEvent(QMouseEvent *event)
 //从序号识别界面获得产品序号之后
 void ExtractUI::on_recognizeFinished_serialNumUI()
 {
-	//获取对应样本图目录
-	runtimeParams->currentSampleDir = userConfig->SampleDirPath + "/"
-		+ runtimeParams->sampleModelNum + "/"
-		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
-	if (!QFileInfo(runtimeParams->currentSampleDir).exists()) {
-		runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
-		return;
-	}
-
 	//判断是直接从本地读图，调用相机获取图像
 	if (runtimeParams->DeveloperMode) { //开发者模式
-		if (currentRow_show + 1 < runtimeParams->nPhotographing) { //直接显示新的样本行
+		//样本文件夹中读取原始图像
+		runtimeParams->currentSampleDir = userConfig->SampleDirPath + "/"
+			+ runtimeParams->sampleModelNum + "/"
+			+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
+		if (!QFileInfo(runtimeParams->currentSampleDir).exists()) {
+			runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
+			return;
+		}
+
+		//显示新的样本行
+		if (currentRow_show + 1 < runtimeParams->nPhotographing) { 
 			currentRow_show += 1; //更新显示行号
 			qDebug() << "currentRow_show  - " << currentRow_show;
 			readSampleImages(); //读图 - 相当于相机拍照		
