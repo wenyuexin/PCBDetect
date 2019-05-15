@@ -59,7 +59,8 @@ bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
 	pyrDown(image_sample_gray, pyr);
 	pyrDown(pyr, pyr);
-	pyrDown(pyr, pyr);
+	if (userConfig->matchingAccuracyLevel == 2)//低精度
+		pyrDown(pyr, pyr);
 
 	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
 
@@ -129,10 +130,12 @@ bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 
 
 		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-		H.at<double>(0, 2) *= 8;
-		H.at<double>(1, 2) *= 8;
-		H.at<double>(2, 0) /= 8;
-		H.at<double>(2, 1) /= 8;
+
+		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
+		H.at<double>(0, 2) *= matrixAdj;
+		H.at<double>(1, 2) *= matrixAdj;
+		H.at<double>(2, 0) /= matrixAdj;
+		H.at<double>(2, 1) /= matrixAdj;
 		warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
 	}
 
@@ -442,10 +445,9 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
 	if (contours.size() == 0) {
-		Rect roiRect = Rect(currentCol*adminConfig->ImageSize_W, runtimeParams->currentRow_detect*adminConfig->ImageSize_H,
-			adminConfig->ImageSize_W, adminConfig->ImageSize_H);
+		Rect roiRect = Rect(currentCol*widthUnit, runtimeParams->currentRow_detect*heightUnit, widthUnit, heightUnit);
 		Mat roi = getBigTempl(roiRect);
-		sampGrayRegCopy.copyTo(roi);
+		sampGrayRegCopyZoom.copyTo(roi);
 		return;
 	}
 	batch_path = (userConfig->OutputDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
@@ -560,7 +562,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		findContours(diff_part, contours_rect, hierarchy_rect, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE, Point(0, 0));
 
 		int neighbors_sum = 0;
-		if (contours_rect.size() == 0)
+		if (contours_rect.size() < 2)
 			goto classfinish;
 		//continue;
 		{
