@@ -7,8 +7,8 @@
 #include "Configurator.h"
 #include "RuntimeLib.h"
 #include "DetectUI.h"
+#include "ExtractUI.h"
 #include "SettingUI.h"
-#include "TemplateUI.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
 #include <QDir>
@@ -24,7 +24,7 @@
 	struct DetectSystemModules {
 		LaunchUI *launcher; //启动界面
 		SettingUI *settingUI; //参数设置界面
-		TemplateUI *templateUI; //模板提取界面
+		ExtractUI *templateUI; //模板提取界面
 		DetectUI *detectUI; //检测界面
 		MotionControler *motionControler;//运动控制器
 		CameraControler *cameraControler;//相机控制器
@@ -41,7 +41,7 @@ private:
 	Ui::PCBDetectClass ui;
 	LaunchUI *launcher; //启动界面
 	SettingUI *settingUI; //参数设置界面
-	TemplateUI *templateUI; //模板提取界面
+	ExtractUI *extractUI; //模板提取界面
 	DetectUI *detectUI; //检测界面
 	MotionControler *motionControler;//运动控制器
 	CameraControler *cameraControler;//相机控制器
