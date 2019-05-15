@@ -13,7 +13,7 @@ ExtractThread::ExtractThread(QObject *parent)
 
 ExtractThread::~ExtractThread()
 {
-	qDebug() << "~TemplateThread";
+	qDebug() << "~ExtractThread";
 }
 
 
@@ -24,7 +24,7 @@ void ExtractThread::initTemplateExtractor()
 	templExtractor->setUserConfig(userConfig);
 	templExtractor->setRuntimeParams(runtimeParams);
 	templExtractor->setSampleImages(cvmatSamples);
-	templExtractor->initTemplFunc();
+	templExtractor->init();
 }
 
 
