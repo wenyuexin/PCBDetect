@@ -217,7 +217,8 @@ void ExtractFunc::save(const std::string& path, Mat& image_template_gray) {
 	Mat temp;
 	cv::pyrDown(image_template_gray, temp);
 	cv::pyrDown(temp, temp);
-	cv::pyrDown(temp, temp);
+	if (userConfig->matchingAccuracyLevel == 2)//µÍ¾«¶È
+		cv::pyrDown(temp, temp);
 	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
 	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
 	cv::FileStorage store(path, cv::FileStorage::WRITE);

@@ -161,11 +161,13 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 	Mat pyrTemp, pyrSamp;
 	pyrDown(image_template_gray, pyrTemp);
 	pyrDown(pyrTemp, pyrTemp);
-	//pyrDown(pyrTemp, pyrTemp);
+	if(userConfig->matchingAccuracyLevel==2)//低精度
+		pyrDown(pyrTemp, pyrTemp);
 
 	pyrDown(image_sample_gray, pyrSamp);
 	pyrDown(pyrSamp, pyrSamp);
-	//pyrDown(pyrSamp, pyrSamp);
+	if (userConfig->matchingAccuracyLevel==2)//低精度
+		pyrDown(pyrSamp, pyrSamp);
 
 	detector->detectAndCompute(pyrTemp, Mat(), keypoints_1, descriptors_1);
 	detector->detectAndCompute(pyrSamp, Mat(), keypoints_2, descriptors_2);
@@ -196,7 +198,6 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 		}
 	}
 
-	vector< DMatch > good_matches;
 
 	if (!matches.size())
 	{
@@ -222,10 +223,11 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 		cout << "匹配获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
 
 		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-		H.at<double>(0, 2) *= 4;
-		H.at<double>(1, 2) *= 4;
-		H.at<double>(2, 0) /= 4;
-		H.at<double>(2, 1) /= 4;
+		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
+		H.at<double>(0, 2) *= matrixAdj;
+		H.at<double>(1, 2) *= matrixAdj;
+		H.at<double>(2, 0) /= matrixAdj;
+		H.at<double>(2, 1) /= matrixAdj;
 		warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
 	}
 	return true;
