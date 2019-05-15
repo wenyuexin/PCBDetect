@@ -263,6 +263,7 @@ __pycache__/
 
 # Personal documents that need to be ignored
 buffer/
+GeneratedFiles/
 PCBDetect.sln
 .admin.config
 .user.config
