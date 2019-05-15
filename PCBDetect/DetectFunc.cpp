@@ -23,7 +23,6 @@ using cv::KeyPoint;
 using cv::DMatch;
 using cv::FlannBasedMatcher;
 using cv::xfeatures2d::SURF;
-//using namespace cv::flann;
 
 
 DetectFunc::DetectFunc()

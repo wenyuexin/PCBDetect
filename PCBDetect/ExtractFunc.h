@@ -21,6 +21,9 @@ private:
 	cv::Point lf1, lf2, br1, br2;//左上角，左下角，右上角，右下角
 	cv::Mat big_templ; //大模板;
 
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Mat descriptors;
+
 public:
 	ExtractFunc();
 	~ExtractFunc();
@@ -30,13 +33,11 @@ public:
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 
 	void generateBigTempl();
-	cv::Mat find1(int currentCol, cv::Mat &image);
+	cv::Mat findLocationMark(int currentCol, cv::Mat &image);
 
 	inline cv::Mat getBigTempl() { return big_templ; }
 	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect); }
 
-	std::vector<cv::KeyPoint> keypoints;
-	cv::Mat descriptors;
 	void save(const std::string& path, cv::Mat& image_template_gray);
 	void load(const std::string& path);
 };
