@@ -105,7 +105,7 @@ void DefectDetecter::detect()
 		imwrite(sampPath,samp);
 
 		double t2 = clock();
-		qDebug() << QString::fromLocal8Bit("==========模板形态学处理：") << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
+		qDebug() << QString::fromLocal8Bit("模板形态学处理") << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
 
 		//try {
 			//样本与模板配准
@@ -122,7 +122,7 @@ void DefectDetecter::detect()
 			cv::bitwise_and(mask_roi, templ_gray, templGrayRoi);
 			detectFunc->alignImages_test(templGrayRoi, samp_gray, samp_gray_reg, h, imMatches);
 			double t3 = clock();
-			qDebug() << QString::fromLocal8Bit("==========配准时间：") << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
+			qDebug() << QString::fromLocal8Bit("配准时间") << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
 
 			double ratio = 0.67;
 			Size roiSize = samp_gray.size();
@@ -193,7 +193,7 @@ void DefectDetecter::detect()
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
 
-			qDebug() << QString::fromLocal8Bit("==========差值处理完成");
+			qDebug() << QString::fromLocal8Bit("");
 
 			//标记缺陷
 			detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
@@ -231,7 +231,7 @@ void DefectDetecter::detect()
 
 	//检测结束
 	double t2 = clock();
-	qDebug() << ">>>>>>>>>> " << pcb::chinese("当前行检测结束") << 
+	qDebug() << "" << pcb::chinese("current row finish") << 
 		(t2 - t1) << "ms  ( currentRow_detect -" << runtimeParams->currentRow_detect << ")";
 	
 	detectState = DetectState::Finished;
