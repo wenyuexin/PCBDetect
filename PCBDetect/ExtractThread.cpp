@@ -1,7 +1,7 @@
-#include "TemplateThread.h"
+#include "ExtractThread.h"
 
 
-TemplateThread::TemplateThread(QObject *parent)
+ExtractThread::ExtractThread(QObject *parent)
 	: QThread(parent)
 {
 	adminConfig = Q_NULLPTR; //系统参数
@@ -11,14 +11,14 @@ TemplateThread::TemplateThread(QObject *parent)
 	templExtractor = Q_NULLPTR; //提取器
 }
 
-TemplateThread::~TemplateThread()
+ExtractThread::~ExtractThread()
 {
 	qDebug() << "~TemplateThread";
 }
 
 
 //初始化模板提取器
-void TemplateThread::initTemplateExtractor()
+void ExtractThread::initTemplateExtractor()
 {
 	templExtractor->setAdminConfig(adminConfig);
 	templExtractor->setUserConfig(userConfig);
@@ -29,7 +29,7 @@ void TemplateThread::initTemplateExtractor()
 
 
 //运行提取线程
-void TemplateThread::run()
+void ExtractThread::run()
 {
 	templExtractor->extract(); //提取
 }

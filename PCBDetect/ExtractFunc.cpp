@@ -1,4 +1,4 @@
-#include "TemplFunc.h"
+#include "ExtractFunc.h"
 #include <qDebug>
 #include "opencv2/opencv.hpp"
 #include "opencv2/features2d.hpp"
@@ -14,14 +14,14 @@ using cv::Rect;
 using namespace cv::xfeatures2d;
 
 
-TemplFunc::TemplFunc()
+ExtractFunc::ExtractFunc()
 {
 	adminConfig = Q_NULLPTR;
 	userConfig = Q_NULLPTR;
 	runtimeParams = Q_NULLPTR;
 }
 
-TemplFunc::~TemplFunc()
+ExtractFunc::~ExtractFunc()
 {
 	qDebug() << "~TemplFunc";
 }
@@ -29,7 +29,7 @@ TemplFunc::~TemplFunc()
 /***************** 提取 ******************/
 
 //生成完整尺寸的模板图像
-void TemplFunc::generateBigTempl()
+void ExtractFunc::generateBigTempl()
 {
 	Size templSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera,
 		adminConfig->ImageSize_H * runtimeParams->nPhotographing);
@@ -43,7 +43,7 @@ void TemplFunc::generateBigTempl()
 *输出：显示L型角点位置的坐标，并对所切割的结果图保存，返回mask
 */
 
-Mat TemplFunc::find1(int col, cv::Mat &image) {
+Mat ExtractFunc::find1(int col, cv::Mat &image) {
 	int currentCol = col + 1;
 	int currentRow = runtimeParams->currentRow_extract + 1;
 	int nCamera = runtimeParams->nCamera;
@@ -214,7 +214,7 @@ Mat TemplFunc::find1(int col, cv::Mat &image) {
 }
 
 
-void TemplFunc::save(const std::string& path, Mat& image_template_gray) {
+void ExtractFunc::save(const std::string& path, Mat& image_template_gray) {
 	Mat temp;
 	cv::pyrDown(image_template_gray, temp);
 	cv::pyrDown(temp, temp);
@@ -227,7 +227,7 @@ void TemplFunc::save(const std::string& path, Mat& image_template_gray) {
 	store.release();
 
 }
-void TemplFunc::load(const std::string& path) {
+void ExtractFunc::load(const std::string& path) {
 	cv::FileStorage store(path, cv::FileStorage::READ);
 	cv::FileNode n1 = store["keypoints"];
 	cv::read(n1, keypoints);

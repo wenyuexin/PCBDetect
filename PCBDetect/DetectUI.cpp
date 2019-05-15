@@ -93,9 +93,9 @@ DetectUI::~DetectUI()
 	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
 	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
 	deletePointersInQPixmapArray(qpixmapSamples);//删除qpixmapSamples中的指针
-	delete detectThread; //删除检测线程
+	delete detectThread; //检测线程
 	detectThread = Q_NULLPTR;
-	delete defectDetecter; //删除检测核心
+	delete defectDetecter; //缺陷检测器
 	defectDetecter = Q_NULLPTR;
 	delete serialNumberUI; //产品序号识别界面
 	serialNumberUI = Q_NULLPTR;
@@ -360,10 +360,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 	{
 	case Qt::Key_PageUp:
 		qDebug() << ">>>>>>>>>> Key_PageUp";
-		if (!detectThread->isRunning()) {
-			resetDetectUI();//重置检测子模块
-			motionControler->resetControler(); //运动结构复位
-		}
+		break;
 	case Qt::Key_PageDown:
 		qDebug() << ">>>>>>>>>> Key_PageDown";
 		break;
@@ -533,7 +530,8 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 void DetectUI::do_showPreviousUI_serialNumUI()
 {
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
-		&& runtimeParams->DeveloperMode) {
+		&& runtimeParams->DeveloperMode) 
+	{
 		this->setPushButtonsEnabled(true); //启用按键
 	}
 	
@@ -541,6 +539,7 @@ void DetectUI::do_showPreviousUI_serialNumUI()
 	pcb::delay(10);//延迟
 	serialNumberUI->hide();
 }
+
 
 /******************** 运动控制 ********************/
 
