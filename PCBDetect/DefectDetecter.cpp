@@ -55,12 +55,13 @@ void DefectDetecter::initDetectFunc()
 
 void DefectDetecter::detect()
 {
-	qDebug() << "====================" << pcb::chinese("开始检测") <<
-		"( currentRow_detect =" << runtimeParams->currentRow_detect << ")" << endl;
 
 	detectState = DetectState::Start;
 	emit updateDetectState_detecter(detectState);
 	double t1 = clock();
+	qDebug() << "====================" << pcb::chinese("开始检测") <<
+		"( currentRow_detect =" << runtimeParams->currentRow_detect << ")" << endl;
+
 
 	int currentRow_detect = runtimeParams->currentRow_detect;
 	int nCamera = runtimeParams->nCamera;

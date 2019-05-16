@@ -49,7 +49,6 @@ void TemplateExtractor::init()
 	//整图经过缩放后的尺寸
 	scaledFullImageSize = Size(scaledSubImageSize.width * runtimeParams->nCamera,
 		scaledSubImageSize.height * runtimeParams->nPhotographing);
-
 }
 
 
@@ -75,6 +74,10 @@ void TemplateExtractor::initExtractFunc()
 
 void TemplateExtractor::extract()
 {
+	qDebug() << "====================" << pcb::chinese("开始提取") <<
+		"( currentRow_extract =" << runtimeParams->currentRow_extract << ")" << endl;
+	double t1 = clock();
+
 	//开始提取
 	extractState = ExtractState::Start;
 	emit extractState_extractor(extractState);
@@ -124,10 +127,10 @@ void TemplateExtractor::extract()
 		templFunc->save(filePath.toStdString(), src);
 
 		//合成大模板
-		Rect roiRect = Rect(col*adminConfig->ImageSize_W, currentRow_extract*adminConfig->ImageSize_H,
-			adminConfig->ImageSize_W, adminConfig->ImageSize_H);
-		Mat roi = templFunc->getBigTempl(roiRect);
-		src.copyTo(roi);
+		Point roiPos(col*adminConfig->ImageSize_W, currentRow_extract*adminConfig->ImageSize_H);
+		Rect roiRect = Rect(roiPos, originalSubImageSize);
+		Mat roiImage = templFunc->getBigTempl(roiRect);
+		src.copyTo(roiImage);
 	}
 
 	//存储PCB整图
@@ -142,6 +145,10 @@ void TemplateExtractor::extract()
 	}
 
 	//提取结束
+	double t2 = clock();
+	qDebug() << "====================" << pcb::chinese("当前行提取结束：") <<
+		(t2 - t1) << "ms  ( currentRow_extract =" << currentRow_extract << ")" << endl;
+
 	extractState = ExtractState::Finished;
 	emit extractState_extractor(extractState);
 }
