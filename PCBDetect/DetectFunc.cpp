@@ -48,11 +48,11 @@ void DetectFunc::generateBigTempl()
 	double factorH = 1.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
 	scalingFactor = qMin(factorW, factorH); //缩放因子
 
-	scaledFullImageSize = Size(scalingFactor * originalfullImgSize.width,
-		scalingFactor * originalfullImgSize.height); //整图经过缩放后的尺寸
-
 	scaledSubImageSize = Size(scalingFactor * adminConfig->ImageSize_W,
 		scalingFactor * adminConfig->ImageSize_H); //分图经过缩放后的尺寸
+
+	scaledFullImageSize = Size(scaledSubImageSize.width * runtimeParams->nCamera,
+		scaledSubImageSize.height * runtimeParams->nPhotographing); //整图经过缩放后的尺寸
 
 	big_templ = Mat(scaledFullImageSize, CV_8UC3); //生成用于记录缺陷的整图
 }
