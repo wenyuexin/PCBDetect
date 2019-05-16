@@ -16,14 +16,14 @@ using std::to_string;
 
 DefectDetecter::DefectDetecter() 
 {
-	adminConfig = Q_NULLPTR; //ç³»ç»Ÿå‚æ•°
-	userConfig = Q_NULLPTR; //ç”¨æˆ·å‚æ•°
-	runtimeParams = Q_NULLPTR; //è¿è¡Œå‚æ•°
-	detectResult = Q_NULLPTR; //æ£€æµ‹ç»“æœ
-	cvmatSamples = Q_NULLPTR; //æ­£åœ¨æ£€æµ‹çš„ä¸€è¡Œæ ·æœ¬
-	detectFunc = Q_NULLPTR; //æ£€æµ‹è¾…åŠ©ç±»
-	detectState = Default; //æ£€æµ‹çŠ¶æ€ï¼ˆç”¨äºç•Œé¢æ˜¾ç¤ºå’Œç¨‹åºè°ƒè¯•ï¼‰
-	defectNum = 0; //ç¼ºé™·æ•°
+	adminConfig = Q_NULLPTR; //ÏµÍ³²ÎÊı
+	userConfig = Q_NULLPTR; //ÓÃ»§²ÎÊı
+	runtimeParams = Q_NULLPTR; //ÔËĞĞ²ÎÊı
+	detectResult = Q_NULLPTR; //¼ì²â½á¹û
+	cvmatSamples = Q_NULLPTR; //ÕıÔÚ¼ì²âµÄÒ»ĞĞÑù±¾
+	detectFunc = Q_NULLPTR; //¼ì²â¸¨ÖúÀà
+	detectState = Default; //¼ì²â×´Ì¬£¨ÓÃÓÚ½çÃæÏÔÊ¾ºÍ³ÌĞòµ÷ÊÔ£©
+	defectNum = 0; //È±ÏİÊı
 }
 
 void DefectDetecter::init()
@@ -38,7 +38,7 @@ DefectDetecter::~DefectDetecter()
 	detectFunc = Q_NULLPTR;
 }
 
-//åˆå§‹åŒ–templFunc
+//³õÊ¼»¯templFunc
 void DefectDetecter::initDetectFunc()
 {
 	delete detectFunc;
@@ -51,11 +51,11 @@ void DefectDetecter::initDetectFunc()
 }
 
 
-/***************** æ£€æµ‹ ******************/
+/***************** ¼ì²â ******************/
 
 void DefectDetecter::detect()
 {
-	qDebug() << "====================" << "Start detecting... " <<
+	qDebug() << "====================" << pcb::chinese("¿ªÊ¼¼ì²â") <<
 		"( currentRow_detect =" << runtimeParams->currentRow_detect << ")" << endl;
 
 	detectState = DetectState::Start;
@@ -66,76 +66,76 @@ void DefectDetecter::detect()
 	int nCamera = runtimeParams->nCamera;
 	int nPhotographing = runtimeParams->nPhotographing;
 
-	//æ£€æµ‹å¯¹åº”çš„è¾“å‡ºç›®å½•æ˜¯å¦å­˜åœ¨
+	//¼ì²â¶ÔÓ¦µÄÊä³öÄ¿Â¼ÊÇ·ñ´æÔÚ
 	vector<QString> subFolders { "fullImage" };
 	if (currentRow_detect == 0) makeCurrentOutputDir(subFolders);
 
-	//å¼€å§‹æ£€æµ‹
+	//¿ªÊ¼¼ì²â
 	for (int i = 0; i < (*cvmatSamples)[currentRow_detect].size(); i++) {
-		int curRow = currentRow_detect;//å½“å‰è¡Œ
-		int curCol = i;//å½“å‰åˆ—
+		int curRow = currentRow_detect;//µ±Ç°ĞĞ
+		int curCol = i;//µ±Ç°ÁĞ
 
 		double t1 = clock();
-		//è¯»å–æ¨¡æ¿æ©è†œ
+		//¶ÁÈ¡Ä£°åÑÚÄ¤
 		QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/" 
 			+ QString("%1_%2_mask").arg(curRow+1).arg(curCol+1) + userConfig->ImageFormat;
 		cv::Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
 
-		//è¯»å–æ¨¡æ¿å›¾ç‰‡
+		//¶ÁÈ¡Ä£°åÍ¼Æ¬
 		QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
 			+ QString("%1_%2").arg(currentRow_detect + 1).arg(i + 1) + userConfig->ImageFormat;
 		Mat templ_gray = cv::imread(templPath.toStdString(), 0);
 
-		//è·å–æ ·æœ¬å›¾ç‰‡
+		//»ñÈ¡Ñù±¾Í¼Æ¬
 		Mat samp = *((*cvmatSamples)[currentRow_detect][i]);
 		Mat samp_gray;
 		cvtColor(samp, samp_gray, cv::COLOR_BGR2GRAY);
 
-		//æµ‹è¯•æ—¶åä¿å­˜æ ·æœ¬å›¾ç‰‡
-		string batch_path = (userConfig->SampleDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//æ£€æŸ¥è¾“å‡ºæ–‡ä»¶å¤¹ä¸­å‹å·æ–‡ä»¶æ˜¯å¦å­˜åœ¨
+		//²âÊÔÊ±ºó±£´æÑù±¾Í¼Æ¬
+		string batch_path = (userConfig->SampleDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//¼ì²éÊä³öÎÄ¼ş¼ĞÖĞĞÍºÅÎÄ¼şÊÇ·ñ´æÔÚ
 		if (0 != _access(batch_path.c_str(), 0))
 			_mkdir(batch_path.c_str());
-		string num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//æ£€æŸ¥æ‰¹æ¬¡å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
+		string num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//¼ì²éÅú´ÎºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
 		if (0 != _access(num_path.c_str(), 0))
 			_mkdir(num_path.c_str());
-		string out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//æ£€æŸ¥ç¼–å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
+		string out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//¼ì²é±àºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
 		if (0 != _access(out_path.c_str(), 0))
 			_mkdir(out_path.c_str());
 		string sampPath = out_path + "\\" + to_string(currentRow_detect + 1) + "_" + std::to_string(i + 1) + userConfig->ImageFormat.toStdString();
 		imwrite(sampPath,samp);
 
 		double t2 = clock();
-		qDebug() << "========== Morphological processing:" << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
+		qDebug() << "==========" << pcb::chinese("Ä£°åĞÎÌ¬Ñ§´¦Àí") << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
 
 		//try {
-			//æ ·æœ¬ä¸æ¨¡æ¿é…å‡†
+			//Ñù±¾ÓëÄ£°åÅä×¼
 			cv::Mat samp_gray_reg, h;
 			cv::Mat imMatches;
-			//è½½å…¥ç‰¹å¾çš„æ–¹æ³•
+			//ÔØÈëÌØÕ÷µÄ·½·¨
 			//string bin_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
 			//	+ "/bin/" + to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + ".bin";
 			//detectFunc->load(bin_path);
 			//detectFunc->alignImages_test_load(detectFunc->keypoints, detectFunc->descriptors, samp_gray, samp_gray_reg, h, imMatches);
 
-			//æ¯æ¬¡è®¡ç®—çš„æ–¹æ³•
+			//Ã¿´Î¼ÆËãµÄ·½·¨
 			Mat templGrayRoi, sampGrayRoi;
 			cv::bitwise_and(mask_roi, templ_gray, templGrayRoi);
 			detectFunc->alignImages_test(templGrayRoi, samp_gray, samp_gray_reg, h, imMatches);
 			double t3 = clock();
-			qDebug() << "========== Registration:" << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
+			qDebug() << "==========" << pcb::chinese("Ä£°åÆ¥Åä£º") << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
 
 			double ratio = 0.67;
 			Size roiSize = samp_gray.size();
 			Rect upRect = Rect(0, 0, roiSize.width, int(ratio*roiSize.height));
 			Rect downRect = Rect(0, int(ratio*roiSize.height), roiSize.width, roiSize.height - int(ratio*roiSize.height));
-			//æ ·æœ¬äºŒå€¼åŒ–
+			//Ñù±¾¶şÖµ»¯
 			Mat sampBw = Mat::zeros(samp_gray.size(), CV_8UC1);
-			//è‡ªé€‚åº”äºŒå€¼åŒ–
+			//×ÔÊÊÓ¦¶şÖµ»¯
 			//cv::adaptiveThreshold(samp_gray, sampBw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
-			//å‡å€¼äºŒå€¼åŒ–
+			//¾ùÖµ¶şÖµ»¯
 			//int meanSampGray = mean(samp_gray,mask_roi)[0];
 			//cv::threshold(samp_gray, sampBw, meanSampGray, 255, cv::THRESH_BINARY_INV);
-			//åˆ†å—äºŒå€¼åŒ–
+			//·Ö¿é¶şÖµ»¯
 			int meanSampGrayUp = mean(samp_gray(upRect), mask_roi(upRect))[0];
 			cv::threshold(samp_gray(upRect), sampBw(upRect), meanSampGrayUp, 255, cv::THRESH_BINARY_INV);
 			int meanSampGrayDown = mean(samp_gray(downRect), mask_roi(downRect))[0];
@@ -144,19 +144,19 @@ void DefectDetecter::detect()
 			Mat element_a = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
 			cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
 			cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
-			//ç›´æ¥è½½å…¥äºŒå€¼åŒ–æ¨¡æ¿
+			//Ö±½ÓÔØÈë¶şÖµ»¯Ä£°å
 			//std::string templBwPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/bw/"
 			//	+ to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_bw" + userConfig->ImageFormat.toStdString();
 			//Mat templBw = cv::imread(templBwPath, 0);
 
-			//æ¯æ¬¡ç”Ÿæˆæ¨¡æ¿çš„äºŒå€¼åŒ–
+			//Ã¿´ÎÉú³ÉÄ£°åµÄ¶şÖµ»¯
 			Mat templBw = Mat::zeros(samp_gray.size(), CV_8UC1);
-			//è‡ªé€‚åº”äºŒå€¼åŒ–
+			//×ÔÊÊÓ¦¶şÖµ»¯
 			//cv::adaptiveThreshold(templ_gray, templBw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
-			//å‡å€¼äºŒå€¼åŒ–
+			//¾ùÖµ¶şÖµ»¯
 			//int meanTemplGray = mean(templ_gray, mask_roi)[0];
 			//cv::threshold(templ_gray, templBw, meanTemplGray, 255, cv::THRESH_BINARY_INV);
-			//åˆ†å—äºŒå€¼åŒ–
+			//·Ö¿é¶şÖµ»¯
 			int meanTemplGrayUp = mean(templ_gray(upRect), mask_roi(upRect))[0];
 			cv::threshold(templ_gray(upRect), templBw(upRect), meanTemplGrayUp, 255, cv::THRESH_BINARY_INV);
 			int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
@@ -166,29 +166,29 @@ void DefectDetecter::detect()
 			cv::morphologyEx(templBw, templBw, cv::MORPH_OPEN, elementTempl);
 			cv::morphologyEx(templBw, templBw, cv::MORPH_CLOSE, elementTempl);
 
-			//é€å°„å˜æ¢åæœ‰ä¸€ä¸ªroi
+			//Í¸Éä±ä»»ºóÓĞÒ»¸öroi
 			Mat templ_roi = Mat::ones(templ_gray.size(), templ_gray.type()) * 255;
 			cv::warpPerspective(templ_roi, templ_roi, h, templ_roi.size());
 
 			Mat templRoiReverse = 255 - templ_roi;
 			cv::add(samp_gray_reg, templ_gray, samp_gray_reg, templRoiReverse);
 
-			//æ€»çš„roi
+			//×ÜµÄroi
 			Mat roi;
 			cv::bitwise_and(templ_roi, mask_roi, roi);
 
-			//åšå·®
-			cv::warpPerspective(sampBw, sampBw, h, roi.size());//æ ·æœ¬äºŒå€¼å›¾åšç›¸åº”çš„å˜æ¢ï¼Œä»¥å’Œæ¨¡æ¿å¯¹é½
+			//×ö²î
+			cv::warpPerspective(sampBw, sampBw, h, roi.size());//Ñù±¾¶şÖµÍ¼×öÏàÓ¦µÄ±ä»»£¬ÒÔºÍÄ£°å¶ÔÆë
 			Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
 
-			//è°ƒè¯•æ—¶å€™çš„è¾¹ç¼˜å¤„ç†
+			//µ÷ÊÔÊ±ºòµÄ±ßÔµ´¦Àí
 			Size szDiff = diff.size();
 			Mat diff_roi = Mat::zeros(szDiff, diff.type());
-			int zoom = 50;//å¿½ç•¥çš„è¾¹ç¼˜å®½åº¦
+			int zoom = 50;//ºöÂÔµÄ±ßÔµ¿í¶È
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
 
-			///æ ‡è®°ç¼ºé™·
+			///±ê¼ÇÈ±Ïİ
 			detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
 			continue;
 		//}catch (std::exception e) {
@@ -196,7 +196,7 @@ void DefectDetecter::detect()
 		//}	
 	}
 
-	//å¦‚æœå½“å‰æ£€æµ‹çš„æ˜¯æœ€åä¸€è¡Œå›¾åƒ
+	//Èç¹ûµ±Ç°¼ì²âµÄÊÇ×îºóÒ»ĞĞÍ¼Ïñ
 	if (currentRow_detect + 1 == nPhotographing) {
 		Size sz(adminConfig->ImageSize_W*nCamera, adminConfig->ImageSize_H*nCamera);
 		Mat dst = detectFunc->getBigTempl();
@@ -207,12 +207,12 @@ void DefectDetecter::detect()
 		filePath += userConfig->ImageFormat;
 		cv::imwrite(filePath.toStdString(), dst);
 		detectFunc->generateBigTempl();
-		defectNum = 0;//å°†æ•´ä½“ç¼ºé™·ç½®0
+		defectNum = 0;//½«ÕûÌåÈ±ÏİÖÃ0
 	}
 
-	//æ£€æµ‹ç»“æŸ
+	//¼ì²â½áÊø
 	double t2 = clock();
-	qDebug() << "====================" << "Current row finished:" << 
+	qDebug() << "====================" << pcb::chinese("µ±Ç°ĞĞ¼ì²â½áÊø£º") << 
 		(t2 - t1) << "ms  ( currentRow_detect =" << currentRow_detect << ")" << endl;
 	
 	detectState = DetectState::Finished;
@@ -224,36 +224,36 @@ void DefectDetecter::detect()
 		emit detectFinished_detectThread(qualified);
 }
 
-//åˆ¤æ–­ä¸äº§å“åºå·å¯¹åº”çš„è¾“å‡ºæ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨ï¼Œè‹¥ä¸å­˜åœ¨åˆ™åˆ›å»º
+//ÅĞ¶ÏÓë²úÆ·ĞòºÅ¶ÔÓ¦µÄÊä³öÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ£¬Èô²»´æÔÚÔò´´½¨
 void DefectDetecter::makeCurrentOutputDir(vector<QString> &subFolders)
 {
-	//åˆ¤æ–­é¡¶å±‚çš„outputæ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
+	//ÅĞ¶Ï¶¥²ãµÄoutputÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
 	runtimeParams->currentOutputDir = userConfig->OutputDirPath; 
 	QDir outputDir(runtimeParams->currentOutputDir);
 	if (!outputDir.exists()) outputDir.mkdir(runtimeParams->currentOutputDir);
 
-	//åˆ¤æ–­å¯¹åº”çš„å‹å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
+	//ÅĞ¶Ï¶ÔÓ¦µÄĞÍºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
 	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleModelNum;
 	QDir modelDir(runtimeParams->currentOutputDir);
 	if (!modelDir.exists()) modelDir.mkdir(runtimeParams->currentOutputDir);
 
-	//åˆ¤æ–­å¯¹åº”çš„æ‰¹æ¬¡å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
+	//ÅĞ¶Ï¶ÔÓ¦µÄÅú´ÎºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
 	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleBatchNum;
 	QDir batchDir(runtimeParams->currentOutputDir);
 	if (!batchDir.exists()) batchDir.mkdir(runtimeParams->currentOutputDir);
 
-	//åˆ¤æ–­å¯¹åº”çš„æ ·æœ¬ç¼–å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
+	//ÅĞ¶Ï¶ÔÓ¦µÄÑù±¾±àºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
 	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleNum;
 	QDir resultDir(runtimeParams->currentOutputDir);
 	if (!resultDir.exists()) {
-		resultDir.mkdir(runtimeParams->currentOutputDir);//åˆ›å»ºæ–‡ä»¶å¤¹
+		resultDir.mkdir(runtimeParams->currentOutputDir);//´´½¨ÎÄ¼ş¼Ğ
 	}
 	else {
-		pcb::clearFolder(runtimeParams->currentOutputDir, false);//æ¸…ç©ºæ–‡ä»¶å¤¹
+		pcb::clearFolder(runtimeParams->currentOutputDir, false);//Çå¿ÕÎÄ¼ş¼Ğ
 	}
 
-	//æ·»åŠ å­æ–‡ä»¶å¤¹
+	//Ìí¼Ó×ÓÎÄ¼ş¼Ğ
 	for (int i = 0; i < subFolders.size(); i++) {
-		resultDir.mkdir(subFolders[i]);//åˆ›å»ºå­æ–‡ä»¶å¤¹
+		resultDir.mkdir(subFolders[i]);//´´½¨×ÓÎÄ¼ş¼Ğ
 	}
 }
