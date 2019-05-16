@@ -55,7 +55,7 @@ void DefectDetecter::initDetectFunc()
 
 void DefectDetecter::detect()
 {
-	qDebug() << ">>>>>>>>>> " << pcb::chinese("开始检测 ... ") <<
+	qDebug() << "====================" << "Start detecting... " <<
 		"( currentRow_detect =" << runtimeParams->currentRow_detect << ")" << endl;
 
 	detectState = DetectState::Start;
@@ -105,7 +105,7 @@ void DefectDetecter::detect()
 		imwrite(sampPath,samp);
 
 		double t2 = clock();
-		qDebug() << QString::fromLocal8Bit("模板形态学处理") << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
+		qDebug() << "========== Morphological processing:" << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
 
 		//try {
 			//样本与模板配准
@@ -122,7 +122,7 @@ void DefectDetecter::detect()
 			cv::bitwise_and(mask_roi, templ_gray, templGrayRoi);
 			detectFunc->alignImages_test(templGrayRoi, samp_gray, samp_gray_reg, h, imMatches);
 			double t3 = clock();
-			qDebug() << QString::fromLocal8Bit("配准时间") << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
+			qDebug() << "========== Registration:" << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
 
 			double ratio = 0.67;
 			Size roiSize = samp_gray.size();
@@ -212,7 +212,7 @@ void DefectDetecter::detect()
 
 	//检测结束
 	double t2 = clock();
-	qDebug() << ">>>>>>>>>> " << pcb::chinese("当前行检测结束") << 
+	qDebug() << "====================" << "Current row finished:" << 
 		(t2 - t1) << "ms  ( currentRow_detect =" << currentRow_detect << ")" << endl;
 	
 	detectState = DetectState::Finished;
@@ -242,7 +242,7 @@ void DefectDetecter::makeCurrentOutputDir(vector<QString> &subFolders)
 	QDir batchDir(runtimeParams->currentOutputDir);
 	if (!batchDir.exists()) batchDir.mkdir(runtimeParams->currentOutputDir);
 
-	///判断对应的样本编号文件夹是否存在
+	//判断对应的样本编号文件夹是否存在
 	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleNum;
 	QDir resultDir(runtimeParams->currentOutputDir);
 	if (!resultDir.exists()) {
