@@ -1,27 +1,30 @@
 #include "LaunchUI.h"
 
 using pcb::AdminConfig;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 
 
-LaunchUI::LaunchUI(QWidget *parent, QRect &screenRect)
+LaunchUI::LaunchUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//多屏状态下选择在主屏还是副屏上显示
-	this->setGeometry(screenRect);
-
-	//启动界面不显示鼠标
-	this->setCursor(Qt::BlankCursor);
-
 	//成员变量初始化
 	initThread = Q_NULLPTR; //系统初始化线程
 	adminConfig = Q_NULLPTR; //系统参数
-	detectConfig = Q_NULLPTR; //用户参数
-	detectParams = Q_NULLPTR; //运行参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 	cameraControler = Q_NULLPTR; //相机控制器
+}
+
+void LaunchUI::init()
+{
+	//多屏状态下选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->ScreenRect);
+
+	//启动界面不显示鼠标
+	this->setCursor(Qt::BlankCursor);
 }
 
 LaunchUI::~LaunchUI()
@@ -39,16 +42,16 @@ void LaunchUI::runInitThread()
 	//初始化线程
 	initThread = new SysInitThread;
 	initThread->setAdminConfig(adminConfig);
-	initThread->setDetectConfig(detectConfig);
-	initThread->setDetectParams(detectParams);
+	initThread->setUserConfig(userConfig);
+	initThread->setRuntimeParams(runtimeParams);
 	initThread->setMotionControler(motionControler);
 	initThread->setCameraControler(cameraControler);
 
 	//初始化线程的信号连接
 	connect(initThread, SIGNAL(sysInitStatus_initThread(QString)), this, SLOT(update_sysInitStatus_initThread(QString)));
 	connect(initThread, SIGNAL(adminConfigError_initThread()), this, SLOT(on_adminConfigError_initThread()));
-	connect(initThread, SIGNAL(detectConfigError_initThread()), this, SLOT(on_detectConfigError_initThread()));
-	connect(initThread, SIGNAL(detectParamsError_initThread()), this, SLOT(on_detectParamsError_initThread()));
+	connect(initThread, SIGNAL(userConfigError_initThread()), this, SLOT(on_userConfigError_initThread()));
+	connect(initThread, SIGNAL(runtimeParamsError_initThread()), this, SLOT(on_runtimeParamsError_initThread()));
 	connect(initThread, SIGNAL(initGraphicsView_initThread(int)), this, SLOT(on_initGraphicsView_initThread(int)));
 
 	connect(initThread, SIGNAL(motionError_initThread(int)), this, SLOT(on_motionError_initThread(int)));
@@ -79,30 +82,30 @@ void LaunchUI::on_adminConfigError_initThread()
 	emit launchFinished_launchUI(adminConfig->getErrorCode());
 }
 
-//用户参数detectConfig的初始化错误提示
-void LaunchUI::on_detectConfigError_initThread()
+//用户参数userConfig的初始化错误提示
+void LaunchUI::on_userConfigError_initThread()
 {
-	detectConfig->showMessageBox(this);
+	userConfig->showMessageBox(this);
 	pcb::delay(10); //延时
 
-	if (detectConfig->getErrorCode() == AdminConfig::ConfigFileMissing)
-		detectConfig->resetErrorCode(); //错误代码设为Uncheck
+	if (userConfig->getErrorCode() == AdminConfig::ConfigFileMissing)
+		userConfig->resetErrorCode(); //错误代码设为Uncheck
 	update_sysInitStatus_initThread(pcb::chinese("用户参数获取结束  "));
 
 	pcb::delay(600); //延时
-	emit initGraphicsView_launchUI(detectConfig->getErrorCode());
+	emit initGraphicsView_launchUI(userConfig->getErrorCode());
 	pcb::delay(10); //延时
-	emit launchFinished_launchUI(detectConfig->getErrorCode());
+	emit launchFinished_launchUI(userConfig->getErrorCode());
 }
 
 //运行参数adminConfig的初始化错误提示
-void LaunchUI::on_detectParamsError_initThread()
+void LaunchUI::on_runtimeParamsError_initThread()
 {
-	detectParams->showMessageBox(this);
+	runtimeParams->showMessageBox(this);
 	pcb::delay(10); //延时
 	update_sysInitStatus_initThread(pcb::chinese("系统参数获取结束  "));
 	pcb::delay(600); //延时
-	emit launchFinished_launchUI(detectParams->getErrorCode());
+	emit launchFinished_launchUI(runtimeParams->getErrorCode());
 }
 
 

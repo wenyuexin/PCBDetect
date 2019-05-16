@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">border-image: url(:/PCBDetect/Icons/screen.png);</string>
+    <string notr="true">border-image: url(:/PCBDetect/icons/screen.png);</string>
    </property>
    <property name="text">
     <string/>

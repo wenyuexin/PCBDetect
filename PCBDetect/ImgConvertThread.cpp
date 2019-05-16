@@ -8,7 +8,6 @@ using pcb::CvMatVector;
 ImgConvertThread::ImgConvertThread(QObject *parent)
 	: QThread(parent)
 {
-	initImageConverters();
 
 	//成员变量初始化
 	errorCode = ImageConverter::ErrorCode::Default;
@@ -17,6 +16,9 @@ ImgConvertThread::ImgConvertThread(QObject *parent)
 	qimages = Q_NULLPTR;
 	cvtCode = ImageConverter::CvtCode::Null; //转换代码
 	currentRow = Q_NULLPTR; //当前行号
+
+	//初始化图像转换器
+	initImageConverters();
 }
 
 ImgConvertThread::~ImgConvertThread()
@@ -32,7 +34,7 @@ void ImgConvertThread::run()
 		<< "( currentRow_show -" << *currentRow << ")";
 
 	clock_t t1 = clock();
-	errorCode = ImageConverter::Uncheck;
+	errorCode = ImageConverter::Unchecked;
 
 	if (*currentRow < 0) { qDebug() << "Warning: ImgConvertThread: currentRow < 0"; return; }
 	if (cvmats->size() < 1 || (cvmats->at(*currentRow)).size() < 1) { 

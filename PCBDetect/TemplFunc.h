@@ -12,8 +12,8 @@ class TemplFunc {
 
 private:
 	pcb::AdminConfig *adminConfig;
-	pcb::DetectConfig *detectConfig;
-	pcb::DetectParams *detectParams;
+	pcb::UserConfig *userConfig;
+	pcb::RuntimeParams *runtimeParams;
 
 	int roi_x, roi_y, length = 1000;
 	cv::Point minloc, maxloc, point_leftup, point_rightup, point_left, point_right;//最小值位置，最大值位置，
@@ -25,8 +25,8 @@ public:
 	~TemplFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 
 	void generateBigTempl();
 	void str2int(int &int_temp, const std::string &string_temp);

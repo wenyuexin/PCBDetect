@@ -48,7 +48,7 @@ public:
     QHBoxLayout *horizontalLayout_11;
     QLabel *label_roiHeight_L_8;
     QSpacerItem *horizontalSpacer_11;
-    QLineEdit *lineEdit_ImageOverlappingRate;
+    QLineEdit *lineEdit_ImageOverlappingRate_W;
     QWidget *layoutWidget_6;
     QHBoxLayout *horizontalLayout_6;
     QLabel *label_roiHeight_L_3;
@@ -58,6 +58,11 @@ public:
     QSpacerItem *horizontalSpacer_7;
     QLabel *label_roiHeight_L_10;
     QLineEdit *lineEdit_ImageSize_H;
+    QWidget *layoutWidget_11;
+    QHBoxLayout *horizontalLayout_12;
+    QLabel *label_roiHeight_L_11;
+    QSpacerItem *horizontalSpacer_12;
+    QLineEdit *lineEdit_ImageOverlappingRate_H;
 
     void setupUi(QWidget *AdminSettingUI)
     {
@@ -219,8 +224,8 @@ public:
         label_roiHeight_L_8->setObjectName(QStringLiteral("label_roiHeight_L_8"));
         sizePolicy.setHeightForWidth(label_roiHeight_L_8->sizePolicy().hasHeightForWidth());
         label_roiHeight_L_8->setSizePolicy(sizePolicy);
-        label_roiHeight_L_8->setMinimumSize(QSize(140, 35));
-        label_roiHeight_L_8->setMaximumSize(QSize(140, 35));
+        label_roiHeight_L_8->setMinimumSize(QSize(145, 35));
+        label_roiHeight_L_8->setMaximumSize(QSize(145, 35));
         label_roiHeight_L_8->setFont(font);
         label_roiHeight_L_8->setAlignment(Qt::AlignCenter);
 
@@ -230,20 +235,20 @@ public:
 
         horizontalLayout_11->addItem(horizontalSpacer_11);
 
-        lineEdit_ImageOverlappingRate = new QLineEdit(layoutWidget_10);
-        lineEdit_ImageOverlappingRate->setObjectName(QStringLiteral("lineEdit_ImageOverlappingRate"));
-        sizePolicy.setHeightForWidth(lineEdit_ImageOverlappingRate->sizePolicy().hasHeightForWidth());
-        lineEdit_ImageOverlappingRate->setSizePolicy(sizePolicy);
-        lineEdit_ImageOverlappingRate->setMinimumSize(QSize(180, 35));
-        lineEdit_ImageOverlappingRate->setMaximumSize(QSize(160, 35));
-        lineEdit_ImageOverlappingRate->setFont(font);
-        lineEdit_ImageOverlappingRate->setAlignment(Qt::AlignCenter);
+        lineEdit_ImageOverlappingRate_W = new QLineEdit(layoutWidget_10);
+        lineEdit_ImageOverlappingRate_W->setObjectName(QStringLiteral("lineEdit_ImageOverlappingRate_W"));
+        sizePolicy.setHeightForWidth(lineEdit_ImageOverlappingRate_W->sizePolicy().hasHeightForWidth());
+        lineEdit_ImageOverlappingRate_W->setSizePolicy(sizePolicy);
+        lineEdit_ImageOverlappingRate_W->setMinimumSize(QSize(180, 35));
+        lineEdit_ImageOverlappingRate_W->setMaximumSize(QSize(160, 35));
+        lineEdit_ImageOverlappingRate_W->setFont(font);
+        lineEdit_ImageOverlappingRate_W->setAlignment(Qt::AlignCenter);
 
-        horizontalLayout_11->addWidget(lineEdit_ImageOverlappingRate);
+        horizontalLayout_11->addWidget(lineEdit_ImageOverlappingRate_W);
 
         layoutWidget_6 = new QWidget(AdminSettingUI);
         layoutWidget_6->setObjectName(QStringLiteral("layoutWidget_6"));
-        layoutWidget_6->setGeometry(QRect(70, 360, 371, 37));
+        layoutWidget_6->setGeometry(QRect(70, 430, 361, 37));
         horizontalLayout_6 = new QHBoxLayout(layoutWidget_6);
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setContentsMargins(11, 11, 11, 11);
@@ -314,6 +319,40 @@ public:
 
         horizontalLayout_6->addWidget(lineEdit_ImageSize_H);
 
+        layoutWidget_11 = new QWidget(AdminSettingUI);
+        layoutWidget_11->setObjectName(QStringLiteral("layoutWidget_11"));
+        layoutWidget_11->setGeometry(QRect(70, 360, 361, 37));
+        horizontalLayout_12 = new QHBoxLayout(layoutWidget_11);
+        horizontalLayout_12->setSpacing(6);
+        horizontalLayout_12->setContentsMargins(11, 11, 11, 11);
+        horizontalLayout_12->setObjectName(QStringLiteral("horizontalLayout_12"));
+        horizontalLayout_12->setContentsMargins(0, 0, 0, 0);
+        label_roiHeight_L_11 = new QLabel(layoutWidget_11);
+        label_roiHeight_L_11->setObjectName(QStringLiteral("label_roiHeight_L_11"));
+        sizePolicy.setHeightForWidth(label_roiHeight_L_11->sizePolicy().hasHeightForWidth());
+        label_roiHeight_L_11->setSizePolicy(sizePolicy);
+        label_roiHeight_L_11->setMinimumSize(QSize(145, 35));
+        label_roiHeight_L_11->setMaximumSize(QSize(145, 35));
+        label_roiHeight_L_11->setFont(font);
+        label_roiHeight_L_11->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_12->addWidget(label_roiHeight_L_11);
+
+        horizontalSpacer_12 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        horizontalLayout_12->addItem(horizontalSpacer_12);
+
+        lineEdit_ImageOverlappingRate_H = new QLineEdit(layoutWidget_11);
+        lineEdit_ImageOverlappingRate_H->setObjectName(QStringLiteral("lineEdit_ImageOverlappingRate_H"));
+        sizePolicy.setHeightForWidth(lineEdit_ImageOverlappingRate_H->sizePolicy().hasHeightForWidth());
+        lineEdit_ImageOverlappingRate_H->setSizePolicy(sizePolicy);
+        lineEdit_ImageOverlappingRate_H->setMinimumSize(QSize(180, 35));
+        lineEdit_ImageOverlappingRate_H->setMaximumSize(QSize(160, 35));
+        lineEdit_ImageOverlappingRate_H->setFont(font);
+        lineEdit_ImageOverlappingRate_H->setAlignment(Qt::AlignCenter);
+
+        horizontalLayout_12->addWidget(lineEdit_ImageOverlappingRate_H);
+
 
         retranslateUi(AdminSettingUI);
 
@@ -330,11 +369,12 @@ public:
         pushButton_confirm->setText(QApplication::translate("AdminSettingUI", "\347\241\256\345\256\232", nullptr));
         label_roiHeight_L_5->setText(QApplication::translate("AdminSettingUI", "\347\233\270\346\234\272\346\200\273\346\225\260", nullptr));
         label_roiHeight_L_7->setText(QApplication::translate("AdminSettingUI", "\346\257\217\346\257\253\347\261\263\345\203\217\347\264\240\346\225\260", nullptr));
-        label_roiHeight_L_8->setText(QApplication::translate("AdminSettingUI", "\345\210\206\345\233\276\351\207\215\345\217\240\347\216\207", nullptr));
+        label_roiHeight_L_8->setText(QApplication::translate("AdminSettingUI", "\345\210\206\345\233\276\351\207\215\345\217\240\347\216\207(\345\256\275)", nullptr));
         label_roiHeight_L_3->setText(QApplication::translate("AdminSettingUI", "\345\210\206\345\233\276\345\260\272\345\257\270(pix)", nullptr));
         label_roiHeight_L_9->setText(QApplication::translate("AdminSettingUI", "\345\256\275", nullptr));
         lineEdit_ImageSize_W->setText(QString());
         label_roiHeight_L_10->setText(QApplication::translate("AdminSettingUI", "\351\253\230", nullptr));
+        label_roiHeight_L_11->setText(QApplication::translate("AdminSettingUI", "\345\210\206\345\233\276\351\207\215\345\217\240\347\216\207(\351\253\230)", nullptr));
     } // retranslateUi
 
 };

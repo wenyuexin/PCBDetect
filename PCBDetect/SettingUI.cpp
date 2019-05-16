@@ -1,29 +1,54 @@
 #include "SettingUI.h"
 
 using pcb::AdminConfig;
-using pcb::DetectConfig;
-using pcb::DetectParams;
+using pcb::UserConfig;
+using pcb::RuntimeParams;
 using pcb::Configurator;
 
 
-SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
+SettingUI::SettingUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//多屏状态下选择在主屏还是副屏上显示
-	this->screenRect = screenRect;
-	this->setGeometry(screenRect);
-
-	//设置界面初始化
-	this->initSettingUI();
-
 	//成员变量初始化
-	detectParams = Q_NULLPTR;//运行参数
-	detectConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR;//运行参数
+	userConfig = Q_NULLPTR; //用户参数
 	adminConfig = Q_NULLPTR; //系统参数
 	adminSettingUI = Q_NULLPTR; //系统设置界面
 	sysResetCode = 0b00000000; //系统重置代码
+	NumberValidator = Q_NULLPTR;
+}
+
+void SettingUI::init()
+{
+	//多屏状态下选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->ScreenRect);
+
+	//设置聚焦策略
+	this->setFocusPolicy(Qt::ClickFocus);
+
+	//设置光标
+	this->setCursorLocation(UserConfig::Index_None);
+
+	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
+	this->setPushButtonsEnabled(false);
+	this->setPushButtonsEnabled(true);
+
+	//限制参数的输入范围
+	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
+	ui.lineEdit_ActualProductSize_W->setValidator(NumberValidator);
+	ui.lineEdit_ActualProductSize_H->setValidator(NumberValidator);
+	ui.lineEdit_nBasicUnitInRow->setValidator(NumberValidator);
+	ui.lineEdit_nBasicUnitInCol->setValidator(NumberValidator);
+	ui.lineEdit_concaveRateThresh->setValidator(NumberValidator);
+	ui.lineEdit_convexRateThresh->setValidator(NumberValidator);
+
+	//将匹配精度的确认框设为一组
+	QPushButton button;
+	matchingCheckBoxGroup.addButton(&button);
+	matchingCheckBoxGroup.addButton(ui.checkBox_matchingAccuracy_high, 1);
+	matchingCheckBoxGroup.addButton(ui.checkBox_matchingAccuracy_low, 2);
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
@@ -34,106 +59,99 @@ SettingUI::SettingUI(QWidget *parent, QRect &screenRect)
 	passWordUI.setWindowModality(Qt::ApplicationModal);
 	connect(&passWordUI, SIGNAL(showAdminSettingUI_pswdUI()), this, SLOT(do_showAdminSettingUI_pswdUI()));
 	connect(&passWordUI, SIGNAL(closePassWordUI_pswdUI()), this, SLOT(on_closePassWordUI_pswdUI()));
-}
 
-SettingUI::~SettingUI()
-{
-	qDebug() << "~SettingUI";
-	delete adminSettingUI;
-}
-
-void SettingUI::doConnect()
-{
 	//系统参数设置界面
-	adminSettingUI = new AdminSettingUI(Q_NULLPTR, screenRect);
+	adminSettingUI = new AdminSettingUI();
 	adminSettingUI->setAdminConfig(adminConfig);
-	adminSettingUI->setDetectConfig(detectConfig);
-	adminSettingUI->setDetectParams(detectParams);
+	adminSettingUI->setUserConfig(userConfig);
+	adminSettingUI->setRuntimeParams(runtimeParams);
+	adminSettingUI->init();
 	connect(adminSettingUI, SIGNAL(showSettingUI_adminUI()), this, SLOT(do_showSettingUI_adminUI()));
 	connect(adminSettingUI, SIGNAL(resetDetectSystem_adminUI()), this, SLOT(do_resetDetectSystem_adminUI()));
 	connect(adminSettingUI, SIGNAL(checkSystemState_adminUI()), this, SLOT(do_checkSystemState_adminUI()));
 }
 
-/************* 界面的设置、输入、更新 **************/
-
-void SettingUI::initSettingUI()
+SettingUI::~SettingUI()
 {
-	//设置聚焦策略
-	this->setFocusPolicy(Qt::ClickFocus);
-
-	//设置光标
-	this->setCursorLocation(DetectConfig::Index_None);
-
-	//第一次切换按键状态在显示上可能会出现延迟，故提前预热
-	this->setPushButtonsEnabled(false);
-	this->setPushButtonsEnabled(true);
-
-	//限制参数的输入范围
-	QIntValidator intValidator;
-	ui.lineEdit_ActualProductSize_W->setValidator(&intValidator);
-	ui.lineEdit_ActualProductSize_H->setValidator(&intValidator);
-	ui.lineEdit_nBasicUnitInRow->setValidator(&intValidator);
-	ui.lineEdit_nBasicUnitInCol->setValidator(&intValidator);
+	qDebug() << "~SettingUI";
+	delete adminSettingUI; 
+	adminSettingUI = Q_NULLPTR;
+	delete NumberValidator;
+	NumberValidator = Q_NULLPTR;
 }
+
+
+/************* 界面的设置、输入、更新 **************/
 
 //更新界面
 void SettingUI::refreshSettingUI()
 {
-	ui.lineEdit_SampleDirPath->setText(detectConfig->SampleDirPath);
-	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
-	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
+	ui.lineEdit_SampleDirPath->setText(userConfig->SampleDirPath); //样本路径
+	ui.lineEdit_TemplDirPath->setText(userConfig->TemplDirPath); //模板路径
+	ui.lineEdit_OutputDirPath->setText(userConfig->OutputDirPath); //输出路径
 
-	QString comPort = detectConfig->clusterComPort.toUpper();
-	if (comPort == "COM1") ui.comboBox_clusterComPort->setCurrentText("      COM1");
-	else if (comPort == "COM2") ui.comboBox_clusterComPort->setCurrentText("      COM2");
-	else if (comPort == "COM3") ui.comboBox_clusterComPort->setCurrentText("      COM3");
-	else if (comPort == "COM4") ui.comboBox_clusterComPort->setCurrentText("      COM4");
-	else if (comPort == "COM5") ui.comboBox_clusterComPort->setCurrentText("      COM5");
-	else if (comPort == "COM6") ui.comboBox_clusterComPort->setCurrentText("      COM6");
-	else if (comPort == "COM7") ui.comboBox_clusterComPort->setCurrentText("      COM7");
-	else if (comPort == "COM8") ui.comboBox_clusterComPort->setCurrentText("      COM8");
-	else if (comPort == "COM9") ui.comboBox_clusterComPort->setCurrentText("      COM9");
+	QString comPort = userConfig->clusterComPort.toUpper(); //运动控制串口号
+	QString headBlankChars = "    "; //开头的空字符串
+	ui.comboBox_clusterComPort->setCurrentText(headBlankChars + " " + comPort);
 
-	QString imgFormat = detectConfig->ImageFormat.toLower();
-	if (imgFormat == ".bmp") ui.comboBox_ImageFormat->setCurrentText("     *.bmp");
-	else if (imgFormat == ".jpg") ui.comboBox_ImageFormat->setCurrentText("     *.jpg");
-	else if (imgFormat == ".png") ui.comboBox_ImageFormat->setCurrentText("     *.png");
-	else if (imgFormat == ".tif" || imgFormat == ".tiff") ui.comboBox_ImageFormat->setCurrentText("     *.tif");
+	QString imgFormat = userConfig->ImageFormat.toLower(); //图像格式
+	if (imgFormat == ".tiff") imgFormat = ".tif";
+	ui.comboBox_ImageFormat->setCurrentText(headBlankChars + "*" + imgFormat);
 
-	ui.lineEdit_ActualProductSize_W->setText(QString::number(detectConfig->ActualProductSize_W));
-	ui.lineEdit_ActualProductSize_H->setText(QString::number(detectConfig->ActualProductSize_H));
-	ui.lineEdit_nBasicUnitInRow->setText(QString::number(detectConfig->nBasicUnitInRow));
-	ui.lineEdit_nBasicUnitInCol->setText(QString::number(detectConfig->nBasicUnitInCol));
+	ui.lineEdit_ActualProductSize_W->setText(QString::number(userConfig->ActualProductSize_W));//产品尺寸
+	ui.lineEdit_ActualProductSize_H->setText(QString::number(userConfig->ActualProductSize_H));//产品尺寸
+	ui.lineEdit_nBasicUnitInRow->setText(QString::number(userConfig->nBasicUnitInRow));//基本单元数
+	ui.lineEdit_nBasicUnitInCol->setText(QString::number(userConfig->nBasicUnitInCol));//基本单元数
+
+	if (userConfig->matchingAccuracyLevel == 1) //匹配精度等级
+		ui.checkBox_matchingAccuracy_high->setChecked(true);
+	else if (userConfig->matchingAccuracyLevel == 2) {
+		ui.checkBox_matchingAccuracy_low->setChecked(true);
+	}
+
+	ui.lineEdit_concaveRateThresh->setText(QString::number(userConfig->concaveRateThresh)); //缺失率阈值
+	ui.lineEdit_convexRateThresh->setText(QString::number(userConfig->convexRateThresh)); //凸起率阈值
 }
 
 //设置光标的位置
-void SettingUI::setCursorLocation(DetectConfig::ConfigIndex code)
+void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 {
 	int textLen;
 	switch (code)
 	{
-	case pcb::DetectConfig::Index_All:
-	case pcb::DetectConfig::Index_None:
+	case pcb::UserConfig::Index_All:
+	case pcb::UserConfig::Index_None:
 		ui.lineEdit_SampleDirPath->setFocus(); 
 		ui.lineEdit_SampleDirPath->clearFocus(); break;
-	case pcb::DetectConfig::Index_SampleDirPath:
+
+	case pcb::UserConfig::Index_SampleDirPath:
 		textLen = ui.lineEdit_SampleDirPath->text().length();
 		ui.lineEdit_SampleDirPath->setCursorPosition(textLen);
 		ui.lineEdit_SampleDirPath->setFocus(); break;
-	case pcb::DetectConfig::Index_TemplDirPath:
+	case pcb::UserConfig::Index_TemplDirPath:
 		ui.lineEdit_TemplDirPath->setFocus(); break;
-	case pcb::DetectConfig::Index_OutputDirPath:
+	case pcb::UserConfig::Index_OutputDirPath:
 		ui.lineEdit_OutputDirPath->setFocus(); break;
-	case pcb::DetectConfig::Index_ImageFormat:
-		break;
-	case pcb::DetectConfig::Index_ActualProductSize_W:
+	case pcb::UserConfig::Index_ImageFormat:
+		ui.comboBox_ImageFormat->setFocus(); break;
+	case pcb::UserConfig::Index_clusterComPort:
+		ui.comboBox_clusterComPort->setFocus(); break;
+
+	case pcb::UserConfig::Index_ActualProductSize_W:
 		ui.lineEdit_ActualProductSize_W->setFocus(); break;
-	case pcb::DetectConfig::Index_ActualProductSize_H:
+	case pcb::UserConfig::Index_ActualProductSize_H:
 		ui.lineEdit_ActualProductSize_H->setFocus(); break;
-	case pcb::DetectConfig::Index_nBasicUnitInRow:
+	case pcb::UserConfig::Index_nBasicUnitInRow:
 		ui.lineEdit_nBasicUnitInRow->setFocus(); break;
-	case pcb::DetectConfig::Index_nBasicUnitInCol:
+	case pcb::UserConfig::Index_nBasicUnitInCol:
 		ui.lineEdit_nBasicUnitInCol->setFocus(); break;
+
+	case pcb::UserConfig::Index_matchingAccuracyLevel:
+		ui.checkBox_matchingAccuracy_high->setFocus(); break;
+	case pcb::UserConfig::Index_concaveRateThresh:
+		ui.lineEdit_concaveRateThresh->setFocus(); break;
+	case pcb::UserConfig::Index_convexRateThresh:
+		ui.lineEdit_convexRateThresh->setFocus(); break;
 	}
 }
 
@@ -143,22 +161,22 @@ void SettingUI::setCursorLocation(DetectConfig::ConfigIndex code)
 //选择样本文件夹的路径
 void SettingUI::on_pushButton_SampleDirPath_clicked()
 {
-	detectConfig->SampleDirPath = pcb::selectDirPath(this);
-	ui.lineEdit_SampleDirPath->setText(detectConfig->SampleDirPath);
+	userConfig->SampleDirPath = pcb::selectDirPath(this);
+	ui.lineEdit_SampleDirPath->setText(userConfig->SampleDirPath);
 }
 
 //选择模板文件夹的路径
 void SettingUI::on_pushButton_TemplDirPath_clicked()
 {
-	detectConfig->TemplDirPath = pcb::selectDirPath(this);
-	ui.lineEdit_TemplDirPath->setText(detectConfig->TemplDirPath);
+	userConfig->TemplDirPath = pcb::selectDirPath(this);
+	ui.lineEdit_TemplDirPath->setText(userConfig->TemplDirPath);
 }
 
 //选择输出文件夹的路径
 void SettingUI::on_pushButton_OutputDirPath_clicked()
 {
-	detectConfig->OutputDirPath = pcb::selectDirPath(this);
-	ui.lineEdit_OutputDirPath->setText(detectConfig->OutputDirPath);
+	userConfig->OutputDirPath = pcb::selectDirPath(this);
+	ui.lineEdit_OutputDirPath->setText(userConfig->OutputDirPath);
 }
 
 //确认键
@@ -171,77 +189,77 @@ void SettingUI::on_pushButton_confirm_clicked()
 	getConfigFromSettingUI();
 
 	//检查界面上config的有效性
-	DetectConfig::ErrorCode code;
-	code = tempConfig.checkValidity(DetectConfig::Index_All, adminConfig);
-	if (code != DetectConfig::ValidConfig) { //参数无效则报错
+	UserConfig::ErrorCode code;
+	code = tempConfig.checkValidity(UserConfig::Index_All, adminConfig);
+	if (code != UserConfig::ValidConfig) { //参数无效则报错
 		tempConfig.showMessageBox(this); //弹窗警告
 		this->setPushButtonsEnabled(true);//将按键设为可点击
-		DetectConfig::ConfigIndex index = DetectConfig::convertCodeToIndex(code);
+		UserConfig::ConfigIndex index = UserConfig::convertCodeToIndex(code);
 		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
 		return;
 	}
 
 	//设置聚焦位置
-	this->setCursorLocation(DetectConfig::Index_None);
+	this->setCursorLocation(UserConfig::Index_None);
 
 	//判断参数是否已经修改
 	sysResetCode = 0b00000000; //系统重置代码
-	if (detectConfig->unequals(tempConfig) != DetectConfig::Index_None) {
+	if (userConfig->unequals(tempConfig) != UserConfig::Index_None) {
 		//判断是否重置检测系统
-		sysResetCode |= detectConfig->getSystemResetCode(tempConfig);
-		//将临时配置拷贝到detectConfig中
-		tempConfig.copyTo(detectConfig);
+		sysResetCode |= userConfig->getSystemResetCode(tempConfig);
+		//将临时配置拷贝到userConfig中
+		tempConfig.copyTo(userConfig);
 		//将参数保存到配置文件中
-		Configurator::saveConfigFile(configFileName, detectConfig);
+		Configurator::saveConfigFile(configFileName, userConfig);
 
 		//更新运行参数
 		if (adminConfig->isValid(false)) {
-			detectParams->copyTo(&tempParams);
+			runtimeParams->copyTo(&tempParams);
 
-			DetectParams::ErrorCode code;
+			RuntimeParams::ErrorCode code;
 			//计算单步运动距离
 			code = tempParams.calcSingleMotionStroke(adminConfig);
-			if (code != DetectParams::ValidValue) {
+			if (code != RuntimeParams::ValidValue) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
 			//计算相机个数和拍照次数
-			code = tempParams.calcItemGridSize(adminConfig, detectConfig);
-			if (code != DetectParams::ValidValue) {
+			code = tempParams.calcItemGridSize(adminConfig, userConfig);
+			if (code != RuntimeParams::ValidValue) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
 			//计算初始拍照位置
 			code = tempParams.calcInitialPhotoPos(adminConfig);
-			if (code != DetectParams::ValidValue) {
+			if (code != RuntimeParams::ValidValue) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
 
-			if (!tempParams.isValid(DetectParams::Index_All_SysInit, true, adminConfig)) {
+			if (!tempParams.isValid(RuntimeParams::Index_All_SysInit, true, adminConfig)) {
 				tempParams.showMessageBox(this); 
 				this->setPushButtonsEnabled(true); return;
 			}
-			sysResetCode |= detectParams->getSystemResetCode(tempParams);
-			tempParams.copyTo(detectParams);
+			sysResetCode |= runtimeParams->getSystemResetCode(tempParams);
+			tempParams.copyTo(runtimeParams);
 		}
 
 		//判断是否重置检测系统
-		if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
-			&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
+		if (sysResetCode != 0 && adminConfig->isValid(true) && userConfig->isValid(adminConfig)
+			&& runtimeParams->isValid(RuntimeParams::Index_All_SysInit, true, adminConfig))
 		{
-			QMessageBox::warning(this, pcb::chinese("警告"),
+			QMessageBox::warning(this, pcb::chinese("提示"),
 				pcb::chinese("您已修改关键参数，系统即将重置！ \n"),
 				pcb::chinese("确定"));
 			pcb::delay(10);
 			emit resetDetectSystem_settingUI(sysResetCode);
 		}
 	}
-	else if (detectConfig->getErrorCode() != tempConfig.getErrorCode()) {
+	else if (userConfig->getErrorCode() != tempConfig.getErrorCode()) {
 		//将临时配置拷贝到用户参数对象中
-		tempConfig.copyTo(detectConfig);
+		tempConfig.copyTo(userConfig);
 		//将参数保存到配置文件中
-		Configurator::saveConfigFile(configFileName, detectConfig);
+		Configurator::saveConfigFile(configFileName, userConfig);
 	}
 		
 	//向主界面发送消息
@@ -256,8 +274,8 @@ void SettingUI::on_pushButton_confirm_clicked()
 void SettingUI::on_pushButton_return_clicked()
 {
 	emit showDetectMainUI();
-	//如果界面上的参数无效，而detectConfig有效，则显示detectConfig
-	if (!tempConfig.isValid(adminConfig) && detectConfig->isValid(adminConfig)) {
+	//如果界面上的参数无效，而userConfig有效，则显示userConfig
+	if (!tempConfig.isValid(adminConfig) && userConfig->isValid(adminConfig)) {
 		this->refreshSettingUI();
 	}
 }
@@ -344,6 +362,14 @@ void SettingUI::getConfigFromSettingUI()
 	tempConfig.ActualProductSize_H = ui.lineEdit_ActualProductSize_H->text().toInt();
 	tempConfig.nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();//每一行中的基本单元数
 	tempConfig.nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();//每一列中的基本单元数
+
+	int accuracyLevel = 0;
+	if (ui.checkBox_matchingAccuracy_high->isChecked()) accuracyLevel = 1;
+	if (ui.checkBox_matchingAccuracy_low->isChecked()) accuracyLevel = 2;
+	tempConfig.matchingAccuracyLevel = accuracyLevel; //匹配模式
+
+	tempConfig.concaveRateThresh = ui.lineEdit_concaveRateThresh->text().toInt();//缺失率阈值
+	tempConfig.convexRateThresh = ui.lineEdit_convexRateThresh->text().toInt();//凸起率阈值
 }
 
 
@@ -373,7 +399,7 @@ void SettingUI::do_showAdminSettingUI_pswdUI()
 //由系统参数设置界面返回参数设置界面
 void SettingUI::do_showSettingUI_adminUI()
 {
-	this->setCursorLocation(DetectConfig::Index_None);
+	this->setCursorLocation(UserConfig::Index_None);
 	this->showFullScreen();
 	pcb::delay(10);
 	adminSettingUI->hide();
@@ -388,8 +414,8 @@ void SettingUI::do_resetDetectSystem_adminUI(int code)
 //转发由系统设置界面发出的系统状态检查信号
 void SettingUI::do_checkSystemWorkingState_adminUI()
 {
-	if (adminConfig->isValid(true) && detectConfig->isValid(adminConfig)
-		&& detectParams->isValid(DetectParams::Index_All_SysInit, true, adminConfig))
+	if (adminConfig->isValid(true) && userConfig->isValid(adminConfig)
+		&& runtimeParams->isValid(RuntimeParams::Index_All_SysInit, true, adminConfig))
 	{
 		emit checkSystemState_settingUI();
 		pcb::delay(10);

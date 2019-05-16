@@ -23,14 +23,14 @@ public:
 	//´íÎó´úÂë
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x800,
+		Unchecked = 0x800,
 		Default = 0x8FF
 	};
 	
 private:
 	pcb::AdminConfig *adminConfig;
-	pcb::DetectConfig *detectConfig;
-	pcb::DetectParams *detectParams;
+	pcb::UserConfig *userConfig;
+	pcb::RuntimeParams *runtimeParams;
 	pcb::CvMatArray *cvmatSamples;
 	TemplFunc *templFunc;
 	ExtractState extractState;
@@ -40,8 +40,8 @@ public:
 	~TemplateExtractor();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 
 	void initTemplFunc();

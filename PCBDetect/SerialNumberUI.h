@@ -21,7 +21,7 @@ class SerialNumberUI : public QWidget
 public:
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x700,
+		Unchecked = 0x700,
 		InitFailed = 0x701,
 		Invalid_RoiRect = 0x702,
 		Invalid_RoiData = 0x703,
@@ -35,7 +35,7 @@ private:
 	ErrorCode errorCode;
 
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectParams *detectParams; //运行时的临时参数
+	pcb::RuntimeParams *runtimeParams; //运行时的临时参数
 	pcb::CvMatArray *cvmatSamples; //用于检测的样本图
 	pcb::QPixmapArray *qpixmapSamples; //用于显示的样本图
 	int gridRowIdx; //点击的分图在第几列
@@ -44,7 +44,7 @@ private:
 	QRect graphicsViewRect;
 	QGraphicsScene graphicsScene;//绘图场景
 	QPointF graphicsScenePos;//场景左上角点在屏幕中的位置
-	QGraphicsPixmapItem* imageItem;//图元
+	QGraphicsPixmapItem *imageItem;//图元
 
 	QButtonGroup checkBoxGroup;
 	QPointF roiRect_tl;
@@ -59,27 +59,27 @@ private:
 	enum CaptureStatus { InitCapture, BeginCapture, BeginMove, CaptureFinished };
 	int captureStatus = InitCapture;
 
-	TessBaseAPI *handle;
+	TessBaseAPI *ocrHandle;
 	QString roiFilePath;
 
 public:
 	SerialNumberUI(QWidget *parent = Q_NULLPTR);
 	~SerialNumberUI();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setCvMatArray(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setQPixmapArray(pcb::QPixmapArray *ptr) { qpixmapSamples = ptr; }
 	inline void setGridIndex(int row, int col) { gridRowIdx = row; gridColIdx = col; }
 
 	void showSampleImage(int row, int col);
-	void resetSerialNumberUI();
+	void reset();
 
 private:
 	bool isPressPosInGraphicViewRect(QPoint mousePressPos);
 	QRect getRect(const QPoint &beginPoint, const QPoint &endPoint);
 
-	void initSerialNumberUI();
 	void initCheckBoxGroup();
 	void setSerialNumberUIEnabled(bool);
 
@@ -93,8 +93,8 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void on_pushButton_getROI_clicked();
-	void on_pushButton_confirm_clicked();
 	void on_pushButton_recognize_clicked();
+	void on_pushButton_confirm_clicked();
 	void on_pushButton_return_clicked();
 
 	void mousePressEvent(QMouseEvent *event);

@@ -46,21 +46,22 @@ private:
 	MotionControler *motionControler;//运动控制器
 	CameraControler *cameraControler;//相机控制器
 	pcb::AdminConfig adminConfig; //系统参数
-	pcb::DetectConfig detectConfig; //用户参数
-	pcb::DetectParams detectParams; //临时变量
+	pcb::UserConfig userConfig; //用户参数
+	pcb::RuntimeParams runtimeParams; //临时变量
 
 public:
 	PCBDetect(QWidget *parent = Q_NULLPTR);
 	~PCBDetect();
 
 private:
+	bool checkSystemState(bool);
 	void showSettingUI();
-	void showDetectUI();
+	void switchToTemplateUI();
 	void showTemplateUI();
+	void switchToDetectUI();
+	void showDetectUI();
 	void eixtDetectSystem();
-
-Q_SIGNALS:
-	void resetDetectSystemFinished_mainUI();
+	void switchDeveloperMode();
 
 private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);

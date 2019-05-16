@@ -1,6 +1,6 @@
 #include "SerialNumberUI.h"
 
-using pcb::DetectParams;
+using pcb::RuntimeParams;
 
 
 SerialNumberUI::SerialNumberUI(QWidget *parent)
@@ -8,17 +8,10 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	this->setMouseTracking(true);
-
-	//多屏状态下选择在副屏全屏显示
-	//QDesktopWidget* desktop = QApplication::desktop();
-	//QRect screenRect = desktop->screenGeometry(1);
-	//this->setGeometry(screenRect);
-
 	//成员变量的初始化
 	errorCode = ErrorCode::Default;
 	adminConfig = Q_NULLPTR; //系统参数
-	detectParams = Q_NULLPTR; //运行时的临时参数
+	runtimeParams = Q_NULLPTR; //运行时的临时参数
 	cvmatSamples = Q_NULLPTR; //用于检测的样本图
 	qpixmapSamples = Q_NULLPTR; //用于显示的样本图
 	imageItem = Q_NULLPTR; 
@@ -31,6 +24,13 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	roiRect_br.setX(0);//roi右下角
 	roiRect_br.setY(0);
 	imageScalingRatio = 0;//图像缩放比例
+	ocrHandle = Q_NULLPTR;
+}
+
+void SerialNumberUI::init()
+{
+	//多屏状态下选择在副屏全屏显示
+	this->setGeometry(runtimeParams->ScreenRect);
 
 	//获取绘图控件QGraphicsView的位置
 	QPoint graphicsViewPos = ui.graphicsView->pos();
@@ -38,22 +38,6 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	graphicsViewRect = QRect(graphicsViewPos, graphicsViewSize);
 	ui.graphicsView->setScene(&graphicsScene);
 
-	//界面初始化
-	this->initSerialNumberUI();
-}
-
-SerialNumberUI::~SerialNumberUI()
-{
-	qDebug() << "~SerialNumberUI";
-	deleteImageItem();
-}
-
-
-/*************** 界面的初始化、设置、更新 **************/
-
-//界面初始化
-void SerialNumberUI::initSerialNumberUI()
-{
 	//限制参数的输入范围
 	QIntValidator intValidator;
 	ui.lineEdit_roi_tl_x->setValidator(&intValidator);
@@ -76,12 +60,21 @@ void SerialNumberUI::initSerialNumberUI()
 	ui.graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	//初始化OCR模块
-	handle = TessBaseAPICreate();
-	if (TessBaseAPIInit3(handle, NULL, "eng") != 0) {
+	ocrHandle = TessBaseAPICreate();
+	if (TessBaseAPIInit3(ocrHandle, NULL, "eng") != 0) {
 		showMessageBox(this, InitFailed); return;
 		//die("Error initialising tesseract\n");
 	}
 }
+
+SerialNumberUI::~SerialNumberUI()
+{
+	qDebug() << "~SerialNumberUI";
+	deleteImageItem();
+}
+
+
+/*************** 界面的初始化、设置、更新 **************/
 
 //初始化CheckBox 使得同一时刻只有一个box可以选
 void SerialNumberUI::initCheckBoxGroup()
@@ -109,7 +102,7 @@ void SerialNumberUI::setSerialNumberUIEnabled(bool enable)
 }
 
 //重置序号识别界面
-void SerialNumberUI::resetSerialNumberUI()
+void SerialNumberUI::reset()
 {
 	ui.checkBox_roi_tl->setChecked(true);
 	ui.checkBox_roi_tl->setChecked(false);
@@ -120,7 +113,7 @@ void SerialNumberUI::resetSerialNumberUI()
 	deleteImageItem();
 
 	//重置产品序号等
-	detectParams->resetSerialNum();
+	runtimeParams->resetSerialNum();
 
 	//删除buffer文件夹中的roi图片
 	QFile file(roiFilePath);
@@ -132,6 +125,8 @@ void SerialNumberUI::resetSerialNumberUI()
 //获取包含产品序号的ROI区域
 void SerialNumberUI::on_pushButton_getROI_clicked()
 {
+	if (runtimeParams->DeveloperMode) return;
+
 	ui.checkBox_roi_tl->setChecked(false);
 	ui.checkBox_roi_br->setChecked(false);
 	this->setSerialNumberUIEnabled(false);
@@ -148,7 +143,7 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 
 	//保存区域图片
 	cv::Mat roiImg = (*(*cvmatSamples)[gridRowIdx][gridColIdx])(roiRect);
-	roiFilePath = detectParams->bufferDirPath + "/serialNumRoi.bmp";
+	roiFilePath = runtimeParams->BufferDirPath + "/serialNumRoi.bmp";
 	cv::imwrite(roiFilePath.toStdString(), roiImg);
 
 	this->setSerialNumberUIEnabled(true);
@@ -157,34 +152,42 @@ void SerialNumberUI::on_pushButton_getROI_clicked()
 //识别产品序号 - 此处调用OCR模块
 void SerialNumberUI::on_pushButton_recognize_clicked()
 {
+	if (runtimeParams->DeveloperMode) return;
+
+	//禁用部分控件
 	this->setSerialNumberUIEnabled(false);
+	
+	//加载图像
 	PIX *img = pixRead(roiFilePath.toStdString().c_str());
 	char *text = NULL;
 
-	//加载图像
-	TessBaseAPISetImage2(handle, img);
-	if (TessBaseAPIRecognize(handle, NULL) != 0) {
-		showMessageBox(this, Invalid_RoiData); return;
-		//die("Error in Tesseract recognition\n");
+	//字符识别
+	TessBaseAPISetImage2(ocrHandle, img);
+	if (TessBaseAPIRecognize(ocrHandle, NULL) != 0) {
+		showMessageBox(this, Invalid_RoiData); 
+		this->setSerialNumberUIEnabled(true); return;
 	}
 
-	//识别产品序号
-	if ((text = TessBaseAPIGetUTF8Text(handle)) == NULL) {
-		showMessageBox(this, RecognizeFailed); return;
-		//die("Error getting text\n");
+	//序号转换
+	if ((text = TessBaseAPIGetUTF8Text(ocrHandle)) == NULL) {
+		showMessageBox(this, RecognizeFailed); 
+		this->setSerialNumberUIEnabled(true); return;
 	}
 
+	//序号预处理
 	QString serialNum = QString(text);
-	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
-	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
+	serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	serialNum = pcb::eraseNonDigitalCharInHeadAndTail(serialNum);//删除首尾的非数字字符
 	ui.lineEdit_serialNum->setText(serialNum); //显示识别的产品序号
-	this->setSerialNumberUIEnabled(true);
+	this->setSerialNumberUIEnabled(true); //启用部分控件
 
 	//检查产品序号是否有效
-	DetectParams::ErrorCode code = DetectParams::Uncheck;
-	code = detectParams->checkValidity(DetectParams::Index_serialNum);
-	if (code != DetectParams::ValidValue) {
-		detectParams->showMessageBox(this, code); return;
+	runtimeParams->serialNum = serialNum;
+	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
+	RuntimeParams::ErrorCode code = RuntimeParams::Unchecked;
+	code = runtimeParams->checkValidity(RuntimeParams::Index_serialNum);
+	if (code != RuntimeParams::ValidValue) {
+		runtimeParams->showMessageBox(this, code); return;
 	}
 }
 
@@ -192,18 +195,20 @@ void SerialNumberUI::on_pushButton_recognize_clicked()
 void SerialNumberUI::on_pushButton_confirm_clicked()
 {
 	QString serialNum = ui.lineEdit_serialNum->text(); //读取产品序号
-	detectParams->serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
-	detectParams->resetErrorCode(DetectParams::Index_serialNum);//重置错误代码
+	serialNum = serialNum.remove(QRegExp("\\s")); //删除空白字符
+	serialNum = pcb::eraseNonDigitalCharInHeadAndTail(serialNum);//删除首尾的非数字字符
+	runtimeParams->serialNum = serialNum;
+	runtimeParams->resetErrorCode(RuntimeParams::Index_serialNum);//重置错误代码
 
-	DetectParams::ErrorCode code = DetectParams::Uncheck;
-	code = detectParams->parseSerialNum(); //解析产品序号
-	if (code != DetectParams::ValidValue) {
-		detectParams->showMessageBox(this, code); return;
+	RuntimeParams::ErrorCode code = RuntimeParams::Unchecked;
+	code = runtimeParams->parseSerialNum(); //解析产品序号
+	if (code != RuntimeParams::ValidValue) {
+		runtimeParams->showMessageBox(this, code); return;
 	}
 	//检查型号、批次号、编号是否有效
-	code = detectParams->checkValidity(DetectParams::Index_All_SerialNum);
-	if (code != DetectParams::ValidValue) {
-		detectParams->showMessageBox(this, code); return;
+	code = runtimeParams->checkValidity(RuntimeParams::Index_All_SerialNum);
+	if (code != RuntimeParams::ValidValue) {
+		runtimeParams->showMessageBox(this, code); return;
 	}
 
 	//返回上一级界面，并执行下一步处理
@@ -222,6 +227,8 @@ void SerialNumberUI::on_pushButton_return_clicked()
 //在graphicView中显示分图
 void SerialNumberUI::showSampleImage(int row, int col)
 {
+	if (runtimeParams->DeveloperMode) return;
+
 	gridRowIdx = row; //当前分图所在行
 	gridColIdx = col; //当前分图所在列
 
@@ -231,7 +238,7 @@ void SerialNumberUI::showSampleImage(int row, int col)
 	imageScalingRatio = 1.0 * scaledImg.width() / img->width();
 
 	//在场景中加载新的图元
-	deleteImageItem(); //删除当前的图元
+	deleteImageItem(); //删除之前的图元
 	imageItem = new QGraphicsPixmapItem(scaledImg); //定义新图元
 	graphicsScene.addItem(imageItem);
 
@@ -263,6 +270,8 @@ void SerialNumberUI::deleteImageItem()
 //鼠标按下事件
 void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 {
+	if (runtimeParams->DeveloperMode) return;
+
 	//鼠标左键单击获取左上角点
 	if (event->button() == Qt::LeftButton && ui.checkBox_roi_tl->isChecked()) { 
 		if (!graphicsViewRect.contains(event->pos())) return; //区域判断
@@ -335,7 +344,7 @@ bool SerialNumberUI::isPressPosInGraphicViewRect(QPoint mousePressPos)
 	return selectRect.contains(mousePressPos);
 }
 
-// 根据beginPoint , endPoint 获取当前选中的矩形 - 暂时没用
+//根据beginPoint和endPoint计算当前选中的矩形 - 暂时没用
 QRect SerialNumberUI::getRect(const QPoint &beginPoint, const QPoint &endPoint)
 {
 	int x, y, width, height;
@@ -365,7 +374,7 @@ bool SerialNumberUI::showMessageBox(QWidget *parent, ErrorCode code)
 	QString valueName;
 	switch (tempCode)
 	{
-	case SerialNumberUI::Uncheck:
+	case SerialNumberUI::Unchecked:
 		valueName = pcb::chinese("\"状态未验证\""); break;
 	case SerialNumberUI::InitFailed:
 		valueName = pcb::chinese("\"初始化失败\""); break;
