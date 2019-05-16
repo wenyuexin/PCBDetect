@@ -369,22 +369,6 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Down:
 		qDebug() << "==================== Down";
-		runtimeParams->serialNum = "01010005"; //产品序号
-		runtimeParams->parseSerialNum(); //产品序号解析
-		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1 && !detectThread->isRunning())
-			resetDetectUI();//重置检测子模块
-
-		//!imgConvertThread.isRunning()
-		if (currentRow_show + 1 < runtimeParams->nPhotographing && true) { //直接显示新的样本行
-			currentRow_show += 1; //更新显示行号
-
-			ui.label_status->setText(pcb::chinese("正在拍摄第") +
-				QString::number(currentRow_show + 1) +
-				pcb::chinese("行分图"));//更新状态
-			qApp->processEvents();
-
-			readSampleImages(); //读图 - 相当于相机拍照		
-		}
 		break;
 	case Qt::Key_Enter:
 	case Qt::Key_Return:
@@ -402,8 +386,8 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 void DetectUI::readSampleImages()
 {
 	clock_t t1 = clock();
-	qDebug() << "====================" << pcb::chinese("读取样本")
-		<< "( currentRow =" << currentRow_show << ")" << endl;
+	qDebug() << "====================" << pcb::chinese("读取分图")
+		<< "( currentRow_show =" << currentRow_show << ")" << endl;
 
 	//更新行号和状态栏
 	ui.label_status->setText(pcb::chinese("正在读取第") +
@@ -437,7 +421,7 @@ void DetectUI::readSampleImages()
 
 	clock_t t2 = clock();
 	qDebug() << "====================" << pcb::chinese("分图读取结束：")
-		<< (t2 - t1) << "ms ( currentRow_show -" << currentRow_show << ")" << endl;
+		<< (t2 - t1) << "ms ( currentRow_show =" << currentRow_show << ")" << endl;
 
 	//图像类型转换
 	imgConvertThread.start();
@@ -447,6 +431,10 @@ void DetectUI::readSampleImages()
 //显示相机组拍摄的一组分图（图像显示网格中的一行）
 void DetectUI::showSampleImages()
 {
+	qDebug() << "====================" << pcb::chinese("显示分图")
+		<< " ( currentRow_show =" << currentRow_show << ")" << endl;
+	clock_t t1 = clock();
+
 	QSize _itemSize(itemSize.width(), itemSize.height());
 	if (itemSpacing == 0) _itemSize += QSize(1, 1); //防止出现缝隙
 	for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
@@ -465,6 +453,10 @@ void DetectUI::showSampleImages()
 	int y_SliderPos = itemGrid[currentRow_show][0].y() + itemSize.height() / 2;
 	ui.graphicsView->centerOn(sceneSize.width() / 2, y_SliderPos); //设置垂直滚动条的位置
 	ui.graphicsView->show();//显示
+
+	clock_t t2 = clock();
+	qDebug() << "====================" << pcb::chinese("分图显示结束：") << (t2 - t1)
+		<< "ms ( currentRow_show =" << currentRow_show << ")" << endl;
 }
 
 
@@ -654,11 +646,7 @@ void DetectUI::on_convertFinished_convertThread()
 	pcb::delay(10); //延迟
 
 	//在界面上显示样本图
-	clock_t t1 = clock();
 	showSampleImages();
-	clock_t t2 = clock();
-	qDebug() << "====================" << pcb::chinese("显示样本：") << (t2 - t1) 
-		<< "ms ( currentRow =" << currentRow_show << ")" << endl;
 
 	//更新状态栏
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
