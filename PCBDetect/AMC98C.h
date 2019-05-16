@@ -51,7 +51,7 @@
 typedef float F32;
 typedef double F64;
 
-//========================================================
+//=======================================================================
 #define DllExport		__declspec(dllexport)
 
 #ifndef WINVER

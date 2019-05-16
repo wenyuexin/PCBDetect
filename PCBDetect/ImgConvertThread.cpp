@@ -30,8 +30,8 @@ ImgConvertThread::~ImgConvertThread()
 
 void ImgConvertThread::run()
 {
-	qDebug() << ">>>>>>>>>> " << pcb::chinese("转换图像类型：")
-		<< "( currentRow_show -" << *currentRow << ")";
+	qDebug() << "==================== " << pcb::chinese("转换图像类型：")
+		<< "( currentRow_show -" << *currentRow << ")" << endl;
 
 	clock_t t1 = clock();
 	errorCode = ImageConverter::Unchecked;
@@ -65,8 +65,8 @@ void ImgConvertThread::run()
 	}
 
 	clock_t t2 = clock();
-	qDebug() << ">>>>>>>>>> " << pcb::chinese("图像类型转换结束：")
-		<< (t2 - t1) << "( currentRow_show -" << *currentRow << ")";
+	qDebug() << "==================== " << pcb::chinese("图像类型转换结束：")
+		<< (t2 - t1) << "( currentRow_show -" << *currentRow << ")" << endl;
 
 	emit convertFinished_convertThread();
 }

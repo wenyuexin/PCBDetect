@@ -359,16 +359,16 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 	switch (event->key())
 	{
 	case Qt::Key_PageUp:
-		qDebug() << ">>>>>>>>>> Key_PageUp";
+		qDebug() << "==================== Key_PageUp";
 		break;
 	case Qt::Key_PageDown:
-		qDebug() << ">>>>>>>>>> Key_PageDown";
+		qDebug() << "==================== Key_PageDown";
 		break;
 	case Qt::Key_Up:
-		qDebug() << ">>>>>>>>>> Up";
+		qDebug() << "==================== Up";
 		break;
 	case Qt::Key_Down:
-		qDebug() << ">>>>>>>>>> Down";
+		qDebug() << "==================== Down";
 		runtimeParams->serialNum = "01010005"; //产品序号
 		runtimeParams->parseSerialNum(); //产品序号解析
 		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1 && !detectThread->isRunning())
@@ -377,7 +377,6 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 		//!imgConvertThread.isRunning()
 		if (currentRow_show + 1 < runtimeParams->nPhotographing && true) { //直接显示新的样本行
 			currentRow_show += 1; //更新显示行号
-			qDebug() << "currentRow_show  - " << currentRow_show;
 
 			ui.label_status->setText(pcb::chinese("正在拍摄第") +
 				QString::number(currentRow_show + 1) +
@@ -389,7 +388,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_Enter:
 	case Qt::Key_Return:
-		qDebug() << ">>>>>>>>>> Enter";
+		qDebug() << "==================== Enter";
 		break;
 	default:
 		break;
@@ -403,6 +402,8 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 void DetectUI::readSampleImages()
 {
 	clock_t t1 = clock();
+	qDebug() << "====================" << "readSampleImages: "
+		<< "( currentRow =" << currentRow_show << ")" << endl;
 
 	//更新行号和状态栏
 	ui.label_status->setText(pcb::chinese("正在读取第") +
@@ -435,8 +436,8 @@ void DetectUI::readSampleImages()
 	}
 
 	clock_t t2 = clock();
-	qDebug() << ">>>>>>>>>> " << pcb::chinese("分图读取结束：")
-		<< (t2 - t1) << "ms ( currentRow_show -" << currentRow_show << ")";
+	qDebug() << "==================== " << pcb::chinese("分图读取结束：")
+		<< (t2 - t1) << "ms ( currentRow_show -" << currentRow_show << ")" << endl;
 
 	//图像类型转换
 	imgConvertThread.start();
@@ -511,7 +512,6 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 	if (runtimeParams->DeveloperMode) { //开发者模式
 		if (currentRow_show + 1 < runtimeParams->nPhotographing) { //直接显示新的样本行
 			currentRow_show += 1; //更新显示行号
-			qDebug() << "currentRow_show  - " << currentRow_show;
 			readSampleImages(); //读图 - 相当于相机拍照		
 		}
 	}
@@ -657,7 +657,8 @@ void DetectUI::on_convertFinished_convertThread()
 	clock_t t1 = clock();
 	showSampleImages();
 	clock_t t2 = clock();
-	qDebug() << "showSampleImages: " << (t2 - t1) << "ms ( currentRow =" << currentRow_show << ")";
+	qDebug() << "====================" << "showSampleImages: " << (t2 - t1) 
+		<< "ms ( currentRow =" << currentRow_show << ")" << endl;
 
 	//更新状态栏
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
@@ -740,7 +741,6 @@ void DetectUI::do_updateDetectState_detecter(int state)
 		if (currentRow_show + 1 < runtimeParams->nPhotographing
 			&& runtimeParams->DeveloperMode) {
 			currentRow_show += 1; //更新显示行号
-			qDebug() << "currentRow_show  - " << currentRow_show;
 			readSampleImages(); //读图 - 相当于相机拍照		
 		}
 
