@@ -27,7 +27,6 @@ void ExtractThread::initTemplateExtractor()
 	templExtractor->init();
 }
 
-
 //运行提取线程
 void ExtractThread::run()
 {

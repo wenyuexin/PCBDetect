@@ -342,38 +342,20 @@ void ExtractUI::keyPressEvent(QKeyEvent *event)
 	switch (event->key())
 	{
 	case Qt::Key_PageUp:
-		qDebug() << "===== Key_PageUp";
+		qDebug() << "==================== Key_PageUp";
 		break;
 	case Qt::Key_PageDown:
-		qDebug() << "===== Key_PageDown";
+		qDebug() << "==================== Key_PageDown";
 		break;
 	case Qt::Key_Up:
-		qDebug() << "===== Up";
+		qDebug() << "==================== Up";
 		break;
 	case Qt::Key_Down:
-		qDebug() << "===== Down";
-		runtimeParams->serialNum = "01010004"; //产品序号
-		runtimeParams->parseSerialNum(); //产品序号解析
-
-		if (runtimeParams->currentRow_extract == runtimeParams->nPhotographing - 1 && !extractThread->isRunning())
-			resetTemplateUI();//重置模板提取子模块
-
-		//!imgConvertThread.isRunning()
-		if (currentRow_show + 1 < runtimeParams->nPhotographing && true) { //直接显示新的样本行
-			currentRow_show += 1; //更新显示行号
-			qDebug() << "currentRow_show  - " << currentRow_show;
-
-			ui.label_status->setText(pcb::chinese("正在拍摄第") +
-				QString::number(currentRow_show + 1) +
-				pcb::chinese("行图像"));//更新状态
-			qApp->processEvents();
-
-			readSampleImages(); //读图 - 相当于相机拍照		
-		}
+		qDebug() << "==================== Down";
 		break;
 	case Qt::Key_Enter:
 	case Qt::Key_Return:
-		qDebug() << "===== Enter";
+		qDebug() << "==================== Enter";
 		break;
 	default:
 		break;
@@ -387,6 +369,8 @@ void ExtractUI::keyPressEvent(QKeyEvent *event)
 void ExtractUI::readSampleImages()
 {
 	clock_t t1 = clock();
+	qDebug() << "====================" << pcb::chinese("读取样本")
+		<< "( currentRow_show =" << currentRow_show << ")" << endl;
 
 	//更新行号和状态栏
 	ui.label_status->setText(pcb::chinese("正在读取第") +
@@ -419,7 +403,8 @@ void ExtractUI::readSampleImages()
 	}
 	
 	clock_t t2 = clock();
-	qDebug() << "readSampleImages2: " << (t2 - t1) << "ms ( currentRow -" << currentRow_show << ")";
+	qDebug() << "====================" << pcb::chinese("分图读取结束：")
+		<< (t2 - t1) << "ms ( currentRow_show =" << currentRow_show << ")" << endl;
 
 	//图像类型转换
 	imgConvertThread.start();
@@ -429,6 +414,10 @@ void ExtractUI::readSampleImages()
 //显示相机组拍摄的一组分图（图像显示网格中的一行）
 void ExtractUI::showSampleImages()
 {
+	qDebug() << "====================" << pcb::chinese("显示分图")
+		<< " ( currentRow_show =" << currentRow_show << ")" << endl;
+	clock_t t1 = clock();
+
 	QSize _itemSize(itemSize.width(), itemSize.height());
 	if (itemSpacing == 0) _itemSize += QSize(1, 1); //防止出现缝隙
 	for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
@@ -447,6 +436,10 @@ void ExtractUI::showSampleImages()
 	int y_SliderPos = itemGrid[currentRow_show][0].y() + itemSize.height() / 2;
 	ui.graphicsView->centerOn(sceneSize.width() / 2, y_SliderPos); //设置垂直滚动条的位置
 	ui.graphicsView->show();//显示
+
+	clock_t t2 = clock();
+	qDebug() << "====================" << pcb::chinese("分图显示结束：") << (t2 - t1)
+		<< "ms ( currentRow_show =" << currentRow_show << ")" << endl;
 }
 
 
@@ -495,7 +488,6 @@ void ExtractUI::on_recognizeFinished_serialNumUI()
 		//显示新的样本行
 		if (currentRow_show + 1 < runtimeParams->nPhotographing) { 
 			currentRow_show += 1; //更新显示行号
-			qDebug() << "currentRow_show  - " << currentRow_show;
 			readSampleImages(); //读图 - 相当于相机拍照		
 		}
 	}
@@ -638,10 +630,7 @@ void ExtractUI::on_convertFinished_convertThread()
 	pcb::delay(10); //延迟
 
 	//在界面上显示样本图
-	clock_t t1 = clock();
 	this->showSampleImages(); 
-	clock_t t2 = clock();
-	qDebug() << "showSampleImages: " << (t2 - t1) << "ms ( currentRow =" << currentRow_show << ")";
 
 	//更新状态栏
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
@@ -725,7 +714,6 @@ void ExtractUI::update_extractState_extractor(int state)
 		if (currentRow_show + 1 < runtimeParams->nPhotographing
 			&& runtimeParams->DeveloperMode) {
 			currentRow_show += 1; //更新显示行号
-			qDebug() << "currentRow_show  - " << currentRow_show;
 			readSampleImages(); //读图 - 相当于相机拍照		
 		}
 
