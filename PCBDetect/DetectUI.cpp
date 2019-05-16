@@ -402,7 +402,7 @@ void DetectUI::keyPressEvent(QKeyEvent *event)
 void DetectUI::readSampleImages()
 {
 	clock_t t1 = clock();
-	qDebug() << "====================" << "readSampleImages: "
+	qDebug() << "====================" << pcb::chinese("读取样本")
 		<< "( currentRow =" << currentRow_show << ")" << endl;
 
 	//更新行号和状态栏
@@ -436,7 +436,7 @@ void DetectUI::readSampleImages()
 	}
 
 	clock_t t2 = clock();
-	qDebug() << "==================== " << pcb::chinese("分图读取结束：")
+	qDebug() << "====================" << pcb::chinese("分图读取结束：")
 		<< (t2 - t1) << "ms ( currentRow_show -" << currentRow_show << ")" << endl;
 
 	//图像类型转换
@@ -657,7 +657,7 @@ void DetectUI::on_convertFinished_convertThread()
 	clock_t t1 = clock();
 	showSampleImages();
 	clock_t t2 = clock();
-	qDebug() << "====================" << "showSampleImages: " << (t2 - t1) 
+	qDebug() << "====================" << pcb::chinese("显示样本：") << (t2 - t1) 
 		<< "ms ( currentRow =" << currentRow_show << ")" << endl;
 
 	//更新状态栏
