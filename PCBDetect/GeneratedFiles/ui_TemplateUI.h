@@ -75,7 +75,7 @@ public:
         font1.setBold(false);
         font1.setWeight(50);
         label_logo->setFont(font1);
-        label_logo->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/Icons/logo.png);"));
+        label_logo->setStyleSheet(QStringLiteral("border-image: url(:/PCBDetect/icons/logo.png);"));
         label_logo->setAlignment(Qt::AlignCenter);
         label = new QLabel(TemplateUI);
         label->setObjectName(QStringLiteral("label"));

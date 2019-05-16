@@ -19,6 +19,12 @@
   <property name="windowTitle">
    <string>SettingUI</string>
   </property>
+  <property name="toolTip">
+   <string/>
+  </property>
+  <property name="whatsThis">
+   <string extracomment="精度越高检测效果越好，但是速度更慢"/>
+  </property>
   <widget class="QLabel" name="label_title">
    <property name="geometry">
     <rect>
@@ -552,7 +558,7 @@
     <rect>
      <x>70</x>
      <y>450</y>
-     <width>356</width>
+     <width>341</width>
      <height>37</height>
     </rect>
    </property>
@@ -616,13 +622,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>30</width>
+        <width>25</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>30</width>
+        <width>25</width>
         <height>35</height>
        </size>
       </property>
@@ -649,13 +655,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
@@ -695,13 +701,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>30</width>
+        <width>25</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>30</width>
+        <width>25</width>
         <height>35</height>
        </size>
       </property>
@@ -728,13 +734,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
@@ -754,8 +760,8 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>330</y>
-     <width>331</width>
+     <y>270</y>
+     <width>311</width>
      <height>37</height>
     </rect>
    </property>
@@ -803,7 +809,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>5</width>
+        <width>7</width>
         <height>20</height>
        </size>
       </property>
@@ -819,13 +825,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>160</width>
+        <width>150</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>160</width>
+        <width>150</width>
         <height>35</height>
        </size>
       </property>
@@ -839,27 +845,27 @@
       </property>
       <item>
        <property name="text">
-        <string>       -</string>
+        <string>      -</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>     *.bmp</string>
+        <string>    *.bmp</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>     *.jpg</string>
+        <string>    *.jpg</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>     *.png</string>
+        <string>    *.png</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>     *.tif</string>
+        <string>    *.tif</string>
        </property>
       </item>
      </widget>
@@ -895,7 +901,7 @@
     <rect>
      <x>70</x>
      <y>390</y>
-     <width>351</width>
+     <width>341</width>
      <height>37</height>
     </rect>
    </property>
@@ -992,13 +998,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
@@ -1071,13 +1077,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>60</width>
+        <width>62</width>
         <height>35</height>
        </size>
       </property>
@@ -1097,8 +1103,8 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>270</y>
-     <width>331</width>
+     <y>330</y>
+     <width>311</width>
      <height>37</height>
     </rect>
    </property>
@@ -1146,7 +1152,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>5</width>
+        <width>7</width>
         <height>20</height>
        </size>
       </property>
@@ -1162,13 +1168,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>160</width>
+        <width>150</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>160</width>
+        <width>150</width>
         <height>35</height>
        </size>
       </property>
@@ -1182,54 +1188,445 @@
       </property>
       <item>
        <property name="text">
-        <string>       -</string>
+        <string>      -</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM1</string>
+        <string>     COM1</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM2</string>
+        <string>     COM2</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM3</string>
+        <string>     COM3</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM4</string>
+        <string>     COM4</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM5</string>
+        <string>     COM5</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM6</string>
+        <string>     COM6</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM7</string>
+        <string>     COM7</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM8</string>
+        <string>     COM8</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>      COM9</string>
+        <string>     COM9</string>
        </property>
       </item>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_10">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>510</y>
+     <width>281</width>
+     <height>37</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_10">
+    <item>
+     <widget class="QLabel" name="label_roiHeight_L_11">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>130</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="whatsThis">
+       <string extracomment="精度越高检测效果越好，但是速度更慢"/>
+      </property>
+      <property name="text">
+       <string>匹配精度</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_20">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>10</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox_matchingAccuracy_high">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>高</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_13">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>10</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox_matchingAccuracy_low">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>低</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_11">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>630</y>
+     <width>297</width>
+     <height>37</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_11">
+    <item>
+     <widget class="QLabel" name="label_roiHeight_L_12">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>130</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>130</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>凸起率阈值</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_18">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>7</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="lineEdit_convexRateThresh">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_roiHeight_L_13">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>20</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>20</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>%</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_12">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>570</y>
+     <width>297</width>
+     <height>37</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_12">
+    <item>
+     <widget class="QLabel" name="label_roiHeight_L_14">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>130</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>130</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>缺失率阈值</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_19">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>7</width>
+        <height>0</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="lineEdit_concaveRateThresh">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_roiHeight_L_15">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>20</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>20</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>%</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
      </widget>
     </item>
    </layout>
@@ -1247,6 +1644,12 @@
   <zorder>pushButton_admin</zorder>
   <zorder>layoutWidget_8</zorder>
   <zorder>layoutWidget_9</zorder>
+  <zorder>layoutWidget_10</zorder>
+  <zorder>layoutWidget_11</zorder>
+  <zorder>layoutWidget_12</zorder>
+  <zorder>checkBox_matchingAccuracy_high_2</zorder>
+  <zorder>checkBox_matchingAccuracy_low_2</zorder>
+  <zorder>horizontalSpacer_14</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

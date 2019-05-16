@@ -12,7 +12,7 @@ using pcb::CvMatVector;
 CameraControler::CameraControler(QThread *parent)
 	: QThread(parent)
 {
-	errorCode = Uncheck; //控制器的错误码
+	errorCode = Unchecked; //控制器的错误码
 	operation = NoOperation;//操作指令
 }
 
@@ -47,16 +47,16 @@ void CameraControler::run()
 //输入相机实际排列顺序对应的设备编号进行初始化,系统设备编号从0开始
 CameraControler::ErrorCode CameraControler::initCameras()
 {
-	if (detectParams->nCamera <= 0)
+	if (runtimeParams->nCamera <= 0)
 		return errorCode = CameraControler::InvalidCameraNum;
 
 	//初始化相机列表
 	errorCode = CameraControler::NoError;
 	if (deviceIndex.size() == 0) { //使用默认的设备号初始化
-		if (detectParams->nCamera > adminConfig->MaxCameraNum) //判断调用的相机个数是否过多
+		if (runtimeParams->nCamera > adminConfig->MaxCameraNum) //判断调用的相机个数是否过多
 			return errorCode = CameraControler::InvalidCameraNum;
 
-		for (int i = 0; i < detectParams->nCamera; i++) { //添加相机
+		for (int i = 0; i < runtimeParams->nCamera; i++) { //添加相机
 			cameraList.push_back(cv::VideoCapture(i));
 			cameraState[i] = cameraList[i].isOpened(); //判断相机是否能打开
 			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
@@ -68,7 +68,7 @@ CameraControler::ErrorCode CameraControler::initCameras()
 		}
 	}
 	else { //使用设定的设备号初始化
-		if (detectParams->nCamera > deviceIndex.size()) //判断调用的相机个数是否过多
+		if (runtimeParams->nCamera > deviceIndex.size()) //判断调用的相机个数是否过多
 			return errorCode = CameraControler::InvalidCameraNum;
 
 		for (int i = 0; i < deviceIndex.size(); i++) { //添加相机
@@ -173,20 +173,20 @@ QString CameraControler::cameraStatusMapToString()
 	QString available = "";
 	if (cameraState.size() == 0) return available;
 
-	int nC = min(detectParams->nCamera, cameraState.size());
+	int nC = min(runtimeParams->nCamera, cameraState.size());
 	for (int i = 0; i < nC; i++) {
 		int iCamera = adminConfig->MaxCameraNum - i - 1;
 		available += (cameraState[iCamera]) ? "1" : "0";
 	}
-	return available + " (" + QString::number(detectParams->nCamera) + ")";
+	return available + " (" + QString::number(runtimeParams->nCamera) + ")";
 }
 
 //判断相机是否已经初始化
 bool CameraControler::isCamerasInitialized()
 {
-	if (cameraState.size() < detectParams->nCamera) return false;
+	if (cameraState.size() < runtimeParams->nCamera) return false;
 
-	for (int i = 0; i < detectParams->nCamera; i++) {
+	for (int i = 0; i < runtimeParams->nCamera; i++) {
 		int iCamera = adminConfig->MaxCameraNum - i - 1;
 		if (!cameraState[iCamera]) return false;
 	}
@@ -219,7 +219,7 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 	errorCode = CameraControler::NoError;
 
 	if (true || *currentRow == 0) {
-		for (int i = 0; i < detectParams->nCamera; i++) {
+		for (int i = 0; i < runtimeParams->nCamera; i++) {
 			Mat frame;
 			cameraList[i] >> frame;
 			pcb::delay(200);
@@ -227,8 +227,8 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 	}
 	pcb::delay(8000);
 
-	for (int i = 0; i < detectParams->nCamera; i++) {
-		int iCamera = detectParams->nCamera - i - 1;
+	for (int i = 0; i < runtimeParams->nCamera; i++) {
+		int iCamera = runtimeParams->nCamera - i - 1;
 		Mat frame;
 		cameraList[i] >> frame;
 		pcb::delay(5000);
@@ -246,7 +246,7 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 //拍摄图像 - 迈德威视
 void CameraControler::takePhotos2()
 {
-	for (int i = 0; i < detectParams->nCamera; i++) {
+	for (int i = 0; i < runtimeParams->nCamera; i++) {
 		int iCamera = adminConfig->MaxCameraNum - i - 1;
 
 		BYTE *pRawBuffer;
@@ -312,7 +312,7 @@ bool CameraControler::showMessageBox(QWidget *parent)
 	QString warningMessage;
 	switch (errorCode)
 	{
-	case CameraControler::Uncheck:
+	case CameraControler::Unchecked:
 		warningMessage = QString::fromLocal8Bit("相机状态未确认！"); break;
 	case CameraControler::InvalidCameraNum:
 		warningMessage = QString::fromLocal8Bit("当前调用的相机个数无效！"); break;

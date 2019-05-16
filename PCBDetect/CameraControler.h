@@ -26,7 +26,7 @@ public:
 	//相机的错误代码
 	enum ErrorCode {
 		NoError = 0x000,
-		Uncheck = 0x500,
+		Unchecked = 0x500,
 		InitFailed = 0x501,
 		InvalidCameraNum = 0x502,
 		TakePhotosFailed = 0x503,
@@ -38,8 +38,8 @@ private:
 	int *currentRow; //当前行号
 
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectParams *detectParams; //运行参数
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::RuntimeParams *runtimeParams; //运行参数
 
 	std::vector<int> deviceIndex = {}; //设备号
 	std::vector<cv::VideoCapture> cameraList; //相机列表
@@ -63,8 +63,8 @@ public:
 	inline void setCurrentRow(int *row) { currentRow = row;  }
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 
 	inline void setDeviceIndex(std::vector<int> &iv) { deviceIndex = iv; }
 	inline void setOperation(Operation op) { operation = op; }

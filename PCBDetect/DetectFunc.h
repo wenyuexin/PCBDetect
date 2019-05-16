@@ -16,10 +16,9 @@ class DetectFunc {
 
 private:
 	pcb::AdminConfig *adminConfig; //系统参数
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectParams *detectParams; //运行参数
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::RuntimeParams *runtimeParams; //运行参数
 	pcb::DetectResult *detectResult; //检测结果
-
 	cv::Mat big_templ; //大模板;
 
 
@@ -28,11 +27,11 @@ public:
 	~DetectFunc();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 
-
+	bool alignImages_test(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches);
 	bool alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches);//测试载入特征
 	cv::Mat sub_process_new(cv::Mat &imgTempl, cv::Mat &sampBw, Mat& mask_roi);
 	void markDefect_new(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol);
@@ -50,6 +49,15 @@ public:
 	cv::Mat descriptors;
 
 	std::string batch_path, num_path, out_path;
+
+	//double widthWholeImg = 4384 * 3;
+	//double heightWholeImg = 3288 * 3;
+	double widthWholeImg = 1500;
+	double heightWholeImg = 1000;
+	double widthUnit = 1500;
+	double heightUnit = 1000;
+	double widthZoom = 0.25;
+	double heightZoom = 0.25;
 
 private:
 

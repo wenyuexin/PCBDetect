@@ -8,6 +8,7 @@
 #include "AdminSettingUI.h"
 #include <QDesktopWidget>
 #include <QRegExpValidator>
+#include <QButtonGroup>
 
 
 //参数设置界面
@@ -18,36 +19,37 @@ class SettingUI : public QWidget
 private:
 	Ui::SettingUI ui;
 	QRect screenRect; //屏幕显示区域
-	
+	QRegExpValidator *NumberValidator;
+	QButtonGroup matchingCheckBoxGroup;
+
 	pcb::AdminConfig *adminConfig; //系统参数
 	PassWordUI passWordUI; //系统设置登录界面
 	AdminSettingUI *adminSettingUI; //系统设置界面
 
-	pcb::DetectConfig *detectConfig; //用户参数
-	pcb::DetectConfig tempConfig; //临时的用户参数类
+	pcb::UserConfig *userConfig; //用户参数
+	pcb::UserConfig tempConfig; //临时的用户参数类
 	const QString configFileName = ".user.config";//配置文件的文件名
 
-	pcb::DetectParams *detectParams;//运行参数
-	pcb::DetectParams tempParams;//临时的运行参数
+	pcb::RuntimeParams *runtimeParams;//运行参数
+	pcb::RuntimeParams tempParams;//临时的运行参数
 
 	int sysResetCode; //系统重置代码
 
 public:
-	SettingUI(QWidget *parent = Q_NULLPTR, QRect &screenRect = QRect());
+	SettingUI(QWidget *parent = Q_NULLPTR);
 	~SettingUI();
+	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
-	inline void setDetectConfig(pcb::DetectConfig *ptr) { detectConfig = ptr; }
-	inline void setDetectParams(pcb::DetectParams *ptr) { detectParams = ptr; }
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 
-	void doConnect(); //信号连接
 	void refreshSettingUI(); //更新设置界面
 	void setPushButtonsEnabled(bool code); //按键设置
 
 private:
-	void initSettingUI();
 	void getConfigFromSettingUI();
-	void setCursorLocation(pcb::DetectConfig::ConfigIndex code);
+	void setCursorLocation(pcb::UserConfig::ConfigIndex code);
 
 Q_SIGNALS:
 	void showDetectMainUI();
