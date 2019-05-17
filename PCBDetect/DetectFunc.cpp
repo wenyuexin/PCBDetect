@@ -447,7 +447,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		Point pos(currentCol*scaledSubImageSize.width, runtimeParams->currentRow_detect*scaledSubImageSize.height);
 		Rect roiRect = Rect(pos, scaledSubImageSize);
 		Mat roi = getBigTempl(roiRect);
-		sampGrayRegCopy.copyTo(roi);
+		sampGrayRegCopyZoom.copyTo(roi);
 		return;
 	}
 
