@@ -193,7 +193,7 @@ namespace pcb
 	private:
 		QFile *configFile;
 		QDateTime fileDateTime;
-		int keys[4]; //√ÿ‘ø
+		ushort keys[4]; //√ÿ‘ø
 
 	public:
 		Configurator(QFile *file = Q_NULLPTR);

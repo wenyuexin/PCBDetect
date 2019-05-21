@@ -608,7 +608,7 @@ bool Configurator::jsonReadValue(const QString &key, int &value, bool decode)
 
 /******************* 加密与解密 ********************/
 
-//修改秘钥
+//更新秘钥
 void Configurator::updateKeys()
 {
 	QFileInfo fileInfo = QFileInfo(*configFile);
@@ -618,12 +618,17 @@ void Configurator::updateKeys()
 		fileDateTime = fileInfo.lastModified();
 		//if (fileDateTime.isNull()) fileDateTime = fileInfo.created();
 
-		keys[0] = fileDateTime.toString("dd").toInt() % 9;
-		keys[1] = fileDateTime.toString("MM").toInt() % 9;
-		keys[2] = fileDateTime.toString("yyyy").toInt() % 9;
-		keys[3] = (keys[0] + keys[1] + keys[2] + 2019) % 9;
+		ushort dd = fileDateTime.toString("dd").toUShort() % 17;
+		ushort mm = fileDateTime.toString("MM").toUShort() % 7;
+		ushort yy = fileDateTime.toString("yy").toUShort() % 5;
+
+		keys[0] = 179 - 11 * dd; //176
+		keys[1] = 311 - 13 * dd - 17 * mm; //310
+		keys[2] = 563 - 19 * dd - 23 * mm - 29 * yy; //558
+		keys[3] = 883 - 31 * dd - 37 * mm - 41 * yy; //882
 	}
 }
+
 
 //加密
 QString Configurator::encrypt(QString origin) const
@@ -631,7 +636,10 @@ QString Configurator::encrypt(QString origin) const
 	QString encodeStr;
 	int len = origin.size();
 	for (int i = 0; i < len; i++) {
-		encodeStr.append(origin.at(i).unicode() ^ keys[i % 4]);
+		ushort value = origin.at(i).unicode() ^ keys[i % 4];
+		QString ch = QString::number(value, 16);
+		if (i != 0) ch = "_" + ch;
+		encodeStr.append(ch);
 	}
 	return encodeStr;
 }
@@ -641,13 +649,16 @@ QString Configurator::encrypt(const char* origin) const
 	return encrypt(QString(origin));
 }
 
+
 //解密
 QString Configurator::decrypt(QString origin) const
 {
+	QStringList chList = origin.split("_");
 	QString encodeStr;
-	int len = origin.size();
-	for (int i = 0; i < len; i++) {
-		encodeStr.append(origin.at(i).unicode() ^ keys[i % 4]);
+	for (size_t i = 0; i < chList.size(); i++) {
+		if (chList[i] == "") continue;
+		ushort value = chList[i].toUShort(Q_NULLPTR, 16);
+		encodeStr.append(QChar(value ^ keys[i % 4]));
 	}
 	return encodeStr;
 }
