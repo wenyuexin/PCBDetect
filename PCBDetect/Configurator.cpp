@@ -637,7 +637,7 @@ QString Configurator::encrypt(QString origin) const
 	int len = origin.size();
 	for (int i = 0; i < len; i++) {
 		ushort value = origin.at(i).unicode() ^ keys[i % 4];
-		QString ch = QString::number(value, 16);
+		QString ch = QString::number(value, 32);
 		if (i != 0) ch = "_" + ch;
 		encodeStr.append(ch);
 	}
@@ -657,7 +657,7 @@ QString Configurator::decrypt(QString origin) const
 	QString encodeStr;
 	for (size_t i = 0; i < chList.size(); i++) {
 		if (chList[i] == "") continue;
-		ushort value = chList[i].toUShort(Q_NULLPTR, 16);
+		ushort value = chList[i].toUShort(Q_NULLPTR, 32);
 		encodeStr.append(QChar(value ^ keys[i % 4]));
 	}
 	return encodeStr;
