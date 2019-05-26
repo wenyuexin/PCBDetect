@@ -263,11 +263,16 @@ void CameraControler::takePhotos2()
 		//CameraGetInformation(camList[i], &FrameInfo)
 		//CameraSoftTrigger(camList[i]);//执行一次软触发。执行后，会触发由CameraSetTriggerCount指定的帧数。
 		//CameraGetImageBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一张图
-		CameraClearBuffer(cameraList2[iCamera]);
-		CameraSoftTrigger(cameraList2[iCamera]);
-		double t0 = clock();
-		CameraGetImageBuffer(cameraList2[iCamera], &FrameInfo, &pRawBuffer, 10000);//抓一张图
+		
 
+		double t0 = clock();
+		int cnt = 5;
+		while (cnt > 0) {
+			CameraClearBuffer(cameraList2[iCamera]);
+			CameraSoftTrigger(cameraList2[iCamera]);
+			if (CameraGetImageBuffer(cameraList2[iCamera], &FrameInfo, &pRawBuffer, 10000) == CAMERA_STATUS_SUCCESS) break; //抓一张图
+			cnt--;
+		}
 		//CameraSnapToBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一整图
 
 		//申请一个buffer，用来将获得的原始数据转换为RGB数据，并同时获得图像处理效果
