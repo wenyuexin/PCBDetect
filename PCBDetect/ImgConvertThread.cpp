@@ -36,7 +36,9 @@ void ImgConvertThread::run()
 	clock_t t1 = clock();
 	errorCode = ImageConverter::Unchecked;
 
-	if (*currentRow < 0) { qDebug() << "Warning: ImgConvertThread: currentRow < 0"; return; }
+	if (*currentRow < 0) { 
+		qDebug() << "Warning: ImgConvertThread: currentRow < 0"; return; 
+	}
 	if (cvmats->size() < 1 || (cvmats->at(*currentRow)).size() < 1) { 
 		qDebug() << "warning: invalid size of cvmats"; 
 		errorCode = ImageConverter::ErrorCode::Invalid_ImageNum;
