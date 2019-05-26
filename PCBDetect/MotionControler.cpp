@@ -108,7 +108,7 @@ bool MotionControler::initControler()
 	//3协议
 	//str.Format(_T("%d"), xieyi_byte);
 	if (AMC98_KZQSet_v2(0, 3, "2")) { markInitFailed(); return false; }
-	pcb::delay(10);
+	pcb::delay(100);
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) { markInitFailed(); return false; }
@@ -137,7 +137,7 @@ bool MotionControler::initControler()
 	if (!_AMC98_AddParamPC2CNC(148, 200)) return false;//减速时间
 	if (!_AMC98_AddParamPC2CNC(243, 1)) return false;//需要复位的电机 1要X复位 3要XY复位 0不要复位
 	if (!_AMC98_AddParamPC2CNC(60000, 3)) return false;//保存数据
-
+	pcb::delay(500);
 
 	//设置控制指令 - Y轴
 	//if (!_AMC98_AddParamPC2CNC(150, maxDist * 10000)) return false;//Y轴最大值
