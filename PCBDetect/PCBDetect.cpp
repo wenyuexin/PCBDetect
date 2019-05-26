@@ -141,7 +141,6 @@ void PCBDetect::on_launchFinished_launchUI(int launchCode)
 
 /*************** 按键的控制与响应 *****************/
 
-
 //退出 - 图标
 void PCBDetect::on_pushButton_exit_clicked()
 {

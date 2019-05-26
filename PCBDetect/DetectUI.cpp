@@ -202,13 +202,12 @@ void DetectUI::initPointersInItemArray(pcb::ItemArray &items)
 	if (items.size() > 0) {
 		deletePointersInItemArray(items);//若执行过init函数，则先delete指针
 	}
-	else {
-		items.resize(runtimeParams->nPhotographing); //设置大小
-		for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
-			items[iPhotographing].resize(runtimeParams->nCamera);
-			for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) { //列
-				items[iPhotographing][iCamera] = Q_NULLPTR;
-			}
+	
+	items.resize(runtimeParams->nPhotographing); //设置大小
+	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
+		items[iPhotographing].resize(runtimeParams->nCamera);
+		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) { //列
+			items[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
@@ -232,13 +231,12 @@ void DetectUI::initPointersInCvMatArray(pcb::CvMatArray &cvmats)
 	if (cvmats.size() > 0) {
 		deletePointersInCvMatArray(cvmats);//若执行过init函数，则先delete指针
 	}
-	else {
-		cvmats.resize(runtimeParams->nPhotographing);
-		for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
-			cvmats[iPhotographing].resize(runtimeParams->nCamera);
-			for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
-				cvmats[iPhotographing][iCamera] = Q_NULLPTR;
-			}
+	
+	cvmats.resize(runtimeParams->nPhotographing);
+	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
+		cvmats[iPhotographing].resize(runtimeParams->nCamera);
+		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
+			cvmats[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
@@ -262,13 +260,12 @@ void DetectUI::initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 	if (qpixmaps.size() > 0) {
 		deletePointersInQPixmapArray(qpixmaps);//若执行过init函数，则先delete指针
 	}
-	else {
-		qpixmaps.resize(runtimeParams->nPhotographing);
-		for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
-			qpixmaps[iPhotographing].resize(runtimeParams->nCamera);
-			for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
-				qpixmaps[iPhotographing][iCamera] = Q_NULLPTR;
-			}
+	
+	qpixmaps.resize(runtimeParams->nPhotographing);
+	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
+		qpixmaps[iPhotographing].resize(runtimeParams->nCamera);
+		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
+			qpixmaps[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
@@ -331,17 +328,17 @@ void DetectUI::on_pushButton_return_clicked()
 	this->resetDetectUI(); 
 
 	//运动结构复位
-	if (!runtimeParams->DeveloperMode) {
-		ui.label_status->setText(pcb::chinese("运动结构复位中"));
-		qApp->processEvents();
-		motionControler->setOperation(MotionControler::ResetControler);
-		motionControler->start();
-		while (motionControler->isRunning()) pcb::delay(100);//等待复位结束
-		if (!motionControler->isReady()) {
-			motionControler->showMessageBox(this);
-			pcb::delay(10);
-		}
-	}
+	//if (!runtimeParams->DeveloperMode) {
+	//	ui.label_status->setText(pcb::chinese("运动结构复位中"));
+	//	qApp->processEvents();
+	//	motionControler->setOperation(MotionControler::ResetControler);
+	//	motionControler->start();
+	//	while (motionControler->isRunning()) pcb::delay(100);//等待复位结束
+	//	if (!motionControler->isReady()) {
+	//		motionControler->showMessageBox(this);
+	//		pcb::delay(10);
+	//	}
+	//}
 
 	//设置按键
 	this->setPushButtonsEnabled(true);
