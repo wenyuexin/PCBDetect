@@ -491,18 +491,19 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 //从序号识别界面获得产品序号之后
 void DetectUI::on_recognizeFinished_serialNumUI()
 {
-	//获取对应样本图目录
-	runtimeParams->currentSampleDir = userConfig->SampleDirPath + "/"
-		+ runtimeParams->sampleModelNum + "/"
-		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
-	if (!QFileInfo(runtimeParams->currentSampleDir).exists()) {
-		runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
-		return;
-	}
-
 	//判断是直接从本地读图，调用相机获取图像
 	if (runtimeParams->DeveloperMode) { //开发者模式
-		if (currentRow_show + 1 < runtimeParams->nPhotographing) { //直接显示新的样本行
+		//判断对应样本文件夹是否存在
+		runtimeParams->currentSampleDir = userConfig->SampleDirPath + "/"
+			+ runtimeParams->sampleModelNum + "/"
+			+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
+		if (!QFileInfo(runtimeParams->currentSampleDir).exists()) {
+			runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
+			return;
+		}
+		
+		//直接显示新的样本行
+		if (currentRow_show + 1 < runtimeParams->nPhotographing) { 
 			currentRow_show += 1; //更新显示行号
 			readSampleImages(); //读图 - 相当于相机拍照		
 		}
@@ -513,7 +514,16 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1)
 			resetDetectUI();//重置检测子模块
 
-		if (eventCounter >= 1 && !detectThread->isRunning())
+		//判断对应模板文件夹是否存在
+		runtimeParams->currentTemplDir = userConfig->TemplDirPath + "/"
+			+ runtimeParams->sampleModelNum;
+		if (!QFileInfo(runtimeParams->currentTemplDir).exists()) {
+			//runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
+			qDebug() << pcb::chinese("没有找到与型号对应的模板文件夹");
+			//return;
+		}
+
+		if (eventCounter >= 1)
 			detectSampleImages(); //检测
 	}	
 }

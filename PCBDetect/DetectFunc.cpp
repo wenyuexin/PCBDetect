@@ -624,6 +624,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		//分类有bug，出了问题直接goto到分类完成标签
 	classfinish:
+		if (trans_num == 0)
+			continue;
 
 		int lack_flag = 0;//0表示无缺失，1表示有缺失
 		if (neighbors_sum >= 255 * 2)
@@ -667,7 +669,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		//在配准后的样本图的克隆上绘制缺陷(排除所有伪缺陷后再绘制
 		Rect rec = Rect((int)(rect_out.x*scalingFactor), (int)(rect_out.y*scalingFactor), (int)(rect_out.width*scalingFactor), (int)(rect_out.height*scalingFactor));
-		rectangle(sampGrayRegCopyZoom, rec, Scalar(0, 0, 255), 2);
+		rectangle(sampGrayRegCopyZoom, rec, Scalar(0, 0, 255), 1);
 
 		QChar fillChar = '0'; //当字符串长度不够时使用此字符进行填充
 		QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录
