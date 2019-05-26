@@ -122,7 +122,7 @@ RuntimeParams::ErrorCode RuntimeParams::calcInitialPhotoPos(pcb::AdminConfig *ad
 
 	//参照位置，需保证刚好露出限制PCB板位置的金属条
 	//还需保证在拍摄最后一行分图时，运动结构不会与限位器碰撞
-	double initPos = 5; 
+	double initPos = 6; 
 
 	//计算初始拍照位置
 	initPos += ((nPhotographing - 1) * singleMotionStroke); 
