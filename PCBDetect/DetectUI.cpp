@@ -473,8 +473,8 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 	//判断鼠标点击的是哪个分图
 	if (!graphicsViewRect.contains(mousePosition)) return;
 	QPoint relativePos = mousePosition - graphicsViewPos; //相对位置
-	int gridColIdx = (int)ceil(relativePos.x() / gridSize.width());//点击位置在第几列
-	int gridRowIdx = (int)ceil(relativePos.y() / gridSize.height());//点击位置在第几行
+	int gridRowIdx = (int) (relativePos.y() / gridSize.height());//点击位置在第几行
+	int gridColIdx = (int) (relativePos.x() / gridSize.width());//点击位置在第几列
 
 	if (true && gridRowIdx <= currentRow_show) {
 		serialNumberUI->showSampleImage(gridRowIdx, gridColIdx);
