@@ -155,8 +155,8 @@ void ExtractUI::initItemGrid(pcb::ItemGrid &grid)
 
 	//计算总间距
 	QSizeF totalSpacing; //总间距
-	totalSpacing.setWidth(itemSpacing * (nCamera + 1)); //间距总宽度
-	totalSpacing.setHeight(itemSpacing * (nPhotographing + 1)); //间距总高度
+	totalSpacing.setWidth(ItemSpacing * (nCamera + 1)); //间距总宽度
+	totalSpacing.setHeight(ItemSpacing * (nPhotographing + 1)); //间距总高度
 
 	//计算图元尺寸
 	QSizeF viewSize = ui.graphicsView->size(); //视图尺寸
@@ -167,10 +167,10 @@ void ExtractUI::initItemGrid(pcb::ItemGrid &grid)
 	//计算场景尺寸
 	sceneSize = totalSpacing;
 	sceneSize += QSizeF(itemSize.width()*nCamera, itemSize.height()*nPhotographing);
-	scene.setSceneRect(1, 1, sceneSize.width() + 1, sceneSize.height() + 1);
+	scene.setSceneRect(1, 1, sceneSize.width() + 2, sceneSize.height() + 2);
 
 	//生成绘图网点
-	QSizeF spacingBlock = QSizeF(itemSpacing, itemSpacing);
+	QSizeF spacingBlock = QSizeF(ItemSpacing, ItemSpacing);
 	gridSize = itemSize + spacingBlock; //每个网格的尺寸
 
 	//判断itemGrid是否执行过初始化
@@ -180,7 +180,7 @@ void ExtractUI::initItemGrid(pcb::ItemGrid &grid)
 	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { //行
 		QList<QPointF> posList;
 		for (int iCamera = 0; iCamera < nCamera; iCamera++) { //列
-			QPointF pos(itemSpacing, itemSpacing);
+			QPointF pos(ItemSpacing, ItemSpacing);
 			pos += QPointF(gridSize.width()*iCamera, gridSize.height()*iPhotographing); //(x,y)
 			posList.append(pos);
 		}
@@ -427,7 +427,7 @@ void ExtractUI::showSampleImages()
 	clock_t t1 = clock();
 
 	QSize _itemSize(itemSize.width(), itemSize.height());
-	if (itemSpacing == 0) _itemSize += QSize(1, 1); //防止出现缝隙
+	if (ItemSpacing == 0) _itemSize += QSize(2, 2); //防止出现缝隙
 	for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
 		QPixmap scaledImg = (*qpixmapSamples[currentRow_show][iCamera]).scaled(_itemSize, Qt::KeepAspectRatio);
 		QGraphicsPixmapItem* item = new QGraphicsPixmapItem(scaledImg); //定义图元
