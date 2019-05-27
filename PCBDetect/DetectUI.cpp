@@ -17,6 +17,8 @@ DetectUI::DetectUI(QWidget *parent)
 	motionControler = Q_NULLPTR;
 	cameraControler = Q_NULLPTR;
 	serialNumberUI = Q_NULLPTR;
+	defectDetecter = Q_NULLPTR;
+	detectThread = Q_NULLPTR;
 	detectState = DefectDetecter::Default;
 }
 
@@ -40,10 +42,14 @@ void DetectUI::init()
 	QPixmap greenIcon = QPixmap(IconFolder + "/green.png"); //grey
 	lightOffIcon = greenIcon.scaled(ui.label_indicator->size(), Qt::KeepAspectRatio);
 
+	//重置缺陷检测界面
+	this->reset();
+
 	//对绘图控件GraphicsView的初始化设置
 	this->initGraphicsView();
 
 	//产品序号识别界面
+	delete serialNumberUI;
 	serialNumberUI = new SerialNumberUI();
 	serialNumberUI->setAdminConfig(adminConfig);
 	serialNumberUI->setRuntimeParams(runtimeParams);
@@ -55,11 +61,13 @@ void DetectUI::init()
 	connect(serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
 
 	//缺陷检测器
+	delete defectDetecter;
 	defectDetecter = new DefectDetecter;
 	connect(defectDetecter, SIGNAL(updateDetectState_detecter(int)), this, SLOT(do_updateDetectState_detecter(int)));
 	connect(defectDetecter, SIGNAL(detectFinished_detectThread(bool)), this, SLOT(on_detectFinished_detectThread(bool)));
 
 	//检测线程
+	delete detectThread;
 	detectThread = new DetectThread;
 	detectThread->setAdminConfig(adminConfig);
 	detectThread->setUserConfig(userConfig);
@@ -125,7 +133,7 @@ void DetectUI::initGraphicsView()
 }
 
 //重置检测子界面
-void DetectUI::resetDetectUI()
+void DetectUI::reset()
 {
 	serialNumberUI->reset();//重置序号识别界面
 
@@ -300,7 +308,7 @@ void DetectUI::on_pushButton_start_clicked()
 {
 	ui.label_status->setText(pcb::chinese("开始运行")); //更新状态
 	this->setPushButtonsEnabled(false); //禁用按键
-	this->resetDetectUI(); //重置检测子模块
+	this->reset(); //重置检测子模块
 	
 	if (runtimeParams->DeveloperMode) { //开发者模式
 		serialNumberUI->reset(); //重置
@@ -325,7 +333,7 @@ void DetectUI::on_pushButton_return_clicked()
 	//设置按键
 	this->setPushButtonsEnabled(false);
 	//重置检测子界面，清空缓存数据
-	this->resetDetectUI(); 
+	this->reset(); 
 
 	//运动结构复位
 	//if (!runtimeParams->DeveloperMode) {
@@ -509,7 +517,7 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 		if (detectThread->isRunning()) return;
 
 		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1)
-			resetDetectUI();//重置检测子模块
+			reset();//重置检测子模块
 
 		//判断对应模板文件夹是否存在
 		runtimeParams->currentTemplDir = userConfig->TemplDirPath + "/"

@@ -61,6 +61,7 @@ public:
 	DetectUI(QWidget *parent = Q_NULLPTR);
 	~DetectUI();
 	void init();
+	void reset();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
@@ -69,7 +70,6 @@ public:
 	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 
 	void initGraphicsView();
-	void resetDetectUI();
 	void setPushButtonsEnabled(bool enable);
 	void refreshCameraControler();
 
