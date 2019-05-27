@@ -26,7 +26,7 @@ private:
 	MotionControler *motionControler; //运动控制器
 	CameraControler *cameraControler; //相机控制器
 
-	const qreal itemSpacing = 0; //图元间距（单位:pix）
+	const qreal ItemSpacing = 0; //图元间距（单位:pix）
 	QSizeF itemSize; //图元尺寸
 	QSizeF gridSize; //网格尺寸
 	QGraphicsScene scene; //绘图场景
