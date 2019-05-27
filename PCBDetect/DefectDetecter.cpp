@@ -137,14 +137,26 @@ void DefectDetecter::detect()
 			//int meanSampGray = mean(samp_gray,mask_roi)[0];
 			//cv::threshold(samp_gray, sampBw, meanSampGray, 255, cv::THRESH_BINARY_INV);
 			//分块二值化
-			int meanSampGrayUp = mean(samp_gray(upRect), mask_roi(upRect))[0];
-			cv::threshold(samp_gray(upRect), sampBw(upRect), meanSampGrayUp, 255, cv::THRESH_BINARY_INV);
-			int meanSampGrayDown = mean(samp_gray(downRect), mask_roi(downRect))[0];
-			cv::threshold(samp_gray(downRect), sampBw(downRect), meanSampGrayDown, 255, cv::THRESH_BINARY_INV);
+			//int meanSampGrayUp = mean(samp_gray(upRect), mask_roi(upRect))[0];
+			//cv::threshold(samp_gray(upRect), sampBw(upRect), meanSampGrayUp, 255, cv::THRESH_BINARY_INV);
+			//int meanSampGrayDown = mean(samp_gray(downRect), mask_roi(downRect))[0];
+			//cv::threshold(samp_gray(downRect), sampBw(downRect), meanSampGrayDown, 255, cv::THRESH_BINARY_INV);
+			//局部自适应二值化
+			string cornerPointsPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/mask/cornerPoints.bin";
+			cv::FileStorage store_new(cornerPointsPath, cv::FileStorage::READ);
+			cv::FileNode n1 = store_new["cornerPoints"];
+			vector<cv::Point2i>  res;
+			cv::read(n1, res);
+			cv::Point bl(res[0]);
+			cv::Point tr(res[1]);
+
+			sampBw = detectFunc->myThresh(curCol, curRow, samp_gray, bl, tr);
 
 			Mat element_a = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
 			cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
 			cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
+
+
 			//直接载入二值化模板
 			//std::string templBwPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/bw/"
 			//	+ to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_bw" + userConfig->ImageFormat.toStdString();
@@ -162,10 +174,14 @@ void DefectDetecter::detect()
 			cv::threshold(templ_gray(upRect), templBw(upRect), meanTemplGrayUp, 255, cv::THRESH_BINARY_INV);
 			int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
 			cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
+			//局部自适应二值化
+			templBw = detectFunc->myThresh(curCol, curRow, templ_gray, bl, tr);
 
 			Mat elementTempl = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
 			cv::morphologyEx(templBw, templBw, cv::MORPH_OPEN, elementTempl);
 			cv::morphologyEx(templBw, templBw, cv::MORPH_CLOSE, elementTempl);
+
+
 
 			//透射变换后有一个roi
 			Mat templ_roi = Mat::ones(templ_gray.size(), templ_gray.type()) * 255;
@@ -178,6 +194,10 @@ void DefectDetecter::detect()
 			Mat roi;
 			cv::bitwise_and(templ_roi, mask_roi, roi);
 
+			//直接对roi掩膜做投射变换
+			cv::warpPerspective(mask_roi, roi, h, templ_roi.size());
+			cv::bitwise_and(roi, mask_roi, roi);
+
 			//做差
 			cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
 			Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
@@ -189,7 +209,7 @@ void DefectDetecter::detect()
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
 
-			///标记缺陷
+			//标记缺陷
 			detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);
 			continue;
 		//}catch (std::exception e) {
