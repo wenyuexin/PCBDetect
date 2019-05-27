@@ -32,6 +32,7 @@ public:
 
 private:
 	Ui::SerialNumberUI ui;
+	QRegExpValidator *NumberValidator;
 	ErrorCode errorCode;
 
 	pcb::AdminConfig *adminConfig; //系统参数
@@ -47,8 +48,11 @@ private:
 	QGraphicsPixmapItem *imageItem;//图元
 
 	QButtonGroup checkBoxGroup;
-	QPointF roiRect_tl;
-	QPointF roiRect_br;
+	QPointF maskRoi_tl; //掩膜左上角的坐标
+	QPointF maskRoi_br; //掩膜右下角的坐标
+
+	QPointF ocrRoi_tl;
+	QPointF ocrRoi_br;
 	double imageScalingRatio;
 
 	QPoint mousePressPos; //鼠标的起始点击位置
@@ -84,6 +88,7 @@ private:
 	void setSerialNumberUIEnabled(bool);
 	void setPushButtonsEnabled(bool);
 
+	double intervalCensored(double num, double minVal, double maxVal);
 	void deleteImageItem();
 	bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
@@ -93,7 +98,8 @@ Q_SIGNALS:
 	void showPreviousUI_serialNumUI();
 
 private Q_SLOTS:
-	void on_pushButton_getROI_clicked();
+	void on_pushButton_getMaskRoi_clicked();
+	void on_pushButton_getOcrRoi_clicked();
 	void on_pushButton_recognize_clicked();
 	void on_pushButton_confirm_clicked();
 	void on_pushButton_return_clicked();
