@@ -49,7 +49,7 @@ void SerialNumberUI::init()
 	ui.lineEdit_ocrRoi_tl_y->setValidator(NumberValidator);
 	ui.lineEdit_ocrRoi_br_x->setValidator(NumberValidator);
 	ui.lineEdit_ocrRoi_br_y->setValidator(NumberValidator);
-	ui.lineEdit_serialNum->setValidator(NumberValidator);
+	ui.lineEdit_serialNum->setValidator(NumberValidator); //序号
 
 	//初始化CheckBox
 	this->initCheckBoxGroup();
@@ -163,17 +163,21 @@ void SerialNumberUI::on_pushButton_getMaskRoi_clicked()
 	int ImageSize_H = adminConfig->ImageSize_H;
 
 	//获取掩膜区域的坐标 - 左上角
-	int tl_x = ui.lineEdit_maskRoi_tl_x->text().toInt();
+	QString str_tl_x = ui.lineEdit_maskRoi_tl_x->text();
+	int tl_x = (str_tl_x == "") ? -1 : str_tl_x.toInt();
 	tl_x = (int) intervalCensored(tl_x, 0, ImageSize_W - 1);
 
-	int tl_y = ui.lineEdit_maskRoi_tl_y->text().toInt();
+	QString str_tl_y = ui.lineEdit_maskRoi_tl_y->text();
+	int tl_y = (str_tl_y == "") ? -1 : str_tl_y.toInt();
 	tl_y = (int) intervalCensored(tl_y, 0, ImageSize_H - 1);
 
 	//获取掩膜区域的坐标 - 右下角
-	int br_x = ui.lineEdit_maskRoi_br_x->text().toInt();
+	QString str_br_x = ui.lineEdit_maskRoi_br_x->text();
+	int br_x = (str_br_x == "") ? -1 : str_br_x.toInt();
 	br_x = (int) intervalCensored(br_x, 0, ImageSize_W - 1);
 
-	int br_y = ui.lineEdit_maskRoi_br_y->text().toInt();
+	QString str_br_y = ui.lineEdit_maskRoi_br_y->text();
+	int br_y = (str_br_y == "") ? -1 : str_br_y.toInt();
 	br_y = (int) intervalCensored(br_y, 0, ImageSize_H - 1);
 
 	//将区域坐标存入运行参数类
@@ -181,6 +185,8 @@ void SerialNumberUI::on_pushButton_getMaskRoi_clicked()
 	runtimeParams->maskRoi_tl.setY(tl_y);
 	runtimeParams->maskRoi_br.setX(br_x);
 	runtimeParams->maskRoi_br.setY(br_y);
+
+	emit getMaskRoiFinished_serialNumUI();
 
 	this->setSerialNumberUIEnabled(true);
 }
@@ -318,10 +324,12 @@ void SerialNumberUI::showSampleImage(int row, int col)
 	deleteImageItem(); //删除之前的图元
 	imageItem = new QGraphicsPixmapItem(scaledImg); //定义新图元
 	graphicsScene.addItem(imageItem);
+	pcb::delay(10);
 
 	//计算场景左上角点的坐标
-	QPointF scenePosToView = -(ui.graphicsView->mapToScene(0,0));
-	graphicsScenePos = scenePosToView - QPointF(scaledImg.width()/2.0, scaledImg.height()/2.0);
+	//QPointF scenePosToView = -(ui.graphicsView->mapToScene(0,0));
+	QPointF scenePosToView(graphicsViewSize.width() / 2.0, graphicsViewSize.height() / 2.0);
+	graphicsScenePos = scenePosToView - QPointF(scaledImg.width(), scaledImg.height()) / 2.0;
 
 	ui.graphicsView->show();//显示
 }

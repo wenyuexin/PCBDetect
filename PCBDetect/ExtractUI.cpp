@@ -40,6 +40,7 @@ void ExtractUI::init()
 	connect(serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
 	connect(serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
 	connect(serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
+	connect(serialNumberUI, SIGNAL(getMaskRoiFinished_serialNumUI()), this, SLOT(on_getMaskRoiFinished_serialNumUI()));
 
 	//模板提取器
 	templExtractor = new TemplateExtractor;
@@ -491,17 +492,12 @@ void ExtractUI::on_recognizeFinished_serialNumUI()
 		}
 	}
 	else { //标准模式
-		if (extractThread->isRunning()) return;
-
-		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1)
-			resetTemplateUI();//重置检测子模块
-
 		if (eventCounter >= 1 && !extractThread->isRunning())
 			extractTemplateImages(); //提取
 	}
 }
 
-//显示序号识别界面的上一级界面
+//显示序号识别界面的上一级界面 - 模板提取界面
 void ExtractUI::do_showPreviousUI_serialNumUI()
 {
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
@@ -515,6 +511,26 @@ void ExtractUI::do_showPreviousUI_serialNumUI()
 	serialNumberUI->hide();
 }
 
+//掩膜区域获取结束
+void ExtractUI::on_getMaskRoiFinished_serialNumUI()
+{
+	if (runtimeParams->maskRoi_tl.x() < 0 || runtimeParams->maskRoi_tl.y() < 0 ||
+		runtimeParams->maskRoi_br.x() < 0 || runtimeParams->maskRoi_br.y() < 0)
+	{
+		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+			+ pcb::chinese("确认掩膜区域"));
+		qApp->processEvents();
+		pcb::delay(10); //延迟
+		return;
+	}
+
+
+	if (eventCounter >= 1 && !extractThread->isRunning() &&
+		runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false))
+	{ 
+		extractTemplateImages(); //提取
+	}
+}
 
 /******************** 运动控制 ********************/
 
@@ -631,16 +647,6 @@ void ExtractUI::on_convertFinished_convertThread()
 	//在界面上显示样本图
 	this->showSampleImages(); 
 
-	//更新状态栏
-	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
-		&& !runtimeParams->DeveloperMode)
-	{
-		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
-			+ pcb::chinese("获取产品序号"));
-		qApp->processEvents();
-		pcb::delay(10); //延迟
-	}
-
 	//显示结束后之前驱动机械结构运动
 	pcb::delay(10); //延迟
 	if (!runtimeParams->DeveloperMode) {
@@ -665,10 +671,31 @@ void ExtractUI::on_convertFinished_convertThread()
 	else { //开发者模式
 	}
 
-	//判断是否执行检测操作
+	//更新状态栏
+	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false) && 
+		!runtimeParams->DeveloperMode)
+	{
+		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+			+ pcb::chinese("获取产品序号"));
+		qApp->processEvents();
+		pcb::delay(10); //延迟
+		return;
+	}
+
+	//判断是否执行提取操作
 	if (runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
 		&& eventCounter >= 1 && !extractThread->isRunning()) 
 	{
+		//如果是最后一行
+		if (runtimeParams->currentRow_extract = runtimeParams->nPhotographing - 1) {
+			//如果掩膜区域无效，则提示确认掩膜区域
+			if (runtimeParams->maskRoi_tl.x() < 0 || runtimeParams->maskRoi_tl.y() < 0 ||
+				runtimeParams->maskRoi_br.x() < 0 || runtimeParams->maskRoi_br.y() < 0)
+			{
+				ui.label_status->setText(pcb::chinese("请在序号识别界面\n确认掩膜区域"));
+				qApp->processEvents(); return;
+			}
+		}
 		extractTemplateImages(); //提取
 	}
 }
@@ -710,21 +737,30 @@ void ExtractUI::update_extractState_extractor(int state)
 		qApp->processEvents();
 
 		//显示新的样本行
-		if (currentRow_show + 1 < runtimeParams->nPhotographing
-			&& runtimeParams->DeveloperMode) {
+		if (runtimeParams->DeveloperMode && currentRow_show < runtimeParams->nPhotographing - 1) {
 			currentRow_show += 1; //更新显示行号
 			readSampleImages(); //读图 - 相当于相机拍照		
 		}
 
 		//检查是否有未处理的事件
 		while (extractThread->isRunning()) pcb::delay(50); //等待提取线程结束
-		while (motionControler->isRunning()) pcb::delay(100); //等待运动线程结束
 		if (runtimeParams->currentRow_extract == runtimeParams->nPhotographing - 1) { //当前PCB提取结束
+			while (motionControler->isRunning()) pcb::delay(100); //等待运动线程结束
 			runtimeParams->currentRow_extract = -1;
 			this->setPushButtonsEnabled(true); //启用按键
 		}
 		else { //当前PCB未提取完
-			if (eventCounter > 0) extractTemplateImages(); //提取下一行分图
+			if (eventCounter <= 0) return;
+
+			if (runtimeParams->currentRow_extract + 1 == runtimeParams->nPhotographing - 1) {
+				if (runtimeParams->maskRoi_tl.x() < 0 || runtimeParams->maskRoi_tl.y() < 0 ||
+					runtimeParams->maskRoi_br.x() < 0 || runtimeParams->maskRoi_br.y() < 0)
+				{
+					ui.label_status->setText(pcb::chinese("请在序号识别界面\n确认掩膜区域"));
+					qApp->processEvents(); return;
+				}
+			}
+			extractTemplateImages(); //提取下一行分图
 		}
 	}
 }
