@@ -1,4 +1,9 @@
 #include "TemplateExtractor.h"
+#include "ExtractFunc.h"
+#include "opencv2/opencv.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
+
 
 using pcb::UserConfig;
 using pcb::RuntimeParams;
@@ -126,6 +131,8 @@ void TemplateExtractor::extract()
 		filePath = bin_path + fileName + ".bin";
 		templFunc->save(filePath.toStdString(), src);
 
+
+
 		//合成大模板
 		Point roiPos(col*adminConfig->ImageSize_W, currentRow_extract*adminConfig->ImageSize_H);
 		Rect roiRect = Rect(roiPos, originalSubImageSize);
@@ -133,17 +140,32 @@ void TemplateExtractor::extract()
 		src.copyTo(roiImage);
 	}
 
-	//存储PCB整图
+	//生成mask,存储PCB整图
 	if (runtimeParams->currentRow_extract + 1 == nPhotographing) {
 
-		Point point_left, point_right;
-		int lf_x = 175, lf_y = 3285, br_x = 0, br_y = 0;/* lf_x = 168, lf_y = 3276,*//* br_x = 3043, br_y = 325*/
-		br_x = int(lf_x + userConfig->ActualProductSize_W*adminConfig->PixelsNumPerUnitLength + int(adminConfig->ImageOverlappingRate_W * adminConfig->ImageSize_W) * (runtimeParams->nCamera - 1)) % adminConfig->ImageSize_W + 160;//pcb板右上角在图像中的位置,160为偏移量
-		br_y = adminConfig->ImageSize_H - (int(adminConfig->ImageSize_H - lf_y + userConfig->ActualProductSize_H*adminConfig->PixelsNumPerUnitLength + int(adminConfig->ImageOverlappingRate_H * adminConfig->ImageSize_H)* (runtimeParams->nPhotographing - 1)) % adminConfig->ImageSize_H);
-		Mat image_lf = cv::imread(subtempl_path.toStdString() + "/" + std::to_string(runtimeParams->nPhotographing) + "_1" + userConfig->ImageFormat.toStdString());
-		point_left = templFunc->corner_lf(image_lf, lf_x, lf_y);
-		Mat image_br = cv::imread(subtempl_path.toStdString() + "/" + std::to_string(1) + "_" + std::to_string(runtimeParams->nCamera) + userConfig->ImageFormat.toStdString());
-		point_right = templFunc->corner_br(image_br, br_x, br_y);
+		
+		Point point_left(runtimeParams->maskRoi_tl.x(), runtimeParams->maskRoi_br.y());
+		Point point_right(runtimeParams->maskRoi_br.x(), runtimeParams->maskRoi_tl.y());
+
+		string pointsPath = mask_path.toStdString() + "cornerPoints.bin";
+
+		vector<Point2i> cornerPoints{ point_left,point_right };
+		cv::FileStorage store(pointsPath, cv::FileStorage::WRITE);
+		cv::write(store, "cornerPoints", cornerPoints);
+		store.release();
+
+		//cv::FileStorage store_new(pointsPath, cv::FileStorage::READ);
+		//cv::FileNode n1 = store_new["cornerPoints"];
+		//vector<Point2i>  res;
+		//cv::read(n1, res);
+	
+		//int lf_x = 175, lf_y = 3285, br_x = 0, br_y = 0;/* lf_x = 168, lf_y = 3276,*//* br_x = 3043, br_y = 325*/
+		//br_x = int(lf_x + userConfig->ActualProductSize_W*adminConfig->PixelsNumPerUnitLength + int(adminConfig->ImageOverlappingRate_W * adminConfig->ImageSize_W) * (runtimeParams->nCamera - 1)) % adminConfig->ImageSize_W + 160;//pcb板右上角在图像中的位置,160为偏移量
+		//br_y = adminConfig->ImageSize_H - (int(adminConfig->ImageSize_H - lf_y + userConfig->ActualProductSize_H*adminConfig->PixelsNumPerUnitLength + int(adminConfig->ImageOverlappingRate_H * adminConfig->ImageSize_H)* (runtimeParams->nPhotographing - 1)) % adminConfig->ImageSize_H);
+		//Mat image_lf = cv::imread(subtempl_path.toStdString() + "/" + std::to_string(runtimeParams->nPhotographing) + "_1" + userConfig->ImageFormat.toStdString());
+		//point_left = templFunc->corner_lf(image_lf, lf_x, lf_y);
+		//Mat image_br = cv::imread(subtempl_path.toStdString() + "/" + std::to_string(1) + "_" + std::to_string(runtimeParams->nCamera) + userConfig->ImageFormat.toStdString());
+		//point_right = templFunc->corner_br(image_br, br_x, br_y);
 
 		//提取掩模
 		Mat image;//n1,n2文件中的图像

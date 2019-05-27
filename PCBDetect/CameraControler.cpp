@@ -266,17 +266,23 @@ void CameraControler::takePhotos2()
 		
 
 		double t0 = clock();
-		int cnt = 5;
-		while (cnt > 0) {
+		int counter = 5;
+		while (counter > 0) {
 			CameraClearBuffer(cameraList2[iCamera]);
 			CameraSoftTrigger(cameraList2[iCamera]);
 			if (CameraGetImageBuffer(cameraList2[iCamera], &FrameInfo, &pRawBuffer, 10000) == CAMERA_STATUS_SUCCESS) break; //抓一张图
-			cnt--;
+			counter--;
 		}
 		//CameraSnapToBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一整图
 
 		//申请一个buffer，用来将获得的原始数据转换为RGB数据，并同时获得图像处理效果
-		pRgbBuffer = (unsigned char *)CameraAlignMalloc(FrameInfo.iWidth*FrameInfo.iHeight * 3, 16);
+		counter = 5;
+		while (counter > 0) {
+			pRgbBuffer = (unsigned char *)CameraAlignMalloc(FrameInfo.iWidth*FrameInfo.iHeight * 3, 16);
+			if (pRgbBuffer != NULL) break;
+			counter--;
+		}
+
 		//处理图像，并得到RGB格式的数据
 		CameraImageProcess(cameraList2[iCamera], pRawBuffer, pRgbBuffer, &FrameInfo);
 		//释放由CameraSnapToBuffer、CameraGetImageBuffer获得的图像缓冲区
