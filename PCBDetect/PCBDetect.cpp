@@ -226,16 +226,14 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 	}
 	noError &= cameraControler->isReady();
 
-	//重置模板提取界面，并初始化其中的图像显示的空间
+	//重新初始化模板提取界面
 	if (noError && ((code & 0b000000010) > 0)) {
-		extractUI->resetTemplateUI();
-		extractUI->initGraphicsView();
+		extractUI->init();
 	}
 
-	//重置检测界面，并初始化其中的图像显示的空间
+	//重新初始化缺陷检测界面
 	if (noError && ((code & 0b000000001) > 0)) {
-		detectUI->resetDetectUI();
-		detectUI->initGraphicsView();
+		detectUI->init();
 	}
 
 	//若各模块状态正常，则将模板提取按键、检测按键设为可点击
@@ -370,7 +368,7 @@ void PCBDetect::switchToTemplateUI()
 		}
 	}
 
-	extractUI->resetTemplateUI(); //重置提取界面
+	extractUI->resetExtractUI(); //重置提取界面
 	if (!runtimeParams.DeveloperMode) extractUI->refreshCameraControler();//更新相机参数
 	this->showTemplateUI(); //显示模板提取界面
 }
@@ -427,7 +425,7 @@ void PCBDetect::switchToDetectUI()
 		}
 	}
 
-	detectUI->resetDetectUI();//重置检测界面
+	detectUI->reset();//重置检测界面
 	if (!runtimeParams.DeveloperMode) detectUI->refreshCameraControler();//更新相机控制器
 	this->showDetectUI();//显示检测界面
 }

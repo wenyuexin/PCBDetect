@@ -40,6 +40,7 @@ void SerialNumberUI::init()
 	ui.graphicsView->setScene(&graphicsScene);
 
 	//限制参数的输入范围
+	delete NumberValidator;
 	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
 	ui.lineEdit_maskRoi_tl_x->setValidator(NumberValidator); //掩膜
 	ui.lineEdit_maskRoi_tl_y->setValidator(NumberValidator);
@@ -130,6 +131,8 @@ void SerialNumberUI::setPushButtonsEnabled(bool enable)
 //重置序号识别界面
 void SerialNumberUI::reset()
 {
+	if (this == Q_NULLPTR) return;
+
 	ui.checkBox_maskRoi_tl->setChecked(false);
 	ui.checkBox_maskRoi_br->setChecked(false);
 	ui.checkBox_ocrRoi_tl->setChecked(false);
