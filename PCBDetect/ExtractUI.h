@@ -54,7 +54,7 @@ public:
 	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 
 	void initGraphicsView();
-	void resetTemplateUI();
+	void resetExtractUI();
 	void refreshCameraControler();
 	void setPushButtonsEnabled(bool enable);
 
