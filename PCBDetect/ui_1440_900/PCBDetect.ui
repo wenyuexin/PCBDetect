@@ -471,7 +471,7 @@
             </font>
            </property>
            <property name="text">
-            <string>检测</string>
+            <string>缺陷检测</string>
            </property>
            <property name="flat">
             <bool>false</bool>
