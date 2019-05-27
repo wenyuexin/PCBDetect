@@ -17,6 +17,8 @@ ExtractUI::ExtractUI(QWidget *parent)
 	motionControler = Q_NULLPTR;
 	cameraControler = Q_NULLPTR;
 	serialNumberUI = Q_NULLPTR;
+	templExtractor = Q_NULLPTR;
+	extractThread = Q_NULLPTR;
 }
 
 void ExtractUI::init()
@@ -27,10 +29,14 @@ void ExtractUI::init()
 	//设置检测界面的聚焦策略
 	this->setFocusPolicy(Qt::ClickFocus);
 
+	//重置提取界面
+	this->resetExtractUI();
+
 	//对绘图控件GraphicsView的初始化设置
 	this->initGraphicsView();
 
 	//产品序号识别界面
+	delete serialNumberUI;
 	serialNumberUI = new SerialNumberUI();
 	serialNumberUI->setAdminConfig(adminConfig);
 	serialNumberUI->setRuntimeParams(runtimeParams);
@@ -43,10 +49,12 @@ void ExtractUI::init()
 	connect(serialNumberUI, SIGNAL(getMaskRoiFinished_serialNumUI()), this, SLOT(on_getMaskRoiFinished_serialNumUI()));
 
 	//模板提取器
+	delete templExtractor;
 	templExtractor = new TemplateExtractor;
 	connect(templExtractor, SIGNAL(extractState_extractor(int)), this, SLOT(update_extractState_extractor(int)));
 
 	//模板提取线程
+	delete extractThread;
 	extractThread = new ExtractThread();
 	extractThread->setAdminConfig(adminConfig);
 	extractThread->setUserConfig(userConfig);
@@ -111,7 +119,7 @@ void ExtractUI::initGraphicsView()
 }
 
 //重置模板提取界面
-void ExtractUI::resetTemplateUI()
+void ExtractUI::resetExtractUI()
 {
 	serialNumberUI->reset();//重置序号识别界面
 
@@ -286,7 +294,7 @@ void ExtractUI::on_pushButton_start_clicked()
 	if (runtimeParams->currentRow_extract == -1 && !extractThread->isRunning()) {
 		ui.label_status->setText(pcb::chinese("开始运行"));
 		this->setPushButtonsEnabled(false); //禁用按键
-		this->resetTemplateUI(); //重置模板提取子模块
+		this->resetExtractUI(); //重置模板提取子模块
 		
 		if (runtimeParams->DeveloperMode) { //开发者模式
 			serialNumberUI->reset(); //重置
@@ -312,7 +320,7 @@ void ExtractUI::on_pushButton_return_clicked()
 	//设置按键
 	this->setPushButtonsEnabled(false);
 	//重置模板提取界面，清空缓存数据
-	this->resetTemplateUI(); 
+	this->resetExtractUI(); 
 
 	//运动结构复位
 	//if (!runtimeParams->DeveloperMode) {
