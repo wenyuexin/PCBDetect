@@ -88,8 +88,10 @@ namespace pcb
 		QString sampleBatchNum; //批次号
 		QString sampleNum; //样本编号
 
-		int currentRow_detect; //检测行号
+		QPoint maskRoi_tl; //模板掩膜左上角在分图上的坐标位置
+		QPoint maskRoi_br; //模板掩膜右下角在分图上的坐标位置
 		int currentRow_extract; //提取行号
+		int currentRow_detect; //检测行号
 
 		double singleMotionStroke; //运功动结构的单步行程 mm
 		int nCamera; //相机个数
