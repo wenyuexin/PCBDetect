@@ -96,6 +96,7 @@ Q_SIGNALS:
 	void switchImage_serialNumUI();
 	void recognizeFinished_serialNumUI();
 	void showPreviousUI_serialNumUI();
+	void getMaskRoiFinished_serialNumUI();
 
 private Q_SLOTS:
 	void on_pushButton_getMaskRoi_clicked();

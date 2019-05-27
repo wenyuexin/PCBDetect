@@ -2,6 +2,7 @@
 #include "opencv2/features2d.hpp"
 #include "opencv2/xfeatures2d.hpp"
 #include <qDebug>
+#include <algorithm>
 
 
 using pcb::UserConfig;
@@ -56,6 +57,7 @@ void DetectFunc::generateBigTempl()
 
 	big_templ = Mat(scaledFullImageSize, CV_8UC3); //生成用于记录缺陷的整图
 }
+
 
 
 bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
@@ -149,6 +151,87 @@ bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 	}
 
 	return true;
+}
+
+Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Point point_left, cv::Point point_right)
+{
+	int totalCol = runtimeParams->nCamera - 1;//从0开始
+	int totalRow = runtimeParams->nPhotographing - 1;
+	Mat res = Mat::zeros(grayImg.size(), CV_8UC1);
+	Rect rect;//roi区域
+	if (curCol == 0 && curRow == 0)//左上
+	{
+		rect.x = point_left.x;
+		rect.y = point_right.y;
+		rect.width = grayImg.cols - point_left.x;
+		rect.height = grayImg.rows - point_right.y;
+
+	}
+	else if (curCol == 0 && curRow == totalRow)//左下
+	{
+		rect.x = point_left.x;
+		rect.y = 0;
+		rect.width = grayImg.cols - point_left.x;
+		rect.height = point_left.y;
+	}
+
+	else if (curCol == totalCol && curRow == 0)//右上
+	{
+		rect.x = 0;
+		rect.y = point_right.y;
+		rect.width = point_right.x;
+		rect.height = grayImg.rows - point_right.y;
+	}
+	else if (curCol == totalCol && curRow == totalRow)//右下
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = point_right.x;
+		rect.height = point_left.y;
+	}
+	else if (curCol == 0 && 0 < curRow && curRow < totalRow)//左边
+	{
+		rect.x = point_left.x;
+		rect.y = 0;
+		rect.width = grayImg.cols - point_left.x;
+		rect.height = grayImg.rows;
+	}
+
+	else if (curCol == totalCol && 0 < curRow && curRow < totalRow)//右边
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = point_right.x;
+		rect.height = grayImg.rows;
+	}
+
+	else if (curRow == 0 && 0 < curCol && curCol < totalCol)//上边
+	{
+		rect.x = 0;
+		rect.y = point_right.y;
+		rect.width = grayImg.cols;
+		rect.height = grayImg.rows - point_right.y;
+	}
+
+	else if (curRow == totalRow && 0 < curCol && curCol < totalCol)//下边
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = grayImg.cols;
+		rect.height = point_left.y;
+	}
+	else if (0 < curCol && curCol < totalCol && 0 < curRow && curRow < totalRow)//中央
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = grayImg.cols;
+		rect.height = grayImg.rows;
+	}
+
+	int longSize = std::max(rect.width, rect.height);
+	int blockSize = longSize / 4 * 2 + 1;
+	cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
+	return res;
 }
 
 bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches) {
