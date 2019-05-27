@@ -9,6 +9,7 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	ui.setupUi(this);
 
 	//成员变量的初始化
+	NumberValidator = Q_NULLPTR;
 	errorCode = ErrorCode::Default;
 	adminConfig = Q_NULLPTR; //系统参数
 	runtimeParams = Q_NULLPTR; //运行时的临时参数
@@ -19,10 +20,10 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	gridColIdx = -1; //当前分图所在列
 	graphicsScenePos.setX(0);//场景左上角坐标
 	graphicsScenePos.setY(0);
-	roiRect_tl.setX(0);//roi左上角
-	roiRect_tl.setY(0);
-	roiRect_br.setX(0);//roi右下角
-	roiRect_br.setY(0);
+	ocrRoi_tl.setX(-1);//roi左上角
+	ocrRoi_tl.setY(-1);
+	ocrRoi_br.setX(-1);//roi右下角
+	ocrRoi_br.setY(-1);
 	imageScalingRatio = 0;//图像缩放比例
 	ocrHandle = Q_NULLPTR;
 }
@@ -39,12 +40,16 @@ void SerialNumberUI::init()
 	ui.graphicsView->setScene(&graphicsScene);
 
 	//限制参数的输入范围
-	QIntValidator intValidator;
-	ui.lineEdit_roi_tl_x->setValidator(&intValidator);
-	ui.lineEdit_roi_tl_y->setValidator(&intValidator);
-	ui.lineEdit_roi_br_x->setValidator(&intValidator);
-	ui.lineEdit_roi_br_y->setValidator(&intValidator);
-	ui.lineEdit_serialNum->setValidator(&intValidator);
+	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
+	ui.lineEdit_maskRoi_tl_x->setValidator(NumberValidator); //掩膜
+	ui.lineEdit_maskRoi_tl_y->setValidator(NumberValidator);
+	ui.lineEdit_maskRoi_br_x->setValidator(NumberValidator);
+	ui.lineEdit_maskRoi_br_y->setValidator(NumberValidator);
+	ui.lineEdit_ocrRoi_tl_x->setValidator(NumberValidator); //OCR
+	ui.lineEdit_ocrRoi_tl_y->setValidator(NumberValidator);
+	ui.lineEdit_ocrRoi_br_x->setValidator(NumberValidator);
+	ui.lineEdit_ocrRoi_br_y->setValidator(NumberValidator);
+	ui.lineEdit_serialNum->setValidator(NumberValidator);
 
 	//初始化CheckBox
 	this->initCheckBoxGroup();
@@ -65,13 +70,22 @@ void SerialNumberUI::init()
 		showMessageBox(this, InitFailed); return;
 		//die("Error initialising tesseract\n");
 	}
+
+	//设置掩膜区域的坐标初始值
+	runtimeParams->maskRoi_tl.setX(-1);
+	runtimeParams->maskRoi_tl.setY(-1);
+	runtimeParams->maskRoi_br.setX(-1);
+	runtimeParams->maskRoi_br.setY(-1);
 }
 
 SerialNumberUI::~SerialNumberUI()
 {
 	qDebug() << "~SerialNumberUI";
+	delete NumberValidator;
+	NumberValidator = Q_NULLPTR;
 	deleteImageItem();
 }
+
 
 
 /*************** 界面的初始化、设置、更新 **************/
@@ -81,17 +95,24 @@ void SerialNumberUI::initCheckBoxGroup()
 {
 	QPushButton button;
 	checkBoxGroup.addButton(&button);
-	checkBoxGroup.addButton(ui.checkBox_roi_tl, 1);
-	checkBoxGroup.addButton(ui.checkBox_roi_br, 2);
+	checkBoxGroup.addButton(ui.checkBox_maskRoi_tl, 1);
+	checkBoxGroup.addButton(ui.checkBox_maskRoi_br, 2);
+	checkBoxGroup.addButton(ui.checkBox_ocrRoi_tl, 3);
+	checkBoxGroup.addButton(ui.checkBox_ocrRoi_br, 4);
 }
 
 //切换界面控件的状态
 void SerialNumberUI::setSerialNumberUIEnabled(bool enable)
 {
-	ui.lineEdit_roi_tl_x->setEnabled(enable);
-	ui.lineEdit_roi_tl_y->setEnabled(enable);
-	ui.lineEdit_roi_br_x->setEnabled(enable);
-	ui.lineEdit_roi_br_y->setEnabled(enable);
+	ui.lineEdit_maskRoi_tl_x->setEnabled(enable);
+	ui.lineEdit_maskRoi_tl_y->setEnabled(enable);
+	ui.lineEdit_maskRoi_br_x->setEnabled(enable);
+	ui.lineEdit_maskRoi_br_y->setEnabled(enable);
+
+	ui.lineEdit_ocrRoi_tl_x->setEnabled(enable);
+	ui.lineEdit_ocrRoi_tl_y->setEnabled(enable);
+	ui.lineEdit_ocrRoi_br_x->setEnabled(enable);
+	ui.lineEdit_ocrRoi_br_y->setEnabled(enable);
 	ui.lineEdit_serialNum->setEnabled(enable); //序号输入框
 	this->setPushButtonsEnabled(enable); //按键设置
 }
@@ -99,7 +120,8 @@ void SerialNumberUI::setSerialNumberUIEnabled(bool enable)
 //按键设置
 void SerialNumberUI::setPushButtonsEnabled(bool enable)
 {
-	ui.pushButton_getROI->setEnabled(enable); //确认区域
+	ui.pushButton_getMaskRoi->setEnabled(enable); //确认Mask区域
+	ui.pushButton_getOcrRoi->setEnabled(enable); //确认COR区域
 	ui.pushButton_recognize->setEnabled(enable); //识别
 	ui.pushButton_confirm->setEnabled(enable); //确定并返回
 	ui.pushButton_return->setEnabled(enable); //返回
@@ -108,9 +130,10 @@ void SerialNumberUI::setPushButtonsEnabled(bool enable)
 //重置序号识别界面
 void SerialNumberUI::reset()
 {
-	ui.checkBox_roi_tl->setChecked(true);
-	ui.checkBox_roi_tl->setChecked(false);
-	ui.checkBox_roi_br->setChecked(false);
+	ui.checkBox_maskRoi_tl->setChecked(false);
+	ui.checkBox_maskRoi_br->setChecked(false);
+	ui.checkBox_ocrRoi_tl->setChecked(false);
+	ui.checkBox_ocrRoi_br->setChecked(false);
 	ui.lineEdit_serialNum->setText("");
 
 	//删除图元
@@ -124,25 +147,66 @@ void SerialNumberUI::reset()
 	if (file.exists()) QFile::remove(roiFilePath);
 }
 
-/******************* 按键响应 *******************/
 
-//获取包含产品序号的ROI区域
-void SerialNumberUI::on_pushButton_getROI_clicked()
+
+/*************** 获取掩膜区域的坐标 **************/
+
+void SerialNumberUI::on_pushButton_getMaskRoi_clicked()
 {
 	if (runtimeParams->DeveloperMode) return;
 
-	ui.checkBox_roi_tl->setChecked(false);
-	ui.checkBox_roi_br->setChecked(false);
+	ui.checkBox_maskRoi_tl->setChecked(false);
+	ui.checkBox_maskRoi_br->setChecked(false);
+	this->setSerialNumberUIEnabled(false);
+
+	int ImageSize_W = adminConfig->ImageSize_W;
+	int ImageSize_H = adminConfig->ImageSize_H;
+
+	//获取掩膜区域的坐标 - 左上角
+	int tl_x = ui.lineEdit_maskRoi_tl_x->text().toInt();
+	tl_x = (int) intervalCensored(tl_x, 0, ImageSize_W - 1);
+
+	int tl_y = ui.lineEdit_maskRoi_tl_y->text().toInt();
+	tl_y = (int) intervalCensored(tl_y, 0, ImageSize_H - 1);
+
+	//获取掩膜区域的坐标 - 右下角
+	int br_x = ui.lineEdit_maskRoi_br_x->text().toInt();
+	br_x = (int) intervalCensored(br_x, 0, ImageSize_W - 1);
+
+	int br_y = ui.lineEdit_maskRoi_br_y->text().toInt();
+	br_y = (int) intervalCensored(br_y, 0, ImageSize_H - 1);
+
+	//将区域坐标存入运行参数类
+	runtimeParams->maskRoi_tl.setX(tl_x);
+	runtimeParams->maskRoi_tl.setY(tl_y);
+	runtimeParams->maskRoi_br.setX(br_x);
+	runtimeParams->maskRoi_br.setY(br_y);
+
+	this->setSerialNumberUIEnabled(true);
+}
+
+
+
+/******************* 按键响应 *******************/
+
+//获取包含产品序号的ROI区域
+void SerialNumberUI::on_pushButton_getOcrRoi_clicked()
+{
+	if (runtimeParams->DeveloperMode) return;
+
+	ui.checkBox_ocrRoi_tl->setChecked(false);
+	ui.checkBox_ocrRoi_br->setChecked(false);
 	this->setSerialNumberUIEnabled(false);
 
 	//计算区域范围
-	cv::Point tl(roiRect_tl.x(), roiRect_tl.y());
-	cv::Point br(roiRect_br.x(), roiRect_br.y());
+	cv::Point tl(ocrRoi_tl.x(), ocrRoi_tl.y());
+	cv::Point br(ocrRoi_br.x(), ocrRoi_br.y());
 	cv::Rect roiRect = cv::Rect(tl, br);
 	if (roiRect.width >= adminConfig->ImageSize_W || 
 		roiRect.height >= adminConfig->ImageSize_H) 
 	{
-		showMessageBox(this, Invalid_RoiRect); return;
+		showMessageBox(this, Invalid_RoiRect); 
+		this->setSerialNumberUIEnabled(true); return;
 	}
 
 	//保存区域图片
@@ -285,25 +349,55 @@ void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 {
 	if (runtimeParams->DeveloperMode) return;
 
-	//鼠标左键单击获取左上角点
-	if (event->button() == Qt::LeftButton && ui.checkBox_roi_tl->isChecked()) { 
+	//鼠标左键单击获取ROI区域 - 左上角点 - 掩膜
+	if (event->button() == Qt::LeftButton && ui.checkBox_maskRoi_tl->isChecked()) {
 		if (!graphicsViewRect.contains(event->pos())) return; //区域判断
 		QPointF relativePos = event->pos() - graphicsViewRect.topLeft();//相对于视图的坐标
 		relativePos -= graphicsScenePos; //相对于场景的坐标
-		roiRect_tl = relativePos / imageScalingRatio; //坐标转换
-		ui.lineEdit_roi_tl_x->setText(QString::number((int)roiRect_tl.x()));//更新界面
-		ui.lineEdit_roi_tl_y->setText(QString::number((int)roiRect_tl.y()));
+		maskRoi_tl = relativePos / imageScalingRatio; //坐标转换
+		maskRoi_tl.setX(intervalCensored(maskRoi_tl.x(), 0, adminConfig->ImageSize_W - 1));
+		maskRoi_tl.setY(intervalCensored(maskRoi_tl.y(), 0, adminConfig->ImageSize_H - 1));
+		ui.lineEdit_maskRoi_tl_x->setText(QString::number((int)maskRoi_tl.x()));//更新界面
+		ui.lineEdit_maskRoi_tl_y->setText(QString::number((int)maskRoi_tl.y()));
+		return;
+	}
+
+	//鼠标左键单击获取右下角点 - 掩膜
+	if (event->button() == Qt::LeftButton && ui.checkBox_maskRoi_br->isChecked()) {
+		if (!graphicsViewRect.contains(event->pos())) return; //区域判断
+		QPointF relativePos = event->pos() - graphicsViewRect.topLeft();//相对于视图的坐标
+		relativePos -= graphicsScenePos; //相对于场景的坐标
+		maskRoi_br = relativePos / imageScalingRatio; //坐标转换
+		maskRoi_br.setX(intervalCensored(maskRoi_br.x(), 0, adminConfig->ImageSize_W - 1));
+		maskRoi_br.setY(intervalCensored(maskRoi_br.y(), 0, adminConfig->ImageSize_H - 1));
+		ui.lineEdit_maskRoi_br_x->setText(QString::number((int)maskRoi_br.x()));//更新界面
+		ui.lineEdit_maskRoi_br_y->setText(QString::number((int)maskRoi_br.y()));
+		return;
+	}
+
+	//鼠标左键单击获取左上角点 - OCR
+	if (event->button() == Qt::LeftButton && ui.checkBox_ocrRoi_tl->isChecked()) { 
+		if (!graphicsViewRect.contains(event->pos())) return; //区域判断
+		QPointF relativePos = event->pos() - graphicsViewRect.topLeft();//相对于视图的坐标
+		relativePos -= graphicsScenePos; //相对于场景的坐标
+		ocrRoi_tl = relativePos / imageScalingRatio; //坐标转换
+		ocrRoi_tl.setX(intervalCensored(ocrRoi_tl.x(), 0, adminConfig->ImageSize_W - 1));
+		ocrRoi_tl.setY(intervalCensored(ocrRoi_tl.y(), 0, adminConfig->ImageSize_H - 1));
+		ui.lineEdit_ocrRoi_tl_x->setText(QString::number((int)ocrRoi_tl.x()));//更新界面
+		ui.lineEdit_ocrRoi_tl_y->setText(QString::number((int)ocrRoi_tl.y()));
 		return;
 	}
 	
-	//鼠标左键单击获取右下角点
-	if(ui.checkBox_roi_br->isChecked()) { 
+	//鼠标左键单击获取右下角点 - OCR
+	if(ui.checkBox_ocrRoi_br->isChecked()) { 
 		if (!graphicsViewRect.contains(event->pos())) return; //区域判断
 		QPointF relativePos = event->pos() - graphicsViewRect.topLeft();//相对于视图的坐标
 		relativePos -= graphicsScenePos; //相对于场景的坐标
-		roiRect_br = relativePos / imageScalingRatio; //坐标转换
-		ui.lineEdit_roi_br_x->setText(QString::number((int)roiRect_br.x()));//更新界面
-		ui.lineEdit_roi_br_y->setText(QString::number((int)roiRect_br.y()));
+		ocrRoi_br = relativePos / imageScalingRatio; //坐标转换
+		ocrRoi_br.setX(intervalCensored(ocrRoi_br.x(), 0, adminConfig->ImageSize_W - 1));
+		ocrRoi_br.setY(intervalCensored(ocrRoi_br.y(), 0, adminConfig->ImageSize_H - 1));
+		ui.lineEdit_ocrRoi_br_x->setText(QString::number((int)ocrRoi_br.x()));//更新界面
+		ui.lineEdit_ocrRoi_br_y->setText(QString::number((int)ocrRoi_br.y()));
 		return;
 	}
 
@@ -320,6 +414,16 @@ void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 		mouseReleasePos = event->pos();
 	}
 }
+
+//对数字进行区间截断
+double SerialNumberUI::intervalCensored(double num, double minVal, double maxVal)
+{
+	double tmpVal = num;
+	if (tmpVal < minVal) tmpVal = minVal;
+	if (tmpVal > maxVal) tmpVal = maxVal;
+	return tmpVal;
+}
+
 
 //鼠标移动事件 - 暂时没用
 void SerialNumberUI::mouseMoveEvent(QMouseEvent *event)
