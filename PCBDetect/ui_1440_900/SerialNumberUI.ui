@@ -18,16 +18,16 @@
     <rect>
      <x>0</x>
      <y>40</y>
-     <width>1101</width>
+     <width>1141</width>
      <height>861</height>
     </rect>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_roi_tl_x">
+  <widget class="QLineEdit" name="lineEdit_ocrRoi_tl_x">
    <property name="geometry">
     <rect>
-     <x>1250</x>
-     <y>180</y>
+     <x>1270</x>
+     <y>410</y>
      <width>65</width>
      <height>35</height>
     </rect>
@@ -37,6 +37,9 @@
      <pointsize>16</pointsize>
     </font>
    </property>
+   <property name="text">
+    <string/>
+   </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
    </property>
@@ -44,8 +47,8 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>1180</x>
-     <y>100</y>
+     <x>1190</x>
+     <y>350</y>
      <width>181</width>
      <height>35</height>
     </rect>
@@ -64,11 +67,11 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_roi_tl_y">
+  <widget class="QLineEdit" name="lineEdit_ocrRoi_tl_y">
    <property name="geometry">
     <rect>
-     <x>1350</x>
-     <y>180</y>
+     <x>1360</x>
+     <y>410</y>
      <width>65</width>
      <height>35</height>
     </rect>
@@ -85,8 +88,8 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>1140</x>
-     <y>180</y>
+     <x>1170</x>
+     <y>410</y>
      <width>71</width>
      <height>35</height>
     </rect>
@@ -103,8 +106,8 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>1140</x>
-     <y>220</y>
+     <x>1170</x>
+     <y>450</y>
      <width>71</width>
      <height>35</height>
     </rect>
@@ -118,11 +121,11 @@
     <string>右下角</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_roi_br_x">
+  <widget class="QLineEdit" name="lineEdit_ocrRoi_br_x">
    <property name="geometry">
     <rect>
-     <x>1250</x>
-     <y>220</y>
+     <x>1270</x>
+     <y>450</y>
      <width>65</width>
      <height>35</height>
     </rect>
@@ -139,11 +142,11 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_roi_br_y">
+  <widget class="QLineEdit" name="lineEdit_ocrRoi_br_y">
    <property name="geometry">
     <rect>
-     <x>1350</x>
-     <y>220</y>
+     <x>1360</x>
+     <y>450</y>
      <width>65</width>
      <height>35</height>
     </rect>
@@ -160,9 +163,9 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>1220</x>
-     <y>180</y>
-     <width>30</width>
+     <x>1250</x>
+     <y>410</y>
+     <width>20</width>
      <height>35</height>
     </rect>
    </property>
@@ -181,9 +184,9 @@
   <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
-     <x>1320</x>
-     <y>180</y>
-     <width>30</width>
+     <x>1340</x>
+     <y>410</y>
+     <width>20</width>
      <height>35</height>
     </rect>
    </property>
@@ -202,9 +205,9 @@
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>1220</x>
-     <y>220</y>
-     <width>30</width>
+     <x>1250</x>
+     <y>450</y>
+     <width>20</width>
      <height>35</height>
     </rect>
    </property>
@@ -223,9 +226,9 @@
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
-     <x>1320</x>
-     <y>220</y>
-     <width>30</width>
+     <x>1340</x>
+     <y>450</y>
+     <width>20</width>
      <height>35</height>
     </rect>
    </property>
@@ -241,11 +244,11 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_getROI">
+  <widget class="QPushButton" name="pushButton_getOcrRoi">
    <property name="geometry">
     <rect>
-     <x>1140</x>
-     <y>300</y>
+     <x>1150</x>
+     <y>510</y>
      <width>121</width>
      <height>40</height>
     </rect>
@@ -262,9 +265,9 @@
   <widget class="Line" name="line_2">
    <property name="geometry">
     <rect>
-     <x>1120</x>
-     <y>420</y>
-     <width>301</width>
+     <x>1150</x>
+     <y>600</y>
+     <width>281</width>
      <height>20</height>
     </rect>
    </property>
@@ -275,8 +278,8 @@
   <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>1190</x>
-     <y>470</y>
+     <x>1200</x>
+     <y>630</y>
      <width>131</width>
      <height>35</height>
     </rect>
@@ -298,9 +301,9 @@
   <widget class="QLineEdit" name="lineEdit_serialNum">
    <property name="geometry">
     <rect>
-     <x>1130</x>
-     <y>530</y>
-     <width>201</width>
+     <x>1150</x>
+     <y>690</y>
+     <width>195</width>
      <height>40</height>
     </rect>
    </property>
@@ -316,8 +319,8 @@
   <widget class="QPushButton" name="pushButton_recognize">
    <property name="geometry">
     <rect>
-     <x>1290</x>
-     <y>300</y>
+     <x>1300</x>
+     <y>510</y>
      <width>121</width>
      <height>40</height>
     </rect>
@@ -334,8 +337,8 @@
   <widget class="QPushButton" name="pushButton_return">
    <property name="geometry">
     <rect>
-     <x>1200</x>
-     <y>710</y>
+     <x>1230</x>
+     <y>820</y>
      <width>121</width>
      <height>40</height>
     </rect>
@@ -352,9 +355,9 @@
   <widget class="Line" name="line_3">
    <property name="geometry">
     <rect>
-     <x>1120</x>
-     <y>660</y>
-     <width>301</width>
+     <x>1150</x>
+     <y>780</y>
+     <width>281</width>
      <height>20</height>
     </rect>
    </property>
@@ -434,8 +437,8 @@
   <widget class="QPushButton" name="pushButton_confirm">
    <property name="geometry">
     <rect>
-     <x>1340</x>
-     <y>530</y>
+     <x>1350</x>
+     <y>690</y>
      <width>81</width>
      <height>40</height>
     </rect>
@@ -449,10 +452,98 @@
     <string>确定</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_roi_tl">
+  <widget class="QCheckBox" name="checkBox_ocrRoi_tl">
    <property name="geometry">
     <rect>
-     <x>1120</x>
+     <x>1150</x>
+     <y>420</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_ocrRoi_br">
+   <property name="geometry">
+    <rect>
+     <x>1150</x>
+     <y>460</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_maskRoi_tl_x">
+   <property name="geometry">
+    <rect>
+     <x>1270</x>
+     <y>140</y>
+     <width>65</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>1190</x>
+     <y>80</y>
+     <width>181</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>模板区域坐标</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>1340</x>
+     <y>180</y>
+     <width>20</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Y</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_maskRoi_br">
+   <property name="geometry">
+    <rect>
+     <x>1150</x>
      <y>190</y>
      <width>16</width>
      <height>16</height>
@@ -462,11 +553,120 @@
     <string/>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_roi_br">
+  <widget class="QLabel" name="label_12">
    <property name="geometry">
     <rect>
-     <x>1120</x>
-     <y>230</y>
+     <x>1250</x>
+     <y>140</y>
+     <width>20</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>X</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_13">
+   <property name="geometry">
+    <rect>
+     <x>1170</x>
+     <y>180</y>
+     <width>71</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>18</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>右下角</string>
+   </property>
+  </widget>
+  <widget class="Line" name="line_5">
+   <property name="geometry">
+    <rect>
+     <x>1150</x>
+     <y>320</y>
+     <width>281</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_14">
+   <property name="geometry">
+    <rect>
+     <x>1170</x>
+     <y>140</y>
+     <width>71</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>18</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>左上角</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_getMaskRoi">
+   <property name="geometry">
+    <rect>
+     <x>1220</x>
+     <y>240</y>
+     <width>121</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>18</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>确认区域</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_15">
+   <property name="geometry">
+    <rect>
+     <x>1250</x>
+     <y>180</y>
+     <width>20</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>X</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox_maskRoi_tl">
+   <property name="geometry">
+    <rect>
+     <x>1150</x>
+     <y>150</y>
      <width>16</width>
      <height>16</height>
     </rect>
@@ -475,20 +675,98 @@
     <string/>
    </property>
   </widget>
+  <widget class="QLineEdit" name="lineEdit_maskRoi_br_y">
+   <property name="geometry">
+    <rect>
+     <x>1360</x>
+     <y>180</y>
+     <width>65</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_maskRoi_tl_y">
+   <property name="geometry">
+    <rect>
+     <x>1360</x>
+     <y>140</y>
+     <width>65</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_16">
+   <property name="geometry">
+    <rect>
+     <x>1340</x>
+     <y>140</y>
+     <width>20</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Y</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_maskRoi_br_x">
+   <property name="geometry">
+    <rect>
+     <x>1270</x>
+     <y>180</y>
+     <width>65</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
   <zorder>label_10</zorder>
   <zorder>graphicsView</zorder>
-  <zorder>lineEdit_roi_tl_x</zorder>
+  <zorder>lineEdit_ocrRoi_tl_x</zorder>
   <zorder>label</zorder>
-  <zorder>lineEdit_roi_tl_y</zorder>
+  <zorder>lineEdit_ocrRoi_tl_y</zorder>
   <zorder>label_3</zorder>
   <zorder>label_4</zorder>
-  <zorder>lineEdit_roi_br_x</zorder>
-  <zorder>lineEdit_roi_br_y</zorder>
+  <zorder>lineEdit_ocrRoi_br_x</zorder>
+  <zorder>lineEdit_ocrRoi_br_y</zorder>
   <zorder>label_5</zorder>
   <zorder>label_6</zorder>
   <zorder>label_7</zorder>
   <zorder>label_8</zorder>
-  <zorder>pushButton_getROI</zorder>
+  <zorder>pushButton_getOcrRoi</zorder>
   <zorder>line_2</zorder>
   <zorder>label_9</zorder>
   <zorder>lineEdit_serialNum</zorder>
@@ -498,8 +776,23 @@
   <zorder>line_4</zorder>
   <zorder>label_title</zorder>
   <zorder>pushButton_confirm</zorder>
-  <zorder>checkBox_roi_tl</zorder>
-  <zorder>checkBox_roi_br</zorder>
+  <zorder>checkBox_ocrRoi_tl</zorder>
+  <zorder>checkBox_ocrRoi_br</zorder>
+  <zorder>lineEdit_maskRoi_tl_x</zorder>
+  <zorder>label_2</zorder>
+  <zorder>label_11</zorder>
+  <zorder>checkBox_maskRoi_br</zorder>
+  <zorder>label_12</zorder>
+  <zorder>label_13</zorder>
+  <zorder>line_5</zorder>
+  <zorder>label_14</zorder>
+  <zorder>pushButton_getMaskRoi</zorder>
+  <zorder>label_15</zorder>
+  <zorder>checkBox_maskRoi_tl</zorder>
+  <zorder>lineEdit_maskRoi_br_y</zorder>
+  <zorder>lineEdit_maskRoi_tl_y</zorder>
+  <zorder>label_16</zorder>
+  <zorder>lineEdit_maskRoi_br_x</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
