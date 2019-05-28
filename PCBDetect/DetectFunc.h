@@ -53,7 +53,20 @@ public:
 
 	cv::Mat myThresh(int curCol, int CurRow, const cv::Mat& grayImg, cv::Point point_left, cv::Point point_right);
 	//Mat myThresh(int curCol, int curRow, const Mat & grayImg, cv::Point point_left, cv::Point point_right);
-
+	cv::Point get_bl() {
+		return bl;
+	}
+	cv::Point get_tr() {
+		return tr;
+	}
+	void set_bl(cv::Point pt) {
+		bl = pt;
+	}
+	void set_tr(cv::Point pt) {
+		tr = pt;
+	}
 private:
+	cv::Point bl;
+	cv::Point tr;
 
 };
