@@ -1726,7 +1726,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>770</x>
@@ -1799,7 +1799,7 @@
        </font>
       </property>
       <property name="text">
-       <string>归零</string>
+       <string>重置</string>
       </property>
      </widget>
     </item>
@@ -1839,6 +1839,7 @@
     </item>
    </layout>
   </widget>
+  <zorder>layoutWidget</zorder>
   <zorder>label_3</zorder>
   <zorder>label_title</zorder>
   <zorder>line</zorder>
@@ -1857,9 +1858,6 @@
   <zorder>layoutWidget_12</zorder>
   <zorder>line_4</zorder>
   <zorder>label_roiHeight_L_16</zorder>
-  <zorder>pushButton_toZero_motion</zorder>
-  <zorder>label_roiHeight_L_17</zorder>
-  <zorder>horizontalSpacer_12</zorder>
   <zorder>label_roiHeight_L_18</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

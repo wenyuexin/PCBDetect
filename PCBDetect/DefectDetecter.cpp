@@ -55,7 +55,6 @@ void DefectDetecter::initDetectFunc()
 
 void DefectDetecter::detect()
 {
-
 	detectState = DetectState::Start;
 	emit updateDetectState_detecter(detectState);
 	double t1 = clock();
@@ -70,6 +69,16 @@ void DefectDetecter::detect()
 	//检测对应的输出目录是否存在
 	vector<QString> subFolders { "fullImage" };
 	if (currentRow_detect == 0) makeCurrentOutputDir(subFolders);
+
+	//读取掩膜区域坐标值
+	QString cornerPointsPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/cornerPoints.bin";
+	cv::FileStorage store_new(cornerPointsPath.toStdString(), cv::FileStorage::READ);
+	cv::FileNode n1 = store_new["cornerPoints"];
+	vector<cv::Point2i>  res;
+	cv::read(n1, res);
+	detectFunc->set_bl(res[0]);
+	detectFunc->set_tr(res[1]);
+	store_new.release();
 
 	//开始检测
 	for (int i = 0; i < (*cvmatSamples)[currentRow_detect].size(); i++) {
@@ -142,13 +151,8 @@ void DefectDetecter::detect()
 			//int meanSampGrayDown = mean(samp_gray(downRect), mask_roi(downRect))[0];
 			//cv::threshold(samp_gray(downRect), sampBw(downRect), meanSampGrayDown, 255, cv::THRESH_BINARY_INV);
 			//局部自适应二值化
-			string cornerPointsPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/mask/cornerPoints.bin";
-			cv::FileStorage store_new(cornerPointsPath, cv::FileStorage::READ);
-			cv::FileNode n1 = store_new["cornerPoints"];
-			vector<cv::Point2i>  res;
-			cv::read(n1, res);
-			cv::Point bl(res[0]);
-			cv::Point tr(res[1]);
+			cv::Point bl(detectFunc->get_bl());
+			cv::Point tr(detectFunc->get_tr());
 
 			sampBw = detectFunc->myThresh(curCol, curRow, samp_gray, bl, tr);
 
