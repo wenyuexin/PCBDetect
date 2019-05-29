@@ -99,9 +99,9 @@ private Q_SLOTS:
 	void do_updateDetectState_detecter(int state);
 	void on_detectFinished_detectThread(bool qualified);
 
-	void on_resetControlerFinished_motion(int);
-	void on_moveToInitialPosFinished_motion();
-	void on_moveForwardFinished_motion();
+	void on_motionResetFinished_motion(int);
+	void on_moveToInitialPosFinished_motion(int);
+	void on_moveForwardFinished_motion(int);
 
 	void on_initCamerasFinished_camera(int);
 	void on_takePhotosFinished_camera(int);

@@ -29,7 +29,7 @@ public:
 
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setTemplateExtractor(TemplateExtractor *ptr) { templExtractor = ptr; }
-	void initTemplateExtractor();
+	void init();
 
 protected:
 	void run();

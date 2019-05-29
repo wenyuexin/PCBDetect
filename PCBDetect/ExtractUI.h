@@ -82,9 +82,9 @@ private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
 	void update_extractState_extractor(int state);
 
-	void on_moveForwardFinished_motion();//前进结束
-	void on_resetControlerFinished_motion();//复位结束
 	void on_moveToInitialPosFinished_motion();//到达初始拍照位置
+	void on_moveForwardFinished_motion();//前进结束
+	void on_motionResetFinished_motion();//复位结束
 
 	void on_initCamerasFinished_camera(int);//相机初始化结束
 	void on_takePhotosFinished_camera(int);//拍照结束

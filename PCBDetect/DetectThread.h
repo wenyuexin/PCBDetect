@@ -31,7 +31,7 @@ public:
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 	inline void setDefectDetecter(DefectDetecter* ptr) { defectDetecter = ptr; }
-	void initDefectDetecter();
+	void init();
 
 protected:
 	void run();
