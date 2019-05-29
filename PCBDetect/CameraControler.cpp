@@ -276,7 +276,7 @@ void CameraControler::takePhotos2()
 		//CameraSnapToBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一整图
 
 		//申请一个buffer，用来将获得的原始数据转换为RGB数据，并同时获得图像处理效果
-		counter = 5;
+		counter = 10;
 		while (counter > 0) {
 			pRgbBuffer = (unsigned char *)CameraAlignMalloc(FrameInfo.iWidth*FrameInfo.iHeight * 3, 16);
 			if (pRgbBuffer != NULL) break;

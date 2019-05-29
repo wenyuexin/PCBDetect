@@ -48,7 +48,7 @@ void DetectFunc::generateBigTempl()
 	double factorW = 1.0 * runtimeParams->ScreenRect.width() / originalfullImgSize.width;
 	double factorH = 1.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
 	scalingFactor = qMin(factorW, factorH); //缩放因子
-	scalingFactor = 1;
+	//scalingFactor = 1;
 	scaledSubImageSize = Size(scalingFactor * adminConfig->ImageSize_W,
 		scalingFactor * adminConfig->ImageSize_H); //分图经过缩放后的尺寸
 
@@ -383,6 +383,7 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 		cout << "匹配获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
 
 		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
+		
 		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
 		H.at<double>(0, 2) *= matrixAdj;
 		H.at<double>(1, 2) *= matrixAdj;
@@ -677,8 +678,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		//结构相似性
 		auto msssim = getMSSIM(temp_area, samp_area);
-	/*	if (msssim[0] >= 0.85)
-			continue;*/
+		if (msssim[0] >= 0.85)
+			continue;
 
 
 		//对缺陷所在的小分图进行处理
@@ -697,8 +698,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		vector<cv::Point2i> locations;
 		cv::findNonZero(diffPart, locations);
 
-/*		if (locations.size() <= 60)
-			continue*/;
+		if (locations.size() <= 60)
+			continue;
 	
 		//保存缺陷分图，并对缺陷分类
 		int w_b = 300, h_b = 300;//缺陷分图的大小
