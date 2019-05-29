@@ -18,7 +18,7 @@ ExtractThread::~ExtractThread()
 
 
 //初始化模板提取器
-void ExtractThread::initTemplateExtractor()
+void ExtractThread::init()
 {
 	templExtractor->setAdminConfig(adminConfig);
 	templExtractor->setUserConfig(userConfig);

@@ -24,7 +24,7 @@ DetectThread::~DetectThread()
 }
 
 //³õÊ¼»¯È±ÏÝ¼ì²âÆ÷
-void DetectThread::initDefectDetecter()
+void DetectThread::init()
 {
 	defectDetecter->setAdminConfig(adminConfig);
 	defectDetecter->setUserConfig(userConfig);

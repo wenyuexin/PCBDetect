@@ -325,7 +325,7 @@ bool MotionControler::returnToZero()
 	//	}
 	//}
 
-	pcb::delay(9000);
+	pcb::delay(10000);
 
 	//归零结束
 	errorCode = ErrorCode::NoError;
@@ -393,7 +393,7 @@ bool MotionControler::motionReset()
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) {
 		errorCode = ErrorCode::MotionResetFailed;
-		emit resetControlerFinished_motion(errorCode);
+		emit motionResetFinished_motion(errorCode);
 		return false; 
 	}
 	pcb::delay(100);
@@ -405,7 +405,7 @@ bool MotionControler::motionReset()
 	int resetPos = adminConfig->MaxMotionStroke;
 	if (AMC98_start_sr_move(2, 0, resetPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
 		errorCode = ErrorCode::MotionResetFailed;
-		emit resetControlerFinished_motion(errorCode);
+		emit motionResetFinished_motion(errorCode);
 		return false;
 	}
 
@@ -424,11 +424,11 @@ bool MotionControler::motionReset()
 	//	}
 	//}
 
-	pcb::delay(11000); //复位等待
+	pcb::delay(10000); //复位等待
 
 	//复位结束
 	errorCode = ErrorCode::NoError;
-	emit resetControlerFinished_motion(errorCode);
+	emit motionResetFinished_motion(errorCode);
 	return true;
 }
 
