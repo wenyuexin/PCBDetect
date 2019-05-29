@@ -61,23 +61,23 @@ void ExtractUI::init()
 	extractThread->setRuntimeParams(runtimeParams);
 	extractThread->setSampleImages(&cvmatSamples);
 	extractThread->setTemplateExtractor(templExtractor);
-	extractThread->initTemplateExtractor();
+	extractThread->init();
 
 	//运动控制
-	connect(motionControler, SIGNAL(resetControlerFinished_motion(int)), this, SLOT(on_resetControlerFinished_motion()));
-	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()));
-	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()));
+	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()), Qt::UniqueConnection);
+	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()), Qt::UniqueConnection);
+	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion()), Qt::UniqueConnection);
 
 	//相机控制
-	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)));
-	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)));
+	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)), Qt::UniqueConnection);
+	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)), Qt::UniqueConnection);
 	
 	//转换线程
 	imgConvertThread.setCvMats(&cvmatSamples);
 	imgConvertThread.setQPixmaps(&qpixmapSamples);
 	imgConvertThread.setCurrentRow(&currentRow_show);
 	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
-	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()));
+	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()), Qt::UniqueConnection);
 }
 
 ExtractUI::~ExtractUI()
@@ -532,7 +532,6 @@ void ExtractUI::on_getMaskRoiFinished_serialNumUI()
 		return;
 	}
 
-
 	if (eventCounter >= 1 && !extractThread->isRunning() &&
 		runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false))
 	{ 
@@ -543,7 +542,7 @@ void ExtractUI::on_getMaskRoiFinished_serialNumUI()
 /******************** 运动控制 ********************/
 
 //复位结束
-void ExtractUI::on_resetControlerFinished_motion()
+void ExtractUI::on_motionResetFinished_motion()
 {
 	//复位失败
 	if (!motionControler->isReady()) { 
@@ -559,6 +558,11 @@ void ExtractUI::on_resetControlerFinished_motion()
 			+ pcb::chinese("获取产品序号"));
 		qApp->processEvents();
 		pcb::delay(10); //延迟
+
+		//启用开始键和返回键
+		if (!motionControler->isRunning()) {
+			this->setPushButtonsEnabled(true);
+		}
 	}
 }
 
@@ -669,11 +673,6 @@ void ExtractUI::on_convertFinished_convertThread()
 			qApp->processEvents();
 			motionControler->setOperation(MotionControler::MotionReset);
 			motionControler->start(); //运动结构复位
-
-			//如果此时还没开始提取，则可以点击返回按键
-			if (runtimeParams->currentRow_detect == -1) {
-				ui.pushButton_return->setEnabled(true);
-			}
 		}
 	}
 	else { //开发者模式
@@ -714,8 +713,8 @@ void ExtractUI::on_convertFinished_convertThread()
 //提取当前的一行样本图像
 void ExtractUI::extractTemplateImages()
 {
-	//禁用返回键
-	ui.pushButton_return->setEnabled(false);
+	//禁用开始键和返回键
+	this->setPushButtonsEnabled(false);
 
 	//更新提取行号
 	runtimeParams->currentRow_extract += 1;
@@ -753,7 +752,6 @@ void ExtractUI::update_extractState_extractor(int state)
 		//检查是否有未处理的事件
 		while (extractThread->isRunning()) pcb::delay(50); //等待提取线程结束
 		if (runtimeParams->currentRow_extract == runtimeParams->nPhotographing - 1) { //当前PCB提取结束
-			while (motionControler->isRunning()) pcb::delay(100); //等待运动线程结束
 			runtimeParams->currentRow_extract = -1;
 			this->setPushButtonsEnabled(true); //启用按键
 		}

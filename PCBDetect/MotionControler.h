@@ -102,7 +102,7 @@ Q_SIGNALS:
 	void UartNetGetNewData_motion();
 
 	void initControlerFinished_motion(int);
-	void resetControlerFinished_motion(int);
+	void motionResetFinished_motion(int);
 	void moveToInitialPosFinished_motion(int);
 	void returnToZeroFinished_motion(int);
 	void moveForwardFinished_motion(int);
