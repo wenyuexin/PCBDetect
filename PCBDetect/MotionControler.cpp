@@ -29,7 +29,9 @@ MotionControler::~MotionControler()
 	qDebug() << "~MotionControler";
 }
 
-//启动线程
+
+/************** 启动线程 **************/
+
 void MotionControler::run()
 {
 	switch (operation)
@@ -56,16 +58,20 @@ void MotionControler::run()
 			errorCode = ErrorCode::MoveToInitialPosFailed;
 		}
 		break;
-	case MotionControler::ResetControler: //复位
+	case MotionControler::MotionReset: //复位
+		if (!motionReset()) {
+			errorCode = ErrorCode::MotionResetFailed;
+		}
+		break;
+	case MotionControler::ResetControler:
 		if (!resetControler()) {
 			errorCode = ErrorCode::ResetControlerFailed;
 		}
-		break;
 	}
 }
 
-//获取控制器状态信息
-//portIndex 控制器编号0,1,2,3,4,
+//获取控制器状态信息 - 没有用
+//portIndex 控制器编号0,1,2,3,4
 void MotionControler::getMotionData(int portIndex)
 {
 	int *d = AMC98_GetCNCDataBuffer();
@@ -81,7 +87,7 @@ void MotionControler::getMotionData(int portIndex)
 }
 
 
-/******************* 运动控制 *********************/
+/******************* 初始化 *********************/
 
 //初始化，下载参数
 bool MotionControler::initControler()
@@ -180,8 +186,57 @@ void MotionControler::markInitFailed()
 }
 
 
+/*********** 运动至初始位置、前进 ************/
 
-//运动结构前进
+//移动到初始拍照位置
+//到位后即可调用相机执行第一行图像的拍摄
+bool MotionControler::moveToInitialPos()
+{
+	QMutexLocker locker(&mutex);
+	errorCode = ErrorCode::Unchecked;
+	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
+
+	//连接控制器 - 方式1
+	if (AMC98_Connect(NULL, 0) != 0) {
+		errorCode = ErrorCode::MoveToInitialPosFailed;
+		emit moveToInitialPosFinished_motion(errorCode);
+		return false;
+	}
+
+	//发送控制指令
+	int endingPos = runtimeParams->initialPhotoPos; //初始拍照位置
+	if (AMC98_start_sr_move(2, 0, endingPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
+		errorCode = ErrorCode::MoveToInitialPosFailed;
+		emit moveToInitialPosFinished_motion(errorCode);
+		return false;
+	}
+
+	//等待运动到位
+	//int motionTime = 0; //运动累计时间
+	//while (true) {
+	//	this->getMotionData(0);
+	//	if (motionInfo.xPos == endingPos) {
+	//		xMotionPos = motionInfo.xPos; break;
+	//	}
+	//	pcb::delay(500); //延时
+	//	motionTime += 500; //更新累计时间
+	//	if (motionTime > 30000) { //超时 30s
+	//		errorCode = ErrorCode::MoveToInitialPosFailed;
+	//		emit moveToInitialPosFinished_motion(errorCode);
+	//		return false;
+	//	}
+	//}
+
+	pcb::delay(8000);
+
+	//到达初始拍照位置
+	errorCode = ErrorCode::NoError;
+	emit moveToInitialPosFinished_motion(errorCode);
+	return true;
+}
+
+
+//前进
 bool MotionControler::moveForward()
 {
 	//QMutexLocker locker(&mutex);
@@ -229,6 +284,7 @@ bool MotionControler::moveForward()
 }
 
 
+/******************* 归零 ******************/
 
 //运动结构归零
 bool MotionControler::returnToZero()
@@ -242,6 +298,52 @@ bool MotionControler::returnToZero()
 		errorCode = ErrorCode::ReturnToZeroFailed;
 		emit returnToZeroFinished_motion(errorCode);
 		return false; 
+	}
+	pcb::delay(100);
+
+	//发送控制指令
+	int zeroPos = 0;
+	if (AMC98_Comand(1, NULL) != 0) {
+		errorCode = ErrorCode::ReturnToZeroFailed;
+		emit returnToZeroFinished_motion(errorCode);
+		return false;
+	}
+
+	//等待运动到位
+	//int motionTime = 0; //运动累计时间
+	//while (true) {
+	//	this->getMotionData(0);
+	//	if (motionInfo.xPos == zeroPos) {
+	//		xMotionPos = motionInfo.xPos; break;
+	//	}
+	//	pcb::delay(500); //延时
+	//	motionTime += 500; //更新累计时间
+	//	if (motionTime > 30000) { //超时 30s
+	//		errorCode = ErrorCode::ReturnToZeroFailed;
+	//		emit returnToZeroFinished_motion(errorCode);
+	//		return false;
+	//	}
+	//}
+
+	pcb::delay(9000);
+
+	//归零结束
+	errorCode = ErrorCode::NoError;
+	emit returnToZeroFinished_motion(errorCode);
+	return true;
+}
+
+bool MotionControler::returnToZero2()
+{
+	//QMutexLocker locker(&mutex);
+	errorCode = ErrorCode::Unchecked;
+	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
+
+	//连接控制器
+	if (AMC98_Connect(Q_NULLPTR, 0) != 0) {
+		errorCode = ErrorCode::ReturnToZeroFailed;
+		emit returnToZeroFinished_motion(errorCode);
+		return false;
 	}
 	pcb::delay(100);
 
@@ -277,57 +379,12 @@ bool MotionControler::returnToZero()
 	return true;
 }
 
-//移动到初始拍照位置
-//到位后即可调用相机执行第一行图像的拍摄
-bool MotionControler::moveToInitialPos()
-{
-	QMutexLocker locker(&mutex);
-	errorCode = ErrorCode::Unchecked;
-	//Uart_AMC98_GetNewData_v2(&CallBack_UartNetGetNewData);
-
-	//连接控制器 - 方式1
-	if (AMC98_Connect(NULL, 0) != 0) { 
-		errorCode = ErrorCode::MoveToInitialPosFailed;
-		emit moveToInitialPosFinished_motion(errorCode);
-		return false;
-	}
-
-	//发送控制指令
-	int endingPos = runtimeParams->initialPhotoPos; //初始拍照位置
-	if (AMC98_start_sr_move(2, 0, endingPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
-		errorCode = ErrorCode::MoveToInitialPosFailed;
-		emit moveToInitialPosFinished_motion(errorCode);
-		return false;
-	}
-
-	//等待运动到位
-	//int motionTime = 0; //运动累计时间
-	//while (true) {
-	//	this->getMotionData(0);
-	//	if (motionInfo.xPos == endingPos) {
-	//		xMotionPos = motionInfo.xPos; break;
-	//	}
-	//	pcb::delay(500); //延时
-	//	motionTime += 500; //更新累计时间
-	//	if (motionTime > 30000) { //超时 30s
-	//		errorCode = ErrorCode::MoveToInitialPosFailed;
-	//		emit moveToInitialPosFinished_motion(errorCode);
-	//		return false;
-	//	}
-	//}
-
-	pcb::delay(8000);
-
-	//到达初始拍照位置
-	errorCode = ErrorCode::NoError;
-	emit moveToInitialPosFinished_motion(errorCode);
-	return true;
-}
 
 
+/******************* 运动复位 ******************/
 
 //运动结构复位
-bool MotionControler::resetControler()
+bool MotionControler::motionReset()
 {
 	QMutexLocker locker(&mutex);
 	errorCode = ErrorCode::Unchecked;
@@ -335,7 +392,7 @@ bool MotionControler::resetControler()
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) {
-		errorCode = ErrorCode::ResetControlerFailed;
+		errorCode = ErrorCode::MotionResetFailed;
 		emit resetControlerFinished_motion(errorCode);
 		return false; 
 	}
@@ -347,7 +404,7 @@ bool MotionControler::resetControler()
 	//移动到合适的位置，此时可以放置新的PCB板
 	int resetPos = adminConfig->MaxMotionStroke;
 	if (AMC98_start_sr_move(2, 0, resetPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
-		errorCode = ErrorCode::ResetControlerFailed;
+		errorCode = ErrorCode::MotionResetFailed;
 		emit resetControlerFinished_motion(errorCode);
 		return false;
 	}
@@ -376,6 +433,19 @@ bool MotionControler::resetControler()
 }
 
 
+/******************* 重置控制器 ******************/
+
+bool MotionControler::resetControler()
+{
+	//重新初始化
+	if (!initControler()) return false;
+
+	//运动结构归零
+	if (!returnToZero()) return false;
+
+	return true;
+}
+
 
 /******************* 其他 ******************/
 
@@ -389,19 +459,21 @@ bool MotionControler::showMessageBox(QWidget *parent, ErrorCode code)
 	switch (tempCode)
 	{
 	case MotionControler::Unchecked:
-		warningMessage = pcb::chinese("未确认运动结构的工作状态！"); break;
+		warningMessage = pcb::chinese("未确认运动结构的工作状态！ "); break;
 	case MotionControler::InitFailed:
-		warningMessage = pcb::chinese("运动结构初始化失败！  "); break;
+		warningMessage = pcb::chinese("运动结构初始化失败！ "); break;
 	case MotionControler::MoveForwardFailed:
-		warningMessage = pcb::chinese("运动结构前进失败！    "); break;
+		warningMessage = pcb::chinese("运动前进失败！ "); break;
 	case MotionControler::ReturnToZeroFailed:
-		warningMessage = pcb::chinese("运动结构归零失败！    "); break;
+		warningMessage = pcb::chinese("运动归零失败！ "); break;
 	case MotionControler::MoveToInitialPosFailed:
-		warningMessage = pcb::chinese("运动至初始拍照位置失败！    "); break;
+		warningMessage = pcb::chinese("运动至初始拍照位置失败！ "); break;
+	case MotionControler::MotionResetFailed:
+		warningMessage = pcb::chinese("运动复位失败！ "); break;
 	case MotionControler::ResetControlerFailed:
-		warningMessage = pcb::chinese("运动结构复位失败！    "); break;
+		warningMessage = pcb::chinese("运动控制器重置失败！ "); break;
 	case MotionControler::Default:
-		warningMessage = pcb::chinese("未知错误！"); break;
+		warningMessage = pcb::chinese("未知错误！ "); break;
 	}
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),

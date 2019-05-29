@@ -26,11 +26,12 @@ public:
 	//相机的相关操作
 	enum Operation {
 		NoOperation,
-		InitControler,
-		MoveForward,
-		ReturnToZero,
-		MoveToInitialPos,
-		ResetControler
+		InitControler, //初始化
+		MoveForward, //运动前进
+		ReturnToZero, //运动归零
+		MoveToInitialPos, //运动至初始位置
+		MotionReset, //运动复位
+		ResetControler //重置控制器
 	};
 
 	//运动结构的错误代码
@@ -41,7 +42,8 @@ public:
 		MoveForwardFailed = 0x402,
 		ReturnToZeroFailed = 0x403,
 		MoveToInitialPosFailed = 0x404,
-		ResetControlerFailed = 0x405,
+		MotionResetFailed = 0x405,
+		ResetControlerFailed = 0x406,
 		Default = 0x4FF
 	};
 
@@ -77,11 +79,14 @@ public:
 	bool initControler(); //初始化
 	bool moveForward(); //前进
 	bool returnToZero(); //归零
+	bool returnToZero2(); //归零
 	bool moveToInitialPos();//移动到初始位置，到位即可拍照
-	bool resetControler(); //复位
+	bool motionReset(); //运动复位
+	bool resetControler(); //重置控制器
+
 
 	inline void setOperation(Operation op) { operation = op; }
-	inline bool isReady() { return errorCode == NoError; }
+	inline bool isReady() { return (this != Q_NULLPTR) && (errorCode == NoError); }
 	inline ErrorCode getErrorCode() { return errorCode; } //获取当前的错误代码
 	bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
