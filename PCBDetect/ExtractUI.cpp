@@ -42,6 +42,7 @@ void ExtractUI::init()
 	serialNumberUI->setRuntimeParams(runtimeParams);
 	serialNumberUI->setCvMatArray(&cvmatSamples);
 	serialNumberUI->setQPixmapArray(&qpixmapSamples);
+	serialNumberUI->setMaskRoiWidgetsVisible(true);
 	serialNumberUI->init();
 	connect(serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
 	connect(serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));

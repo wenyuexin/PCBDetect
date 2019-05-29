@@ -32,8 +32,9 @@ public:
 
 private:
 	Ui::SerialNumberUI ui;
-	QRegExpValidator *NumberValidator;
-	ErrorCode errorCode;
+	QRegExpValidator *NumberValidator; //限定于数字的正则表达式
+	bool maskRoiWidgetsIsVisible; //设置掩膜区域的相关控件是否可见
+	ErrorCode errorCode; //错误代码
 
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::RuntimeParams *runtimeParams; //运行时的临时参数
@@ -76,6 +77,7 @@ public:
 	inline void setCvMatArray(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setQPixmapArray(pcb::QPixmapArray *ptr) { qpixmapSamples = ptr; }
 	inline void setGridIndex(int row, int col) { gridRowIdx = row; gridColIdx = col; }
+	inline void setMaskRoiWidgetsVisible(bool visible) { maskRoiWidgetsIsVisible = visible; };
 
 	void showSampleImage(int row, int col);
 	void reset();
@@ -84,6 +86,7 @@ private:
 	bool isPressPosInGraphicViewRect(QPoint mousePressPos);
 	QRect getRect(const QPoint &beginPoint, const QPoint &endPoint);
 
+	void initMaskRoiWidgets();
 	void initCheckBoxGroup();
 	void setSerialNumberUIEnabled(bool);
 	void setPushButtonsEnabled(bool);
