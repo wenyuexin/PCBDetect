@@ -1,5 +1,6 @@
 #include "DefectDetecter.h"
 #include <exception>
+#include <string>
 
 using pcb::CvMatVector;
 using pcb::UserConfig;
@@ -111,7 +112,7 @@ void DefectDetecter::detect()
 		string out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//检查编号文件夹是否存在
 		if (0 != _access(out_path.c_str(), 0))
 			_mkdir(out_path.c_str());
-		string sampPath = out_path + "\\" + to_string(currentRow_detect + 1) + "_" + std::to_string(i + 1) + userConfig->ImageFormat.toStdString();
+		string sampPath = out_path + "\\" + to_string(currentRow_detect + 1) + "_" + std::to_string(i + 1) + ".bmp"; //userConfig->ImageFormat.toStdString();
 		imwrite(sampPath,samp);
 
 		double t2 = clock();
@@ -174,10 +175,10 @@ void DefectDetecter::detect()
 			//int meanTemplGray = mean(templ_gray, mask_roi)[0];
 			//cv::threshold(templ_gray, templBw, meanTemplGray, 255, cv::THRESH_BINARY_INV);
 			//分块二值化
-			int meanTemplGrayUp = mean(templ_gray(upRect), mask_roi(upRect))[0];
-			cv::threshold(templ_gray(upRect), templBw(upRect), meanTemplGrayUp, 255, cv::THRESH_BINARY_INV);
-			int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
-			cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
+			//int meanTemplGrayUp = mean(templ_gray(upRect), mask_roi(upRect))[0];
+			//cv::threshold(templ_gray(upRect), templBw(upRect), meanTemplGrayUp, 255, cv::THRESH_BINARY_INV);
+			//int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
+			//cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
 			//局部自适应二值化
 			templBw = detectFunc->myThresh(curCol, curRow, templ_gray, bl, tr);
 
@@ -204,14 +205,22 @@ void DefectDetecter::detect()
 
 			//做差
 			cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
-			Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
-
+			//Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
+			Mat diff = detectFunc->sub_process_direct(templBw, sampBw,templ_gray,samp_gray_reg, roi);
 			//调试时候的边缘处理
 			Size szDiff = diff.size();
 			Mat diff_roi = Mat::zeros(szDiff, diff.type());
 			int zoom = 50;//忽略的边缘宽度
 			diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 			bitwise_and(diff_roi, diff, diff);
+
+			string debug_path = "D:\\PCBData\\debugImg\\" + to_string(curRow) + "_" + to_string(curCol) + "_";
+			cv::imwrite(debug_path + to_string(1)+".bmp", templ_gray);
+			cv::imwrite(debug_path + to_string(2) + ".bmp", templBw);
+			cv::imwrite(debug_path + to_string(3)+".bmp", samp_gray_reg);
+			cv::imwrite(debug_path + to_string(4)+".bmp", sampBw);
+			cv::imwrite(debug_path + to_string(5)+".bmp", diff);
+
 
 			//标记缺陷
 			detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, i);

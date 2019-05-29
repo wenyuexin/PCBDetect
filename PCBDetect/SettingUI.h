@@ -80,4 +80,7 @@ private Q_SLOTS:
 	void do_showSettingUI_adminUI();
 	void do_resetDetectSystem_adminUI(int);
 	void do_checkSystemWorkingState_adminUI();
+
+	//void on_pushButton_toZero2_motion();
+	//void on_pushButton_toZero_motion();
 };
