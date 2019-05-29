@@ -56,6 +56,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	settingUI->setAdminConfig(&adminConfig);
 	settingUI->setUserConfig(&userConfig);
 	settingUI->setRuntimeParams(&runtimeParams);
+	settingUI->setMotionControler(motionControler);
 	settingUI->init();
 	connect(settingUI, SIGNAL(showDetectMainUI()), this, SLOT(do_showDetectMainUI_settingUI()));
 	connect(settingUI, SIGNAL(resetDetectSystem_settingUI(int)), this, SLOT(do_resetDetectSystem_settingUI(int)));
@@ -360,7 +361,7 @@ void PCBDetect::switchToTemplateUI()
 
 	if (!runtimeParams.DeveloperMode) {
 		//运动结构复位
-		motionControler->setOperation(MotionControler::ResetControler);
+		motionControler->setOperation(MotionControler::MotionReset);
 		motionControler->start(); //复位
 		while (motionControler->isRunning()) pcb::delay(100);
 		if (!motionControler->isReady()) {
@@ -417,7 +418,7 @@ void PCBDetect::switchToDetectUI()
 
 	if (!runtimeParams.DeveloperMode) {
 		//运动结构复位
-		motionControler->setOperation(MotionControler::ResetControler);
+		motionControler->setOperation(MotionControler::MotionReset);
 		motionControler->start();
 		while (motionControler->isRunning()) pcb::delay(100);
 		if (!motionControler->isReady()) {

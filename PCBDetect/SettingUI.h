@@ -6,6 +6,7 @@
 #include "RuntimeLib.h"
 #include "PassWordUI.h" 
 #include "AdminSettingUI.h"
+#include "MotionControler.h"
 #include <QDesktopWidget>
 #include <QRegExpValidator>
 #include <QButtonGroup>
@@ -33,17 +34,20 @@ private:
 	pcb::RuntimeParams *runtimeParams;//运行参数
 	pcb::RuntimeParams tempParams;//临时的运行参数
 
+	MotionControler *motionControler;//运动控制器
+
 	int sysResetCode; //系统重置代码
 
 public:
 	SettingUI(QWidget *parent = Q_NULLPTR);
 	~SettingUI();
-	void init();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
-
+	inline void setMotionControler(MotionControler *ptr) { motionControler = ptr; }
+	
+	void init(); //实例初始化
 	void refreshSettingUI(); //更新设置界面
 	void setPushButtonsEnabled(bool code); //按键设置
 
@@ -63,6 +67,9 @@ private Q_SLOTS:
 	void on_pushButton_OutputDirPath_clicked();
 	void on_currentIndexChanged_comPort();
 	void on_currentIndexChanged_imgFormat();
+
+	void on_pushButton_initAndReturnToZero_motion_clicked();
+	void on_pushButton_reset_motion_clicked();
 
 	void on_pushButton_confirm_clicked();
 	void on_pushButton_return_clicked();

@@ -667,7 +667,7 @@ void ExtractUI::on_convertFinished_convertThread()
 		else { //当前PCB已拍完
 			ui.label_status->setText(pcb::chinese("运动结构复位中"));
 			qApp->processEvents();
-			motionControler->setOperation(MotionControler::ResetControler);
+			motionControler->setOperation(MotionControler::MotionReset);
 			motionControler->start(); //运动结构复位
 
 			//如果此时还没开始提取，则可以点击返回按键
