@@ -656,6 +656,10 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		if (contourArea(contours[i], false) <= 60){//缺陷最小面积
 			continue;
 		}
+		double factor = (contourArea(contours[i]) * 4 * CV_PI) /
+			(pow(arcLength(contours[i], true), 2));
+		if (factor >= 0.8)
+			continue;
 		//cv::drawContours(sampGrayRegCopyZoom, contours, i, Scalar(0, 0, 255));
 		
 		Rect rectCon = boundingRect(Mat(contours[i]));
@@ -867,6 +871,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录
 		outPath += QString("%1_%2_%3_%4").arg(defectNum, 4, 10, fillChar).arg(pos_x, 5, 10, fillChar).arg(pos_y, 5, 10, fillChar).arg(defect_flag);
 		outPath += userConfig->ImageFormat; //添加图像格式的后缀
+		cv::putText(imgSeg, to_string(factor),Point(0,imgSeg.rows-1), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(0, 255, 255), 1, 8, 0);
 		imwrite(outPath.toStdString(), imgSeg); //存图
 		
 	}
