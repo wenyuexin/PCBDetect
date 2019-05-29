@@ -114,7 +114,7 @@ void SettingUI::refreshSettingUI()
 	ui.lineEdit_convexRateThresh->setText(QString::number(userConfig->convexRateThresh)); //凸起率阈值
 
 	//运动控制
-	ui.pushButton_initAndReturnToZero_motion->setEnabled(true);
+	ui.pushButton_reset_motion->setEnabled(true);
 }
 
 //设置光标的位置
