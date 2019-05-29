@@ -48,7 +48,7 @@ void DetectFunc::generateBigTempl()
 	double factorW = 1.0 * runtimeParams->ScreenRect.width() / originalfullImgSize.width;
 	double factorH = 1.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
 	scalingFactor = qMin(factorW, factorH); //缩放因子
-
+	scalingFactor = 1;
 	scaledSubImageSize = Size(scalingFactor * adminConfig->ImageSize_W,
 		scalingFactor * adminConfig->ImageSize_H); //分图经过缩放后的尺寸
 
@@ -234,6 +234,83 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	return res;
 }
 
+cv::Rect DetectFunc::getRect(int curCol, int curRow, const cv::Mat& grayImg, cv::Point point_left, cv::Point point_right)
+{
+	int totalCol = runtimeParams->nCamera - 1;//从0开始
+	int totalRow = runtimeParams->nPhotographing - 1;
+	Mat res = Mat::zeros(grayImg.size(), CV_8UC1);
+	Rect rect;//roi区域
+	if (curCol == 0 && curRow == 0)//左上
+	{
+		rect.x = point_left.x;
+		rect.y = point_right.y;
+		rect.width = grayImg.cols - point_left.x;
+		rect.height = grayImg.rows - point_right.y;
+
+	}
+	else if (curCol == 0 && curRow == totalRow)//左下
+	{
+		rect.x = point_left.x;
+		rect.y = 0;
+		rect.width = grayImg.cols - point_left.x;
+		rect.height = point_left.y;
+	}
+
+	else if (curCol == totalCol && curRow == 0)//右上
+	{
+		rect.x = 0;
+		rect.y = point_right.y;
+		rect.width = point_right.x;
+		rect.height = grayImg.rows - point_right.y;
+	}
+	else if (curCol == totalCol && curRow == totalRow)//右下
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = point_right.x;
+		rect.height = point_left.y;
+	}
+	else if (curCol == 0 && 0 < curRow && curRow < totalRow)//左边
+	{
+		rect.x = point_left.x;
+		rect.y = 0;
+		rect.width = grayImg.cols - point_left.x;
+		rect.height = grayImg.rows;
+	}
+
+	else if (curCol == totalCol && 0 < curRow && curRow < totalRow)//右边
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = point_right.x;
+		rect.height = grayImg.rows;
+	}
+
+	else if (curRow == 0 && 0 < curCol && curCol < totalCol)//上边
+	{
+		rect.x = 0;
+		rect.y = point_right.y;
+		rect.width = grayImg.cols;
+		rect.height = grayImg.rows - point_right.y;
+	}
+
+	else if (curRow == totalRow && 0 < curCol && curCol < totalCol)//下边
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = grayImg.cols;
+		rect.height = point_left.y;
+	}
+	else if (0 < curCol && curCol < totalCol && 0 < curRow && curRow < totalRow)//中央
+	{
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = grayImg.cols;
+		rect.height = grayImg.rows;
+	}
+	return rect;
+}
+
 bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches) {
 	//Ptr<SURF> detector = SURF::create(3500, 3, 3, true, true);
 	Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
@@ -322,6 +399,36 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
 	Mat imgFlaw;
 	cv::absdiff(templBw, sampBw, imgFlaw);
+	bitwise_and(imgFlaw, mask_roi, imgFlaw);
+
+	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
+	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
+
+	////膨胀模板边缘，与形态学处理后的图片相乘，获取边界上的点消除
+	cv::Mat edges;
+	cv::Canny(templBw, edges, 150, 50);
+	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	cv::dilate(edges, edges, element_b);
+	edges = 255 - edges;
+	cv::bitwise_and(edges, imgFlaw, imgFlaw);
+
+
+	//再进行一次形态学处理
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
+
+
+	return imgFlaw;
+}
+
+cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::Mat & templGray, cv::Mat & sampGray, cv::Mat & mask_roi)
+{
+
+	Mat imgFlaw;
+	cv::absdiff(templGray, sampGray, imgFlaw);
+	cv::threshold(imgFlaw, imgFlaw, 30, 200, cv::THRESH_BINARY);
 	bitwise_and(imgFlaw, mask_roi, imgFlaw);
 
 	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
@@ -548,7 +655,9 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 	for (int i = 0; i < contours.size(); i++) {
 		if (contourArea(contours[i], false) <= 60){//缺陷最小面积
 			continue;
-		}	
+		}
+		//cv::drawContours(sampGrayRegCopyZoom, contours, i, Scalar(0, 0, 255));
+		
 		Rect rectCon = boundingRect(Mat(contours[i]));
 		int larger = 20;//稍微扩大缺陷所在的矩形区域
 		Rect rect_out = Rect(rectCon.x - larger, rectCon.y - larger, rectCon.width + 2 * larger, rectCon.height + 2 * larger);
@@ -564,8 +673,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		//结构相似性
 		auto msssim = getMSSIM(temp_area, samp_area);
-		if (msssim[0] >= 0.85)
-			continue;
+	/*	if (msssim[0] >= 0.85)
+			continue;*/
 
 
 		//对缺陷所在的小分图进行处理
@@ -584,8 +693,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		vector<cv::Point2i> locations;
 		cv::findNonZero(diffPart, locations);
 
-		if (locations.size() <= 60)
-			continue;
+/*		if (locations.size() <= 60)
+			continue*/;
 	
 		//保存缺陷分图，并对缺陷分类
 		int w_b = 300, h_b = 300;//缺陷分图的大小
@@ -707,8 +816,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		//分类有bug，出了问题直接goto到分类完成标签
 	classfinish:
-		if (trans_num == 0)
-			continue;
+		/*if (trans_num == 0)
+			continue;*/
 
 		int lack_flag = 0;//0表示无缺失，1表示有缺失
 		if (neighbors_sum >= 255 * 2)
@@ -759,6 +868,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		outPath += QString("%1_%2_%3_%4").arg(defectNum, 4, 10, fillChar).arg(pos_x, 5, 10, fillChar).arg(pos_y, 5, 10, fillChar).arg(defect_flag);
 		outPath += userConfig->ImageFormat; //添加图像格式的后缀
 		imwrite(outPath.toStdString(), imgSeg); //存图
+		
 	}
 
 	Point roiPosition(currentCol*scaledSubImageSize.width, runtimeParams->currentRow_detect*scaledSubImageSize.height);
