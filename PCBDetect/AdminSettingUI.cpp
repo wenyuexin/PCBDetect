@@ -130,7 +130,7 @@ void AdminSettingUI::on_pushButton_confirm_clicked()
 			&& runtimeParams->isValid(RuntimeParams::Index_All_SysInit, true, adminConfig))
 		{
 			QMessageBox::warning(this, pcb::chinese("提示"),
-				pcb::chinese("您已修改关键参数，系统即将重置！ \n"),
+				pcb::chinese("您已修改关键参数，相关模块将重新启动！ \n"),
 				pcb::chinese("确定"));
 			pcb::delay(10);
 			emit resetDetectSystem_adminUI(sysResetCode);

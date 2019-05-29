@@ -156,7 +156,7 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 }
 
 
-/***************** 按键响应 *****************/
+/***************** 基本参数设置 *****************/
 
 //选择样本文件夹的路径
 void SettingUI::on_pushButton_SampleDirPath_clicked()
@@ -178,6 +178,42 @@ void SettingUI::on_pushButton_OutputDirPath_clicked()
 	userConfig->OutputDirPath = pcb::selectDirPath(this);
 	ui.lineEdit_OutputDirPath->setText(userConfig->OutputDirPath);
 }
+
+
+/***************** 运动控制 *****************/
+
+//重置运动结构
+void SettingUI::on_pushButton_initAndReturnToZero_motion_clicked()
+{
+	//禁用界面上的按键和输入框
+	this->setPushButtonsEnabled(false);
+
+	//重置控制器
+	motionControler->setOperation(MotionControler::ResetControler);
+	motionControler->start();
+	while (motionControler->isRunning()) pcb::delay(50);
+
+	//启用界面上的按键和输入框
+	this->setPushButtonsEnabled(true);
+}
+
+//运动结构复位
+void SettingUI::on_pushButton_reset_motion_clicked()
+{
+	//禁用界面上的按键和输入框
+	this->setPushButtonsEnabled(false);
+
+	//运动复位
+	motionControler->setOperation(MotionControler::MotionReset);
+	motionControler->start();
+	while (motionControler->isRunning()) pcb::delay(50);
+
+	//启用界面上的按键和输入框
+	this->setPushButtonsEnabled(true);
+}
+
+
+/***************** 确认键、返回键 *****************/
 
 //确认键
 void SettingUI::on_pushButton_confirm_clicked()
@@ -249,7 +285,7 @@ void SettingUI::on_pushButton_confirm_clicked()
 			&& runtimeParams->isValid(RuntimeParams::Index_All_SysInit, true, adminConfig))
 		{
 			QMessageBox::warning(this, pcb::chinese("提示"),
-				pcb::chinese("您已修改关键参数，系统即将重置！ \n"),
+				pcb::chinese("您已修改关键参数，相关模块将重新启动！ \n"),
 				pcb::chinese("确定"));
 			pcb::delay(10);
 			emit resetDetectSystem_settingUI(sysResetCode);
@@ -280,18 +316,16 @@ void SettingUI::on_pushButton_return_clicked()
 	}
 }
 
-//系统参数设置
-void SettingUI::on_pushButton_admin_clicked()
-{
-	//设置窗口始终置顶
-	passWordUI.show();
-	//设置按键
-	this->setPushButtonsEnabled(false);
-}
-
 //设置按键的可点击状态
 void SettingUI::setPushButtonsEnabled(bool code)
 {
+	ui.pushButton_SampleDirPath->setEnabled(code);
+	ui.pushButton_TemplDirPath->setEnabled(code);
+	ui.pushButton_OutputDirPath->setEnabled(code);
+
+	ui.pushButton_initAndReturnToZero_motion->setEnabled(code);
+	ui.pushButton_reset_motion->setEnabled(code && motionControler->isReady());
+
 	ui.pushButton_confirm->setEnabled(code);//确认
 	ui.pushButton_return->setEnabled(code);//返回
 	ui.pushButton_admin->setEnabled(code);//系统设置
@@ -375,6 +409,16 @@ void SettingUI::getConfigFromSettingUI()
 
 /****************** 系统参数登录界面 *******************/
 
+//打开系统参数登陆界面
+void SettingUI::on_pushButton_admin_clicked()
+{
+	//设置窗口始终置顶
+	passWordUI.show();
+	//设置按键
+	this->setPushButtonsEnabled(false);
+}
+
+//关闭系统参数登陆界面
 void SettingUI::on_closePassWordUI_pswdUI()
 {
 	//将系统参数按键设为可点击
