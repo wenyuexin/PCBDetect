@@ -86,6 +86,7 @@ SettingUI::~SettingUI()
 //更新界面
 void SettingUI::refreshSettingUI()
 {
+	//参数设置
 	ui.lineEdit_SampleDirPath->setText(userConfig->SampleDirPath); //样本路径
 	ui.lineEdit_TemplDirPath->setText(userConfig->TemplDirPath); //模板路径
 	ui.lineEdit_OutputDirPath->setText(userConfig->OutputDirPath); //输出路径
@@ -111,6 +112,9 @@ void SettingUI::refreshSettingUI()
 
 	ui.lineEdit_concaveRateThresh->setText(QString::number(userConfig->concaveRateThresh)); //缺失率阈值
 	ui.lineEdit_convexRateThresh->setText(QString::number(userConfig->convexRateThresh)); //凸起率阈值
+
+	//运动控制
+	ui.pushButton_initAndReturnToZero_motion->setEnabled(true);
 }
 
 //设置光标的位置
