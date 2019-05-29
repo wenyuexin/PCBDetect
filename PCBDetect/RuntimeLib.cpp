@@ -15,8 +15,13 @@ RuntimeParams::RuntimeParams()
 	sampleModelNum = ""; //型号
 	sampleBatchNum = ""; //批次号
 	sampleNum = ""; //样本编号
-	currentRow_detect = -1; //检测行号
+
 	currentRow_extract = -1; //提取行号
+	maskRoi_tl = QPoint(-1, -1); //模板掩膜左上角在分图上的坐标位置
+	maskRoi_br = QPoint(-1, -1); //模板掩膜右下角在分图上的坐标位置
+
+	currentRow_detect = -1; //检测行号
+
 	singleMotionStroke = -1; //运功动结构的单步行程
 	nCamera = 0; //相机个数
 	nPhotographing = 0; //拍照次数
@@ -24,13 +29,12 @@ RuntimeParams::RuntimeParams()
 	//系统辅助参数
 	AppDirPath = ""; //程序所在目录
 	BufferDirPath = ""; //缓存文件夹
+	currentSampleDir = ""; //当前样本图所在目录
+	currentTemplDir = ""; //当前模板图所在目录
+	currentOutputDir = ""; //当前的结果存储目录
 	DeveloperMode = false; //开启开发者模式
 	
-	QDesktopWidget *desktop = QApplication::desktop();
-	ScreenRect = desktop->screenGeometry(1); //界面所在的屏幕区域
-	if (ScreenRect.width() < 1440 || ScreenRect.height() < 900) {
-		ScreenRect = desktop->screenGeometry(0);//主屏区域
-	}
+	updateScreenRect();
 }
 
 RuntimeParams::~RuntimeParams()
@@ -55,7 +59,10 @@ void RuntimeParams::loadDefaultValue()
 	errorCode = Unchecked;
 	resetSerialNum(); //重置产品序号
 	currentRow_detect = -1; //检测行号
+
 	currentRow_extract = -1; //提取行号
+	maskRoi_tl = QPoint(0, 0); //模板掩膜左上角在分图上的坐标位置
+	maskRoi_br = QPoint(0, 0); //模板掩膜右下角在分图上的坐标位置
 
 	errorCode_sysInit = Unchecked;
 	singleMotionStroke = 79.0; //运功动结构的单步行程
@@ -67,6 +74,50 @@ void RuntimeParams::loadDefaultValue()
 	BufferDirPath = QDir::currentPath() + "/buffer"; //缓存文件夹
 	QDir bufferDir(BufferDirPath);
 	if (!bufferDir.exists()) bufferDir.mkdir(BufferDirPath);
+
+	currentSampleDir = ""; //当前样本图所在目录
+	currentTemplDir = ""; //当前模板图所在目录
+	currentOutputDir = ""; //当前的结果存储目录
+
+	updateScreenRect();
+}
+
+//拷贝参数
+void RuntimeParams::copyTo(RuntimeParams *dst)
+{
+	dst->errorCode = this->errorCode;
+	dst->sampleModelNum = this->sampleModelNum; //型号
+	dst->sampleBatchNum = this->sampleBatchNum; //批次号
+	dst->sampleNum = this->sampleNum; //样本编号
+
+	dst->currentRow_detect = this->currentRow_detect; //检测行号
+	dst->currentRow_extract = this->currentRow_extract; //提取行号
+	dst->maskRoi_tl = this->maskRoi_tl; //模板掩膜左上角在分图上的坐标位置
+	dst->maskRoi_br = this->maskRoi_br; //模板掩膜右下角在分图上的坐标位置
+
+	dst->singleMotionStroke = this->singleMotionStroke; //运功动结构的单步行程 mm
+	dst->nCamera = this->nCamera; //相机个数
+	dst->nPhotographing = this->nPhotographing; //拍照次数
+
+	dst->AppDirPath = this->AppDirPath; //程序所在目录
+	dst->BufferDirPath = this->BufferDirPath; //缓存文件夹
+	dst->currentSampleDir = this->currentSampleDir; //当前样本图所在目录
+	dst->currentTemplDir = this->currentTemplDir; //当前模板图所在目录
+	dst->currentOutputDir = this->currentOutputDir; //当前的结果存储目录
+}
+
+
+/*************** 参数的更新、计算 ****************/
+
+//更新屏幕区域
+//优先选择副屏，如果副屏分辨率小于1440*900则在主屏显示
+void RuntimeParams::updateScreenRect()
+{
+	QDesktopWidget *desktop = QApplication::desktop();
+	ScreenRect = desktop->screenGeometry(1); //界面所在的屏幕区域
+	if (ScreenRect.width() < 1440 || ScreenRect.height() < 900) {
+		ScreenRect = desktop->screenGeometry(0);//主屏区域
+	}
 }
 
 //计算机械结构的单步运动距离 singleMotionStroke
@@ -96,14 +147,12 @@ RuntimeParams::ErrorCode RuntimeParams::calcItemGridSize(AdminConfig *adminConfi
 	double nPixels_W = userConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
 	double nW = nPixels_W / adminConfig->ImageSize_W;
 	this->nCamera = (int) ceil((nW - overlap_W) / (1 - overlap_W));
-	//this->nCamera = 3;
 
 	//计算拍摄次数
 	double overlap_H = adminConfig->ImageOverlappingRate_H; //图像重叠率
 	double nPixels_H = userConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
 	this->nPhotographing = (int) ceil((nH - overlap_H) / (1 - overlap_H));
-	//this->nPhotographing = 3;
 
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Unchecked;
@@ -135,7 +184,6 @@ RuntimeParams::ErrorCode RuntimeParams::calcInitialPhotoPos(pcb::AdminConfig *ad
 	return code;
 }
 
-
 //产品序号解析
 RuntimeParams::ErrorCode RuntimeParams::parseSerialNum()
 {
@@ -158,6 +206,33 @@ RuntimeParams::ErrorCode RuntimeParams::parseSerialNum()
 	return ValidValue;
 }
 
+//获取系统重置代码
+int RuntimeParams::getSystemResetCode(RuntimeParams &newConfig)
+{
+	int sysResetCode = 0b000000000; //系统重置代码
+
+	//运动结构的单步运动距离
+	if (this->singleMotionStroke != newConfig.singleMotionStroke)
+		sysResetCode |= 0b000100000;
+
+	//运动结构的初始拍照位置
+	if (this->initialPhotoPos != newConfig.initialPhotoPos)
+		sysResetCode |= 0b000100000;
+	
+	//相机个数
+	if (this->nCamera != newConfig.nCamera)
+		sysResetCode |= 0b000010011;
+
+	//拍照次数
+	if (this->nPhotographing != newConfig.nPhotographing)
+		sysResetCode |= 0b000000011;
+	
+	return sysResetCode;
+}
+
+
+/*************** 运行参数类的异常处理 **************/
+
 //参数有效性检查
 RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminConfig *adminConfig)
 {
@@ -166,7 +241,7 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 	{
 	case pcb::RuntimeParams::Index_All:
 
-	//产品序号相关参数
+		//产品序号相关参数
 	case pcb::RuntimeParams::Index_All_SerialNum:
 	case pcb::RuntimeParams::Index_serialNum:
 		if (serialNum.size() != serialNumSlice[0] || serialNum.toDouble() == 0) {
@@ -189,13 +264,13 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 		}
 		if (code != Unchecked || index != Index_All) break;
 
-	//检测行号与提取行号
+		//检测行号与提取行号
 	case pcb::RuntimeParams::Index_currentRow_detect:
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::RuntimeParams::Index_currentRow_extract:
 		if (code != Unchecked || index != Index_All) break;
 
-	//初始化相关参数
+		//初始化相关参数
 	case pcb::RuntimeParams::Index_All_SysInit:
 	case pcb::RuntimeParams::Index_singleMotionStroke: //单步前进距离
 		if (adminConfig == Q_NULLPTR)
@@ -215,7 +290,7 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: RuntimeParams: checkValidity: adminConfig is NULL !";
 		if (nPhotographing * singleMotionStroke > adminConfig->MaxMotionStroke) {
-			code = Invalid_nPhotographing; 
+			code = Invalid_nPhotographing;
 		}
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::RuntimeParams::Index_initialPhotoPos: //初始拍照位置
@@ -238,7 +313,7 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 	}
 
 	//更新错误代码 - 初始化相关参数
-	if (index == Index_All_SysInit || 
+	if (index == Index_All_SysInit ||
 		(code != ValidParams && index >= Index_singleMotionStroke && index <= Index_nPhotographing))
 	{
 		errorCode_sysInit = code;
@@ -250,7 +325,7 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 	//		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
 	//}
 
-	if (index == Index_All_SerialNum || 
+	if (index == Index_All_SerialNum ||
 		(code != ValidParams && index >= Index_serialNum && index <= Index_sampleNum))
 	{
 		errorCode_serialNum = code;
@@ -265,7 +340,7 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 bool RuntimeParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminConfig)
 {
 	if (errorCode == ValidParams) return true;
-	
+
 	//所有参数
 	if (index == Index_All) {
 		if (doCheck && errorCode == RuntimeParams::Unchecked)
@@ -291,7 +366,7 @@ bool RuntimeParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminC
 
 //获取错误代码
 RuntimeParams::ErrorCode RuntimeParams::getErrorCode(ParamsIndex index)
-{ 
+{
 	if (index == Index_All) return errorCode;
 	else if (index == Index_All_SysInit) return errorCode_sysInit;
 	else if (index == Index_All_SerialNum) return errorCode_serialNum;
@@ -300,8 +375,8 @@ RuntimeParams::ErrorCode RuntimeParams::getErrorCode(ParamsIndex index)
 
 //重置错误代码
 void RuntimeParams::resetErrorCode(ParamsIndex index)
-{ 
-	if (index == Index_All) errorCode = Unchecked; 
+{
+	if (index == Index_All) errorCode = Unchecked;
 	else if (index == Index_All_SysInit) errorCode_sysInit = Unchecked;
 	else if (index == Index_All_SerialNum) errorCode_serialNum = Unchecked;
 }
@@ -344,45 +419,6 @@ bool RuntimeParams::showMessageBox(QWidget *parent, ErrorCode code)
 	return true;
 }
 
-//拷贝参数
-void RuntimeParams::copyTo(RuntimeParams *dst)
-{
-	dst->errorCode = this->errorCode;
-	dst->sampleModelNum = this->sampleModelNum; //型号
-	dst->sampleBatchNum = this->sampleBatchNum; //批次号
-	dst->sampleNum = this->sampleNum; //样本编号
-	dst->currentRow_detect = this->currentRow_detect; //检测行号
-	dst->currentRow_extract = this->currentRow_extract; //提取行号
-	dst->singleMotionStroke = this->singleMotionStroke; //运功动结构的单步行程 mm
-	dst->nCamera = this->nCamera; //相机个数
-	dst->nPhotographing = this->nPhotographing; //拍照次数
-	dst->AppDirPath = this->AppDirPath; //程序所在目录
-	dst->BufferDirPath = this->BufferDirPath; //缓存文件夹
-}
-
-//获取系统重置代码
-int RuntimeParams::getSystemResetCode(RuntimeParams &newConfig)
-{
-	int sysResetCode = 0b000000000; //系统重置代码
-
-	//运动结构的单步运动距离
-	if (this->singleMotionStroke != newConfig.singleMotionStroke)
-		sysResetCode |= 0b000100000;
-
-	//运动结构的初始拍照位置
-	if (this->initialPhotoPos != newConfig.initialPhotoPos)
-		sysResetCode |= 0b000100000;
-	
-	//相机个数
-	if (this->nCamera != newConfig.nCamera)
-		sysResetCode |= 0b000010011;
-
-	//拍照次数
-	if (this->nPhotographing != newConfig.nPhotographing)
-		sysResetCode |= 0b000000011;
-	
-	return sysResetCode;
-}
 
 
 /****************************************************/

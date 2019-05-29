@@ -155,6 +155,21 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 	}
 }
 
+//设置按键的可点击状态
+void SettingUI::setPushButtonsEnabled(bool code)
+{
+	ui.pushButton_SampleDirPath->setEnabled(code);
+	ui.pushButton_TemplDirPath->setEnabled(code);
+	ui.pushButton_OutputDirPath->setEnabled(code);
+
+	ui.pushButton_initAndReturnToZero_motion->setEnabled(code);
+	ui.pushButton_reset_motion->setEnabled(code && motionControler->isReady());
+
+	ui.pushButton_confirm->setEnabled(code);//确认
+	ui.pushButton_return->setEnabled(code);//返回
+	ui.pushButton_admin->setEnabled(code);//系统设置
+}
+
 
 /***************** 基本参数设置 *****************/
 
@@ -316,20 +331,6 @@ void SettingUI::on_pushButton_return_clicked()
 	}
 }
 
-//设置按键的可点击状态
-void SettingUI::setPushButtonsEnabled(bool code)
-{
-	ui.pushButton_SampleDirPath->setEnabled(code);
-	ui.pushButton_TemplDirPath->setEnabled(code);
-	ui.pushButton_OutputDirPath->setEnabled(code);
-
-	ui.pushButton_initAndReturnToZero_motion->setEnabled(code);
-	ui.pushButton_reset_motion->setEnabled(code && motionControler->isReady());
-
-	ui.pushButton_confirm->setEnabled(code);//确认
-	ui.pushButton_return->setEnabled(code);//返回
-	ui.pushButton_admin->setEnabled(code);//系统设置
-}
 
 /************** 获取界面上的参数 *****************/
 
