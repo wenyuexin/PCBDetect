@@ -58,18 +58,21 @@ void SerialNumberUI::init()
 	//设置检测界面的聚焦策略
 	//this->setFocusPolicy(Qt::ClickFocus);
 
-	//鼠标跟踪
+	//设置鼠标
 	this->setMouseTracking(true);
+	this->setCursor(Qt::ArrowCursor);
 
 	//禁用滚动条
 	ui.graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	ui.graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	//初始化OCR模块
-	ocrHandle = TessBaseAPICreate();
-	if (TessBaseAPIInit3(ocrHandle, NULL, "eng") != 0) {
-		showMessageBox(this, InitFailed); return;
-		//die("Error initialising tesseract\n");
+	if (ocrHandle == Q_NULLPTR) { //防止多次初始化
+		ocrHandle = TessBaseAPICreate(); //初始化
+		if (TessBaseAPIInit3(ocrHandle, NULL, "eng") != 0) {
+			showMessageBox(this, InitFailed); return;
+			//die("Error initialising tesseract\n");
+		}
 	}
 
 	//设置掩膜区域的坐标初始值
@@ -133,11 +136,19 @@ void SerialNumberUI::reset()
 {
 	if (this == Q_NULLPTR) return;
 
+	this->setCursor(Qt::ArrowCursor); //设置鼠标
+
 	ui.checkBox_maskRoi_tl->setChecked(false);
 	ui.checkBox_maskRoi_br->setChecked(false);
 	ui.checkBox_ocrRoi_tl->setChecked(false);
 	ui.checkBox_ocrRoi_br->setChecked(false);
-	ui.lineEdit_serialNum->setText("");
+	//ui.lineEdit_serialNum->setText("");
+
+	//清空掩膜区域坐标
+	ui.lineEdit_maskRoi_tl_x->setText("");
+	ui.lineEdit_maskRoi_tl_y->setText("");
+	ui.lineEdit_maskRoi_br_x->setText("");
+	ui.lineEdit_maskRoi_br_y->setText("");
 
 	//删除图元
 	deleteImageItem();
@@ -158,8 +169,8 @@ void SerialNumberUI::on_pushButton_getMaskRoi_clicked()
 {
 	if (runtimeParams->DeveloperMode) return;
 
-	ui.checkBox_maskRoi_tl->setChecked(false);
-	ui.checkBox_maskRoi_br->setChecked(false);
+	//ui.checkBox_maskRoi_tl->setChecked(false);
+	//ui.checkBox_maskRoi_br->setChecked(false);
 	this->setSerialNumberUIEnabled(false);
 
 	int ImageSize_W = adminConfig->ImageSize_W;
@@ -360,7 +371,7 @@ void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 {
 	if (runtimeParams->DeveloperMode) return;
 
-	//鼠标左键单击获取ROI区域 - 左上角点 - 掩膜
+	//鼠标左键单击获取左上角点 - 掩膜
 	if (event->button() == Qt::LeftButton && ui.checkBox_maskRoi_tl->isChecked()) {
 		if (!graphicsViewRect.contains(event->pos())) return; //区域判断
 		QPointF relativePos = event->pos() - graphicsViewRect.topLeft();//相对于视图的坐标
@@ -370,6 +381,7 @@ void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 		maskRoi_tl.setY(intervalCensored(maskRoi_tl.y(), 0, adminConfig->ImageSize_H - 1));
 		ui.lineEdit_maskRoi_tl_x->setText(QString::number((int)maskRoi_tl.x()));//更新界面
 		ui.lineEdit_maskRoi_tl_y->setText(QString::number((int)maskRoi_tl.y()));
+		this->on_pushButton_getMaskRoi_clicked(); //确认区域
 		return;
 	}
 
@@ -383,6 +395,7 @@ void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 		maskRoi_br.setY(intervalCensored(maskRoi_br.y(), 0, adminConfig->ImageSize_H - 1));
 		ui.lineEdit_maskRoi_br_x->setText(QString::number((int)maskRoi_br.x()));//更新界面
 		ui.lineEdit_maskRoi_br_y->setText(QString::number((int)maskRoi_br.y()));
+		this->on_pushButton_getMaskRoi_clicked(); //确认区域
 		return;
 	}
 
@@ -412,7 +425,7 @@ void SerialNumberUI::mousePressEvent(QMouseEvent *event)
 		return;
 	}
 
-	//通过拖矩形框的方式选择区域
+	//通过拖矩形框的方式选择区域 —— 未完成
 	if (event->button() == Qt::LeftButton && captureStatus == InitCapture) {
 		captureStatus = BeginCapture;
 		mousePressPos = event->pos();
