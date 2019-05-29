@@ -9,6 +9,7 @@ SerialNumberUI::SerialNumberUI(QWidget *parent)
 	ui.setupUi(this);
 
 	//成员变量的初始化
+	maskRoiWidgetsIsVisible = true;
 	NumberValidator = Q_NULLPTR;
 	errorCode = ErrorCode::Default;
 	adminConfig = Q_NULLPTR; //系统参数
@@ -32,6 +33,9 @@ void SerialNumberUI::init()
 {
 	//多屏状态下选择在副屏全屏显示
 	this->setGeometry(runtimeParams->ScreenRect);
+
+	//设置掩膜区域相关控件的可见性与其他控件的相对位置
+	this->initMaskRoiWidgets();
 
 	//获取绘图控件QGraphicsView的位置
 	QPoint graphicsViewPos = ui.graphicsView->pos();
@@ -93,6 +97,36 @@ SerialNumberUI::~SerialNumberUI()
 
 
 /*************** 界面的初始化、设置、更新 **************/
+
+//设置掩膜区域相关控件的可见性与其他控件的相对位置
+void SerialNumberUI::initMaskRoiWidgets()
+{
+	if (maskRoiWidgetsIsVisible) return;
+
+	//将控件设为不可见
+	ui.label_maskRoi_title->setVisible(false);
+	ui.checkBox_maskRoi_tl->setVisible(false);
+	ui.label_maskRoi_tl->setVisible(false);
+	ui.label_maskRoi_tl_x->setVisible(false);
+	ui.label_maskRoi_tl_y->setVisible(false);
+	ui.lineEdit_maskRoi_tl_x->setVisible(false);
+	ui.lineEdit_maskRoi_tl_y->setVisible(false);
+
+	ui.checkBox_maskRoi_br->setVisible(false);
+	ui.label_maskRoi_br->setVisible(false);
+	ui.label_maskRoi_br_x->setVisible(false);
+	ui.label_maskRoi_br_y->setVisible(false);
+	ui.lineEdit_maskRoi_br_x->setVisible(false);
+	ui.lineEdit_maskRoi_br_y->setVisible(false);
+	ui.pushButton_getMaskRoi->setVisible(false);
+	ui.line_1->setVisible(false);
+
+	//将右侧剩余的控件上移
+	int distanceOfMovingUp = (this->size().height() > 800)? 230 : 100;
+	QPoint direction = QPoint(0, -distanceOfMovingUp);
+	ui.label_ocrRoi_title->move(ui.label_ocrRoi_title->pos() + direction);
+	//todo 设置其他控件
+}
 
 //初始化CheckBox 使得同一时刻只有一个box可以选
 void SerialNumberUI::initCheckBoxGroup()
@@ -167,6 +201,7 @@ void SerialNumberUI::reset()
 
 void SerialNumberUI::on_pushButton_getMaskRoi_clicked()
 {
+	this->setCursor(Qt::ArrowCursor); //设置鼠标样式
 	if (runtimeParams->DeveloperMode) return;
 
 	//ui.checkBox_maskRoi_tl->setChecked(false);
