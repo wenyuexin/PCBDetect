@@ -656,24 +656,14 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		return;
 	}
 
-	//batch_path = (userConfig->OutputDirPath).toStdString() + "\\" + runtimeParams->sampleModelNum.toStdString();//检查输出文件夹中型号文件是否存在
-	//if (0 != _access(batch_path.c_str(), 0))
-	//	_mkdir(batch_path.c_str());
-	//num_path = batch_path + "\\" + runtimeParams->sampleBatchNum.toStdString();//检查批次号文件夹是否存在
-	//if (0 != _access(num_path.c_str(), 0) && contours.size() > 0)
-	//	_mkdir(num_path.c_str());
-	//out_path = num_path + "\\" + runtimeParams->sampleNum.toStdString();//检查编号文件夹是否存在
-	//if (0 != _access(out_path.c_str(), 0) && contours.size() > 0)
-	//	_mkdir(out_path.c_str());
-
-
 	for (int i = 0; i < contours.size(); i++) {
-		if (contourArea(contours[i], false) <= 60){//缺陷最小面积
+		int conArea = contourArea(contours[i], false);
+		if (conArea <= 60){//缺陷最小面积
 			continue;
 		}
-		double factor = (contourArea(contours[i]) * 4 * CV_PI) /
+		double factor = (conArea * 4 * CV_PI) /
 			(pow(arcLength(contours[i], true), 2));
-		if (factor >= 0.8)
+		if (factor >= 0.8)//圆形度判断
 			continue;
 		//cv::drawContours(sampGrayRegCopyZoom, contours, i, Scalar(0, 0, 255));
 		
@@ -692,7 +682,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		//结构相似性
 		auto msssim = getMSSIM(temp_area, samp_area);
-		if (msssim[0] >= 0.85)
+		if (msssim[0] >= 0.85)// && conArea <= 200)
 			continue;
 
 
@@ -721,7 +711,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 
 
-		if (locations.size() <= 60)
+		if (locations.size() <= 60)// && conArea <= 200)
 			continue;
 	
 		//保存缺陷分图，并对缺陷分类
@@ -895,7 +885,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录
 		outPath += QString("%1_%2_%3_%4").arg(defectNum, 4, 10, fillChar).arg(pos_x, 5, 10, fillChar).arg(pos_y, 5, 10, fillChar).arg(defect_flag);
 		outPath += userConfig->ImageFormat; //添加图像格式的后缀
-		cv::putText(imgSeg, to_string(factor),Point(0,imgSeg.rows-1), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(0, 255, 255), 1, 8, 0);
+		//cv::putText(imgSeg, to_string(factor),Point(0,imgSeg.rows-1), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(0, 255, 255), 1, 8, 0);
 		imwrite(outPath.toStdString(), imgSeg); //存图
 		
 	}

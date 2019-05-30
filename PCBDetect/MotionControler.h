@@ -48,6 +48,7 @@ public:
 	};
 
 private:
+	int caller; //模块的调用者
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数
 	pcb::RuntimeParams *runtimeParams; //运行参数
@@ -71,6 +72,9 @@ private:
 public:
 	MotionControler(QThread *parent = Q_NULLPTR);
 	~MotionControler();
+
+	inline void setCaller(int c) { caller = c; };
+	inline int getCaller() { return caller; }
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } 
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; } 

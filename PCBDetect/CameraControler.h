@@ -34,6 +34,7 @@ public:
 	};
 
 private:
+	int caller; //模块的调用者
 	pcb::CvMatArray *cvmatSamples; //用于检测的样本图
 	int *currentRow; //当前行号
 
@@ -58,6 +59,9 @@ private:
 public:
 	CameraControler(QThread *parent = Q_NULLPTR);
 	~CameraControler();
+
+	inline void setCaller(int c) { caller = c; };
+	inline int getCaller() { return caller; }
 
 	inline void setCvMatSamples(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
 	inline void setCurrentRow(int *row) { currentRow = row;  }

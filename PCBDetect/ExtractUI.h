@@ -25,6 +25,7 @@ private:
 	pcb::RuntimeParams *runtimeParams; //运行参数
 	MotionControler *motionControler; //运动控制器
 	CameraControler *cameraControler; //相机控制器
+	int initCounter; //初始化次数的计数器
 
 	const qreal ItemSpacing = 0; //图元间距（单位:pix）
 	QSizeF itemSize; //图元尺寸
@@ -82,9 +83,9 @@ private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event);
 	void update_extractState_extractor(int state);
 
-	void on_moveToInitialPosFinished_motion();//到达初始拍照位置
-	void on_moveForwardFinished_motion();//前进结束
-	void on_motionResetFinished_motion();//复位结束
+	void on_moveToInitialPosFinished_motion(int);//到达初始拍照位置
+	void on_moveForwardFinished_motion(int);//前进结束
+	void on_motionResetFinished_motion(int);//复位结束
 
 	void on_initCamerasFinished_camera(int);//相机初始化结束
 	void on_takePhotosFinished_camera(int);//拍照结束

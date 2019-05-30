@@ -31,6 +31,7 @@ private:
 	QPixmap lightOffIcon; //灭灯图标 grey
 	QPixmap defaultIcon; //默认图标
 	SerialNumberUI *serialNumberUI; //产品序号识别界面
+	int initCounter; //初始化次数的计数器
 
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数
