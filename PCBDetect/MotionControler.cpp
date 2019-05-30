@@ -115,7 +115,7 @@ bool MotionControler::initControler()
 	//3协议
 	//str.Format(_T("%d"), xieyi_byte);
 	if (AMC98_KZQSet_v2(0, 3, "2")) { markInitFailed(); return false; }
-	pcb::delay(100);
+	pcb::delay(10);
 
 	//连接控制器 - 方式1
 	if (AMC98_Connect(NULL, 0) != 0) { markInitFailed(); return false; }
@@ -162,7 +162,7 @@ bool MotionControler::initControler()
 	//if (!_AMC98_AddParamPC2CNC(60000, 3)) return false;//保存数据
 	
 	if (AMC98_ParamPC2CNC() != 0) return false;//放在最后面
-	pcb::delay(600);
+	pcb::delay(500);
 
 	//初始化结束
 	errorCode = ErrorCode::NoError;
@@ -203,6 +203,7 @@ bool MotionControler::moveToInitialPos()
 		emit moveToInitialPosFinished_motion(errorCode);
 		return false;
 	}
+	pcb::delay(50);
 
 	//发送控制指令
 	int endingPos = runtimeParams->initialPhotoPos; //初始拍照位置
@@ -250,7 +251,7 @@ bool MotionControler::moveForward()
 		emit moveForwardFinished_motion(errorCode);
 		return false; 
 	}
-	pcb::delay(100);
+	pcb::delay(50);
 
 	//发送控制指令
 	double dist = -runtimeParams->singleMotionStroke;

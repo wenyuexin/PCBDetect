@@ -109,7 +109,7 @@ PCBDetect::~PCBDetect()
 void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 {
 	if (launchCode == -1) { //系统参数和用户参数已经正常初始化
-		settingUI->refreshSettingUI();//更新参数设置界面
+		settingUI->refresh();//更新参数设置界面
 	}
 	else if (launchCode == 0) { //运行参数也正常初始化（所有参数类都正常）
 		extractUI->init();//模板提取界面的实例初始化
@@ -118,7 +118,7 @@ void PCBDetect::on_initGraphicsView_launchUI(int launchCode)
 	else { //存在错误
 		//用户参数配置文件丢失，生成了默认文件
 		if (userConfig.getErrorCode() != UserConfig::Unchecked) {
-			settingUI->refreshSettingUI();//更新参数设置界面
+			settingUI->refresh();//更新参数设置界面
 		}
 	}
 }
@@ -128,7 +128,7 @@ void PCBDetect::on_launchFinished_launchUI(int launchCode)
 {
 	if (!launchCode) { //正常启动
 		this->setPushButtonsEnabled(true);//模板提取、检测按键设为可点击
-		settingUI->refreshSettingUI();//更新参数设置界面
+		settingUI->refresh();//更新参数设置界面
 	}
 	else { //存在错误
 		this->setPushButtonsEnabled(false);//模板提取、检测按键设为不可点击
