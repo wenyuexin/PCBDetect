@@ -84,7 +84,7 @@ SettingUI::~SettingUI()
 /************* 界面的设置、输入、更新 **************/
 
 //更新界面
-void SettingUI::refreshSettingUI()
+void SettingUI::refresh()
 {
 	//参数设置
 	ui.lineEdit_SampleDirPath->setText(userConfig->SampleDirPath); //样本路径
@@ -331,7 +331,7 @@ void SettingUI::on_pushButton_return_clicked()
 	emit showDetectMainUI();
 	//如果界面上的参数无效，而userConfig有效，则显示userConfig
 	if (!tempConfig.isValid(adminConfig) && userConfig->isValid(adminConfig)) {
-		this->refreshSettingUI();
+		this->refresh();
 	}
 }
 
