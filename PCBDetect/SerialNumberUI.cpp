@@ -103,7 +103,7 @@ void SerialNumberUI::initMaskRoiWidgets()
 {
 	if (maskRoiWidgetsIsVisible) return;
 
-	//将掩膜区域坐标相关的控件设为不可见
+	//将控件设为不可见
 	ui.label_maskRoi_title->setVisible(false);
 	ui.checkBox_maskRoi_tl->setVisible(false);
 	ui.label_maskRoi_tl->setVisible(false);
@@ -122,33 +122,10 @@ void SerialNumberUI::initMaskRoiWidgets()
 	ui.line_1->setVisible(false);
 
 	//将右侧剩余的控件上移
-	int distanceOfMovingUp = (this->size().height() > 800)? 210 : 100;
+	int distanceOfMovingUp = (this->size().height() > 800)? 230 : 100;
 	QPoint direction = QPoint(0, -distanceOfMovingUp);
-
 	ui.label_ocrRoi_title->move(ui.label_ocrRoi_title->pos() + direction);
-	ui.checkBox_ocrRoi_tl->move(ui.checkBox_ocrRoi_tl->pos() + direction);
-	ui.label_ocrRoi_tl->move(ui.label_ocrRoi_tl->pos() + direction);
-	ui.label_ocrRoi_tl_x->move(ui.label_ocrRoi_tl_x->pos() + direction);
-	ui.label_ocrRoi_tl_y->move(ui.label_ocrRoi_tl_y->pos() + direction);
-	ui.lineEdit_ocrRoi_tl_x->move(ui.lineEdit_ocrRoi_tl_x->pos() + direction);
-	ui.lineEdit_ocrRoi_tl_y->move(ui.lineEdit_ocrRoi_tl_y->pos() + direction);
-
-	ui.label_ocrRoi_br->move(ui.label_ocrRoi_br->pos() + direction);
-	ui.label_ocrRoi_br_x->move(ui.label_ocrRoi_br_x->pos() + direction);
-	ui.label_ocrRoi_br_y->move(ui.label_ocrRoi_br_y->pos() + direction);
-	ui.lineEdit_ocrRoi_br_x->move(ui.lineEdit_ocrRoi_br_x->pos() + direction);
-	ui.lineEdit_ocrRoi_br_y->move(ui.lineEdit_ocrRoi_br_y->pos() + direction);
-
-	ui.pushButton_getOcrRoi->move(ui.pushButton_getOcrRoi->pos() + direction);
-	ui.pushButton_recognize->move(ui.pushButton_recognize->pos() + direction);
-
-	ui.line_2->move(ui.line_2->pos() + direction);
-	ui.label_serialNum_title->move(ui.label_serialNum_title->pos() + direction);
-	ui.lineEdit_serialNum->move(ui.lineEdit_serialNum->pos() + direction);
-	ui.pushButton_confirm->move(ui.pushButton_confirm->pos() + direction);
-
-	ui.line_3->move(ui.line_3->pos() + direction);
-	ui.pushButton_return->move(ui.pushButton_return->pos() + direction);
+	//todo 设置其他控件
 }
 
 //初始化CheckBox 使得同一时刻只有一个box可以选
