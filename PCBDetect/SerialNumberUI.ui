@@ -85,7 +85,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_3">
+  <widget class="QLabel" name="label_ocrRoi_tl">
    <property name="geometry">
     <rect>
      <x>1170</x>
@@ -103,7 +103,7 @@
     <string>左上角</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_4">
+  <widget class="QLabel" name="label_ocrRoi_br">
    <property name="geometry">
     <rect>
      <x>1170</x>
@@ -160,7 +160,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_5">
+  <widget class="QLabel" name="label_ocrRoi_tl_x">
    <property name="geometry">
     <rect>
      <x>1250</x>
@@ -181,7 +181,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_6">
+  <widget class="QLabel" name="label_ocrRoi_tl_y">
    <property name="geometry">
     <rect>
      <x>1340</x>
@@ -202,7 +202,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_7">
+  <widget class="QLabel" name="label_ocrRoi_br_x">
    <property name="geometry">
     <rect>
      <x>1250</x>
@@ -223,7 +223,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_8">
+  <widget class="QLabel" name="label_ocrRoi_br_y">
    <property name="geometry">
     <rect>
      <x>1340</x>
@@ -275,7 +275,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="label_9">
+  <widget class="QLabel" name="label_serialNum_title">
    <property name="geometry">
     <rect>
      <x>1220</x>
@@ -758,17 +758,17 @@
   <zorder>lineEdit_ocrRoi_tl_x</zorder>
   <zorder>label_ocrRoi_title</zorder>
   <zorder>lineEdit_ocrRoi_tl_y</zorder>
-  <zorder>label_3</zorder>
-  <zorder>label_4</zorder>
+  <zorder>label_ocrRoi_tl</zorder>
+  <zorder>label_ocrRoi_br</zorder>
   <zorder>lineEdit_ocrRoi_br_x</zorder>
   <zorder>lineEdit_ocrRoi_br_y</zorder>
-  <zorder>label_5</zorder>
-  <zorder>label_6</zorder>
-  <zorder>label_7</zorder>
-  <zorder>label_8</zorder>
+  <zorder>label_ocrRoi_tl_x</zorder>
+  <zorder>label_ocrRoi_tl_y</zorder>
+  <zorder>label_ocrRoi_br_x</zorder>
+  <zorder>label_ocrRoi_br_y</zorder>
   <zorder>pushButton_getOcrRoi</zorder>
   <zorder>line_2</zorder>
-  <zorder>label_9</zorder>
+  <zorder>label_serialNum_title</zorder>
   <zorder>lineEdit_serialNum</zorder>
   <zorder>pushButton_recognize</zorder>
   <zorder>pushButton_return</zorder>
