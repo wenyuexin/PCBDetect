@@ -133,6 +133,7 @@ void SerialNumberUI::initMaskRoiWidgets()
 	ui.lineEdit_ocrRoi_tl_x->move(ui.lineEdit_ocrRoi_tl_x->pos() + direction);
 	ui.lineEdit_ocrRoi_tl_y->move(ui.lineEdit_ocrRoi_tl_y->pos() + direction);
 
+	ui.checkBox_ocrRoi_br->move(ui.checkBox_ocrRoi_br->pos() + direction);
 	ui.label_ocrRoi_br->move(ui.label_ocrRoi_br->pos() + direction);
 	ui.label_ocrRoi_br_x->move(ui.label_ocrRoi_br_x->pos() + direction);
 	ui.label_ocrRoi_br_y->move(ui.label_ocrRoi_br_y->pos() + direction);
