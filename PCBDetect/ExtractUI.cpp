@@ -19,6 +19,7 @@ ExtractUI::ExtractUI(QWidget *parent)
 	serialNumberUI = Q_NULLPTR;
 	templExtractor = Q_NULLPTR;
 	extractThread = Q_NULLPTR;
+	initCounter = 0;
 }
 
 void ExtractUI::init()
@@ -65,10 +66,17 @@ void ExtractUI::init()
 	extractThread->init();
 
 	//运动控制
-	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion()), Qt::UniqueConnection);
-	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion()), Qt::UniqueConnection);
-	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion()), Qt::UniqueConnection);
+	//if (initCounter == 0) { //Qt::UniqueConnection
+	//	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion(int)));
+	//	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion(int)));
+	//	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion(int)));
+	//}
 
+	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion(int)), Qt::UniqueConnection);
+	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion(int)), Qt::UniqueConnection);
+	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion(int)), Qt::UniqueConnection);
+
+	
 	//相机控制
 	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)), Qt::UniqueConnection);
 	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)), Qt::UniqueConnection);
@@ -542,11 +550,61 @@ void ExtractUI::on_getMaskRoiFinished_serialNumUI()
 
 /******************** 运动控制 ********************/
 
-//复位结束
-void ExtractUI::on_motionResetFinished_motion()
+//到初始达拍照位置
+void ExtractUI::on_moveToInitialPosFinished_motion(int errorcode)
 {
+	if (motionControler->getCaller() != 1) return;
+
+	//检查运动结构的状态
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+		pcb::delay(10); return;
+	}
+
+	//调用相机进行拍照
+	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
+		currentRow_show += 1; //更新显示行号
+
+		ui.label_status->setText(pcb::chinese("正在拍摄第") +
+			QString::number(currentRow_show + 1) +
+			pcb::chinese("行分图"));//更新状态
+		//qApp->processEvents();
+
+		//cameraControler->start(); //拍照
+	}
+}
+
+//运动结构前进结束
+void ExtractUI::on_moveForwardFinished_motion(int errorcode)
+{
+	if (motionControler->getCaller() != 1) return;
+
+	//检查运动结构的状态
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+		pcb::delay(10); return;
+	}
+
+	//调用相机进行拍照
+	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
+		currentRow_show += 1; //更新显示行号
+
+		ui.label_status->setText(pcb::chinese("正在拍摄第") +
+			QString::number(currentRow_show + 1) + 
+			pcb::chinese("行分图"));//更新状态
+		//qApp->processEvents();
+
+		cameraControler->start(); //拍照
+	}
+}
+
+//复位结束
+void ExtractUI::on_motionResetFinished_motion(int errorcode)
+{
+	if (motionControler->getCaller() != 1) return;
+
 	//复位失败
-	if (!motionControler->isReady()) { 
+	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
 		pcb::delay(10); return;
 	}
@@ -567,56 +625,14 @@ void ExtractUI::on_motionResetFinished_motion()
 	}
 }
 
-//到初始达拍照位置
-void ExtractUI::on_moveToInitialPosFinished_motion()
-{
-	//检查运动结构的状态
-	if (!motionControler->isReady()) {
-		motionControler->showMessageBox(this);
-		pcb::delay(10); return;
-	}
-
-	//调用相机进行拍照
-	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
-		currentRow_show += 1; //更新显示行号
-
-		ui.label_status->setText(pcb::chinese("正在拍摄第") +
-			QString::number(currentRow_show + 1) +
-			pcb::chinese("行分图"));//更新状态
-		//qApp->processEvents();
-
-		cameraControler->start(); //拍照
-	}
-}
-
-//运动结构前进结束
-void ExtractUI::on_moveForwardFinished_motion()
-{
-	//检查运动结构的状态
-	if (!motionControler->isReady()) {
-		motionControler->showMessageBox(this);
-		pcb::delay(10); return;
-	}
-
-	//调用相机进行拍照
-	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
-		currentRow_show += 1; //更新显示行号
-
-		ui.label_status->setText(pcb::chinese("正在拍摄第") +
-			QString::number(currentRow_show + 1) + 
-			pcb::chinese("行分图"));//更新状态
-		//qApp->processEvents();
-
-		cameraControler->start(); //拍照
-	}
-}
-
 
 /******************** 相机控制 ********************/
 
 //更新相机控制器的参数
 void ExtractUI::refreshCameraControler()
 {
+	if (cameraControler->getCaller() != 1) return;
+
 	cameraControler->setCurrentRow(&currentRow_show);//设置行号
 	cameraControler->setCvMatSamples(&cvmatSamples);//设置图像
 	cameraControler->setOperation(CameraControler::TakePhotos);//设置相机操作
@@ -625,11 +641,14 @@ void ExtractUI::refreshCameraControler()
 //相机初始化结束
 void ExtractUI::on_initCamerasFinished_camera(int)
 {
+	if (cameraControler->getCaller() != 1) return;
 }
 
 //相机拍摄结束
 void ExtractUI::on_takePhotosFinished_camera(int)
 {
+	if (cameraControler->getCaller() != 1) return;
+
 	//调用图像类型转换线程
 	imgConvertThread.start();
 }

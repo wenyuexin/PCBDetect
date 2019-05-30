@@ -57,10 +57,12 @@ private:
 	bool checkParametricClasses(bool);
 	bool checkSystemState(bool);
 	void showSettingUI();
-	void switchToTemplateUI();
-	void showTemplateUI();
+
+	void switchToExtractUI();
+	void showExtractUI();
 	void switchToDetectUI();
 	void showDetectUI();
+
 	void eixtDetectSystem();
 	void switchDeveloperMode();
 
