@@ -12,6 +12,7 @@ using pcb::CvMatVector;
 CameraControler::CameraControler(QThread *parent)
 	: QThread(parent)
 {
+	caller = -1; //模块的调用者
 	errorCode = Unchecked; //控制器的错误码
 	operation = NoOperation;//操作指令
 }
@@ -152,7 +153,7 @@ bool CameraControler::initCameras2()
 		//开始采集图像
 		//设置相机的触发模式。0表示连续采集模式；1表示软件触发模式；2表示硬件触发模式。
 		CameraSetTriggerMode(cameraList2[i], 1);
-		CameraSetTriggerCount(cameraList2[i], 5);
+		CameraSetTriggerCount(cameraList2[i], 1);
 		if (CameraSetResolutionForSnap(cameraList2[i], &sImageSize) != CAMERA_STATUS_SUCCESS) {
 			cameraState[i] = false; continue;
 		}
@@ -311,7 +312,7 @@ CameraControler::ErrorCode CameraControler::resetDeviceIndex(std::vector<int> iv
 	deviceIndex = iv;
 	for (int i = 0; i < cameraList.size(); i++) {
 		cameraList[i].release();
-	}
+	}     
 	return initCameras();
 }
 
