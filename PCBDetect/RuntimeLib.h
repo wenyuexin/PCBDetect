@@ -80,7 +80,6 @@ namespace pcb
 		QString currentTemplDir; //当前模板图所在目录
 		QString currentOutputDir; //当前的结果存储目录
 		QRect ScreenRect; //界面所在的屏幕区域
-		//long systemState; //系统状态值
 
 		//系统运行所需的关键参数
 		QString serialNum; //产品序号
