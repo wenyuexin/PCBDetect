@@ -48,7 +48,7 @@ public:
 	inline void setMotionControler(MotionControler *ptr) { motionControler = ptr; }
 	
 	void init(); //实例初始化
-	void refreshSettingUI(); //更新设置界面
+	void refresh(); //更新设置界面
 	void setPushButtonsEnabled(bool code); //按键设置
 
 private:
