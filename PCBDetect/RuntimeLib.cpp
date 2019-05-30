@@ -86,19 +86,6 @@ void RuntimeParams::loadDefaultValue()
 void RuntimeParams::copyTo(RuntimeParams *dst)
 {
 	dst->errorCode = this->errorCode;
-	dst->errorCode_serialNum = this->errorCode_serialNum;
-	dst->errorCode_sysInit = this->errorCode_sysInit;
-	dst->systemState = this->systemState;
-
-	dst->DeveloperMode = this->DeveloperMode; //开启开发者模式
-	dst->AppDirPath = this->AppDirPath; //程序所在目录
-	dst->BufferDirPath = this->BufferDirPath; //缓存文件夹
-	dst->currentSampleDir = this->currentSampleDir; //当前样本图所在目录
-	dst->currentTemplDir = this->currentTemplDir; //当前模板图所在目录
-	dst->currentOutputDir = this->currentOutputDir; //当前的结果存储目录
-	dst->ScreenRect = this->ScreenRect; //界面所在的屏幕区域
-
-	dst->serialNum = this->serialNum; //产品序号
 	dst->sampleModelNum = this->sampleModelNum; //型号
 	dst->sampleBatchNum = this->sampleBatchNum; //批次号
 	dst->sampleNum = this->sampleNum; //样本编号
@@ -111,7 +98,12 @@ void RuntimeParams::copyTo(RuntimeParams *dst)
 	dst->singleMotionStroke = this->singleMotionStroke; //运功动结构的单步行程 mm
 	dst->nCamera = this->nCamera; //相机个数
 	dst->nPhotographing = this->nPhotographing; //拍照次数
-	dst->initialPhotoPos = this->initialPhotoPos; //初始拍照位置
+
+	dst->AppDirPath = this->AppDirPath; //程序所在目录
+	dst->BufferDirPath = this->BufferDirPath; //缓存文件夹
+	dst->currentSampleDir = this->currentSampleDir; //当前样本图所在目录
+	dst->currentTemplDir = this->currentTemplDir; //当前模板图所在目录
+	dst->currentOutputDir = this->currentOutputDir; //当前的结果存储目录
 }
 
 

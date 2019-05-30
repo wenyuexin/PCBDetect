@@ -44,10 +44,10 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_ocrRoi_title">
+  <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>1200</x>
+     <x>1190</x>
      <y>350</y>
      <width>181</width>
      <height>35</height>
@@ -85,7 +85,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_ocrRoi_tl">
+  <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
      <x>1170</x>
@@ -103,7 +103,7 @@
     <string>左上角</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_ocrRoi_br">
+  <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
      <x>1170</x>
@@ -160,7 +160,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_ocrRoi_tl_x">
+  <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
      <x>1250</x>
@@ -181,7 +181,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_ocrRoi_tl_y">
+  <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
      <x>1340</x>
@@ -202,7 +202,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_ocrRoi_br_x">
+  <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
      <x>1250</x>
@@ -223,7 +223,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_ocrRoi_br_y">
+  <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
      <x>1340</x>
@@ -275,10 +275,10 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="label_serialNum_title">
+  <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>1220</x>
+     <x>1200</x>
      <y>630</y>
      <width>131</width>
      <height>35</height>
@@ -365,7 +365,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="Line" name="line_title">
+  <widget class="Line" name="line_4">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -496,10 +496,10 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_maskRoi_title">
+  <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>1200</x>
+     <x>1190</x>
      <y>80</y>
      <width>181</width>
      <height>35</height>
@@ -519,7 +519,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_maskRoi_br_y">
+  <widget class="QLabel" name="label_11">
    <property name="geometry">
     <rect>
      <x>1340</x>
@@ -553,7 +553,7 @@
     <string/>
    </property>
   </widget>
-  <widget class="QLabel" name="label_maskRoi_tl_x">
+  <widget class="QLabel" name="label_12">
    <property name="geometry">
     <rect>
      <x>1250</x>
@@ -574,7 +574,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_maskRoi_br">
+  <widget class="QLabel" name="label_13">
    <property name="geometry">
     <rect>
      <x>1170</x>
@@ -592,7 +592,7 @@
     <string>右下角</string>
    </property>
   </widget>
-  <widget class="Line" name="line_1">
+  <widget class="Line" name="line_5">
    <property name="geometry">
     <rect>
      <x>1150</x>
@@ -605,7 +605,7 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="label_maskRoi_tl">
+  <widget class="QLabel" name="label_14">
    <property name="geometry">
     <rect>
      <x>1170</x>
@@ -641,7 +641,7 @@
     <string>确认区域</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_maskRoi_br_x">
+  <widget class="QLabel" name="label_15">
    <property name="geometry">
     <rect>
      <x>1250</x>
@@ -711,7 +711,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_maskRoi_tl_y">
+  <widget class="QLabel" name="label_16">
    <property name="geometry">
     <rect>
      <x>1340</x>
@@ -756,42 +756,42 @@
   <zorder>label_10</zorder>
   <zorder>graphicsView</zorder>
   <zorder>lineEdit_ocrRoi_tl_x</zorder>
-  <zorder>label_ocrRoi_title</zorder>
+  <zorder>label</zorder>
   <zorder>lineEdit_ocrRoi_tl_y</zorder>
-  <zorder>label_ocrRoi_tl</zorder>
-  <zorder>label_ocrRoi_br</zorder>
+  <zorder>label_3</zorder>
+  <zorder>label_4</zorder>
   <zorder>lineEdit_ocrRoi_br_x</zorder>
   <zorder>lineEdit_ocrRoi_br_y</zorder>
-  <zorder>label_ocrRoi_tl_x</zorder>
-  <zorder>label_ocrRoi_tl_y</zorder>
-  <zorder>label_ocrRoi_br_x</zorder>
-  <zorder>label_ocrRoi_br_y</zorder>
+  <zorder>label_5</zorder>
+  <zorder>label_6</zorder>
+  <zorder>label_7</zorder>
+  <zorder>label_8</zorder>
   <zorder>pushButton_getOcrRoi</zorder>
   <zorder>line_2</zorder>
-  <zorder>label_serialNum_title</zorder>
+  <zorder>label_9</zorder>
   <zorder>lineEdit_serialNum</zorder>
   <zorder>pushButton_recognize</zorder>
   <zorder>pushButton_return</zorder>
   <zorder>line_3</zorder>
-  <zorder>line_title</zorder>
+  <zorder>line_4</zorder>
   <zorder>label_title</zorder>
   <zorder>pushButton_confirm</zorder>
   <zorder>checkBox_ocrRoi_tl</zorder>
   <zorder>checkBox_ocrRoi_br</zorder>
   <zorder>lineEdit_maskRoi_tl_x</zorder>
-  <zorder>label_maskRoi_title</zorder>
-  <zorder>label_maskRoi_br_y</zorder>
+  <zorder>label_2</zorder>
+  <zorder>label_11</zorder>
   <zorder>checkBox_maskRoi_br</zorder>
-  <zorder>label_maskRoi_tl_x</zorder>
-  <zorder>label_maskRoi_br</zorder>
-  <zorder>line_1</zorder>
-  <zorder>label_maskRoi_tl</zorder>
+  <zorder>label_12</zorder>
+  <zorder>label_13</zorder>
+  <zorder>line_5</zorder>
+  <zorder>label_14</zorder>
   <zorder>pushButton_getMaskRoi</zorder>
-  <zorder>label_maskRoi_br_x</zorder>
+  <zorder>label_15</zorder>
   <zorder>checkBox_maskRoi_tl</zorder>
   <zorder>lineEdit_maskRoi_br_y</zorder>
   <zorder>lineEdit_maskRoi_tl_y</zorder>
-  <zorder>label_maskRoi_tl_y</zorder>
+  <zorder>label_16</zorder>
   <zorder>lineEdit_maskRoi_br_x</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
