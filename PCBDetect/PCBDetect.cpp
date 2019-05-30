@@ -344,18 +344,22 @@ bool PCBDetect::checkParametricClasses(bool showError)
 //模板提取 - 图标
 void PCBDetect::on_pushButton_getTempl_clicked()
 {
-	this->switchToTemplateUI();
+	this->switchToExtractUI();
 }
 
 //模板提取 - 按键
 void PCBDetect::on_pushButton_getTempl2_clicked()
 {
-	this->switchToTemplateUI();
+	this->switchToExtractUI();
 }
 
 //从主界面切换至模板提取界面
-void PCBDetect::switchToTemplateUI()
+void PCBDetect::switchToExtractUI()
 {
+	//设置运动控制器 机控制器的调用者
+	motionControler->setCaller(1);
+	cameraControler->setCaller(1);
+
 	//设置按键
 	this->setPushButtonsEnabled(false, true);
 	pcb::delay(10);
@@ -372,11 +376,11 @@ void PCBDetect::switchToTemplateUI()
 
 	extractUI->resetExtractUI(); //重置提取界面
 	if (!runtimeParams.DeveloperMode) extractUI->refreshCameraControler();//更新相机参数
-	this->showTemplateUI(); //显示模板提取界面
+	this->showExtractUI(); //显示模板提取界面
 }
 
 //显示模板提取界面，隐藏主界面
-void PCBDetect::showTemplateUI()
+void PCBDetect::showExtractUI()
 {
 	extractUI->showFullScreen(); //显示模板提取界面
 	pcb::delay(10); //延时
@@ -413,6 +417,10 @@ void PCBDetect::on_pushButton_detect2_clicked()
 //从主界面切换至
 void PCBDetect::switchToDetectUI()
 {
+	//设置运动控制器 机控制器的调用者
+	motionControler->setCaller(2);
+	cameraControler->setCaller(2);
+
 	//设置按键
 	this->setPushButtonsEnabled(false, true);
 	pcb::delay(10);

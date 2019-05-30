@@ -20,6 +20,7 @@ DetectUI::DetectUI(QWidget *parent)
 	defectDetecter = Q_NULLPTR;
 	detectThread = Q_NULLPTR;
 	detectState = DefectDetecter::Default;
+	initCounter = 0;
 }
 
 void DetectUI::init()
@@ -79,10 +80,16 @@ void DetectUI::init()
 	detectThread->init();
 
 	//运动控制
-	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion(int)), Qt::UniqueConnection);
+	//if (initCounter == 0) { //Qt::UniqueConnection
+	//	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion(int)));
+	//	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion(int)));
+	//	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion(int)));
+	//}
+
 	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion(int)), Qt::UniqueConnection);
+	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion(int)), Qt::UniqueConnection);
 	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion(int)), Qt::UniqueConnection);
-	
+
 	//相机控制
 	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)), Qt::UniqueConnection);
 	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)), Qt::UniqueConnection);
@@ -554,6 +561,8 @@ void DetectUI::do_showPreviousUI_serialNumUI()
 //到初始达拍照位置
 void DetectUI::on_moveToInitialPosFinished_motion(int errorCode)
 {
+	if (motionControler->getCaller() != 2) return;
+
 	//检查运动结构的状态
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
@@ -576,6 +585,8 @@ void DetectUI::on_moveToInitialPosFinished_motion(int errorCode)
 //运动结构前进结束
 void DetectUI::on_moveForwardFinished_motion(int errorCode)
 {
+	if (motionControler->getCaller() != 2) return;
+
 	//检查运动结构的状态
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
@@ -598,6 +609,8 @@ void DetectUI::on_moveForwardFinished_motion(int errorCode)
 //运动复位结束
 void DetectUI::on_motionResetFinished_motion(int errorCode)
 {
+	if (motionControler->getCaller() != 2) return;
+
 	//复位失败
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
@@ -626,6 +639,8 @@ void DetectUI::on_motionResetFinished_motion(int errorCode)
 //更新相机控制器的参数
 void DetectUI::refreshCameraControler()
 {
+	if (cameraControler->getCaller() != 2) return;
+
 	cameraControler->setCurrentRow(&currentRow_show);//设置行号
 	cameraControler->setCvMatSamples(&cvmatSamples);//设置图像容器
 	cameraControler->setOperation(CameraControler::TakePhotos);//设置相机操作
@@ -634,11 +649,14 @@ void DetectUI::refreshCameraControler()
 //相机初始化结束
 void DetectUI::on_initCamerasFinished_camera(int)
 {
+	if (cameraControler->getCaller() != 2) return;
 }
 
 //相机拍摄结束
 void DetectUI::on_takePhotosFinished_camera(int)
 {
+	if (cameraControler->getCaller() != 2) return;
+
 	//调用图像类型转换线程
 	imgConvertThread.start();
 }

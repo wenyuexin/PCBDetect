@@ -210,24 +210,25 @@ void SerialNumberUI::on_pushButton_getMaskRoi_clicked()
 
 	int ImageSize_W = adminConfig->ImageSize_W;
 	int ImageSize_H = adminConfig->ImageSize_H;
+	int tl_x = 0, tl_y = 0, br_x = 0, br_y = 0;
 
 	//获取掩膜区域的坐标 - 左上角
 	QString str_tl_x = ui.lineEdit_maskRoi_tl_x->text();
-	int tl_x = (str_tl_x == "") ? -1 : str_tl_x.toInt();
-	tl_x = (int) intervalCensored(tl_x, 0, ImageSize_W - 1);
+	if (str_tl_x == "") tl_x = -1;
+	else tl_x = (int)intervalCensored(str_tl_x.toInt(), 0, ImageSize_W - 1);
 
 	QString str_tl_y = ui.lineEdit_maskRoi_tl_y->text();
-	int tl_y = (str_tl_y == "") ? -1 : str_tl_y.toInt();
-	tl_y = (int) intervalCensored(tl_y, 0, ImageSize_H - 1);
+	if (str_tl_y == "") tl_y = -1;
+	else tl_y = (int)intervalCensored(str_tl_y.toInt(), 0, ImageSize_H - 1);
 
 	//获取掩膜区域的坐标 - 右下角
 	QString str_br_x = ui.lineEdit_maskRoi_br_x->text();
-	int br_x = (str_br_x == "") ? -1 : str_br_x.toInt();
-	br_x = (int) intervalCensored(br_x, 0, ImageSize_W - 1);
+	if (str_br_x == "") br_x = -1;
+	else br_x = (int)intervalCensored(str_br_x.toInt(), 0, ImageSize_W - 1);
 
 	QString str_br_y = ui.lineEdit_maskRoi_br_y->text();
-	int br_y = (str_br_y == "") ? -1 : str_br_y.toInt();
-	br_y = (int) intervalCensored(br_y, 0, ImageSize_H - 1);
+	if (str_br_y == "") br_y = -1;
+	else br_y = (int)intervalCensored(str_br_y.toInt(), 0, ImageSize_H - 1);
 
 	//将区域坐标存入运行参数类
 	runtimeParams->maskRoi_tl.setX(tl_x);

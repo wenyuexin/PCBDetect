@@ -16,6 +16,7 @@
 MotionControler::MotionControler(QThread *parent)
 	: QThread(parent)
 {
+	caller = -1; //模块的调用者
 	adminConfig = Q_NULLPTR; //系统参数
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
