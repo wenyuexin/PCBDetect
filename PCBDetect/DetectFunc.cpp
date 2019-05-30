@@ -424,6 +424,20 @@ Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
 	return imgFlaw;
 }
 
+cv::Mat DetectFunc::sub_process_new_small(cv::Mat & templBw, cv::Mat & sampBw, cv::Mat & mask_roi)
+{
+	Mat imgFlaw;
+	cv::absdiff(templBw, sampBw, imgFlaw);
+	int meanSamp = mean(imgFlaw)[0] + 25;
+	threshold(imgFlaw, imgFlaw, meanSamp, 255, cv::THRESH_BINARY);
+	bitwise_and(imgFlaw, mask_roi, imgFlaw);
+	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
+	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
+
+	return imgFlaw;
+}
+
 cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::Mat & templGray, cv::Mat & sampGray, cv::Mat & mask_roi)
 {
 
@@ -682,21 +696,30 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 			continue;
 
 
-		//对缺陷所在的小分图进行处理
-		int meanTemp = mean(temp_area)[0];
-		Mat tempAreaBw;
-		threshold(temp_area, tempAreaBw, meanTemp, 255, cv::THRESH_OTSU | cv::THRESH_BINARY_INV);
-		int meanSamp = mean(samp_area)[0];
-		Mat sampAreaBw;
-		threshold(samp_area, sampAreaBw, meanSamp, 255, cv::THRESH_OTSU | cv::THRESH_BINARY_INV);
+		//对缺陷所在的小分图进行处理1
+		//int meanTemp = mean(temp_area)[0];
+		//Mat tempAreaBw;
+		//threshold(temp_area, tempAreaBw, meanTemp, 255, cv::THRESH_OTSU | cv::THRESH_BINARY_INV);
+		//int meanSamp = mean(samp_area)[0];
+		//Mat sampAreaBw;
+		//threshold(samp_area, sampAreaBw, meanSamp, 255, cv::THRESH_OTSU | cv::THRESH_BINARY_INV);
+		//Mat diffPart;
+		//Mat smallRoi = cv::Mat::ones(sampAreaBw.size(), sampAreaBw.type()) * 255;
+		//diffPart = sub_process_new(tempAreaBw, sampAreaBw, smallRoi);
+		//cv::Mat partMask = cv::Mat::zeros(sampAreaBw.size(), CV_8UC1);
+		//drawContours(partMask, contours, i, 255, -1, 8, Mat(), 0, Point2f(-rect_out.x, -rect_out.y));
+		//cv::bitwise_and(partMask, diffPart, diffPart);
+		//vector<cv::Point2i> locations;
+		//cv::findNonZero(diffPart, locations);
+
+		////对缺陷所在的小分图进行处理2
 		Mat diffPart;
-		Mat smallRoi = cv::Mat::ones(sampAreaBw.size(), sampAreaBw.type()) * 255;
-		diffPart = sub_process_new(tempAreaBw, sampAreaBw, smallRoi);
-		cv::Mat partMask = cv::Mat::zeros(sampAreaBw.size(), CV_8UC1);
-		drawContours(partMask, contours, i, 255, -1, 8, Mat(), 0, Point2f(-rect_out.x, -rect_out.y));
-		cv::bitwise_and(partMask, diffPart, diffPart);
+		Mat smallRoi = cv::Mat::ones(samp_area.size(), CV_8UC1) * 255;
+		diffPart = sub_process_new_small(temp_area, samp_area, smallRoi);
 		vector<cv::Point2i> locations;
 		cv::findNonZero(diffPart, locations);
+
+
 
 		if (locations.size() <= 60)
 			continue;
