@@ -308,6 +308,7 @@ void DetectUI::removeItemsFromGraphicsScene()
 //开始检测新的PCB板
 void DetectUI::on_pushButton_start_clicked()
 {
+	qDebug() << ">>>>>>>>>>>>>>>>>>>>" << pcb::chinese("开始运行") << endl;
 	ui.label_status->setText(pcb::chinese("开始运行")); //更新状态
 	this->setPushButtonsEnabled(false); //禁用按键
 	this->reset(); //重置检测子模块
@@ -462,7 +463,7 @@ void DetectUI::showSampleImages()
 	ui.graphicsView->show();//显示
 
 	clock_t t2 = clock();
-	qDebug() << "====================" << pcb::chinese("分图显示结束：") << (t2 - t1)
+	qDebug() << "====================" << pcb::chinese("显示分图：") << (t2 - t1)
 		<< "ms ( currentRow_show =" << currentRow_show << ")" << endl;
 }
 
@@ -486,7 +487,7 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 	int gridRowIdx = (int) (relativePos.y() / gridSize.height());//点击位置在第几行
 	int gridColIdx = (int) (relativePos.x() / gridSize.width());//点击位置在第几列
 
-	if (true && gridRowIdx <= currentRow_show) {
+	if (gridRowIdx <= currentRow_show && qpixmapSamples[gridRowIdx][gridColIdx] != Q_NULLPTR) {
 		serialNumberUI->showSampleImage(gridRowIdx, gridColIdx);
 		pcb::delay(3);//延迟
 		serialNumberUI->showFullScreen();//显示序号识别界面
@@ -516,10 +517,8 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 		}
 	}
 	else { //标准模式
-		if (detectThread->isRunning()) return;
-
-		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1)
-			reset();//重置检测子模块
+		if (detectThread->isRunning()) 
+			return;
 
 		//判断对应模板文件夹是否存在
 		runtimeParams->currentTemplDir = userConfig->TemplDirPath + "/"
@@ -530,8 +529,9 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 			//return;
 		}
 
-		if (eventCounter >= 1)
+		if (eventCounter >= 1) {
 			detectSampleImages(); //检测
+		}
 	}	
 }
 
@@ -615,10 +615,12 @@ void DetectUI::on_motionResetFinished_motion(int errorCode)
 	if (currentRow_show == runtimeParams->nPhotographing - 1
 		&& runtimeParams->currentRow_detect == -1)
 	{
-		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
-			+ pcb::chinese("获取产品序号"));
-		qApp->processEvents();
-		pcb::delay(10); //延迟
+		//如果序号无效，则仍然进行提示
+		if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)) {
+			ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+				+ pcb::chinese("获取产品序号"));
+			qApp->processEvents();
+		}
 
 		//启用开始键和返回键
 		if (!motionControler->isRunning()) {
@@ -685,10 +687,12 @@ void DetectUI::on_convertFinished_convertThread()
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
 		&& !runtimeParams->DeveloperMode) 
 	{
-		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
-			+ pcb::chinese("获取产品序号"));
-		qApp->processEvents();
-		pcb::delay(10); //延迟
+		//如果序号识别界面不在显示状态（即本界面显示中）则进行提示
+		if (!serialNumberUI->isVisible()) {
+			ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+				+ pcb::chinese("获取产品序号"));
+			qApp->processEvents();
+		}
 	}
 
 	//显示结束后之前驱动机械结构运动
@@ -763,7 +767,7 @@ void DetectUI::do_updateDetectState_detecter(int state)
 		//检查是否有未处理的事件
 		while (detectThread->isRunning()) pcb::delay(50); //等待提取线程结束
 		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1) { //当前PCB检测结束
-			runtimeParams->currentRow_detect = -1;
+			runtimeParams->currentRow_detect += 1;
 			this->setPushButtonsEnabled(true); //启用按键
 		}
 		else { //当前PCB未检测完
