@@ -79,6 +79,8 @@ namespace pcb
 
 	private:
 		ErrorCode errorCode = Unchecked;
+		const QSize MaxResolutionOfCamera = QSize(4384, 3288);
+
 
 	public:
 		AdminConfig();
