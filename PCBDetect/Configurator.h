@@ -39,6 +39,8 @@ namespace pcb
 	{
 	public:
 		int MaxMotionStroke; //机械结构的最大运动行程 mm
+		int PulseNumInUnitTime; //单位时间内的脉冲数
+
 		int MaxCameraNum; //可用相机总数
 		double PixelsNumPerUnitLength; //单位长度的像素数 pix/mm
 		double ImageOverlappingRate_W; //分图重叠率(宽)
@@ -51,6 +53,7 @@ namespace pcb
 			Index_All,
 			Index_None,
 			Index_MaxMotionStroke,
+			Index_PulseNumInUnitTime,
 			Index_MaxCameraNum,
 			Index_PixelsNumPerUnitLength,
 			Index_ImageOverlappingRate_W,
@@ -67,13 +70,14 @@ namespace pcb
 			Unchecked = 0x100,
 			ConfigFileMissing = 0x101,
 			Invalid_MaxMotionStroke = 0x102,
-			Invalid_MaxCameraNum = 0x103,
-			Invalid_PixelsNumPerUnitLength = 0x104,
-			Invalid_ImageOverlappingRate_W = 0x105,
-			Invalid_ImageOverlappingRate_H = 0x106,
-			Invalid_ImageSize_W = 0x107,
-			Invalid_ImageSize_H = 0x108,
-			Invalid_ImageAspectRatio = 0x109,
+			Invalid_PulseNumInUnitTime = 0x103,
+			Invalid_MaxCameraNum = 0x104,
+			Invalid_PixelsNumPerUnitLength = 0x105,
+			Invalid_ImageOverlappingRate_W = 0x106,
+			Invalid_ImageOverlappingRate_H = 0x107,
+			Invalid_ImageSize_W = 0x108,
+			Invalid_ImageSize_H = 0x109,
+			Invalid_ImageAspectRatio = 0x10A,
 			Default = 0x1FF
 		};
 
