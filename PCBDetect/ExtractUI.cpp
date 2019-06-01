@@ -472,7 +472,7 @@ void ExtractUI::mouseDoubleClickEvent(QMouseEvent *event)
 	int gridRowIdx = (int) (relativePos.y() / gridSize.height());//点击位置在第几行
 	int gridColIdx = (int) (relativePos.x() / gridSize.width());//点击位置在第几列
 	
-	if (true && gridRowIdx <= currentRow_show) {
+	if (gridRowIdx <= currentRow_show && qpixmapSamples[gridRowIdx][gridColIdx] != Q_NULLPTR) {
 		serialNumberUI->showSampleImage(gridRowIdx, gridColIdx);
 		pcb::delay(3);//延迟
 		serialNumberUI->showFullScreen();//显示序号识别界面
@@ -527,10 +527,10 @@ void ExtractUI::on_getMaskRoiFinished_serialNumUI()
 	if (runtimeParams->maskRoi_tl.x() < 0 || runtimeParams->maskRoi_tl.y() < 0 ||
 		runtimeParams->maskRoi_br.x() < 0 || runtimeParams->maskRoi_br.y() < 0)
 	{
-		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
-			+ pcb::chinese("确认掩膜区域"));
-		qApp->processEvents();
-		pcb::delay(10); //延迟
+		//ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+		//	+ pcb::chinese("确认掩膜区域"));
+		//qApp->processEvents();
+		//pcb::delay(10); //延迟
 		return;
 	}
 
@@ -606,10 +606,12 @@ void ExtractUI::on_motionResetFinished_motion(int errorcode)
 	if (currentRow_show == runtimeParams->nPhotographing - 1
 		&& runtimeParams->currentRow_extract == -1)
 	{
-		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
-			+ pcb::chinese("获取产品序号"));
-		qApp->processEvents();
-		pcb::delay(10); //延迟
+		//如果序号无效，则仍然进行提示
+		if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)) {
+			ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
+				+ pcb::chinese("获取产品序号"));
+			qApp->processEvents();
+		}
 
 		//启用开始键和返回键
 		if (!motionControler->isRunning()) {
@@ -695,10 +697,10 @@ void ExtractUI::on_convertFinished_convertThread()
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false) && 
 		!runtimeParams->DeveloperMode)
 	{
+		//如果序号识别界面不在显示状态（即本界面显示中）则进行提示
 		ui.label_status->setText(pcb::chinese("请在序号识别界面\n")
 			+ pcb::chinese("获取产品序号"));
 		qApp->processEvents();
-		pcb::delay(10); //延迟
 		return;
 	}
 
@@ -765,7 +767,7 @@ void ExtractUI::update_extractState_extractor(int state)
 		//检查是否有未处理的事件
 		while (extractThread->isRunning()) pcb::delay(50); //等待提取线程结束
 		if (runtimeParams->currentRow_extract == runtimeParams->nPhotographing - 1) { //当前PCB提取结束
-			runtimeParams->currentRow_extract = -1;
+			runtimeParams->currentRow_extract += 1;
 			this->setPushButtonsEnabled(true); //启用按键
 		}
 		else { //当前PCB未提取完
