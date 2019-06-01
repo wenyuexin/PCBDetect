@@ -11,6 +11,9 @@ RuntimeParams::RuntimeParams()
 	errorCode_serialNum = Unchecked;
 	errorCode_sysInit = Unchecked;
 
+	nCamera_raw = -1; //原始的相机个数
+	nPhotographing_raw = -1; //原始的拍照次数
+
 	serialNum = ""; //样本编号
 	sampleModelNum = ""; //型号
 	sampleBatchNum = ""; //批次号
@@ -46,7 +49,6 @@ RuntimeParams::~RuntimeParams()
 //重置产品序号
 void RuntimeParams::resetSerialNum()
 {
-	errorCode_serialNum = Unchecked;
 	serialNum = ""; //样本编号
 	sampleModelNum = ""; //型号
 	sampleBatchNum = ""; //批次号
@@ -57,6 +59,12 @@ void RuntimeParams::resetSerialNum()
 void RuntimeParams::loadDefaultValue()
 {
 	errorCode = Unchecked;
+	errorCode_serialNum = Unchecked;
+	errorCode_sysInit = Unchecked;
+
+	nCamera_raw = 0; //原始的相机个数
+	nPhotographing_raw = 0; //原始的拍照次数
+
 	resetSerialNum(); //重置产品序号
 	currentRow_detect = -1; //检测行号
 
@@ -154,13 +162,15 @@ RuntimeParams::ErrorCode RuntimeParams::calcItemGridSize(AdminConfig *adminConfi
 	double overlap_W = adminConfig->ImageOverlappingRate_W; //该值主要由相机之间的距离决定
 	double nPixels_W = userConfig->ActualProductSize_W * adminConfig->PixelsNumPerUnitLength;
 	double nW = nPixels_W / adminConfig->ImageSize_W;
-	this->nCamera = (int) ceil((nW - overlap_W) / (1 - overlap_W));
+	nCamera_raw = (nW - overlap_W) / (1 - overlap_W);
+	this->nCamera = (int) ceil(nCamera_raw);
 
 	//计算拍摄次数
 	double overlap_H = adminConfig->ImageOverlappingRate_H; //图像重叠率
 	double nPixels_H = userConfig->ActualProductSize_H * adminConfig->PixelsNumPerUnitLength;
 	double nH = nPixels_H / adminConfig->ImageSize_H;
-	this->nPhotographing = (int) ceil((nH - overlap_H) / (1 - overlap_H));
+	nPhotographing_raw = (nH - overlap_H) / (1 - overlap_H);
+	this->nPhotographing = (int) ceil(nPhotographing_raw);
 
 	//判断参数有效性
 	ErrorCode code = ErrorCode::Unchecked;
@@ -183,6 +193,9 @@ RuntimeParams::ErrorCode RuntimeParams::calcInitialPhotoPos(pcb::AdminConfig *ad
 
 	//计算初始拍照位置
 	initPos += ((nPhotographing - 1) * singleMotionStroke); 
+	if (nPhotographing_raw - nPhotographing < 0.4) {
+		initPos -= 0.4*this->singleMotionStroke;
+	}
 	this->initialPhotoPos = initPos;
 	//this->initialPhotoPos = 245 - 80;
 
