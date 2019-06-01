@@ -145,6 +145,9 @@ namespace pcb
 		ErrorCode errorCode_serialNum;
 		ErrorCode errorCode_sysInit;
 
+		double nCamera_raw; //原始的相机个数
+		double nPhotographing_raw; //原始的拍照次数
+
 		//系统状态值 0x123456789
 		//adminConfig 1， userConfig 2, RuntimeParams 3
 		//MotionControler 4, CameraControler 5, ImageConvert 6
@@ -167,6 +170,8 @@ namespace pcb
 		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
 		ErrorCode calcInitialPhotoPos(pcb::AdminConfig *adminConfig);
 		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::UserConfig *userConfig);
+		ErrorCode update();
+
 		ErrorCode parseSerialNum();
 		int getSystemResetCode(RuntimeParams &newConfig); //获取系统重置代码
 
