@@ -247,6 +247,7 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 //ÅÄÉãÍ¼Ïñ - ÂõµÂÍşÊÓ
 void CameraControler::takePhotos2()
 {
+	clock_t t1 = clock();
 	for (int i = 0; i < runtimeParams->nCamera; i++) {
 		int iCamera = adminConfig->MaxCameraNum - i - 1;
 
@@ -300,6 +301,10 @@ void CameraControler::takePhotos2()
 		(*cvmatSamples)[*currentRow][i] = pMat;
 		CameraAlignFree(pRgbBuffer);
 	}
+
+	clock_t t1 = clock();
+	qDebug() << <<
+
 	return;
 }
 

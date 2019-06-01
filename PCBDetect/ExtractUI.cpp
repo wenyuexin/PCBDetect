@@ -563,7 +563,7 @@ void ExtractUI::on_moveToInitialPosFinished_motion(int errorcode)
 			pcb::chinese("行分图"));//更新状态
 		//qApp->processEvents();
 
-		//cameraControler->start(); //拍照
+		cameraControler->start(); //拍照
 	}
 }
 
