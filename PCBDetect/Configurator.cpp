@@ -68,11 +68,11 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 			code = Invalid_ImageOverlappingRate_H;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageSize_W: //分图宽度
-		if (ImageSize_W <= 0)
+		if (ImageSize_W <= 0 || ImageSize_W > MaxResolutionOfCamera.width())
 			code = Invalid_ImageSize_W;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageSize_H: //分图高度
-		if (ImageSize_H <= 0 || ImageSize_H <= PixelsNumPerUnitLength)
+		if (ImageSize_H <= 0 || ImageSize_H > MaxResolutionOfCamera.height())
 			code = Invalid_ImageSize_H;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageAspectRatio: //图像宽高比
