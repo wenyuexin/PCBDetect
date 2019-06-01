@@ -18,6 +18,7 @@ SettingUI::SettingUI(QWidget *parent)
 	adminSettingUI = Q_NULLPTR; //系统设置界面
 	sysResetCode = 0b00000000; //系统重置代码
 	NumberValidator = Q_NULLPTR;
+	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
 }
 
 void SettingUI::init()
@@ -36,7 +37,6 @@ void SettingUI::init()
 	this->setPushButtonsEnabled(true);
 
 	//限制参数的输入范围
-	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
 	ui.lineEdit_ActualProductSize_W->setValidator(NumberValidator);
 	ui.lineEdit_ActualProductSize_H->setValidator(NumberValidator);
 	ui.lineEdit_nBasicUnitInRow->setValidator(NumberValidator);

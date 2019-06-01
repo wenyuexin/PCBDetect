@@ -15,6 +15,7 @@ AdminSettingUI::AdminSettingUI(QWidget *parent)
 	adminConfig = Q_NULLPTR; //系统参数
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
+	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
 }
 
 void AdminSettingUI::init()
@@ -32,18 +33,21 @@ void AdminSettingUI::init()
 	//限制参数的输入范围
 	QIntValidator intValidator;
 	QDoubleValidator doubleValidator;
-	ui.lineEdit_MaxMotionStroke->setValidator(&intValidator);
-	ui.lineEdit_MaxCameraNum->setValidator(&intValidator);
-	ui.lineEdit_PixelsNumPerUnitLength->setValidator(&intValidator);
+	ui.lineEdit_MaxMotionStroke->setValidator(NumberValidator);
+	ui.lineEdit_PulseNumInUnitTime->setValidator(NumberValidator);
+	ui.lineEdit_MaxCameraNum->setValidator(NumberValidator);
+	ui.lineEdit_PixelsNumPerUnitLength->setValidator(NumberValidator);
 	ui.lineEdit_ImageOverlappingRate_W->setValidator(&doubleValidator);
 	ui.lineEdit_ImageOverlappingRate_H->setValidator(&doubleValidator);
-	ui.lineEdit_ImageSize_W->setValidator(&intValidator);
-	ui.lineEdit_ImageSize_H->setValidator(&intValidator);
+	ui.lineEdit_ImageSize_W->setValidator(NumberValidator);
+	ui.lineEdit_ImageSize_H->setValidator(NumberValidator);
 }
 
 AdminSettingUI::~AdminSettingUI()
 {
 	qDebug() << "~AdminSettingUI";
+	delete NumberValidator;
+	NumberValidator = Q_NULLPTR;
 }
 
 
@@ -53,6 +57,7 @@ AdminSettingUI::~AdminSettingUI()
 void AdminSettingUI::refreshAdminSettingUI()
 {
 	ui.lineEdit_MaxMotionStroke->setText(QString::number(adminConfig->MaxMotionStroke));
+	ui.lineEdit_PulseNumInUnitTime->setText(QString::number(adminConfig->PulseNumInUnitTime));
 	ui.lineEdit_MaxCameraNum->setText(QString::number(adminConfig->MaxCameraNum));
 	ui.lineEdit_PixelsNumPerUnitLength->setText(QString::number(adminConfig->PixelsNumPerUnitLength, 'f', 6));
 	ui.lineEdit_ImageOverlappingRate_W->setText(QString::number(adminConfig->ImageOverlappingRate_W, 'f', 6));
@@ -171,6 +176,7 @@ void AdminSettingUI::getConfigFromAdminSettingUI()
 	tempConfig.resetErrorCode();
 
 	tempConfig.MaxMotionStroke = ui.lineEdit_MaxMotionStroke->text().toInt();
+	tempConfig.PulseNumInUnitTime = ui.lineEdit_PulseNumInUnitTime->text().toInt();
 	tempConfig.MaxCameraNum = ui.lineEdit_MaxCameraNum->text().toInt();
 	tempConfig.PixelsNumPerUnitLength = ui.lineEdit_PixelsNumPerUnitLength->text().toDouble();
 	tempConfig.ImageOverlappingRate_W = ui.lineEdit_ImageOverlappingRate_W->text().toDouble();
@@ -194,6 +200,8 @@ void AdminSettingUI::setCursorLocation(AdminConfig::ConfigIndex code)
 		ui.lineEdit_MaxMotionStroke->clearFocus(); break;
 	case pcb::AdminConfig::Index_MaxMotionStroke:
 		ui.lineEdit_MaxMotionStroke->setFocus(); break;
+	case pcb::AdminConfig::Index_PulseNumInUnitTime:
+		ui.lineEdit_PulseNumInUnitTime->setFocus(); break;
 	case pcb::AdminConfig::Index_MaxCameraNum:
 		ui.lineEdit_MaxCameraNum->setFocus(); break;
 	case pcb::AdminConfig::Index_PixelsNumPerUnitLength:
