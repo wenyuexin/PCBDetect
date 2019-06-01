@@ -302,8 +302,9 @@ void CameraControler::takePhotos2()
 		CameraAlignFree(pRgbBuffer);
 	}
 
-	clock_t t1 = clock();
-	qDebug() << <<
+	clock_t t2 = clock();
+	qDebug() << "====================" << pcb::chinese("Ïà»úÅÄÍ¼£º") << (t2 - t1) << "ms" 
+		<< "( currentRow_show =" << *currentRow << ")" << endl;
 
 	return;
 }
