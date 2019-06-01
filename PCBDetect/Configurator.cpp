@@ -31,6 +31,7 @@ void AdminConfig::loadDefaultValue()
 {
 	this->errorCode = Unchecked; //错误代码
 	this->MaxMotionStroke = 80 * 5; //机械结构的最大运动行程
+	this->PulseNumInUnitTime = 85; //单位时间内的脉冲数
 	this->MaxCameraNum = 5; //可用相机的总数
 	this->PixelsNumPerUnitLength = 40; //单位长度内的像素个数
 	this->ImageOverlappingRate_W = 345.0 / 4384.0; //分图重叠率(宽)
@@ -48,15 +49,19 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 	{
 	case pcb::AdminConfig::Index_All:
 	case pcb::AdminConfig::Index_MaxMotionStroke: //机械结构的最大运动行程
-		if (MaxMotionStroke <= 0) 
+		if (MaxMotionStroke <= 0 || MaxMotionStroke > 650)
 			code = Invalid_MaxMotionStroke;
 		if (code != Unchecked || index != Index_All) break;
+	case pcb::AdminConfig::Index_PulseNumInUnitTime: //机械结构的最大运动行程
+		if (PulseNumInUnitTime <= 0 || PulseNumInUnitTime > 300)
+			code = Invalid_PulseNumInUnitTime;
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_MaxCameraNum: //可用相机总数
-		if (MaxCameraNum <= 0) 
+		if (MaxCameraNum <= 0 || MaxCameraNum > 10)
 			code = Invalid_MaxCameraNum;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_PixelsNumPerUnitLength: //单位长度的像素
-		if (PixelsNumPerUnitLength <= 0) 
+		if (PixelsNumPerUnitLength <= 0 || PixelsNumPerUnitLength > 1000)
 			code = Invalid_PixelsNumPerUnitLength;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::AdminConfig::Index_ImageOverlappingRate_W: //分图重叠率(宽)
@@ -101,6 +106,8 @@ AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
 			return Index_None;
 		case pcb::AdminConfig::Invalid_MaxMotionStroke:
 			return Index_MaxMotionStroke;
+		case pcb::AdminConfig::Invalid_PulseNumInUnitTime:
+			return Index_PulseNumInUnitTime;
 		case pcb::AdminConfig::Invalid_MaxCameraNum:
 			return Index_MaxCameraNum;
 		case pcb::AdminConfig::Invalid_PixelsNumPerUnitLength:
@@ -138,21 +145,23 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 	switch (tempCode)
 	{
 	case pcb::AdminConfig::Invalid_MaxMotionStroke:
-		valueName = pcb::chinese("\"机械结构最大行程\""); break;
+		valueName = pcb::chinese("运行结构的最大行程"); break;
+	case pcb::AdminConfig::Invalid_PulseNumInUnitTime:
+		valueName = pcb::chinese("运动结构的单位脉冲数"); break;
 	case pcb::AdminConfig::Invalid_MaxCameraNum:
-		valueName = pcb::chinese("\"可用相机总数\""); break;
+		valueName = pcb::chinese("可用相机总数"); break;
 	case pcb::AdminConfig::Invalid_PixelsNumPerUnitLength:
-		valueName = pcb::chinese("\"每毫米像素数\""); break;
+		valueName = pcb::chinese("每毫米像素数"); break;
 	case pcb::AdminConfig::Invalid_ImageOverlappingRate_W:
-		valueName = pcb::chinese("\"分图重叠率(宽)\""); break;
+		valueName = pcb::chinese("分图重叠率(宽)"); break;
 	case pcb::AdminConfig::Invalid_ImageOverlappingRate_H:
-		valueName = pcb::chinese("\"分图重叠率(高)\""); break;
+		valueName = pcb::chinese("分图重叠率(高)"); break;
 	case pcb::AdminConfig::Invalid_ImageSize_W:
 	case pcb::AdminConfig::Invalid_ImageSize_H:
 	case pcb::AdminConfig::Invalid_ImageAspectRatio:
-		valueName = pcb::chinese("\"分图尺寸\""); break;
+		valueName = pcb::chinese("分图尺寸"); break;
 	default:
-		valueName = "\"\""; break;
+		valueName = ""; break;
 	}
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
@@ -209,6 +218,7 @@ void AdminConfig::copyTo(AdminConfig *dst)
 {
 	dst->errorCode = this->errorCode;
 	dst->MaxMotionStroke = this->MaxMotionStroke;
+	dst->PulseNumInUnitTime = this->PulseNumInUnitTime;
 	dst->MaxCameraNum = this->MaxCameraNum;
 	dst->PixelsNumPerUnitLength = this->PixelsNumPerUnitLength;
 	dst->ImageOverlappingRate_W = this->ImageOverlappingRate_W;
@@ -687,6 +697,7 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
 		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
+		configurator.jsonReadValue("PulseNumInUnitTime", config->PulseNumInUnitTime, true);
 		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum, true);
 		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
 		configurator.jsonReadValue("ImageOverlappingRate_W", config->ImageOverlappingRate_W, true);
@@ -714,6 +725,7 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
 		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke, true);
+		configurator.jsonSetValue("PulseNumInUnitTime", config->MaxMotionStroke, true);
 		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum, true);
 		configurator.jsonSetValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
 		configurator.jsonSetValue("ImageOverlappingRate_W", config->ImageOverlappingRate_W, true);

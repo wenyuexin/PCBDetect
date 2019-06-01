@@ -212,7 +212,7 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>150</y>
+     <y>220</y>
      <width>361</width>
      <height>37</height>
     </rect>
@@ -316,7 +316,7 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>220</y>
+     <y>290</y>
      <width>361</width>
      <height>37</height>
     </rect>
@@ -407,7 +407,7 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>290</y>
+     <y>360</y>
      <width>361</width>
      <height>37</height>
     </rect>
@@ -498,7 +498,7 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>430</y>
+     <y>500</y>
      <width>361</width>
      <height>37</height>
     </rect>
@@ -563,13 +563,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>25</width>
+        <width>21</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>25</width>
+        <width>21</width>
         <height>35</height>
        </size>
       </property>
@@ -645,13 +645,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>25</width>
+        <width>21</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>25</width>
+        <width>21</width>
         <height>35</height>
        </size>
       </property>
@@ -704,7 +704,7 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>360</y>
+     <y>430</y>
      <width>361</width>
      <height>37</height>
     </rect>
@@ -761,6 +761,97 @@
     </item>
     <item>
      <widget class="QLineEdit" name="lineEdit_ImageOverlappingRate_H">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>180</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>160</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_12">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>150</y>
+     <width>361</width>
+     <height>37</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_13">
+    <item>
+     <widget class="QLabel" name="label_roiHeight_L_12">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>145</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>145</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>单位脉冲数</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_13">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>5</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="lineEdit_PulseNumInUnitTime">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>

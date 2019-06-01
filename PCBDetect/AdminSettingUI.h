@@ -14,6 +14,8 @@ class AdminSettingUI : public QWidget
 
 private:
 	Ui::AdminSettingUI ui;
+	QRegExpValidator *NumberValidator;
+
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::AdminConfig tempConfig; //临时的系统参数类，暂存界面上的值
 	const QString configFileName= ".admin.config";//配置文件的文件名
@@ -36,7 +38,6 @@ public:
 	void setPushButtonsEnabled(bool code); //按键设置
 
 private:
-	void initAdminSettingUI();
 	void getConfigFromAdminSettingUI();
 	void setCursorLocation(pcb::AdminConfig::ConfigIndex code);
 

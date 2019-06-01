@@ -128,7 +128,7 @@ bool MotionControler::initControler()
 
 	//进一步检查运动结构的最大行程
 	double maxDist = adminConfig->MaxMotionStroke;
-	if (maxDist > 550) { qDebug() << "invalid maxDist"; }
+	int PulseNumInUnitTime = adminConfig->PulseNumInUnitTime;
 
 	//设置控制指令 - X轴
 	if (!_AMC98_AddParamPC2CNC(138, int(maxDist * 10000))) return false; //轴最大值
@@ -138,7 +138,7 @@ bool MotionControler::initControler()
 	if (!_AMC98_AddParamPC2CNC(141, 10 * 10000)) return false;//回原点慢速度
 	if (!_AMC98_AddParamPC2CNC(142, 30 * 10000)) return false;//回原点快速度
 	if (!_AMC98_AddParamPC2CNC(143, 5 * 10000)) return false;//原点位置
-	if (!_AMC98_AddParamPC2CNC(146, 85 * 10000)) return false;//1单位脉冲数
+	if (!_AMC98_AddParamPC2CNC(146, int(PulseNumInUnitTime * 10000))) return false;//1单位脉冲数
 	if (!_AMC98_AddParamPC2CNC(144, 2)) return false;//回原点设置 2负方向复位 1正方向复位
 	if (!_AMC98_AddParamPC2CNC(147, 200)) return false;//加速时间
 	if (!_AMC98_AddParamPC2CNC(148, 200)) return false;//减速时间
