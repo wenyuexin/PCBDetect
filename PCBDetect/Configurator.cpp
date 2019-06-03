@@ -186,6 +186,7 @@ AdminConfig::ErrorCode AdminConfig::calcImageAspectRatio()
 AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 {
 	if (this->MaxMotionStroke != other.MaxMotionStroke) return Index_MaxMotionStroke;
+	if (this->PulseNumInUnitTime != other.PulseNumInUnitTime) return Index_PulseNumInUnitTime;
 	if (this->MaxCameraNum != other.MaxCameraNum) return Index_MaxCameraNum;
 	if (this->PixelsNumPerUnitLength != other.PixelsNumPerUnitLength) return Index_PixelsNumPerUnitLength;
 	if (this->ImageOverlappingRate_W != other.ImageOverlappingRate_W) return Index_ImageOverlappingRate_W;
@@ -202,13 +203,24 @@ int AdminConfig::getSystemResetCode(AdminConfig &newConfig)
 
 	//重置模板提取、检测界面
 	if (ImageSize_W != newConfig.ImageSize_W || ImageSize_H != newConfig.ImageSize_H) {
-		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) > 1E-6) 
+		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) > 1E-6) {
 			resetCode |= 0x000000011;
+		}
 	}
 	//重置运动结构模块
-	if (this->MaxMotionStroke != newConfig.MaxMotionStroke) resetCode |= 0x000100000;
+	if (this->MaxMotionStroke != newConfig.MaxMotionStroke ||
+		this->PulseNumInUnitTime != newConfig.PulseNumInUnitTime) 
+	{
+		resetCode |= 0x000100000;
+	}
+
 	//重置相机模块
-	if (this->MaxCameraNum != newConfig.MaxCameraNum) resetCode |= 0x000010000;
+	if (this->MaxCameraNum != newConfig.MaxCameraNum ||
+		this->ImageSize_W != newConfig.ImageSize_W ||
+		this->ImageSize_H != newConfig.ImageSize_H)
+	{
+		resetCode |= 0x000010000;
+	}
 
 	return resetCode;
 }
@@ -725,7 +737,7 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
 		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke, true);
-		configurator.jsonSetValue("PulseNumInUnitTime", config->MaxMotionStroke, true);
+		configurator.jsonSetValue("PulseNumInUnitTime", config->PulseNumInUnitTime, true);
 		configurator.jsonSetValue("MaxCameraNum", config->MaxCameraNum, true);
 		configurator.jsonSetValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
 		configurator.jsonSetValue("ImageOverlappingRate_W", config->ImageOverlappingRate_W, true);

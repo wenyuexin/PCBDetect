@@ -194,7 +194,7 @@ RuntimeParams::ErrorCode RuntimeParams::calcInitialPhotoPos(pcb::AdminConfig *ad
 	//º∆À„≥ı º≈ƒ’’Œª÷√
 	initPos += ((nPhotographing - 1) * singleMotionStroke); 
 	if (nPhotographing_raw - nPhotographing < 0.4) {
-		initPos -= 0.4*this->singleMotionStroke;
+		//initPos -= 0.4*this->singleMotionStroke;
 	}
 	this->initialPhotoPos = initPos;
 	//this->initialPhotoPos = 245 - 80;
