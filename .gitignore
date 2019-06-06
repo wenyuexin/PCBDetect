@@ -273,3 +273,4 @@ GeneratedFiles/
 /PCBDetect/PCBDetect.vcxproj
 /PCBDetect/PCBDetect.vcxproj.filters
 /PCBDetect/PCBDetect.vcxproj.user
+!/config/*/*
