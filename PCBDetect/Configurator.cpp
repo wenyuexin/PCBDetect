@@ -241,9 +241,9 @@ void AdminConfig::copyTo(AdminConfig *dst)
 
 
 
-/****************************************************/
-/*                   UserConfig                   */
-/****************************************************/
+/***************************************************/
+/*                   UserConfig                    */
+/***************************************************/
 
 UserConfig::UserConfig()
 {
@@ -256,6 +256,9 @@ UserConfig::UserConfig()
 	nBasicUnitInRow = -1; //每一行中的基本单元数
 	nBasicUnitInCol = -1; //每一列中的基本单元数
 
+	clusterComPort = ""; //COM串口
+
+	defectTypeForDetect = 0b1100; //需要检测的缺陷类型
 	matchingAccuracyLevel = 1; //匹配模式：1高精度 2低精度
 	concaveRateThresh = 50; //线路缺失率的阈值
 	convexRateThresh = 50; //线路凸起率的阈值
@@ -273,21 +276,23 @@ void UserConfig::loadDefaultValue()
 	dir.cdUp(); //转到上一级目录
 	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
 
-	this->errorCode = Unchecked; //错误代码
-	this->TemplDirPath = appDirPath + "/template";//模板路径
-	this->SampleDirPath = appDirPath + "/sample"; //样本路径
-	this->OutputDirPath = appDirPath + "/output"; //结果路径
-	this->ImageFormat = ".bmp"; //图像后缀
-	this->clusterComPort = "COM1"; //COM口
+	errorCode = Unchecked; //错误代码
+	TemplDirPath = appDirPath + "/template";//模板路径
+	SampleDirPath = appDirPath + "/sample"; //样本路径
+	OutputDirPath = appDirPath + "/output"; //结果路径
+	ImageFormat = ".bmp"; //图像后缀
 
-	this->ActualProductSize_W = 500;//产品实际宽度
-	this->ActualProductSize_H = 300;//产品实际高度
-	this->nBasicUnitInRow = 4; //每一行中的基本单元数
-	this->nBasicUnitInCol = 6; //每一列中的基本单元数
+	ActualProductSize_W = 500;//产品实际宽度
+	ActualProductSize_H = 300;//产品实际高度
+	nBasicUnitInRow = 4; //每一行中的基本单元数
+	nBasicUnitInCol = 6; //每一列中的基本单元数
 
-	this->matchingAccuracyLevel = 1; //匹配精度等级：1高精度 2低精度
-	this->concaveRateThresh = 50; //线路缺失率的阈值
-	this->convexRateThresh = 50; //线路凸起率的阈值
+	clusterComPort = "COM1"; //COM口
+	
+	defectTypeForDetect = 0b1100; //需要检测的缺陷类型
+	matchingAccuracyLevel = 1; //匹配精度等级：1高精度 2低精度
+	concaveRateThresh = 50; //线路缺失率的阈值
+	convexRateThresh = 50; //线路凸起率的阈值
 }
 
 //参数有效性检查
@@ -297,6 +302,8 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 	switch (index)
 	{
 	case pcb::UserConfig::Index_All:
+
+	//基本设置
 	case pcb::UserConfig::Index_TemplDirPath: //模板路径
 		if (TemplDirPath == "" || !QFileInfo(TemplDirPath).isDir())
 			code = Invalid_TemplDirPath;
@@ -334,7 +341,12 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 			code = Invalid_nBasicUnitInCol;
 		if (code != Unchecked || index != Index_All) break;
 
+	//检测算法
+	case pcb::UserConfig::Index_defectTypeForDetect: //需要检测的缺陷类型
+		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_matchingAccuracyLevel: //匹配模式
+		if (matchingAccuracyLevel < 1 || matchingAccuracyLevel>2)
+			code = Invalid_matchingAccuracyLevel;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_concaveRateThresh: //缺失率阈值
 		if (concaveRateThresh <= 0 || concaveRateThresh >= 100)
@@ -365,6 +377,7 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 	{
 	case pcb::UserConfig::ValidConfig:
 		return Index_None;
+	//基本设置
 	case pcb::UserConfig::Invalid_TemplDirPath:
 		return Index_TemplDirPath;
 	case pcb::UserConfig::Invalid_SampleDirPath:
@@ -381,8 +394,12 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 		return Index_nBasicUnitInRow;
 	case pcb::UserConfig::Invalid_nBasicUnitInCol:
 		return Index_nBasicUnitInCol;
+	//运动结构
 	case pcb::UserConfig::Invalid_clusterComPort:
 		return Index_clusterComPort;
+	//检测算法
+	case pcb::UserConfig::Invalid_defectTypeForDetect:
+		return Index_defectTypeForDetect;
 	case pcb::UserConfig::Invalid_matchingAccuracyLevel:
 		return Index_matchingAccuracyLevel;
 	case pcb::UserConfig::Invalid_concaveRateThresh:
@@ -425,15 +442,25 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	case pcb::UserConfig::Invalid_nBasicUnitInRow:
 	case pcb::UserConfig::Invalid_nBasicUnitInCol:
 		valueName = pcb::chinese("基本单元数"); break;
+	//运动结构
 	case pcb::UserConfig::Invalid_clusterComPort:
 		valueName = pcb::chinese("运动控制串口"); break;
+	//检测算法
+	case pcb::UserConfig::Invalid_defectTypeForDetect:
+		valueName = pcb::chinese("待检测的缺陷类型"); break;
+	case pcb::UserConfig::Invalid_matchingAccuracyLevel:
+		valueName = pcb::chinese("匹配精度"); break;
+	case pcb::UserConfig::Invalid_concaveRateThresh:
+		valueName = pcb::chinese("缺失率阈值"); break;
+	case pcb::UserConfig::Invalid_convexRateThresh:
+		valueName = pcb::chinese("凸起率阈值"); break;
 	default:
 		valueName = ""; break;
 	}
 
 	QMessageBox::warning(parent, pcb::chinese("警告"),
-		pcb::chinese("用户参数无效，请在参数设置界面重新设置") + valueName + "!  \n" +
-		pcb::chinese("错误来源：") + valueName + "\n"
+		pcb::chinese("用户参数无效，请在参数设置界面重新设置！ \n") +
+		pcb::chinese("错误来源：") + valueName + "\n" + 
 		"Config: User: ErrorCode: " + QString::number(tempCode),
 		pcb::chinese("确定"));
 	return true;
@@ -441,17 +468,22 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 
 //不相等判断
 UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
+	//基本设置
 	if (this->TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
 	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
 	if (this->OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
 	if (this->ImageFormat != other.ImageFormat) return Index_ImageFormat;
-	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
 
 	if (this->ActualProductSize_W != other.ActualProductSize_W) return Index_ActualProductSize_W;
 	if (this->ActualProductSize_H != other.ActualProductSize_H) return Index_ActualProductSize_H;
 	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
 	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
 
+	//运动结构
+	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
+	
+	//检测算法
+	if (this->defectTypeForDetect != other.defectTypeForDetect) return Index_defectTypeForDetect;
 	if (this->matchingAccuracyLevel != other.matchingAccuracyLevel) return Index_matchingAccuracyLevel;
 	if (this->concaveRateThresh != other.concaveRateThresh) return Index_concaveRateThresh;
 	if (this->convexRateThresh != other.convexRateThresh) return Index_convexRateThresh;
@@ -471,18 +503,23 @@ int UserConfig::getSystemResetCode(UserConfig &newConfig)
 //拷贝结构体
 void UserConfig::copyTo(UserConfig *dst)
 {
+	//基本设置
 	dst->errorCode = this->errorCode; //参数有效性
 	dst->TemplDirPath = this->TemplDirPath;//模板文件的存储路径
 	dst->SampleDirPath = this->SampleDirPath;//样本文件存储路径
 	dst->OutputDirPath = this->OutputDirPath;//检测结果存储路径
 	dst->ImageFormat = this->ImageFormat; //图像后缀
-	dst->clusterComPort = this->clusterComPort; //COM口
 
 	dst->ActualProductSize_W = this->ActualProductSize_W; //产品实际宽度
 	dst->ActualProductSize_H = this->ActualProductSize_H; //产品实际高度
 	dst->nBasicUnitInRow = this->nBasicUnitInRow; //每一行中的基本单元数
 	dst->nBasicUnitInCol = this->nBasicUnitInCol; //每一列中的基本单元数
 
+	//运动结构
+	dst->clusterComPort = this->clusterComPort; //COM口
+
+	//检测算法
+	dst->defectTypeForDetect = this->defectTypeForDetect; //需要检测的缺陷类型
 	dst->matchingAccuracyLevel = this->matchingAccuracyLevel; //匹配模式：0高精度 1低精度
 	dst->concaveRateThresh = this->concaveRateThresh; //线路缺失率的阈值
 	dst->convexRateThresh = this->convexRateThresh; //线路凸起率的阈值
@@ -708,7 +745,14 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
-		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
+		
+		QTime dieTime = QTime::currentTime().addMSecs(10); //非阻塞延迟
+		while (QTime::currentTime() < dieTime)
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+
+		if (!configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true))
+			configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
+
 		configurator.jsonReadValue("PulseNumInUnitTime", config->PulseNumInUnitTime, true);
 		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum, true);
 		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);

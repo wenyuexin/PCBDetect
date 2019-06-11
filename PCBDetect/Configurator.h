@@ -117,13 +117,15 @@ namespace pcb
 		QString SampleDirPath;//样本路径
 		QString OutputDirPath;//结果路径
 		QString ImageFormat; //图像后缀
-		QString clusterComPort; //COM串口
 
 		int ActualProductSize_W;//产品实际宽度,单位mm
 		int ActualProductSize_H;//产品实际高度,单位mm
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
 
+		QString clusterComPort; //COM串口
+
+		long defectTypeForDetect; //需要检测的缺陷类型
 		int matchingAccuracyLevel; //匹配精度等级：1高精度 2低精度
 		int concaveRateThresh; //线路缺失率的阈值
 		int convexRateThresh; //线路凸起率的阈值
@@ -132,15 +134,19 @@ namespace pcb
 		enum ConfigIndex {
 			Index_All,
 			Index_None,
+			//基本参数
 			Index_TemplDirPath,
 			Index_SampleDirPath,
 			Index_OutputDirPath,
 			Index_ImageFormat,
-			Index_clusterComPort,
 			Index_ActualProductSize_W,
 			Index_ActualProductSize_H,
 			Index_nBasicUnitInRow,
 			Index_nBasicUnitInCol,
+			//运动结构
+			Index_clusterComPort,
+			//检测算法
+			Index_defectTypeForDetect,
 			Index_matchingAccuracyLevel,
 			Index_concaveRateThresh,
 			Index_convexRateThresh
@@ -152,18 +158,23 @@ namespace pcb
 			ValidValue = 0x000,
 			Unchecked = 0x200,
 			ConfigFileMissing = 0x201,
+			//基本参数
 			Invalid_TemplDirPath = 0x202,
 			Invalid_SampleDirPath = 0x203,
 			Invalid_OutputDirPath = 0x204,
 			Invalid_ImageFormat = 0x205,
-			Invalid_clusterComPort = 0x206,
-			Invalid_ActualProductSize_W = 0x207,
-			Invalid_ActualProductSize_H = 0x208,
-			Invalid_nBasicUnitInRow = 0x209,
-			Invalid_nBasicUnitInCol = 0x20A,
-			Invalid_matchingAccuracyLevel = 0x20B,
-			Invalid_concaveRateThresh = 0x20C,
-			Invalid_convexRateThresh = 0x20D,
+			Invalid_ActualProductSize_W = 0x206,
+			Invalid_ActualProductSize_H = 0x207,
+			Invalid_nBasicUnitInRow = 0x208,
+			Invalid_nBasicUnitInCol = 0x209,
+			//运动结构
+			Invalid_clusterComPort = 0x20A,
+			//检测算法
+			Invalid_defectTypeForDetect = 0x20B,
+			Invalid_matchingAccuracyLevel = 0x20C,
+			Invalid_concaveRateThresh = 0x20D,
+			Invalid_convexRateThresh = 0x20E,
+			//其他
 			Default = 0x2FF
 		};
 
