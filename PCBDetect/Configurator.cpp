@@ -3,6 +3,7 @@
 using pcb::UserConfig;
 using pcb::AdminConfig;
 using pcb::Configurator;
+using std::vector;
 
 
 /****************************************************/
@@ -258,7 +259,7 @@ UserConfig::UserConfig()
 
 	clusterComPort = ""; //COM串口
 
-	defectTypeForDetect = 0b1100; //需要检测的缺陷类型
+	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //需要检测的缺陷类型
 	matchingAccuracyLevel = 1; //匹配模式：1高精度 2低精度
 	concaveRateThresh = 50; //线路缺失率的阈值
 	convexRateThresh = 50; //线路凸起率的阈值
@@ -289,7 +290,7 @@ void UserConfig::loadDefaultValue()
 
 	clusterComPort = "COM1"; //COM口
 	
-	defectTypeForDetect = 0b1100; //需要检测的缺陷类型
+	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //需要检测的缺陷类型
 	matchingAccuracyLevel = 1; //匹配精度等级：1高精度 2低精度
 	concaveRateThresh = 50; //线路缺失率的阈值
 	convexRateThresh = 50; //线路凸起率的阈值
@@ -342,7 +343,7 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 		if (code != Unchecked || index != Index_All) break;
 
 	//检测算法
-	case pcb::UserConfig::Index_defectTypeForDetect: //需要检测的缺陷类型
+	case pcb::UserConfig::Index_defectTypeToBeProcessed: //需要检测的缺陷类型
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_matchingAccuracyLevel: //匹配模式
 		if (matchingAccuracyLevel < 1 || matchingAccuracyLevel>2)
@@ -398,8 +399,8 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 	case pcb::UserConfig::Invalid_clusterComPort:
 		return Index_clusterComPort;
 	//检测算法
-	case pcb::UserConfig::Invalid_defectTypeForDetect:
-		return Index_defectTypeForDetect;
+	case pcb::UserConfig::Invalid_defectTypeToBeProcessed:
+		return Index_defectTypeToBeProcessed;
 	case pcb::UserConfig::Invalid_matchingAccuracyLevel:
 		return Index_matchingAccuracyLevel;
 	case pcb::UserConfig::Invalid_concaveRateThresh:
@@ -446,8 +447,8 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	case pcb::UserConfig::Invalid_clusterComPort:
 		valueName = pcb::chinese("运动控制串口"); break;
 	//检测算法
-	case pcb::UserConfig::Invalid_defectTypeForDetect:
-		valueName = pcb::chinese("待检测的缺陷类型"); break;
+	case pcb::UserConfig::Invalid_defectTypeToBeProcessed:
+		valueName = pcb::chinese("待处理的缺陷类型"); break;
 	case pcb::UserConfig::Invalid_matchingAccuracyLevel:
 		valueName = pcb::chinese("匹配精度"); break;
 	case pcb::UserConfig::Invalid_concaveRateThresh:
@@ -483,21 +484,11 @@ UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
 	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
 	
 	//检测算法
-	if (this->defectTypeForDetect != other.defectTypeForDetect) return Index_defectTypeForDetect;
+	if (this->defectTypeToBeProcessed != other.defectTypeToBeProcessed) return Index_defectTypeToBeProcessed;
 	if (this->matchingAccuracyLevel != other.matchingAccuracyLevel) return Index_matchingAccuracyLevel;
 	if (this->concaveRateThresh != other.concaveRateThresh) return Index_concaveRateThresh;
 	if (this->convexRateThresh != other.convexRateThresh) return Index_convexRateThresh;
 	return Index_None;
-}
-
-//功能：获取系统重置代码
-int UserConfig::getSystemResetCode(UserConfig &newConfig)
-{
-	int resetCode = 0b000000000;
-	if (clusterComPort != newConfig.clusterComPort) {
-		resetCode |= 0b000100000;
-	}
-	return resetCode;
 }
 
 //拷贝结构体
@@ -519,10 +510,20 @@ void UserConfig::copyTo(UserConfig *dst)
 	dst->clusterComPort = this->clusterComPort; //COM口
 
 	//检测算法
-	dst->defectTypeForDetect = this->defectTypeForDetect; //需要检测的缺陷类型
+	dst->defectTypeToBeProcessed = this->defectTypeToBeProcessed; //需要检测的缺陷类型
 	dst->matchingAccuracyLevel = this->matchingAccuracyLevel; //匹配模式：0高精度 1低精度
 	dst->concaveRateThresh = this->concaveRateThresh; //线路缺失率的阈值
 	dst->convexRateThresh = this->convexRateThresh; //线路凸起率的阈值
+}
+
+//功能：获取系统重置代码
+int UserConfig::getSystemResetCode(UserConfig &newConfig)
+{
+	int resetCode = 0b000000000;
+	if (clusterComPort != newConfig.clusterComPort) {
+		resetCode |= 0b000100000;
+	}
+	return resetCode;
 }
 
 
@@ -542,7 +543,7 @@ Configurator::~Configurator()
 	qDebug() << "~Configurator";
 }
 
-/************** 生成默认的参数配置文件 **************/
+/********** 生成默认的参数配置文件 **********/
 
 //生成默认的参数配置文件
 void Configurator::createConfigFile(QString filePath)
@@ -616,6 +617,8 @@ bool Configurator::jsonSetValue(const QString &key, double &value, bool encode)
 //从配置文件中读取参数 - QString
 bool Configurator::jsonReadValue(const QString &key, QString &value, bool decode)
 {
+	value = ""; //赋初值
+
 	configFile->seek(0);
 	QString val = configFile->readAll();
 	QJsonParseError json_error;
@@ -632,13 +635,11 @@ bool Configurator::jsonReadValue(const QString &key, QString &value, bool decode
 				else { //不加密
 					value = obj[key].toString();
 				}
-				QByteArray();
 				return true;
 			}
 		}
 		else {
 			qDebug() << "文件空";
-			value = "";
 		}
 	}
 	return false;
@@ -736,7 +737,9 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
 	QFile configFile(configFilePath);
-	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //判断配置文件读写权限
+	pcb::delay(50);
+
+	if (!configFile.exists()) { //判断配置文件读写权限
 		createConfigFile(configFilePath);//创建配置文件
 		config->loadDefaultValue();//加载默认值
 		config->markConfigFileMissing();//标记文件丢失
@@ -744,11 +747,11 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 		success = false;
 	}
 	else { //文件存在，并且可以正常读写
+		if (!configFile.open(QIODevice::ReadOnly)) {
+			if (!configFile.open(QIODevice::ReadOnly)) return false;
+		}
+
 		Configurator configurator(&configFile);
-		
-		QTime dieTime = QTime::currentTime().addMSecs(10); //非阻塞延迟
-		while (QTime::currentTime() < dieTime)
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 
 		if (!configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true))
 			configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
@@ -820,6 +823,10 @@ bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
 
+		QString defectTypeToBeProcessed = "";
+		configurator.jsonReadValue("defectTypeToBeProcessed", defectTypeToBeProcessed, false);
+		config->defectTypeToBeProcessed = pcb::stringToBoolVector(defectTypeToBeProcessed);
+
 		configurator.jsonReadValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonReadValue("concaveRateThresh", config->concaveRateThresh, false);
 		configurator.jsonReadValue("convexRateThresh", config->convexRateThresh, false);
@@ -853,6 +860,9 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 		configurator.jsonSetValue("ActualProductSize_H", config->ActualProductSize_H, false);
 		configurator.jsonSetValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonSetValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
+
+		QString defectTypeToBeProcessed = pcb::boolVectorToString(config->defectTypeToBeProcessed);
+		configurator.jsonSetValue("defectTypeToBeProcessed", defectTypeToBeProcessed, false);
 
 		configurator.jsonSetValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonSetValue("concaveRateThresh", config->concaveRateThresh, false);

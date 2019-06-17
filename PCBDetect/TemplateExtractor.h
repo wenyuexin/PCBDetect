@@ -2,7 +2,8 @@
 #include <QObject>
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
-#include "RuntimeLib.h"
+#include "RuntimeParams.h"
+#include "FuncLib.h"
 #include "ExtractFunc.h"
 #include <QStringList>
 

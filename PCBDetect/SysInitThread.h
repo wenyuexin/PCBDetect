@@ -2,7 +2,8 @@
 
 #include <QThread>
 #include "Configurator.h"
-#include "RuntimeLib.h"
+#include "RuntimeParams.h"
+#include "FuncLib.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
 //#include <windows.h>

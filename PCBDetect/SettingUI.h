@@ -3,7 +3,8 @@
 #include <QWidget>
 #include "ui_SettingUI.h"
 #include "Configurator.h"
-#include "RuntimeLib.h"
+#include "RuntimeParams.h"
+#include "FuncLib.h"
 #include "PassWordUI.h" 
 #include "AdminSettingUI.h"
 #include "MotionControler.h"
