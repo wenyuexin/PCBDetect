@@ -141,42 +141,6 @@ void PCBDetect::on_launchFinished_launchUI(int launchCode)
 }
 
 
-/*************** 按键的控制与响应 *****************/
-
-//退出 - 图标
-void PCBDetect::on_pushButton_exit_clicked()
-{
-	this->eixtDetectSystem();
-}
-
-//退出 - 按键
-void PCBDetect::on_pushButton_exit2_clicked()
-{
-	this->eixtDetectSystem();
-}
-
-
-//设置按键是否可点击
-void PCBDetect::setPushButtonsEnabled(bool enable, bool all)
-{
-	//模板提取
-	ui.pushButton_getTempl->setEnabled(enable);
-	ui.pushButton_getTempl2->setEnabled(enable);
-	//检测
-	ui.pushButton_detect->setEnabled(enable);
-	ui.pushButton_detect2->setEnabled(enable);
-
-	if (all) {
-		//设置
-		ui.pushButton_set->setEnabled(enable);
-		ui.pushButton_set2->setEnabled(enable);
-		//退出
-		ui.pushButton_exit->setEnabled(enable);
-		ui.pushButton_exit2->setEnabled(enable);
-	}
-}
-
-
 /****************** 设置界面 ******************/
 
 //按键响应 - 设置图标
@@ -191,6 +155,14 @@ void PCBDetect::on_pushButton_set2_clicked()
 	this->showSettingUI();
 }
 
+//显示设置界面，隐藏主界面
+void PCBDetect::showSettingUI()
+{
+	settingUI->showFullScreen(); //显示设置界面
+	pcb::delay(10); //延时
+	this->hide(); //隐藏主界面
+}
+
 //显示主界面，隐藏设置界面
 void PCBDetect::do_showDetectMainUI_settingUI()
 {
@@ -199,13 +171,6 @@ void PCBDetect::do_showDetectMainUI_settingUI()
 	settingUI->hide(); //隐藏设置界面
 }
 
-//显示设置界面，隐藏主界面
-void PCBDetect::showSettingUI()
-{
-	settingUI->showFullScreen(); //显示设置界面
-	pcb::delay(10); //延时
-	this->hide(); //隐藏主界面
-}
 
 //重置检测系统
 void PCBDetect::do_resetDetectSystem_settingUI(int code)
@@ -459,7 +424,19 @@ void PCBDetect::do_showDetectMainUI_detectUI()
 }
 
 
-/******************* 其他函数 ******************/
+/****************** 退出系统 ******************/
+
+//退出 - 图标
+void PCBDetect::on_pushButton_exit_clicked()
+{
+	this->eixtDetectSystem();
+}
+
+//退出 - 按键
+void PCBDetect::on_pushButton_exit2_clicked()
+{
+	this->eixtDetectSystem();
+}
 
 //退出检测系统
 void PCBDetect::eixtDetectSystem()
@@ -469,9 +446,32 @@ void PCBDetect::eixtDetectSystem()
 		pcb::chinese("确定退出PCB缺陷检测系统？ \n"),
 		pcb::chinese("确定"), pcb::chinese("取消"));
 	//判断是否需要退出
-	if (choice == 0) { 
+	if (choice == 0) {
 		//this->close();
 		qApp->exit(0);
+	}
+}
+
+
+/******************* 其他函数 ******************/
+
+//设置主界面上的按键是否可点击
+void PCBDetect::setPushButtonsEnabled(bool enable, bool all)
+{
+	//模板提取
+	ui.pushButton_getTempl->setEnabled(enable);
+	ui.pushButton_getTempl2->setEnabled(enable);
+	//检测
+	ui.pushButton_detect->setEnabled(enable);
+	ui.pushButton_detect2->setEnabled(enable);
+
+	if (all) {
+		//设置
+		ui.pushButton_set->setEnabled(enable);
+		ui.pushButton_set2->setEnabled(enable);
+		//退出
+		ui.pushButton_exit->setEnabled(enable);
+		ui.pushButton_exit2->setEnabled(enable);
 	}
 }
 
@@ -489,12 +489,13 @@ void PCBDetect::keyPressEvent(QKeyEvent *event)
 //在开发者模式和非开发者模式之间切换
 void PCBDetect::switchDeveloperMode()
 {
-	//参数类存在错误
+	//参数类存在错误则直接返回
 	if (!checkParametricClasses(false)) {
 		runtimeParams.DeveloperMode = false; 
 		this->setPushButtonsEnabled(false); return;
 	}
 
+	//开发者模式和标准模式之间的切换
 	if (runtimeParams.DeveloperMode) {
 		//模式切换的提示
 		int choice = QMessageBox::information(this, pcb::chinese("提示"),
@@ -509,8 +510,9 @@ void PCBDetect::switchDeveloperMode()
 		int choice = QMessageBox::question(this, pcb::chinese("询问"),
 			pcb::chinese("是否要启用开发者模式？ \n"),
 			pcb::chinese("确定"), pcb::chinese("取消"));
-		if (choice == 0) runtimeParams.DeveloperMode = true; //启用
-		//将模板提取、检测按键设为可点击
-		this->setPushButtonsEnabled(true); 
+		if (choice == 0) { //启用开发者模式
+			runtimeParams.DeveloperMode = true; 
+			this->setPushButtonsEnabled(true); //将模板提取、检测按键设为可点击
+		}
 	}
 }

@@ -2,7 +2,8 @@
 
 #include "ui_SerialNumberUI.h"
 #include "Configurator.h"
-#include "RuntimeLib.h"
+#include "RuntimeParams.h"
+#include "FuncLib.h"
 #include <allheaders.h>
 #include <capi.h>
 #include <QWidget>

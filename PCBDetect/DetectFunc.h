@@ -1,6 +1,7 @@
 #pragma once
 #include "Configurator.h"
-#include "RuntimeLib.h"
+#include "RuntimeParams.h"
+#include "FuncLib.h"
 #include "direct.h"
 #include <io.h>
 #include <string>

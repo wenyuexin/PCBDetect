@@ -4,6 +4,7 @@ using pcb::AdminConfig;
 using pcb::UserConfig;
 using pcb::RuntimeParams;
 using pcb::Configurator;
+using std::vector;
 
 
 SettingUI::SettingUI(QWidget *parent)
@@ -104,6 +105,14 @@ void SettingUI::refresh()
 	ui.lineEdit_nBasicUnitInRow->setText(QString::number(userConfig->nBasicUnitInRow));//基本单元数
 	ui.lineEdit_nBasicUnitInCol->setText(QString::number(userConfig->nBasicUnitInCol));//基本单元数
 
+	vector<bool> vec = userConfig->defectTypeToBeProcessed; //待检测的缺陷类型
+	ui.checkBox_defectType_short->setChecked(true);
+	ui.checkBox_defectType_short->setDisabled(true);
+	ui.checkBox_defectType_break->setChecked(true);
+	ui.checkBox_defectType_break->setDisabled(true);
+	ui.checkBox_defectType_convex->setChecked(vec[2]);
+	ui.checkBox_defectType_concave->setChecked(vec[3]);
+
 	if (userConfig->matchingAccuracyLevel == 1) //匹配精度等级
 		ui.checkBox_matchingAccuracy_high->setChecked(true);
 	else if (userConfig->matchingAccuracyLevel == 2) {
@@ -114,7 +123,7 @@ void SettingUI::refresh()
 	ui.lineEdit_convexRateThresh->setText(QString::number(userConfig->convexRateThresh)); //凸起率阈值
 
 	//运动控制
-	ui.pushButton_reset_motion->setEnabled(true);
+	ui.pushButton_reset_motion->setEnabled(motionControler->isReady());
 }
 
 //设置光标的位置
@@ -402,10 +411,18 @@ void SettingUI::getConfigFromSettingUI()
 	tempConfig.nBasicUnitInRow = ui.lineEdit_nBasicUnitInRow->text().toInt();//每一行中的基本单元数
 	tempConfig.nBasicUnitInCol = ui.lineEdit_nBasicUnitInCol->text().toInt();//每一列中的基本单元数
 
+	QString defectTypeToBeProcessed = "";
+	if (ui.checkBox_defectType_short->isChecked()) defectTypeToBeProcessed;
+
 	int accuracyLevel = 0;
 	if (ui.checkBox_matchingAccuracy_high->isChecked()) accuracyLevel = 1;
 	if (ui.checkBox_matchingAccuracy_low->isChecked()) accuracyLevel = 2;
 	tempConfig.matchingAccuracyLevel = accuracyLevel; //匹配模式
+
+	tempConfig.defectTypeToBeProcessed[0] = ui.checkBox_defectType_short->isChecked();//待检测的缺陷类型
+	tempConfig.defectTypeToBeProcessed[1] = ui.checkBox_defectType_break->isChecked();
+	tempConfig.defectTypeToBeProcessed[2] = ui.checkBox_defectType_convex->isChecked();
+	tempConfig.defectTypeToBeProcessed[3] = ui.checkBox_defectType_concave->isChecked();
 
 	tempConfig.concaveRateThresh = ui.lineEdit_concaveRateThresh->text().toInt();//缺失率阈值
 	tempConfig.convexRateThresh = ui.lineEdit_convexRateThresh->text().toInt();//凸起率阈值

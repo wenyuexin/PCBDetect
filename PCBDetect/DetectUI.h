@@ -4,7 +4,8 @@
 #include <QWidget>
 #include "ui_DetectUI.h"
 #include "Configurator.h"
-#include "RuntimeLib.h"
+#include "RuntimeParams.h"
+#include "FuncLib.h"
 #include "DetectThread.h"
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
