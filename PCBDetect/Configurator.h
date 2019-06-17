@@ -21,17 +21,12 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "FuncLib.h"
 
 
 //参数类与参数配置器
 namespace pcb 
 {
-#ifndef PCB_FUNCTIONS_CHINESE
-#define PCB_FUNCTIONS_CHINESE
-	inline QString chinese(const QByteArray &src) { return QString::fromLocal8Bit(src); }
-#endif //PCB_FUNCTIONS_CHINESE
-
-
 #ifndef CLASS_ADMIN_CONFIG
 #define CLASS_ADMIN_CONFIG 
 	//系统参数类
@@ -113,6 +108,10 @@ namespace pcb
 	class UserConfig
 	{
 	public:
+		//通用常数
+		const int MaxDefectTypeNum = 4;
+
+		//参数
 		QString TemplDirPath; //模板路径
 		QString SampleDirPath;//样本路径
 		QString OutputDirPath;//结果路径
@@ -125,7 +124,7 @@ namespace pcb
 
 		QString clusterComPort; //COM串口
 
-		long defectTypeForDetect; //需要检测的缺陷类型
+		std::vector<bool> defectTypeToBeProcessed; //待处理的缺陷类型
 		int matchingAccuracyLevel; //匹配精度等级：1高精度 2低精度
 		int concaveRateThresh; //线路缺失率的阈值
 		int convexRateThresh; //线路凸起率的阈值
@@ -146,7 +145,7 @@ namespace pcb
 			//运动结构
 			Index_clusterComPort,
 			//检测算法
-			Index_defectTypeForDetect,
+			Index_defectTypeToBeProcessed,
 			Index_matchingAccuracyLevel,
 			Index_concaveRateThresh,
 			Index_convexRateThresh
@@ -170,7 +169,7 @@ namespace pcb
 			//运动结构
 			Invalid_clusterComPort = 0x20A,
 			//检测算法
-			Invalid_defectTypeForDetect = 0x20B,
+			Invalid_defectTypeToBeProcessed = 0x20B,
 			Invalid_matchingAccuracyLevel = 0x20C,
 			Invalid_concaveRateThresh = 0x20D,
 			Invalid_convexRateThresh = 0x20E,
@@ -195,8 +194,9 @@ namespace pcb
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
 
 		ConfigIndex unequals(UserConfig &other); //不等性判断
-		int getSystemResetCode(UserConfig &newConfig); //获取系统重置代码
 		void copyTo(UserConfig *dst); //拷贝参数
+
+		int getSystemResetCode(UserConfig &newConfig); //获取系统重置代码
 	};
 #endif //CLASS_DETECT_CONFIG
 
@@ -221,6 +221,8 @@ namespace pcb
 		bool jsonSetValue(const QString &key, QString &value, bool encode); //写QString
 		bool jsonSetValue(const QString &key, int &value, bool encode); //写int
 		bool jsonSetValue(const QString &key, double &value, bool encode); //写double
+		bool jsonSetValue(const QString &key, std::vector<bool> &value, bool encode);
+
 		bool jsonReadValue(const QString &key, QString &value, bool decode); //读QString
 		bool jsonReadValue(const QString &key, int &value, bool decode); //读int
 		bool jsonReadValue(const QString &key, double &value, bool decode); //读double
