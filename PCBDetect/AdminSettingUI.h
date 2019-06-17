@@ -3,7 +3,9 @@
 #include <QWidget>
 #include "ui_AdminSettingUI.h"
 #include "Configurator.h"
-#include "RuntimeLib.h"
+#include "RuntimeParams.h"
+#include "FuncLib.h"
+#include "FuncLib.h"
 #include <QDesktopWidget>
 #include <QIntValidator>
 
