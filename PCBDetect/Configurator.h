@@ -111,7 +111,7 @@ namespace pcb
 		//通用常数
 		const int MaxDefectTypeNum = 4;
 
-		//参数
+		//参数 - 基本设置
 		QString TemplDirPath; //模板路径
 		QString SampleDirPath;//样本路径
 		QString OutputDirPath;//结果路径
@@ -122,8 +122,14 @@ namespace pcb
 		int nBasicUnitInRow; //每一行中的基本单元数
 		int nBasicUnitInCol; //每一列中的基本单元数
 
+		//参数 - 运动结构
 		QString clusterComPort; //COM串口
 
+		//参数 - 相机组
+		int exposureTime; //曝光时间 ms （范围大概50-500）
+		int colorMode; //色彩模式：0彩色 1黑白
+
+		//参数 - 检测算法
 		std::vector<bool> defectTypeToBeProcessed; //待处理的缺陷类型
 		int matchingAccuracyLevel; //匹配精度等级：1高精度 2低精度
 		int concaveRateThresh; //线路缺失率的阈值
@@ -144,6 +150,9 @@ namespace pcb
 			Index_nBasicUnitInCol,
 			//运动结构
 			Index_clusterComPort,
+			//相机
+			Index_exposureTime,
+			Index_colorMode,
 			//检测算法
 			Index_defectTypeToBeProcessed,
 			Index_matchingAccuracyLevel,
@@ -168,11 +177,14 @@ namespace pcb
 			Invalid_nBasicUnitInCol = 0x209,
 			//运动结构
 			Invalid_clusterComPort = 0x20A,
+			//相机
+			Invalid_exposureTime = 0x20B,
+			Invalid_colorMode = 0x20C,
 			//检测算法
-			Invalid_defectTypeToBeProcessed = 0x20B,
-			Invalid_matchingAccuracyLevel = 0x20C,
-			Invalid_concaveRateThresh = 0x20D,
-			Invalid_convexRateThresh = 0x20E,
+			Invalid_defectTypeToBeProcessed = 0x20D,
+			Invalid_matchingAccuracyLevel = 0x20E,
+			Invalid_concaveRateThresh = 0x20F,
+			Invalid_convexRateThresh = 0x210,
 			//其他
 			Default = 0x2FF
 		};
@@ -218,6 +230,7 @@ namespace pcb
 
 		static void createConfigFile(QString filePath);
 
+		
 		bool jsonSetValue(const QString &key, QString &value, bool encode); //写QString
 		bool jsonSetValue(const QString &key, int &value, bool encode); //写int
 		bool jsonSetValue(const QString &key, double &value, bool encode); //写double
@@ -226,6 +239,7 @@ namespace pcb
 		bool jsonReadValue(const QString &key, QString &value, bool decode); //读QString
 		bool jsonReadValue(const QString &key, int &value, bool decode); //读int
 		bool jsonReadValue(const QString &key, double &value, bool decode); //读double
+		bool jsonReadValue(const QString &key, std::vector<bool> &value, bool decode);
 
 		static bool loadConfigFile(const QString &fileName, AdminConfig *config);
 		static bool saveConfigFile(const QString &fileName, AdminConfig *config);
@@ -233,7 +247,7 @@ namespace pcb
 		static bool saveConfigFile(const QString &fileName, UserConfig *config);
 
 		//quint64 getDiskFreeSpace(QString driver);
-		bool checkDir(QString dirpath);
+		//bool checkDir(QString dirpath);
 
 	private:
 		void updateKeys(); //更新秘钥
@@ -241,6 +255,9 @@ namespace pcb
 		QString encrypt(const char* origin) const; //加密
 		QString decrypt(QString origin) const; //解密
 		QString decrypt(const char* origin) const; //解密
+
+		bool _jsonSetValue(const QString &key, QString &value, bool encode);
+		bool _jsonReadValue(const QString &key, QString &value, bool decode);
 	};
 #endif //CLASS_CONFIGURATOR
 }

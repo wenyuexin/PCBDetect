@@ -1103,7 +1103,7 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>580</y>
+     <y>590</y>
      <width>281</width>
      <height>37</height>
     </rect>
@@ -1119,13 +1119,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>100</width>
+        <width>110</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>100</width>
+        <width>110</width>
         <height>35</height>
        </size>
       </property>
@@ -1257,7 +1257,7 @@
    <property name="geometry">
     <rect>
      <x>60</x>
-     <y>520</y>
+     <y>530</y>
      <width>125</width>
      <height>35</height>
     </rect>
@@ -1339,8 +1339,8 @@
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>640</y>
-     <width>291</width>
+     <y>650</y>
+     <width>300</width>
      <height>37</height>
     </rect>
    </property>
@@ -1451,9 +1451,9 @@
   <widget class="QWidget" name="layoutWidget_11">
    <property name="geometry">
     <rect>
-     <x>770</x>
-     <y>320</y>
-     <width>291</width>
+     <x>780</x>
+     <y>530</y>
+     <width>292</width>
      <height>37</height>
     </rect>
    </property>
@@ -1575,9 +1575,9 @@
   <widget class="QWidget" name="layoutWidget_12">
    <property name="geometry">
     <rect>
-     <x>770</x>
-     <y>260</y>
-     <width>291</width>
+     <x>780</x>
+     <y>470</y>
+     <width>292</width>
      <height>37</height>
     </rect>
    </property>
@@ -1699,8 +1699,8 @@
   <widget class="QWidget" name="layoutWidget_10">
    <property name="geometry">
     <rect>
-     <x>770</x>
-     <y>200</y>
+     <x>780</x>
+     <y>410</y>
      <width>251</width>
      <height>37</height>
     </rect>
@@ -1716,13 +1716,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>120</width>
+        <width>110</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>120</width>
+        <width>110</width>
         <height>35</height>
        </size>
       </property>
@@ -1755,7 +1755,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>10</width>
+        <width>9</width>
         <height>20</height>
        </size>
       </property>
@@ -1801,7 +1801,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>10</width>
+        <width>26</width>
         <height>20</height>
        </size>
       </property>
@@ -1842,8 +1842,8 @@
   <widget class="QLabel" name="label_roiHeight_L_19">
    <property name="geometry">
     <rect>
-     <x>760</x>
-     <y>80</y>
+     <x>770</x>
+     <y>290</y>
      <width>125</width>
      <height>35</height>
     </rect>
@@ -1883,9 +1883,9 @@
   <widget class="QWidget" name="layoutWidget_13">
    <property name="geometry">
     <rect>
-     <x>770</x>
-     <y>140</y>
-     <width>461</width>
+     <x>780</x>
+     <y>350</y>
+     <width>431</width>
      <height>37</height>
     </rect>
    </property>
@@ -1900,13 +1900,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>120</width>
+        <width>110</width>
         <height>35</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>120</width>
+        <width>110</width>
         <height>35</height>
        </size>
       </property>
@@ -1939,7 +1939,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>10</width>
+        <width>7</width>
         <height>20</height>
        </size>
       </property>
@@ -1985,7 +1985,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>10</width>
+        <width>5</width>
         <height>20</height>
        </size>
       </property>
@@ -2031,7 +2031,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>10</width>
+        <width>5</width>
         <height>20</height>
        </size>
       </property>
@@ -2077,7 +2077,7 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>10</width>
+        <width>5</width>
         <height>20</height>
        </size>
       </property>
@@ -2115,6 +2115,275 @@
     </item>
    </layout>
   </widget>
+  <widget class="QLabel" name="label_roiHeight_L_20">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>90</y>
+     <width>100</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>100</width>
+     <height>35</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>100</width>
+     <height>35</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>相机组</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_14">
+   <property name="geometry">
+    <rect>
+     <x>780</x>
+     <y>200</y>
+     <width>271</width>
+     <height>37</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_14">
+    <item>
+     <widget class="QLabel" name="label_convexRateThresh_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>110</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>色彩模式</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_25">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>7</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="lineEdit_colorMode_rgb_camera">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>彩色</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_27">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>5</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="lineEdit_colorMode_gray_camera">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>灰度</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_15">
+   <property name="geometry">
+    <rect>
+     <x>780</x>
+     <y>140</y>
+     <width>292</width>
+     <height>37</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_15">
+    <item>
+     <widget class="QLabel" name="label_concaveRateThresh_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>125</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>125</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>曝光时间(ms)</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_26">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>7</width>
+        <height>0</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="lineEdit_exposureTime_camera">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>110</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <zorder>layoutWidget</zorder>
   <zorder>label_3</zorder>
   <zorder>label_title</zorder>
@@ -2137,6 +2406,9 @@
   <zorder>layoutWidget_10</zorder>
   <zorder>label_roiHeight_L_19</zorder>
   <zorder>layoutWidget_13</zorder>
+  <zorder>label_roiHeight_L_20</zorder>
+  <zorder>layoutWidget_14</zorder>
+  <zorder>layoutWidget_15</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
