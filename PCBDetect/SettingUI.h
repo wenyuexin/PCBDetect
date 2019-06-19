@@ -22,7 +22,8 @@ private:
 	Ui::SettingUI ui;
 	QRect screenRect; //屏幕显示区域
 	QRegExpValidator *NumberValidator;
-	QButtonGroup matchingCheckBoxGroup;
+	QButtonGroup CheckBoxGroup_colorMode;
+	QButtonGroup checkBoxGroup_matchingAccuracy;
 
 	pcb::AdminConfig *adminConfig; //系统参数
 	PassWordUI passWordUI; //系统设置登录界面
