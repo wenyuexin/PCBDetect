@@ -248,6 +248,7 @@ void AdminConfig::copyTo(AdminConfig *dst)
 
 UserConfig::UserConfig()
 {
+	//基本设置
 	TemplDirPath = ""; //模板路径
 	SampleDirPath = "";//样本路径
 	OutputDirPath = "";//结果路径
@@ -257,12 +258,21 @@ UserConfig::UserConfig()
 	nBasicUnitInRow = -1; //每一行中的基本单元数
 	nBasicUnitInCol = -1; //每一列中的基本单元数
 
+	//运动结构
 	clusterComPort = ""; //COM串口
 
+	//相机
+	exposureTime = -1; //曝光时间 ms （范围大概50-500）
+	colorMode = -1; //色彩模式：0彩色 1黑白
+
+	//检测算法
 	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //需要检测的缺陷类型
 	matchingAccuracyLevel = 1; //匹配模式：1高精度 2低精度
 	concaveRateThresh = 50; //线路缺失率的阈值
 	convexRateThresh = 50; //线路凸起率的阈值
+
+	//其他
+	errorCode = Default;
 }
 
 UserConfig::~UserConfig()
@@ -273,11 +283,11 @@ UserConfig::~UserConfig()
 //加载默认值
 void UserConfig::loadDefaultValue()
 {
+	//基本设置
 	QDir dir(QDir::currentPath());
 	dir.cdUp(); //转到上一级目录
 	QString appDirPath = dir.absolutePath(); //上一级目录的绝对路径
 
-	errorCode = Unchecked; //错误代码
 	TemplDirPath = appDirPath + "/template";//模板路径
 	SampleDirPath = appDirPath + "/sample"; //样本路径
 	OutputDirPath = appDirPath + "/output"; //结果路径
@@ -288,12 +298,21 @@ void UserConfig::loadDefaultValue()
 	nBasicUnitInRow = 4; //每一行中的基本单元数
 	nBasicUnitInCol = 6; //每一列中的基本单元数
 
+	//运动结构
 	clusterComPort = "COM1"; //COM口
 	
+	//相机
+	exposureTime = 200; //曝光时间 ms （范围大概50-500）
+	colorMode = 0; //色彩模式：0彩色 1黑白
+
+	//算法
 	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //需要检测的缺陷类型
 	matchingAccuracyLevel = 1; //匹配精度等级：1高精度 2低精度
 	concaveRateThresh = 50; //线路缺失率的阈值
 	convexRateThresh = 50; //线路凸起率的阈值
+
+	//其他
+	errorCode = Unchecked; //错误代码
 }
 
 //参数有效性检查
@@ -340,6 +359,16 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 	case pcb::UserConfig::Index_nBasicUnitInCol: //每一列中的基本单元数
 		if (nBasicUnitInCol < 1)
 			code = Invalid_nBasicUnitInCol;
+		if (code != Unchecked || index != Index_All) break;
+
+	//相机
+	case pcb::UserConfig::Index_exposureTime: //曝光时间 ms
+		if (exposureTime < 50 || exposureTime > 500)
+			code = Invalid_exposureTime;
+		if (code != Unchecked || index != Index_All) break;
+	case pcb::UserConfig::Index_colorMode: //色彩模式：0彩色 1黑白
+		if (colorMode < 0 || colorMode > 1)
+			code = Invalid_colorMode;
 		if (code != Unchecked || index != Index_All) break;
 
 	//检测算法
@@ -398,6 +427,11 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 	//运动结构
 	case pcb::UserConfig::Invalid_clusterComPort:
 		return Index_clusterComPort;
+	//相机组
+	case pcb::UserConfig::Invalid_exposureTime:
+		return Index_exposureTime;
+	case pcb::UserConfig::Invalid_colorMode:
+		return Index_colorMode;
 	//检测算法
 	case pcb::UserConfig::Invalid_defectTypeToBeProcessed:
 		return Index_defectTypeToBeProcessed;
@@ -429,6 +463,7 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 
 	switch (tempCode)
 	{
+	//基本设置
 	case pcb::UserConfig::Invalid_SampleDirPath:
 		valueName = pcb::chinese("模板路径"); break;
 	case pcb::UserConfig::Invalid_OutputDirPath:
@@ -446,6 +481,11 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 	//运动结构
 	case pcb::UserConfig::Invalid_clusterComPort:
 		valueName = pcb::chinese("运动控制串口"); break;
+	//相机组
+	case pcb::UserConfig::Invalid_exposureTime:
+		valueName = pcb::chinese("相机曝光时间"); break;
+	case pcb::UserConfig::Invalid_colorMode:
+		valueName = pcb::chinese("相机色彩模式"); break;
 	//检测算法
 	case pcb::UserConfig::Invalid_defectTypeToBeProcessed:
 		valueName = pcb::chinese("待处理的缺陷类型"); break;
@@ -483,6 +523,10 @@ UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
 	//运动结构
 	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
 	
+	//相机组
+	if (this->exposureTime != other.exposureTime) return Index_exposureTime;
+	if (this->colorMode != other.colorMode) return Index_colorMode;
+	
 	//检测算法
 	if (this->defectTypeToBeProcessed != other.defectTypeToBeProcessed) return Index_defectTypeToBeProcessed;
 	if (this->matchingAccuracyLevel != other.matchingAccuracyLevel) return Index_matchingAccuracyLevel;
@@ -508,6 +552,10 @@ void UserConfig::copyTo(UserConfig *dst)
 
 	//运动结构
 	dst->clusterComPort = this->clusterComPort; //COM口
+
+	//相机组
+	dst->exposureTime = this->exposureTime; //相机曝光时间
+	dst->colorMode = this->colorMode; //相机色彩模式
 
 	//检测算法
 	dst->defectTypeToBeProcessed = this->defectTypeToBeProcessed; //需要检测的缺陷类型
@@ -565,7 +613,7 @@ void Configurator::createConfigFile(QString filePath)
 /********** 将某个参数的写入config文件中 ************/
 
 //将参数写入配置文件中 - QString
-bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
+bool Configurator::_jsonSetValue(const QString &key, QString &value, bool encode)
 {
 	QTextStream textStrteam(configFile);
 	configFile->seek(0);
@@ -599,6 +647,18 @@ bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
 	return false;
 }
 
+//将参数写入配置文件中 - QString
+bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
+{
+	int counter = 5;
+	while (counter > 0) {
+		if (_jsonSetValue(key, value, encode)) return true;
+		pcb::delay(10);
+		counter -= 1;
+	}
+	return false;
+}
+
 //将参数写入配置文件中 - int
 bool Configurator::jsonSetValue(const QString &key, int &value, bool encode)
 {
@@ -611,11 +671,18 @@ bool Configurator::jsonSetValue(const QString &key, double &value, bool encode)
 	return jsonSetValue(key, QString::number(value, 'f', 6), encode);
 }
 
+//将参数写入配置文件中 - vector<bool>
+bool Configurator::jsonSetValue(const QString &key, vector<bool> &value, bool encode)
+{
+	QString valueStr = pcb::boolVectorToString(value);
+	return jsonSetValue(key, valueStr, encode);
+}
+
 
 /************* 从config文件中读取某个参数 ************/
 
 //从配置文件中读取参数 - QString
-bool Configurator::jsonReadValue(const QString &key, QString &value, bool decode)
+bool Configurator::_jsonReadValue(const QString &key, QString &value, bool decode)
 {
 	value = ""; //赋初值
 
@@ -645,9 +712,21 @@ bool Configurator::jsonReadValue(const QString &key, QString &value, bool decode
 	return false;
 }
 
+bool Configurator::jsonReadValue(const QString &key, QString &value, bool decode)
+{
+	int counter = 5;
+	while (counter > 0) {
+		if (_jsonReadValue(key, value, decode)) return true;
+		pcb::delay(10);
+		counter -= 1;
+	}
+	return false;
+}
+
 //从配置文件中读取参数 - double
 bool Configurator::jsonReadValue(const QString &key, double &value, bool decode)
 {
+	value = -1;
 	QString valueStr = "";
 	if (jsonReadValue(key, valueStr, decode)) {
 		value = valueStr.toDouble(); return true;
@@ -658,9 +737,21 @@ bool Configurator::jsonReadValue(const QString &key, double &value, bool decode)
 //从配置文件中读取参数 - int
 bool Configurator::jsonReadValue(const QString &key, int &value, bool decode)
 {
+	value = -1;
 	QString valueStr = "";
 	if (jsonReadValue(key, valueStr, decode)) {
 		value = valueStr.toInt(); return true;
+	}
+	return false;
+}
+
+//从配置文件中读取参数 - vector<bool>
+bool Configurator::jsonReadValue(const QString &key, vector<bool> &value, bool decode)
+{
+	value.clear();
+	QString valueStr = "";
+	if (jsonReadValue(key, valueStr, decode)) {
+		value = pcb::stringToBoolVector(valueStr); return true;
 	}
 	return false;
 }
@@ -750,12 +841,9 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 		if (!configFile.open(QIODevice::ReadOnly)) {
 			if (!configFile.open(QIODevice::ReadOnly)) return false;
 		}
-
 		Configurator configurator(&configFile);
 
-		if (!configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true))
-			configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
-
+		configurator.jsonReadValue("MaxMotionStroke", config->MaxMotionStroke, true);
 		configurator.jsonReadValue("PulseNumInUnitTime", config->PulseNumInUnitTime, true);
 		configurator.jsonReadValue("MaxCameraNum", config->MaxCameraNum, true);
 		configurator.jsonReadValue("PixelsNumPerUnitLength", config->PixelsNumPerUnitLength, true);
@@ -812,21 +900,27 @@ bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
+
+		//基本设置
 		configurator.jsonReadValue("SampleDirPath", config->SampleDirPath, false);
 		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath, false);
 		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath, false);
 		configurator.jsonReadValue("ImageFormat", config->ImageFormat, false);
-		configurator.jsonReadValue("clusterComPort", config->clusterComPort, false);
 
 		configurator.jsonReadValue("ActualProductSize_W", config->ActualProductSize_W, false);
 		configurator.jsonReadValue("ActualProductSize_H", config->ActualProductSize_H, false);
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
 
-		QString defectTypeToBeProcessed = "";
-		configurator.jsonReadValue("defectTypeToBeProcessed", defectTypeToBeProcessed, false);
-		config->defectTypeToBeProcessed = pcb::stringToBoolVector(defectTypeToBeProcessed);
+		//运动结构
+		configurator.jsonReadValue("clusterComPort", config->clusterComPort, false);
 
+		//相机组
+		configurator.jsonReadValue("exposureTime", config->exposureTime, false);
+		configurator.jsonReadValue("colorMode", config->colorMode, false);
+
+		//检测算法
+		configurator.jsonReadValue("defectTypeToBeProcessed", config->defectTypeToBeProcessed, false);
 		configurator.jsonReadValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonReadValue("concaveRateThresh", config->concaveRateThresh, false);
 		configurator.jsonReadValue("convexRateThresh", config->convexRateThresh, false);
@@ -850,20 +944,27 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 	}
 	else { //文件存在，并且可以正常读写
 		Configurator configurator(&configFile);
+
+		//基本设置
 		configurator.jsonSetValue("SampleDirPath", config->SampleDirPath, false);//样本文件夹
 		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath, false);//模板文件夹
 		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath, false);//输出文件夹
 		configurator.jsonSetValue("ImageFormat", config->ImageFormat, false);//图像格式
-		configurator.jsonSetValue("clusterComPort", config->clusterComPort, false);
 
 		configurator.jsonSetValue("ActualProductSize_W", config->ActualProductSize_W, false);
 		configurator.jsonSetValue("ActualProductSize_H", config->ActualProductSize_H, false);
 		configurator.jsonSetValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonSetValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
 
-		QString defectTypeToBeProcessed = pcb::boolVectorToString(config->defectTypeToBeProcessed);
-		configurator.jsonSetValue("defectTypeToBeProcessed", defectTypeToBeProcessed, false);
+		//运动结构
+		configurator.jsonSetValue("clusterComPort", config->clusterComPort, false);
 
+		//相机组
+		configurator.jsonSetValue("exposureTime", config->exposureTime, false);
+		configurator.jsonSetValue("colorMode", config->colorMode, false);
+
+		//检测算法
+		configurator.jsonSetValue("defectTypeToBeProcessed", config->defectTypeToBeProcessed, false);
 		configurator.jsonSetValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonSetValue("concaveRateThresh", config->concaveRateThresh, false);
 		configurator.jsonSetValue("convexRateThresh", config->convexRateThresh, false);
@@ -873,7 +974,7 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 }
 
 
-/******************* 暂时没用 ********************/
+/******************* 其他 ********************/
 
 //获取当前磁盘剩余空间
 //quint64 Configurator::getDiskFreeSpace(QString driver)
@@ -889,26 +990,26 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 //}
 
 //暂时没用
-bool Configurator::checkDir(QString dirpath)
-{
-	QDir dir(dirpath);
-	dir.setSorting(QDir::Name | QDir::Time | QDir::Reversed);
-	dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-	QFileInfoList folder_list = dir.entryInfoList();
-	if (folder_list.size() < 1) {
-		return false;
-	}
-	else {
-		QString name = folder_list.at(0).absoluteFilePath();
-		QDir dir(name);
-		dir.setSorting(QDir::Name | QDir::Time | QDir::Reversed);
-		dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-		QFileInfoList file_list = dir.entryInfoList();
-		if (file_list.size() < 1) return false;
-
-		QString name2 = file_list.at(0).absoluteFilePath();
-		QFileInfo config(name2 + "/" + "outputImage/");
-		if (!config.isDir()) return false; //没有配置文件 则创建文件
-	}
-	return true;
-}
+//bool Configurator::checkDir(QString dirpath)
+//{
+//	QDir dir(dirpath);
+//	dir.setSorting(QDir::Name | QDir::Time | QDir::Reversed);
+//	dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+//	QFileInfoList folder_list = dir.entryInfoList();
+//	if (folder_list.size() < 1) {
+//		return false;
+//	}
+//	else {
+//		QString name = folder_list.at(0).absoluteFilePath();
+//		QDir dir(name);
+//		dir.setSorting(QDir::Name | QDir::Time | QDir::Reversed);
+//		dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+//		QFileInfoList file_list = dir.entryInfoList();
+//		if (file_list.size() < 1) return false;
+//
+//		QString name2 = file_list.at(0).absoluteFilePath();
+//		QFileInfo config(name2 + "/" + "outputImage/");
+//		if (!config.isDir()) return false; //没有配置文件 则创建文件
+//	}
+//	return true;
+//}

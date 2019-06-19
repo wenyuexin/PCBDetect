@@ -561,7 +561,7 @@ void ExtractUI::on_moveToInitialPosFinished_motion(int errorcode)
 		ui.label_status->setText(pcb::chinese("正在拍摄第") +
 			QString::number(currentRow_show + 1) +
 			pcb::chinese("行分图"));//更新状态
-		//qApp->processEvents();
+		qApp->processEvents();
 
 		cameraControler->start(); //拍照
 	}
@@ -585,7 +585,7 @@ void ExtractUI::on_moveForwardFinished_motion(int errorcode)
 		ui.label_status->setText(pcb::chinese("正在拍摄第") +
 			QString::number(currentRow_show + 1) + 
 			pcb::chinese("行分图"));//更新状态
-		//qApp->processEvents();
+		qApp->processEvents();
 
 		cameraControler->start(); //拍照
 	}
