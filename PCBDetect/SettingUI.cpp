@@ -44,12 +44,17 @@ void SettingUI::init()
 	ui.lineEdit_nBasicUnitInCol->setValidator(NumberValidator);
 	ui.lineEdit_concaveRateThresh->setValidator(NumberValidator);
 	ui.lineEdit_convexRateThresh->setValidator(NumberValidator);
+	ui.lineEdit_exposureTime_camera->setValidator(NumberValidator);
+
+	//相机曝光时间的确认框设为一组
+	CheckBoxGroup_colorMode.addButton(ui.lineEdit_colorMode_rgb_camera, 0);
+	CheckBoxGroup_colorMode.addButton(ui.lineEdit_colorMode_gray_camera, 1);
 
 	//将匹配精度的确认框设为一组
 	QPushButton button;
-	matchingCheckBoxGroup.addButton(&button);
-	matchingCheckBoxGroup.addButton(ui.checkBox_matchingAccuracy_high, 1);
-	matchingCheckBoxGroup.addButton(ui.checkBox_matchingAccuracy_low, 2);
+	checkBoxGroup_matchingAccuracy.addButton(&button);
+	checkBoxGroup_matchingAccuracy.addButton(ui.checkBox_matchingAccuracy_high, 1);
+	checkBoxGroup_matchingAccuracy.addButton(ui.checkBox_matchingAccuracy_low, 2);
 
 	//参数下拉框的槽函数连接
 	connect(ui.comboBox_ImageFormat, SIGNAL(currentIndexChanged(QString)), this, SLOT(on_currentIndexChanged_imgFormat()));
@@ -87,7 +92,7 @@ SettingUI::~SettingUI()
 //更新界面
 void SettingUI::refresh()
 {
-	//参数设置
+	//基本设置
 	ui.lineEdit_SampleDirPath->setText(userConfig->SampleDirPath); //样本路径
 	ui.lineEdit_TemplDirPath->setText(userConfig->TemplDirPath); //模板路径
 	ui.lineEdit_OutputDirPath->setText(userConfig->OutputDirPath); //输出路径
@@ -105,6 +110,19 @@ void SettingUI::refresh()
 	ui.lineEdit_nBasicUnitInRow->setText(QString::number(userConfig->nBasicUnitInRow));//基本单元数
 	ui.lineEdit_nBasicUnitInCol->setText(QString::number(userConfig->nBasicUnitInCol));//基本单元数
 
+	//运动控制
+	ui.pushButton_reset_motion->setEnabled(motionControler->isReady());
+
+	//相机组
+	ui.lineEdit_exposureTime_camera->setText(QString::number(userConfig->exposureTime));//曝光时间
+
+	if (userConfig->colorMode == 0) //色彩模式
+		ui.lineEdit_colorMode_rgb_camera->setChecked(true); //RGB彩色
+	else if (userConfig->matchingAccuracyLevel == 1) {
+		ui.lineEdit_colorMode_gray_camera->setChecked(true); //黑白
+	}
+
+	//检测算法
 	vector<bool> vec = userConfig->defectTypeToBeProcessed; //待检测的缺陷类型
 	ui.checkBox_defectType_short->setChecked(true);
 	ui.checkBox_defectType_short->setDisabled(true);
@@ -122,8 +140,6 @@ void SettingUI::refresh()
 	ui.lineEdit_concaveRateThresh->setText(QString::number(userConfig->concaveRateThresh)); //缺失率阈值
 	ui.lineEdit_convexRateThresh->setText(QString::number(userConfig->convexRateThresh)); //凸起率阈值
 
-	//运动控制
-	ui.pushButton_reset_motion->setEnabled(motionControler->isReady());
 }
 
 //设置光标的位置
@@ -137,6 +153,7 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 		ui.lineEdit_SampleDirPath->setFocus(); 
 		ui.lineEdit_SampleDirPath->clearFocus(); break;
 
+	//基本设置
 	case pcb::UserConfig::Index_SampleDirPath:
 		textLen = ui.lineEdit_SampleDirPath->text().length();
 		ui.lineEdit_SampleDirPath->setCursorPosition(textLen);
@@ -147,9 +164,7 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 		ui.lineEdit_OutputDirPath->setFocus(); break;
 	case pcb::UserConfig::Index_ImageFormat:
 		ui.comboBox_ImageFormat->setFocus(); break;
-	case pcb::UserConfig::Index_clusterComPort:
-		ui.comboBox_clusterComPort->setFocus(); break;
-
+	
 	case pcb::UserConfig::Index_ActualProductSize_W:
 		ui.lineEdit_ActualProductSize_W->setFocus(); break;
 	case pcb::UserConfig::Index_ActualProductSize_H:
@@ -159,6 +174,19 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 	case pcb::UserConfig::Index_nBasicUnitInCol:
 		ui.lineEdit_nBasicUnitInCol->setFocus(); break;
 
+	//运动结构
+	case pcb::UserConfig::Index_clusterComPort:
+		ui.comboBox_clusterComPort->setFocus(); break;
+
+	//相机组
+	case pcb::UserConfig::Index_exposureTime:
+		ui.lineEdit_exposureTime_camera->setFocus(); break;
+	case pcb::UserConfig::Index_colorMode:
+		ui.lineEdit_colorMode_rgb_camera->setFocus(); break;
+
+	//检测算法
+	case pcb::UserConfig::Index_defectTypeToBeProcessed:
+		ui.checkBox_defectType_short->setFocus(); break;
 	case pcb::UserConfig::Index_matchingAccuracyLevel:
 		ui.checkBox_matchingAccuracy_high->setFocus(); break;
 	case pcb::UserConfig::Index_concaveRateThresh:
@@ -216,7 +244,7 @@ void SettingUI::on_pushButton_initAndReturnToZero_motion_clicked()
 	//禁用界面上的按键和输入框
 	this->setPushButtonsEnabled(false);
 
-	//重置控制器
+	//重置运动控制器
 	motionControler->setOperation(MotionControler::ResetControler);
 	motionControler->start();
 	while (motionControler->isRunning()) pcb::delay(50);
@@ -401,7 +429,8 @@ void SettingUI::on_currentIndexChanged_imgFormat()
 void SettingUI::getConfigFromSettingUI()
 {
 	tempConfig.resetErrorCode(); //重置错误代码
-
+	
+	//基本设置
 	tempConfig.SampleDirPath = ui.lineEdit_SampleDirPath->text(); //样本路径
 	tempConfig.TemplDirPath = ui.lineEdit_TemplDirPath->text(); //模板路径
 	tempConfig.OutputDirPath = ui.lineEdit_OutputDirPath->text();//输出路径
@@ -414,15 +443,21 @@ void SettingUI::getConfigFromSettingUI()
 	QString defectTypeToBeProcessed = "";
 	if (ui.checkBox_defectType_short->isChecked()) defectTypeToBeProcessed;
 
-	int accuracyLevel = 0;
-	if (ui.checkBox_matchingAccuracy_high->isChecked()) accuracyLevel = 1;
-	if (ui.checkBox_matchingAccuracy_low->isChecked()) accuracyLevel = 2;
-	tempConfig.matchingAccuracyLevel = accuracyLevel; //匹配模式
+	//相机组
+	tempConfig.exposureTime = ui.lineEdit_ActualProductSize_W->text().toInt();//曝光时间
+	if (ui.lineEdit_colorMode_rgb_camera->isChecked()) tempConfig.colorMode = 0;
+	if (ui.lineEdit_colorMode_gray_camera->isChecked()) tempConfig.colorMode = 1;
 
+	//检测算法
 	tempConfig.defectTypeToBeProcessed[0] = ui.checkBox_defectType_short->isChecked();//待检测的缺陷类型
 	tempConfig.defectTypeToBeProcessed[1] = ui.checkBox_defectType_break->isChecked();
 	tempConfig.defectTypeToBeProcessed[2] = ui.checkBox_defectType_convex->isChecked();
 	tempConfig.defectTypeToBeProcessed[3] = ui.checkBox_defectType_concave->isChecked();
+	
+	int accuracyLevel = 0;
+	if (ui.checkBox_matchingAccuracy_high->isChecked()) accuracyLevel = 1;
+	if (ui.checkBox_matchingAccuracy_low->isChecked()) accuracyLevel = 2;
+	tempConfig.matchingAccuracyLevel = accuracyLevel; //匹配模式
 
 	tempConfig.concaveRateThresh = ui.lineEdit_concaveRateThresh->text().toInt();//缺失率阈值
 	tempConfig.convexRateThresh = ui.lineEdit_convexRateThresh->text().toInt();//凸起率阈值
