@@ -285,9 +285,9 @@ void SettingUI::on_pushButton_confirm_clicked()
 	code = tempConfig.checkValidity(UserConfig::Index_All, adminConfig);
 	if (code != UserConfig::ValidConfig) { //参数无效则报错
 		tempConfig.showMessageBox(this); //弹窗警告
-		this->setPushButtonsEnabled(true);//将按键设为可点击
+		this->setPushButtonsEnabled(true); //将按键设为可点击
 		UserConfig::ConfigIndex index = UserConfig::convertCodeToIndex(code);
-		this->setCursorLocation(index);//将光标定位到无效参数的输入框上
+		this->setCursorLocation(index); //将光标定位到无效参数的输入框上
 		return;
 	}
 
@@ -306,34 +306,13 @@ void SettingUI::on_pushButton_confirm_clicked()
 
 		//更新运行参数
 		if (adminConfig->isValid(false)) {
-			runtimeParams->copyTo(&tempParams);
-
-			RuntimeParams::ErrorCode code;
-			//计算单步运动距离
-			code = tempParams.calcSingleMotionStroke(adminConfig);
-			if (code != RuntimeParams::ValidValue) {
-				tempParams.showMessageBox(this); 
+			runtimeParams->copyTo(&tempParams); //复制到临时对象中
+			if (!tempParams.update(adminConfig, userConfig)) { //更新临时对象中的参数
+				tempParams.showMessageBox(this);
 				this->setPushButtonsEnabled(true); return;
 			}
-			//计算相机个数和拍照次数
-			code = tempParams.calcItemGridSize(adminConfig, userConfig);
-			if (code != RuntimeParams::ValidValue) {
-				tempParams.showMessageBox(this); 
-				this->setPushButtonsEnabled(true); return;
-			}
-			//计算初始拍照位置
-			code = tempParams.calcInitialPhotoPos(adminConfig);
-			if (code != RuntimeParams::ValidValue) {
-				tempParams.showMessageBox(this); 
-				this->setPushButtonsEnabled(true); return;
-			}
-
-			if (!tempParams.isValid(RuntimeParams::Index_All_SysInit, true, adminConfig)) {
-				tempParams.showMessageBox(this); 
-				this->setPushButtonsEnabled(true); return;
-			}
-			sysResetCode |= runtimeParams->getSystemResetCode(tempParams);
-			tempParams.copyTo(runtimeParams);
+			sysResetCode |= runtimeParams->getSystemResetCode(tempParams); //获取重置代码
+			tempParams.copyTo(runtimeParams); //将临时对象复制到运行参数中
 		}
 
 		//判断是否重置检测系统
@@ -445,7 +424,7 @@ void SettingUI::getConfigFromSettingUI()
 
 	//相机组
 	tempConfig.exposureTime = ui.lineEdit_ActualProductSize_W->text().toInt();//曝光时间
-	if (ui.lineEdit_colorMode_rgb_camera->isChecked()) tempConfig.colorMode = 0;
+	if (ui.lineEdit_colorMode_rgb_camera->isChecked()) tempConfig.colorMode = 0;//色彩模式
 	if (ui.lineEdit_colorMode_gray_camera->isChecked()) tempConfig.colorMode = 1;
 
 	//检测算法
@@ -454,10 +433,11 @@ void SettingUI::getConfigFromSettingUI()
 	tempConfig.defectTypeToBeProcessed[2] = ui.checkBox_defectType_convex->isChecked();
 	tempConfig.defectTypeToBeProcessed[3] = ui.checkBox_defectType_concave->isChecked();
 	
-	int accuracyLevel = 0;
+	//检测算法
+	int accuracyLevel = 0; //匹配模式
 	if (ui.checkBox_matchingAccuracy_high->isChecked()) accuracyLevel = 1;
 	if (ui.checkBox_matchingAccuracy_low->isChecked()) accuracyLevel = 2;
-	tempConfig.matchingAccuracyLevel = accuracyLevel; //匹配模式
+	tempConfig.matchingAccuracyLevel = accuracyLevel; 
 
 	tempConfig.concaveRateThresh = ui.lineEdit_concaveRateThresh->text().toInt();//缺失率阈值
 	tempConfig.convexRateThresh = ui.lineEdit_convexRateThresh->text().toInt();//凸起率阈值

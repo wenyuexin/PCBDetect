@@ -568,9 +568,17 @@ void UserConfig::copyTo(UserConfig *dst)
 int UserConfig::getSystemResetCode(UserConfig &newConfig)
 {
 	int resetCode = 0b000000000;
+
+	//运动结构
 	if (clusterComPort != newConfig.clusterComPort) {
 		resetCode |= 0b000100000;
 	}
+
+	//相机组
+	if (exposureTime != newConfig.exposureTime || colorMode != newConfig.colorMode) {
+		resetCode |= 0b000010000;
+	}
+
 	return resetCode;
 }
 
