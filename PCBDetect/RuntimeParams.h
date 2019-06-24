@@ -119,9 +119,9 @@ namespace pcb
 		void updateScreenRect();
 
 		ErrorCode calcSingleMotionStroke(pcb::AdminConfig *adminConfig);
-		ErrorCode calcInitialPhotoPos(pcb::AdminConfig *adminConfig);
 		ErrorCode calcItemGridSize(pcb::AdminConfig *adminConfig, pcb::UserConfig *userConfig);
-		ErrorCode update();
+		ErrorCode calcInitialPhotoPos(pcb::AdminConfig *adminConfig);
+		bool update(pcb::AdminConfig *adminConfig, pcb::UserConfig *userConfig);
 
 		ErrorCode parseSerialNum();
 		int getSystemResetCode(RuntimeParams &newConfig); //获取系统重置代码
