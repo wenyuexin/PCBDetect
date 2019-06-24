@@ -82,8 +82,8 @@ public:
 	bool showMessageBox(QWidget *parent); //弹窗警告
 
 private:
-	ErrorCode initCameras();//初始化
-	bool initCameras2();
+	ErrorCode initCameras(); //初始化 - OpenCV
+	bool initCameras2(); //初始化 - 迈德威视
 	QString cameraStatusMapToString(); //相机状态转字符串
 
 	bool isCamerasInitialized(); //判断相机是否已经初始化
