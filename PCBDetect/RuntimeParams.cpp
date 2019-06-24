@@ -206,6 +206,27 @@ RuntimeParams::ErrorCode RuntimeParams::calcInitialPhotoPos(pcb::AdminConfig *ad
 	return code;
 }
 
+//更新参数
+bool RuntimeParams::update(AdminConfig *adminConfig, UserConfig *userConfig)
+{
+	RuntimeParams::ErrorCode code;
+	//计算单步运动距离
+	code = calcSingleMotionStroke(adminConfig);
+	if (code != RuntimeParams::ValidValue) return false;
+	 
+	//计算相机个数和拍照次数
+	code = calcItemGridSize(adminConfig, userConfig);
+	if (code != RuntimeParams::ValidValue) return false;
+	
+	//计算初始拍照位置
+	code = calcInitialPhotoPos(adminConfig);
+	if (code != RuntimeParams::ValidValue) return false;
+
+	if (!isValid(RuntimeParams::Index_All_SysInit, true, adminConfig)) return false;
+	return true;
+}
+
+
 //产品序号解析
 RuntimeParams::ErrorCode RuntimeParams::parseSerialNum()
 {
