@@ -144,12 +144,11 @@ void TemplateExtractor::extract()
 	if (runtimeParams->currentRow_extract + 1 == nPhotographing) {
 
 		
-		Point point_left(runtimeParams->maskRoi_tl.x(), runtimeParams->maskRoi_br.y());
-		Point point_right(runtimeParams->maskRoi_br.x(), runtimeParams->maskRoi_tl.y());
+		Point point_bl(runtimeParams->maskRoi_tl.x(), runtimeParams->maskRoi_br.y());
+		Point point_tr(runtimeParams->maskRoi_br.x(), runtimeParams->maskRoi_tl.y());
 
 		string pointsPath = mask_path.toStdString() + "cornerPoints.bin";
-
-		vector<Point2i> cornerPoints{ point_left,point_right };
+		vector<Point2i> cornerPoints{ point_bl,point_tr };
 		cv::FileStorage store(pointsPath, cv::FileStorage::WRITE);
 		cv::write(store, "cornerPoints", cornerPoints);
 		store.release();
@@ -199,7 +198,7 @@ void TemplateExtractor::extract()
 			//stream1 >> num_rows;
 
 			image = cv::imread(filename[num]);//读图像
-			Mat mask = templFunc->cutting(num_cols, num_rows, runtimeParams->nCamera, runtimeParams->nPhotographing, image, point_left, point_right);//调函数
+			Mat mask = templFunc->cutting(num_cols, num_rows, runtimeParams->nCamera, runtimeParams->nPhotographing, image, point_bl, point_tr);//调函数
 			string resPath = mask_path.toStdString() + "/" + std::to_string(num_rows) + "_" + std::to_string(num_cols) + "_mask" + userConfig->ImageFormat.toStdString();
 			/*	imwrite(mask_path + "/2.jpg", mask);*/
 			cv::imwrite(resPath, mask);
