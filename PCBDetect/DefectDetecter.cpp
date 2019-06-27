@@ -1,6 +1,7 @@
 #include "DefectDetecter.h"
 #include <exception>
 #include <string>
+#include <map>
 
 using pcb::CvMatVector;
 using pcb::UserConfig;
@@ -161,6 +162,8 @@ void DefectDetecter::detect()
 		Mat markedSubImage = detectUnits[i]->getMarkedSubImage();
 		cv::Rect rect;
 		markedSubImage.copyTo(bigTempl(rect));
+		std::map<cv::Point3i, cv::Mat> detailImage = detectUnits[i]->getDetailImage();
+		allDetailImage.insert(detailImage.begin(), detailImage.end());
 	}
 	
 
@@ -308,6 +311,18 @@ void DefectDetecter::detect()
 		filePath += QString("fullImage_%1_%2_%3").arg(sz.width).arg(sz.height).arg(totalDefectNum); //添加文件名
 		filePath += userConfig->ImageFormat; //添加文件后缀
 		cv::imwrite(filePath.toStdString(), bigTempl); //存图
+
+		//存储细节图
+		QChar fillChar = '0'; //当字符串长度不够时使用此字符进行填充
+		QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录
+		int defectNum = 0;//缺陷序号
+		for (auto beg = allDetailImage.begin(); beg!=allDetailImage.end(); beg++) {
+			defectNum++;
+			cv::Point3i info = (*beg).first;
+			cv::Mat imgSeg = (*beg).second;
+			outPath += QString("%1_%2_%3_%4").arg(int(defectNum), 4, 10, fillChar).arg(int(info.x), 5, 10, fillChar).arg(int(info.y), 5, 10, fillChar).arg(int(info.z));
+			outPath += userConfig->ImageFormat; //添加图像格式的后缀
+		}
 		
 		//向检测界面发送是否合格的信息
 		bool qualified = (totalDefectNum < 100);
