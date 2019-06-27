@@ -613,7 +613,7 @@ cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::
 *       defectNum:缺陷序号
 *       currentCol:检测的列
 */
-void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol) {
+cv::Mat DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol, std::map<cv::Point3i, cv::Mat> &detailImage) {
 	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 
@@ -628,11 +628,11 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
 	if (contours.size() == 0) {
-		Point pos(currentCol*scaledSubImageSize.width, runtimeParams->currentRow_detect*scaledSubImageSize.height);
-		Rect roiRect = Rect(pos, scaledSubImageSize);
-		Mat roi = getBigTempl(roiRect);
-		sampGrayRegCopyZoom.copyTo(roi);
-		return;
+		//Point pos(currentCol*scaledSubImageSize.width, runtimeParams->currentRow_detect*scaledSubImageSize.height);
+		//Rect roiRect = Rect(pos, scaledSubImageSize);
+		//Mat roi = getBigTempl(roiRect);
+		//sampGrayRegCopyZoom.copyTo(roi);
+		return sampGrayRegCopyZoom;//不存在缺陷
 	}
 
 	for (int i = 0; i < contours.size(); i++) {
@@ -852,13 +852,19 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		outPath += QString("%1_%2_%3_%4").arg(defectNum, 4, 10, fillChar).arg(pos_x, 5, 10, fillChar).arg(pos_y, 5, 10, fillChar).arg(defect_flag);
 		outPath += userConfig->ImageFormat; //添加图像格式的后缀
 		//cv::putText(imgSeg, to_string(factor),Point(0,imgSeg.rows-1), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(0, 255, 255), 1, 8, 0);
-		imwrite(outPath.toStdString(), imgSeg); //存图
+
+
+		//保存缺陷坐标，缺陷类型，及缺陷分图
+		cv::Point3i detailPoints{pos_x,pos_y,defect_flag};
+		detailImage.insert(std::make_pair(detailPoints, imgSeg));
+
+		//imwrite(outPath.toStdString(), imgSeg); //存图
 		
 	}
 
-	Point roiPosition(currentCol*scaledSubImageSize.width, runtimeParams->currentRow_detect*scaledSubImageSize.height);
-	Mat roi = getBigTempl(Rect(roiPosition, scaledSubImageSize));
-	sampGrayRegCopyZoom.copyTo(roi);
+	
+
+	return sampGrayRegCopyZoom;
 }
 
 
