@@ -1,5 +1,7 @@
 #include "DetectUnit.h"
 
+
+
 using cv::Mat;
 using cv::Size;
 using cv::Rect;
@@ -152,5 +154,5 @@ void DetectUnit::run()
 	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
 
 	//±ê¼ÇÈ±ÏÝ
-	detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, curCol);
+	markedSubImage = detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, curCol,detailImage);
 }

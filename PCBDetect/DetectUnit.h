@@ -5,7 +5,8 @@
 #include "RuntimeParams.h"
 #include "FuncLib.h"
 #include "DetectFunc.h"
-
+#include <vector>
+#include <map>
 
 //用于检测单个分图的线程
 class DetectUnit : public QThread
@@ -25,7 +26,8 @@ private:
 	cv::Point *maskRoi_tr; //掩模区域右上角坐标，只读
 
 	int defectNum; //分图的缺陷数
-	cv::Mat markedSubImage; //标记后的分图
+	cv::Mat markedSubImage; //标记后的分图，使用完需清空
+	std::map<cv::Point3i, cv::Mat> detailImage;//缺陷细节图，使用完需清空
 
 public:
 	DetectUnit(QObject *parent = Q_NULLPTR);
@@ -40,7 +42,8 @@ public:
 
 	inline void setMaskRoi(cv::Point *bl, cv::Point *tr) { maskRoi_bl = bl; maskRoi_bl = tr; }
 
-	inline int getDefectNum() { return defectNum; } //获取分图的缺陷数
+	inline int getDefectNum() { defectNum = detailImage.size(); return defectNum; } //获取分图的缺陷数
+	inline std::map<cv::Point3i, cv::Mat> getDetailImage(){ return detailImage; }//获取缺陷信息及细节图
 	inline cv::Mat getMarkedSubImage() { return markedSubImage; }
 
 
