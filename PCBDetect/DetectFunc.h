@@ -8,6 +8,7 @@
 #include <vector>
 #include "opencv2/opencv.hpp"
 #include <qDebug>
+#include <map>
 
 
 class DetectFunc {
@@ -34,7 +35,7 @@ public:
 	cv::Mat sub_process_new(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat& mask_roi);
 	cv::Mat sub_process_new_small(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat& mask_roi);
 	cv::Mat sub_process_direct(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat &templGray, cv::Mat &sampGray, cv::Mat& mask_roi);
-	void markDefect_test(cv::Mat &diffBw, cv::Mat &sampGrayReg, cv::Mat &templBw, cv::Mat &templGray, int &defectNum, int currentCol);
+	cv::Mat DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol, std::map<cv::Point3i, cv::Mat> &detailImage);
 	void save(const std::string& path, cv::Mat& image_template_gray);
 	void load(const std::string& path);
 	cv::Scalar getMSSIM(const cv::Mat& i1, const cv::Mat& i2);

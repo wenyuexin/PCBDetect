@@ -46,6 +46,8 @@ private:
 	cv::Size scaledSubImageSize; //经过缩放后的分图的尺寸
 	cv::Mat bigTempl; //大模板
 
+	std::map<cv::Point3i, cv::Mat> allDetailImage;
+
 	cv::Point maskRoi_bl; //掩模区域的坐标，一张PCB对应一个坐标 
 	cv::Point maskRoi_tr;
 
@@ -74,6 +76,7 @@ private:
 
 	inline cv::Mat getBigTempl() { return bigTempl; }
 	inline cv::Mat getBigTempl(cv::Rect &rect) { return bigTempl(rect); }
+	
 
 	//inline cv::Point getMaskRoi_bl() { return maskRoi_bl; }
 	//inline cv::Point getMaskRoi_tr() { return maskRoi_tr; }
