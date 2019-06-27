@@ -16,15 +16,9 @@ private:
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数
 	pcb::RuntimeParams *runtimeParams; //运行参数
-	pcb::DetectResult *detectResult; //检测结果
 
-	double scalingFactor; //缩放因子
-	cv::Size scaledFullImageSize; //经过缩放后的整图的尺寸
-	cv::Size scaledSubImageSize; //经过缩放后的分图的尺寸
-	cv::Mat big_templ; //大模板;
-
-	std::vector<cv::KeyPoint> keypoints;
-	cv::Mat descriptors;
+	//std::vector<cv::KeyPoint> keypoints;
+	//cv::Mat descriptors;
 
 public:
 	DetectFunc();
@@ -33,7 +27,6 @@ public:
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
-	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 
 	bool alignImages_test(cv::Mat &image_template_gray, cv::Mat &image_sample_gray, cv::Mat &imgReg, cv::Mat &H, cv::Mat &imMatches);
 	bool alignImages_test_load(std::vector<cv::KeyPoint> &keypoints_1, cv::Mat& descriptors_1, cv::Mat &image_sample_gray, cv::Mat &imgReg, cv::Mat &H, cv::Mat &imMatches);//测试载入特征
@@ -46,30 +39,6 @@ public:
 	void load(const std::string& path);
 	cv::Scalar getMSSIM(const cv::Mat& i1, const cv::Mat& i2);
 
-
-
-
-
-	void generateBigTempl();
-	inline cv::Mat getBigTempl() { return big_templ; }
-	inline cv::Mat getBigTempl(cv::Rect &rect) { return big_templ(rect); }
-
 	cv::Mat myThresh(int curCol, int curRow, const cv::Mat& grayImg, cv::Point point_left, cv::Point point_right);
 	cv::Rect getRect(int curCol, int curRow, const cv::Mat& grayImg, cv::Point point_left, cv::Point point_right);
-	cv::Point get_bl() {
-		return bl;
-	}
-	cv::Point get_tr() {
-		return tr;
-	}
-	void set_bl(cv::Point pt) {
-		bl = pt;
-	}
-	void set_tr(cv::Point pt) {
-		tr = pt;
-	}
-private:
-	cv::Point bl;
-	cv::Point tr;
-
 };

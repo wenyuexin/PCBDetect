@@ -1,9 +1,7 @@
 #include "DetectFunc.h"
 #include "opencv2/features2d.hpp"
 #include "opencv2/xfeatures2d.hpp"
-#include <qDebug>
 #include <algorithm>
-
 
 using pcb::UserConfig;
 using pcb::RuntimeParams;
@@ -31,7 +29,6 @@ DetectFunc::DetectFunc()
 	adminConfig = Q_NULLPTR; //系统参数
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
-	detectResult = Q_NULLPTR; //检测结果
 }
 
 DetectFunc::~DetectFunc()
@@ -39,28 +36,9 @@ DetectFunc::~DetectFunc()
 	qDebug() << "~DetectFunc";
 }
 
-//生成完整尺寸的缺陷检测图像
-void DetectFunc::generateBigTempl()
-{
-	Size originalfullImgSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera, 
-		adminConfig->ImageSize_H * runtimeParams->nPhotographing); //整图的原始尺寸
-	
-	double factorW = 1.0 * runtimeParams->ScreenRect.width() / originalfullImgSize.width;
-	double factorH = 1.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
-	scalingFactor = qMin(factorW, factorH); //缩放因子
-	//scalingFactor = 1;
-	scaledSubImageSize = Size(scalingFactor * adminConfig->ImageSize_W,
-		scalingFactor * adminConfig->ImageSize_H); //分图经过缩放后的尺寸
-
-	scaledFullImageSize = Size(scaledSubImageSize.width * runtimeParams->nCamera,
-		scaledSubImageSize.height * runtimeParams->nPhotographing); //整图经过缩放后的尺寸
-
-	big_templ = Mat(scaledFullImageSize, CV_8UC3); //生成用于记录缺陷的整图
-}
 
 
-
-bool DetectFunc::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
+bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
 {
 
 	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
@@ -310,6 +288,7 @@ cv::Rect DetectFunc::getRect(int curCol, int curRow, const cv::Mat& grayImg, cv:
 	}
 	return rect;
 }
+
 
 bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches) {
 	//Ptr<SURF> detector = SURF::create(3500, 3, 3, true, true);
@@ -658,13 +637,11 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 	for (int i = 0; i < contours.size(); i++) {
 		int conArea = contourArea(contours[i], false);
-		if (conArea <= 60){//缺陷最小面积
-			continue;
-		}
-		double factor = (conArea * 4 * CV_PI) /
-			(pow(arcLength(contours[i], true), 2));
-		if (factor >= 0.8)//圆形度判断
-			continue;
+		if (conArea <= 60) continue; //缺陷最小面积
+
+		double factor = (conArea * 4 * CV_PI) / (pow(arcLength(contours[i], true), 2));
+		if (factor >= 0.8) continue;//圆形度判断
+			
 		//cv::drawContours(sampGrayRegCopyZoom, contours, i, Scalar(0, 0, 255));
 		
 		Rect rectCon = boundingRect(Mat(contours[i]));
@@ -682,9 +659,8 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 
 		//结构相似性
 		auto msssim = getMSSIM(temp_area, samp_area);
-		if (msssim[0] >= 0.85)// && conArea <= 200)
-			continue;
-
+		if (msssim[0] >= 0.85) continue; // && conArea <= 200)
+			
 
 		//对缺陷所在的小分图进行处理1
 		//int meanTemp = mean(temp_area)[0];
@@ -710,9 +686,7 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		cv::findNonZero(diffPart, locations);
 
 
-
-		if (locations.size() <= 60)// && conArea <= 200)
-			continue;
+		if (locations.size() <= 60) continue; // && conArea <= 200)
 	
 		//保存缺陷分图，并对缺陷分类
 		int w_b = 300, h_b = 300;//缺陷分图的大小
@@ -726,14 +700,10 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		pt3.y = (pt2.y + pt1.y) / 2 - h_b / 2;
 
 		//防止分图越界,如果分图imgSeg超出src边界则往回收缩
-		if (pt3.x < 0)
-			pt3.x = 0;
-		if (pt3.y < 0)
-			pt3.y = 0;
-		if (pt3.x + w_b > sampGrayReg.cols - 1)
-			w_b = sampGrayReg.cols - 1 - pt3.x;
-		if (pt3.y + h_b > sampGrayReg.rows - 1)
-			h_b = sampGrayReg.rows - 1 - pt3.y;
+		if (pt3.x < 0) pt3.x = 0;
+		if (pt3.y < 0) pt3.y = 0;
+		if (pt3.x + w_b > sampGrayReg.cols - 1) w_b = sampGrayReg.cols - 1 - pt3.x;
+		if (pt3.y + h_b > sampGrayReg.rows - 1) h_b = sampGrayReg.rows - 1 - pt3.y;
 
 		Mat imgSeg;//配准后样本分图
 		sampGrayReg(Rect(pt3, Point(pt3.x + w_b, pt3.y + h_b))).copyTo(imgSeg);//分图的左上角点为pt3,宽和高为w_b,h_b
@@ -860,14 +830,10 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 		rect1.width = rect.width + w_s;
 
 		//防止方框越界
-		if (rect1.x < 0)
-			rect1.x = 0;
-		if (rect1.y < 0)
-			rect1.y = 0;
-		if (rect1.x + rect1.width > imgSeg.cols - 1)
-			rect1.width = imgSeg.cols - 1 - rect1.x;
-		if (rect1.y + rect1.height > imgSeg.rows - 1)
-			rect1.height = imgSeg.rows - 1 - rect1.y;
+		if (rect1.x < 0) rect1.x = 0;
+		if (rect1.y < 0) rect1.y = 0;
+		if (rect1.x + rect1.width > imgSeg.cols - 1) rect1.width = imgSeg.cols - 1 - rect1.x;
+		if (rect1.y + rect1.height > imgSeg.rows - 1) rect1.height = imgSeg.rows - 1 - rect1.y;
 
 		cvtColor(imgSeg, imgSeg, cv::COLOR_GRAY2BGR);
 		rectangle(imgSeg, rect1, CV_RGB(255, 0, 0), 2);
@@ -896,10 +862,10 @@ void DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Ma
 }
 
 
-void DetectFunc::save(const std::string& path, Mat& image_template_gray) 
+void DetectFunc::save(const std::string& path, Mat& image_templ_gray)
 {
 	Mat temp;
-	cv::pyrDown(image_template_gray, temp);
+	cv::pyrDown(image_templ_gray, temp);
 	cv::pyrDown(temp, temp);
 	cv::pyrDown(temp, temp);
 	Ptr<SURF> detector = SURF::create(3500, 3, 3, true, true);
@@ -910,6 +876,7 @@ void DetectFunc::save(const std::string& path, Mat& image_template_gray)
 	store.release();
 
 }
+
 void DetectFunc::load(const std::string& path) 
 {
 	cv::FileStorage store(path, cv::FileStorage::READ);
