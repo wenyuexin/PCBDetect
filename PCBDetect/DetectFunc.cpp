@@ -613,9 +613,12 @@ cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::
 *       defectNum:缺陷序号
 *       currentCol:检测的列
 */
-cv::Mat DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol, std::map<cv::Point3i, cv::Mat> &detailImage) {
+cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayReg, double scalingFactor, Mat &templBw, Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat> &detailImage) {
 	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
+
+	cv::Size originalSubImageSize = sampGrayReg.size(); //分图的原始尺寸
+	cv::Size scaledSubImageSize(originalSubImageSize.width*scalingFactor, originalSubImageSize.height*scalingFactor); //放缩后的分图尺寸
 
 	Mat sampGrayRegCopy = sampGrayReg.clone();
 	cvtColor(sampGrayRegCopy, sampGrayRegCopy, cv::COLOR_GRAY2BGR);
@@ -804,12 +807,10 @@ cv::Mat DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw,
 
 		//分类有bug，出了问题直接goto到分类完成标签
 	classfinish:
-		/*if (trans_num == 0)
-			continue;*/
+		//if (trans_num == 0) continue;
 
 		int lack_flag = 0;//0表示无缺失，1表示有缺失
-		if (neighbors_sum >= 255 * 2)
-			lack_flag = 1;
+		if (neighbors_sum >= 255 * 2) lack_flag = 1;
 
 		int defect_flag = 0;
 		if (lack_flag) {
@@ -818,8 +819,6 @@ cv::Mat DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw,
 		else {
 			defect_flag = trans_num > 2 ? 3 : 4;
 		}
-
-		vector<string> defect_str{ "","断路","缺失","短路","凸起" };
 
 		//在分图上标记
 		Rect rect1;
@@ -855,15 +854,11 @@ cv::Mat DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw,
 
 
 		//保存缺陷坐标，缺陷类型，及缺陷分图
-		cv::Point3i detailPoints{pos_x,pos_y,defect_flag};
+		cv::Point3i detailPoints{ pos_x,pos_y,defect_flag };
 		detailImage.insert(std::make_pair(detailPoints, imgSeg));
-
 		//imwrite(outPath.toStdString(), imgSeg); //存图
 		
 	}
-
-	
-
 	return sampGrayRegCopyZoom;
 }
 
@@ -893,21 +888,20 @@ void DetectFunc::load(const std::string& path)
 	store.release();
 }
 
+
 Scalar DetectFunc::getMSSIM(const Mat& i1, const Mat& i2)
 {
 	const double C1 = 6.5025, C2 = 58.5225;
-	/***************************** INITS **********************************/
+	// INITS
 	int d = CV_32F;
-
 	Mat I1, I2;
-	i1.convertTo(I1, d);           // cannot calculate on one byte large values
+	i1.convertTo(I1, d); // cannot calculate on one byte large values
 	i2.convertTo(I2, d);
 
-	Mat I2_2 = I2.mul(I2);        // I2^2
-	Mat I1_2 = I1.mul(I1);        // I1^2
-	Mat I1_I2 = I1.mul(I2);        // I1 * I2
-
-	/*************************** END INITS **********************************/
+	Mat I2_2 = I2.mul(I2); // I2^2
+	Mat I1_2 = I1.mul(I1); // I1^2
+	Mat I1_I2 = I1.mul(I2); // I1 * I2
+	// END INITS
 
 	Mat mu1, mu2;   // PRELIMINARY COMPUTING
 	GaussianBlur(I1, mu1, Size(11, 11), 1.5);
@@ -928,7 +922,7 @@ Scalar DetectFunc::getMSSIM(const Mat& i1, const Mat& i2)
 	GaussianBlur(I1_I2, sigma12, Size(11, 11), 1.5);
 	sigma12 -= mu1_mu2;
 
-	///////////////////////////////// FORMULA ////////////////////////////////
+	// FORMULA
 	Mat t1, t2, t3;
 
 	t1 = 2 * mu1_mu2 + C1;

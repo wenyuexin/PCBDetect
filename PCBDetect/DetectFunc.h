@@ -14,12 +14,12 @@
 class DetectFunc {
 
 private:
+	//以下参数均为只读参数
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数
 	pcb::RuntimeParams *runtimeParams; //运行参数
 
-	//std::vector<cv::KeyPoint> keypoints;
-	//cv::Mat descriptors;
+	const std::vector<std::string> defect_str { "","断路","缺失","短路","凸起" }; //缺陷类型
 
 public:
 	DetectFunc();
@@ -35,7 +35,8 @@ public:
 	cv::Mat sub_process_new(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat& mask_roi);
 	cv::Mat sub_process_new_small(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat& mask_roi);
 	cv::Mat sub_process_direct(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat &templGray, cv::Mat &sampGray, cv::Mat& mask_roi);
-	cv::Mat DetectFunc::markDefect_test(Mat &diffBw, Mat &sampGrayReg, Mat &templBw, Mat &templGray, int &defectNum, int currentCol, std::map<cv::Point3i, cv::Mat> &detailImage);
+	cv::Mat DetectFunc::markDefect_test(int currentCol, cv::Mat &diffBw, cv::Mat &sampGrayReg, double scalingFactor, cv::Mat &templBw, cv::Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat> &detailImage);
+	
 	void save(const std::string& path, cv::Mat& image_template_gray);
 	void load(const std::string& path);
 	cv::Scalar getMSSIM(const cv::Mat& i1, const cv::Mat& i2);

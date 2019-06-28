@@ -1,7 +1,5 @@
 #include "DetectUnit.h"
 
-
-
 using cv::Mat;
 using cv::Size;
 using cv::Rect;
@@ -38,7 +36,7 @@ void DetectUnit::run()
 	//读取模板图片
 	QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
 		+ QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	Mat templ_gray = cv::imread(templPath.toStdString(), 0);
+	Mat templGray = cv::imread(templPath.toStdString(), 0);
 
 	//获取样本图片
 	Mat samp_gray;
@@ -53,7 +51,7 @@ void DetectUnit::run()
 
 
 	//样本与模板配准
-	Mat samp_gray_reg, h;
+	Mat sampGrayReg, h;
 	Mat imMatches;
 	//载入特征的方法
 	//string bin_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
@@ -63,8 +61,8 @@ void DetectUnit::run()
 
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
-	cv::bitwise_and(mask_roi, templ_gray, templGrayRoi);
-	detectFunc->alignImages_test(templGrayRoi, samp_gray, samp_gray_reg, h, imMatches);
+	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
+	detectFunc->alignImages_test(templGrayRoi, samp_gray, sampGrayReg, h, imMatches);
 	double t3 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
 
@@ -72,6 +70,7 @@ void DetectUnit::run()
 	Size roiSize = samp_gray.size();
 	Rect upRect = Rect(0, 0, roiSize.width, int(ratio*roiSize.height));
 	Rect downRect = Rect(0, int(ratio*roiSize.height), roiSize.width, roiSize.height - int(ratio*roiSize.height));
+	
 	//样本二值化
 	Mat sampBw = Mat::zeros(samp_gray.size(), CV_8UC1);
 	//自适应二值化
@@ -87,11 +86,9 @@ void DetectUnit::run()
 	//局部自适应二值化
 
 	sampBw = detectFunc->myThresh(curCol, curRow, samp_gray, *maskRoi_bl, *maskRoi_tr);
-
 	Mat element_a = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
 	cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
-
 
 	//直接载入二值化模板
 	//std::string templBwPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/bw/"
@@ -111,20 +108,18 @@ void DetectUnit::run()
 	//int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
 	//cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
 	//局部自适应二值化
-	templBw = detectFunc->myThresh(curCol, curRow, templ_gray, *maskRoi_bl, *maskRoi_tr);
+	templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
 
 	Mat elementTempl = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
 	cv::morphologyEx(templBw, templBw, cv::MORPH_OPEN, elementTempl);
 	cv::morphologyEx(templBw, templBw, cv::MORPH_CLOSE, elementTempl);
 
-
-
 	//透射变换后有一个roi
-	Mat templ_roi = Mat::ones(templ_gray.size(), templ_gray.type()) * 255;
+	Mat templ_roi = Mat::ones(templGray.size(), templGray.type()) * 255;
 	cv::warpPerspective(templ_roi, templ_roi, h, templ_roi.size());
 
 	Mat templRoiReverse = 255 - templ_roi;
-	cv::add(samp_gray_reg, templ_gray, samp_gray_reg, templRoiReverse);
+	cv::add(sampGrayReg, templGray, sampGrayReg, templRoiReverse);
 
 	//总的roi
 	Mat roi;
@@ -137,7 +132,7 @@ void DetectUnit::run()
 	//做差
 	cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
 	//Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
-	Mat diff = detectFunc->sub_process_direct(templBw, sampBw, templ_gray, samp_gray_reg, roi);
+	Mat diff = detectFunc->sub_process_direct(templBw, sampBw, templGray, sampGrayReg, roi);
 	//调试时候的边缘处理
 	Size szDiff = diff.size();
 	Mat diff_roi = Mat::zeros(szDiff, diff.type());
@@ -147,12 +142,12 @@ void DetectUnit::run()
 
 	//保存用于调试的图片
 	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow) + "_" + std::to_string(curCol) + "_";
-	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templ_gray);
+	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
 	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	cv::imwrite(debug_path + std::to_string(3) + ".bmp", samp_gray_reg);
+	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
 	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
 	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
 
 	//标记缺陷
-	markedSubImage = detectFunc->markDefect_test(diff, samp_gray_reg, templBw, templ_gray, defectNum, curCol,detailImage);
+	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage);
 }
