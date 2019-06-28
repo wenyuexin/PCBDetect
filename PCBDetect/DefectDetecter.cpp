@@ -128,25 +128,31 @@ void DefectDetecter::detect()
 		maskRoi_bl = res[0];
 		maskRoi_tr = res[1];
 		store_new.release();
+	}
 
+	//向检测单元传入适用于整个PCB板的参数
+	if (currentRow_detect == 0) {
 		for (int i = 0; i < nPhotographing; i++) {
-			detectUnits[i]->start(); //开始转换
-			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr); //设置掩模区域坐标
+			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr);//设置掩模区域坐标
+			detectUnits[i]->setCurrentCol(i);//设置列号
+			detectUnits[i]->setScalingFactor(scalingFactor); //设置缩放因子
+			detectUnits[i]->setScaledFullImageSize(&scaledFullImageSize); //设置缩放后的整图图像尺寸
+			detectUnits[i]->setScaledSubImageSize(scaledSubImageSize); //设置缩放后的分图图像尺寸
 		}
 	}
 
-	/* 开始检测当前的一行分图 */
-	pcb::CvMatVector subImages = (*cvmatSamples)[currentRow_detect];
-	//dst.resize(vecLength);
+	//向检测单元传入适用于当前行的参数
+	for (int i = 0; i < nPhotographing; i++) {
+		detectUnits[i]->setCurrentCol(i);//传入当前的行号
+	}
 
 	//开启若干检测线程，检测当前的一行分图
+	pcb::CvMatVector subImages = (*cvmatSamples)[currentRow_detect];
 	for (int i = 0; i < nPhotographing; i++) {
-		//dst[i] = new cv::Mat; //分配内存
-		//detectUnits[i]->set(src[i], dst[i], ImageConverter::QImage2CvMat);
 		detectUnits[i]->start(); //开始转换
 	}
 
-	//线程等待
+	//等待所有检测单元运行结束
 	for (int i = 0; i < nPhotographing; i++) {
 		detectUnits[i]->wait();
 	}
@@ -158,7 +164,7 @@ void DefectDetecter::detect()
 		int defectNum = detectUnits[i]->getDefectNum();
 		totalDefectNum += defectNum;
 
-		//将标记有缺陷的分图复制到大图
+		//将标记了缺陷的分图复制到大图
 		Mat markedSubImage = detectUnits[i]->getMarkedSubImage();
 		cv::Rect rect;
 		markedSubImage.copyTo(bigTempl(rect));
