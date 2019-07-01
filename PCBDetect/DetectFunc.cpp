@@ -613,7 +613,7 @@ cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::
 *       defectNum:缺陷序号
 *       currentCol:检测的列
 */
-cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayReg, double scalingFactor, Mat &templBw, Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat> &detailImage) {
+cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayReg, double scalingFactor, Mat &templBw, Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat, cmp_point3i> &detailImage) {
 	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 

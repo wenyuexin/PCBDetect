@@ -10,6 +10,20 @@
 #include <qDebug>
 #include <map>
 
+struct cmp_point3i
+{
+	bool operator()(const cv::Point3i &p1, const cv::Point3i &p2)const
+	{
+		
+		if (p1.x != p2.x)
+			return p1.x < p2.x;
+		else if (p1.y != p2.y)
+			return p1.y < p2.y;
+		else
+			return p1.z < p2.z;
+	}
+};
+
 
 class DetectFunc {
 
@@ -35,7 +49,7 @@ public:
 	cv::Mat sub_process_new(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat& mask_roi);
 	cv::Mat sub_process_new_small(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat& mask_roi);
 	cv::Mat sub_process_direct(cv::Mat &templBw, cv::Mat &sampBw, cv::Mat &templGray, cv::Mat &sampGray, cv::Mat& mask_roi);
-	cv::Mat DetectFunc::markDefect_test(int currentCol, cv::Mat &diffBw, cv::Mat &sampGrayReg, double scalingFactor, cv::Mat &templBw, cv::Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat> &detailImage);
+	cv::Mat DetectFunc::markDefect_test(int currentCol, cv::Mat &diffBw, cv::Mat &sampGrayReg, double scalingFactor, cv::Mat &templBw, cv::Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat, cmp_point3i> &detailImage);
 	
 	void save(const std::string& path, cv::Mat& image_template_gray);
 	void load(const std::string& path);
