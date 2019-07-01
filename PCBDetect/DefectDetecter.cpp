@@ -159,6 +159,8 @@ void DefectDetecter::detect()
 
 	//整合当前行的检测结果
 	totalDefectNum = 0; //缺陷总数
+
+
 	for (int i = 0; i < nPhotographing; i++) {
 		//统计缺陷总数
 		int defectNum = detectUnits[i]->getDefectNum();
@@ -166,11 +168,16 @@ void DefectDetecter::detect()
 
 		//将标记了缺陷的分图复制到大图
 		Mat markedSubImage = detectUnits[i]->getMarkedSubImage();
-		cv::Rect rect;
+		int curCol = detectUnits[i]->getcurCol();
+		int curRow = detectUnits[i]->getcurRow();
+
+		cv::Rect rect = Rect(curCol*markedSubImage.cols, curRow*markedSubImage.rows, markedSubImage.cols,markedSubImage.rows);
 		markedSubImage.copyTo(bigTempl(rect));
-		std::map<cv::Point3i, cv::Mat> detailImage = detectUnits[i]->getDetailImage();
+		std::map<cv::Point3i, cv::Mat, cmp_point3i> detailImage = detectUnits[i]->getDetailImage();
 		allDetailImage.insert(detailImage.begin(), detailImage.end());
 	}
+	
+	
 
 	//for (int i = 0; i < (*cvmatSamples)[currentRow_detect].size(); i++) {
 	//	int curRow = currentRow_detect;//当前行
@@ -327,6 +334,7 @@ void DefectDetecter::detect()
 			cv::Mat imgSeg = (*beg).second;
 			outPath += QString("%1_%2_%3_%4").arg(int(defectNum), 4, 10, fillChar).arg(int(info.x), 5, 10, fillChar).arg(int(info.y), 5, 10, fillChar).arg(int(info.z));
 			outPath += userConfig->ImageFormat; //添加图像格式的后缀
+			cv::imwrite(outPath.toStdString(), imgSeg);
 		}
 		
 		//向检测界面发送是否合格的信息
