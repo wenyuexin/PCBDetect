@@ -25,10 +25,12 @@ public:
 	enum ErrorCode {
 		NoError = 0x000,
 		Unchecked = 0x900,
+		LoadTemplMaskRoiError = 0x901,
 		Default = 0x9FF
 	};
 
 private:
+	ErrorCode errorCode; //错误代码
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数
 	pcb::RuntimeParams *runtimeParams; //运行参数
