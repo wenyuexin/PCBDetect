@@ -31,7 +31,7 @@ private:
 
 	int defectNum; //分图的缺陷数
 	cv::Mat markedSubImage; //标记后的分图，使用完需清空
-	std::map < cv::Point3i, cv::Mat, cmp_point3i > detailImage;//缺陷细节图，使用完需清空
+	std::map <cv::Point3i, cv::Mat, cmp_point3i > detailImage;//缺陷细节图，使用完需清空
 
 public:
 	DetectUnit(QObject *parent = Q_NULLPTR);
@@ -40,13 +40,11 @@ public:
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; } //设置系统参数
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; } //设置用户参数
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; } //设置运行参数
-
 	inline void setDetectFunc(DetectFunc *ptr) { detectFunc = ptr; } //设置检测函数类
-	inline void setSubImage(cv::Mat &src) { samp = src; } //设置分图
 
-	inline void setCurrentRow(int row) { curRow = row; }
-	inline void setCurrentCol(int col) { curCol = col; }
-	inline void setMaskRoi(cv::Point *bl, cv::Point *tr) { maskRoi_bl = bl; maskRoi_bl = tr; }
+	inline void setSubImage(cv::Mat &src) { samp = src; } //设置分图
+	inline void setCurrentCol(int col) { curCol = col; } //设置分图的列号
+	inline void setMaskRoi(cv::Point *bl, cv::Point *tr) { maskRoi_bl = bl; maskRoi_tr = tr; } //设置掩模区域坐标
 
 	inline void setScalingFactor(double f) { scalingFactor = f; } //设置缩放因子
 	inline void setScaledFullImageSize(cv::Size *sz) { scaledFullImageSize = sz; } //设置经过缩放后的整图图像尺寸

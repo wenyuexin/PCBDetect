@@ -10,10 +10,15 @@ using std::string;
 DetectUnit::DetectUnit(QObject *parent)
 	: QThread(parent)
 {
-	defectNum = INT_MIN; //分图中的缺陷数
+	adminConfig = Q_NULLPTR; //系统参数
+	userConfig = Q_NULLPTR; //用户参数
+	runtimeParams = Q_NULLPTR; //运行参数
 	detectFunc = Q_NULLPTR; //检测函数类
+
 	maskRoi_bl = Q_NULLPTR; //掩模区域左下角坐标，只读
 	maskRoi_tr = Q_NULLPTR; //掩模区域右上角坐标，只读
+
+	defectNum = INT_MIN; //分图中的缺陷数
 }
 
 DetectUnit::~DetectUnit()
@@ -27,11 +32,12 @@ void DetectUnit::run()
 {
 	double t1 = clock();
 	defectNum = 0; //分图的缺陷数清零
+	curRow = runtimeParams->currentRow_detect; //当前正在检测的行
 
 	//读取模板掩膜
 	QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/"
 		+ QString("%1_%2_mask").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	cv::Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
+	Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
 
 	//读取模板图片
 	QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
@@ -39,8 +45,8 @@ void DetectUnit::run()
 	Mat templGray = cv::imread(templPath.toStdString(), 0);
 
 	//获取样本图片
-	Mat samp_gray;
-	cv::cvtColor(samp, samp_gray, cv::COLOR_BGR2GRAY);
+	Mat sampGray;
+	cv::cvtColor(samp, sampGray, cv::COLOR_BGR2GRAY);
 
 	//保存样本图片
 	QString sampPath = runtimeParams->currentSampleDir + "/" + QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + ".bmp";
@@ -62,17 +68,17 @@ void DetectUnit::run()
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
-	detectFunc->alignImages_test(templGrayRoi, samp_gray, sampGrayReg, h, imMatches);
+	detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
 	double t3 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
 
 	double ratio = 0.67;
-	Size roiSize = samp_gray.size();
+	Size roiSize = sampGray.size();
 	Rect upRect = Rect(0, 0, roiSize.width, int(ratio*roiSize.height));
 	Rect downRect = Rect(0, int(ratio*roiSize.height), roiSize.width, roiSize.height - int(ratio*roiSize.height));
 	
 	//样本二值化
-	Mat sampBw = Mat::zeros(samp_gray.size(), CV_8UC1);
+	Mat sampBw = Mat::zeros(sampGray.size(), CV_8UC1);
 	//自适应二值化
 	//cv::adaptiveThreshold(samp_gray, sampBw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
 	//均值二值化
@@ -85,7 +91,7 @@ void DetectUnit::run()
 	//cv::threshold(samp_gray(downRect), sampBw(downRect), meanSampGrayDown, 255, cv::THRESH_BINARY_INV);
 	//局部自适应二值化
 
-	sampBw = detectFunc->myThresh(curCol, curRow, samp_gray, *maskRoi_bl, *maskRoi_tr);
+	sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr);
 	Mat element_a = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
 	cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
@@ -96,7 +102,7 @@ void DetectUnit::run()
 	//Mat templBw = cv::imread(templBwPath, 0);
 
 	//每次生成模板的二值化
-	Mat templBw = Mat::zeros(samp_gray.size(), CV_8UC1);
+	Mat templBw = Mat::zeros(sampGray.size(), CV_8UC1);
 	//自适应二值化
 	//cv::adaptiveThreshold(templ_gray, templBw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
 	//均值二值化

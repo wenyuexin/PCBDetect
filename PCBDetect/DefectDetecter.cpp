@@ -8,7 +8,9 @@ using pcb::UserConfig;
 using pcb::RuntimeParams;
 using pcb::DetectResult;
 using pcb::QImageVector;
+using pcb::CvMatVector;
 using cv::Mat;
+using cv::Point;
 using cv::Size;
 using cv::Rect;
 using std::string;
@@ -83,7 +85,11 @@ void DefectDetecter::initDetectUnits()
 	detectUnits.resize(MAX_DETECT_UNITS_NUM);
 	for (int i = 0; i < MAX_DETECT_UNITS_NUM; i++) {
 		detectUnits[i] = new DetectUnit();
+		detectUnits[i]->setCurrentCol(i);//设置列号
 		detectUnits[i]->setDetectFunc(detectFunc);//所有单元共用一个detectFunc
+		detectUnits[i]->setAdminConfig(adminConfig); //设置系统参数
+		detectUnits[i]->setUserConfig(userConfig); //设置用户参数
+		detectUnits[i]->setRuntimeParams(runtimeParams); //设置运行参数
 	}
 }
 
@@ -122,9 +128,13 @@ void DefectDetecter::detect()
 	if (currentRow_detect == 0) {
 		QString cornerPointsPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/cornerPoints.bin";
 		cv::FileStorage store_new(cornerPointsPath.toStdString(), cv::FileStorage::READ);
-		cv::FileNode n1 = store_new["cornerPoints"];
+		cv::FileNode node = store_new["cornerPoints"];
 		vector<cv::Point2i> res;
-		cv::read(n1, res);
+		cv::read(node, res);
+		if (res.size() == 0) {
+			qDebug() << pcb::chinese("DefectDetecter: 加载模板的掩模区域坐标失败");
+			errorCode = LoadTemplMaskRoiError; return;
+		}
 		maskRoi_bl = res[0];
 		maskRoi_tr = res[1];
 		store_new.release();
@@ -134,7 +144,6 @@ void DefectDetecter::detect()
 	if (currentRow_detect == 0) {
 		for (int i = 0; i < nPhotographing; i++) {
 			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr);//设置掩模区域坐标
-			detectUnits[i]->setCurrentCol(i);//设置列号
 			detectUnits[i]->setScalingFactor(scalingFactor); //设置缩放因子
 			detectUnits[i]->setScaledFullImageSize(&scaledFullImageSize); //设置缩放后的整图图像尺寸
 			detectUnits[i]->setScaledSubImageSize(&scaledSubImageSize); //设置缩放后的分图图像尺寸
@@ -142,12 +151,12 @@ void DefectDetecter::detect()
 	}
 
 	//向检测单元传入适用于当前行的参数
+	CvMatVector subImages = (*cvmatSamples)[currentRow_detect];
 	for (int i = 0; i < nPhotographing; i++) {
-		detectUnits[i]->setCurrentCol(i);//传入当前的行号
+		detectUnits[i]->setSubImage(*subImages[i]);//设置需要检测的分图
 	}
 
 	//开启若干检测线程，检测当前的一行分图
-	pcb::CvMatVector subImages = (*cvmatSamples)[currentRow_detect];
 	for (int i = 0; i < nPhotographing; i++) {
 		detectUnits[i]->start(); //开始转换
 	}
@@ -159,8 +168,6 @@ void DefectDetecter::detect()
 
 	//整合当前行的检测结果
 	totalDefectNum = 0; //缺陷总数
-
-
 	for (int i = 0; i < nPhotographing; i++) {
 		//统计缺陷总数
 		int defectNum = detectUnits[i]->getDefectNum();
@@ -170,15 +177,15 @@ void DefectDetecter::detect()
 		Mat markedSubImage = detectUnits[i]->getMarkedSubImage();
 		int curCol = detectUnits[i]->getcurCol();
 		int curRow = detectUnits[i]->getcurRow();
-
-		cv::Rect rect = Rect(curCol*markedSubImage.cols, curRow*markedSubImage.rows, markedSubImage.cols,markedSubImage.rows);
+		Rect rect(Point(curCol*markedSubImage.cols, curRow*markedSubImage.rows), markedSubImage.size());
 		markedSubImage.copyTo(bigTempl(rect));
+
+		//将缺陷细节图及其相关信息合并在一起
 		std::map<cv::Point3i, cv::Mat, cmp_point3i> detailImage = detectUnits[i]->getDetailImage();
 		allDetailImage.insert(detailImage.begin(), detailImage.end());
 	}
 	
 	
-
 	//for (int i = 0; i < (*cvmatSamples)[currentRow_detect].size(); i++) {
 	//	int curRow = currentRow_detect;//当前行
 	//	int curCol = i;//当前列
@@ -326,15 +333,15 @@ void DefectDetecter::detect()
 
 		//存储细节图
 		QChar fillChar = '0'; //当字符串长度不够时使用此字符进行填充
-		QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录
 		int defectNum = 0;//缺陷序号
 		for (auto beg = allDetailImage.begin(); beg!=allDetailImage.end(); beg++) {
 			defectNum++;
 			cv::Point3i info = (*beg).first;
 			cv::Mat imgSeg = (*beg).second;
-			outPath += QString("%1_%2_%3_%4").arg(int(defectNum), 4, 10, fillChar).arg(int(info.x), 5, 10, fillChar).arg(int(info.y), 5, 10, fillChar).arg(int(info.z));
+			QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录
+			outPath += QString("%1_%2_%3_%4").arg(defectNum, 4, 10, fillChar).arg(info.x, 5, 10, fillChar).arg(info.y, 5, 10, fillChar).arg(info.z);
 			outPath += userConfig->ImageFormat; //添加图像格式的后缀
-			cv::imwrite(outPath.toStdString(), imgSeg);
+			cv::imwrite(outPath.toStdString(), imgSeg);//将细节图存储到本地硬盘上
 		}
 		
 		//向检测界面发送是否合格的信息
@@ -382,7 +389,7 @@ void DefectDetecter::makeCurrentSampleDir(std::vector<QString> &subFolders)
 	if (!resultDir.exists()) {
 		resultDir.mkdir(runtimeParams->currentSampleDir);//创建文件夹
 	}
-	else {
+	else if (!runtimeParams->DeveloperMode) { //文件夹存在且开发者模式未开启
 		pcb::clearFolder(runtimeParams->currentSampleDir, false);//清空文件夹
 	}
 
