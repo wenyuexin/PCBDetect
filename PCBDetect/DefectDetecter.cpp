@@ -137,7 +137,7 @@ void DefectDetecter::detect()
 			detectUnits[i]->setCurrentCol(i);//设置列号
 			detectUnits[i]->setScalingFactor(scalingFactor); //设置缩放因子
 			detectUnits[i]->setScaledFullImageSize(&scaledFullImageSize); //设置缩放后的整图图像尺寸
-			detectUnits[i]->setScaledSubImageSize(scaledSubImageSize); //设置缩放后的分图图像尺寸
+			detectUnits[i]->setScaledSubImageSize(&scaledSubImageSize); //设置缩放后的分图图像尺寸
 		}
 	}
 
@@ -171,7 +171,6 @@ void DefectDetecter::detect()
 		std::map<cv::Point3i, cv::Mat> detailImage = detectUnits[i]->getDetailImage();
 		allDetailImage.insert(detailImage.begin(), detailImage.end());
 	}
-	
 
 	//for (int i = 0; i < (*cvmatSamples)[currentRow_detect].size(); i++) {
 	//	int curRow = currentRow_detect;//当前行

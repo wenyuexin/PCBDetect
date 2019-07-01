@@ -863,30 +863,30 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 }
 
 
-void DetectFunc::save(const std::string& path, Mat& image_templ_gray)
-{
-	Mat temp;
-	cv::pyrDown(image_templ_gray, temp);
-	cv::pyrDown(temp, temp);
-	cv::pyrDown(temp, temp);
-	Ptr<SURF> detector = SURF::create(3500, 3, 3, true, true);
-	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
-	cv::FileStorage store(path, cv::FileStorage::WRITE);
-	cv::write(store, "keypoints", keypoints);
-	cv::write(store, "descriptors", descriptors);
-	store.release();
+//void DetectFunc::save(const std::string& path, Mat& image_templ_gray)
+//{
+//	Mat temp;
+//	cv::pyrDown(image_templ_gray, temp);
+//	cv::pyrDown(temp, temp);
+//	cv::pyrDown(temp, temp);
+//	Ptr<SURF> detector = SURF::create(3500, 3, 3, true, true);
+//	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
+//	cv::FileStorage store(path, cv::FileStorage::WRITE);
+//	cv::write(store, "keypoints", keypoints);
+//	cv::write(store, "descriptors", descriptors);
+//	store.release();
+//
+//}
 
-}
-
-void DetectFunc::load(const std::string& path) 
-{
-	cv::FileStorage store(path, cv::FileStorage::READ);
-	cv::FileNode n1 = store["keypoints"];
-	cv::read(n1, keypoints);
-	cv::FileNode n2 = store["descriptors"];
-	cv::read(n2, descriptors);
-	store.release();
-}
+//void DetectFunc::load(const std::string& path) 
+//{
+//	cv::FileStorage store(path, cv::FileStorage::READ);
+//	cv::FileNode n1 = store["keypoints"];
+//	cv::read(n1, keypoints);
+//	cv::FileNode n2 = store["descriptors"];
+//	cv::read(n2, descriptors);
+//	store.release();
+//}
 
 
 Scalar DetectFunc::getMSSIM(const Mat& i1, const Mat& i2)
