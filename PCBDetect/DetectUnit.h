@@ -31,7 +31,7 @@ private:
 
 	int defectNum; //分图的缺陷数
 	cv::Mat markedSubImage; //标记后的分图，使用完需清空
-	std::map<cv::Point3i, cv::Mat> detailImage;//缺陷细节图，使用完需清空
+	std::map < cv::Point3i, cv::Mat, cmp_point3i > detailImage;//缺陷细节图，使用完需清空
 
 public:
 	DetectUnit(QObject *parent = Q_NULLPTR);
@@ -53,8 +53,11 @@ public:
 	inline void setScaledSubImageSize(cv::Size *sz) { scaledSubImageSize = sz; } //设置经过缩放后的分图图像尺寸
 
 	inline int getDefectNum() { defectNum = detailImage.size(); return defectNum; } //获取分图的缺陷数
-	inline std::map<cv::Point3i, cv::Mat> getDetailImage(){ return detailImage; }//获取缺陷信息及细节图
+	inline std::map<cv::Point3i, cv::Mat, cmp_point3i> getDetailImage(){ return detailImage; }//获取缺陷信息及细节图
 	inline cv::Mat getMarkedSubImage() { return markedSubImage; }
+
+	inline int getcurRow() { return curRow; }
+	inline int getcurCol() { return curCol; }
 
 
 protected:
