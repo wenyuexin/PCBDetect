@@ -44,16 +44,17 @@ void DetectUnit::run()
 		+ QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
 	Mat templGray = cv::imread(templPath.toStdString(), 0);
 
-	//获取样本图片
+	double t2 = clock();
+	qDebug() << "==========" << pcb::chinese("读取模板文件") << (t2 - t1) / CLOCKS_PER_SEC << "s" 
+		<< " ( curCol = " << curCol << ")" << endl;
+
+	//样本图片转为灰度图
 	Mat sampGray;
 	cv::cvtColor(samp, sampGray, cv::COLOR_BGR2GRAY);
 
-	//保存样本图片
-	QString sampPath = runtimeParams->currentSampleDir + "/" + QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + ".bmp";
-	cv::imwrite(sampPath.toStdString(), samp);
-
-	double t2 = clock();
-	qDebug() << "==========" << pcb::chinese("模板形态学处理") << (t2 - t1) / CLOCKS_PER_SEC << "s" << endl;
+	double t3 = clock();
+	qDebug() << "==========" << pcb::chinese("模板形态学处理") << (t3 - t2) / CLOCKS_PER_SEC << "s" 
+		<< " ( curCol = " << curCol << ")" << endl;
 
 
 	//样本与模板配准
@@ -69,8 +70,9 @@ void DetectUnit::run()
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
 	detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
-	double t3 = clock();
-	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t3 - t2) / CLOCKS_PER_SEC << "s" << endl;
+	double t4 = clock();
+	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
+		<< " ( curCol = " << curCol << ")"  << endl;
 
 	double ratio = 0.67;
 	Size roiSize = sampGray.size();
@@ -147,13 +149,22 @@ void DetectUnit::run()
 	bitwise_and(diff_roi, diff, diff);
 
 	//保存用于调试的图片
-	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow) + "_" + std::to_string(curCol) + "_";
-	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+	//std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow) + "_" + std::to_string(curCol) + "_";
+	//cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+	//cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+	//cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+	//cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+	//cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
 
 	//标记缺陷
 	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage);
+
+	//保存样本图片
+	double t5 = clock();
+	QString sampPath = runtimeParams->currentSampleDir + "/" + QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + ".bmp";
+	cv::imwrite(sampPath.toStdString(), samp);
+
+	double t6 = clock();
+	qDebug() << "==========" << pcb::chinese("保存样本分图") << (t6 - t5) / CLOCKS_PER_SEC << "s" 
+		<< " ( curCol = " << curCol << ")" << endl;
 }
