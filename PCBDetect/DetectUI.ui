@@ -254,7 +254,7 @@
     <rect>
      <x>1260</x>
      <y>700</y>
-     <width>141</width>
+     <width>131</width>
      <height>61</height>
     </rect>
    </property>
@@ -287,22 +287,6 @@
      </widget>
     </item>
     <item>
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>3</width>
-        <height>5</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
      <widget class="QLabel" name="label_result">
       <property name="font">
        <font>
@@ -312,7 +296,7 @@
        </font>
       </property>
       <property name="text">
-       <string>--</string>
+       <string>不合格</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
