@@ -1,22 +1,22 @@
-
 #include "FileSender.h"
-
-
 
 
 FileSender::FileSender(std::string _ip, std::string _port): address(_ip),port(_port)
 {
+}
 
+FileSender::~FileSender()
+{
 }
 
 void FileSender::SendFolder(const std::string & dir)
 {
 	std::vector<std::string> fileList;
-	
 	if (!getFilesName(dir, fileList)) {
 		std::cout << "输入文件夹为空，请检查输入！";
 		return;
 	}
+
 	for (int i = 0; i < fileList.size(); i++) {
 		boost::asio::io_service ioService;
 		boost::asio::ip::tcp::resolver resolver(ioService);
@@ -24,38 +24,26 @@ void FileSender::SendFolder(const std::string & dir)
 		Client client(ioService, endpointIterator, fileList[i]);
 		ioService.run();
 	}
-	
 }
 
-FileSender::~FileSender()
-{
-}
 
 int FileSender::getFilesName(const std::string & dir, std::vector<std::string>& filenames)
 {
 	boost::filesystem::path path(dir);
-	if (!boost::filesystem::exists(path))
-	{
-		return -1;
-	}
+	if (!boost::filesystem::exists(path)) return -1;
 
 	boost::filesystem::directory_iterator end_iter;
-	for (boost::filesystem::directory_iterator iter(path); iter != end_iter; ++iter)
-	{
-		if (boost::filesystem::is_regular_file(iter->status()))
-		{
+	for (boost::filesystem::directory_iterator iter(path); iter != end_iter; ++iter) {
+		if (boost::filesystem::is_regular_file(iter->status())) {
 			filenames.push_back(iter->path().string());
 		}
 
-		if (boost::filesystem::is_directory(iter->status()))
-		{
+		if (boost::filesystem::is_directory(iter->status())) {
 			getFilesName(iter->path().string(), filenames);
 		}
 	}
-
 	return filenames.size();
 }
-
 
 
 Client::Client(IoService& t_ioService, TcpResolverIterator t_endpointIterator,
@@ -71,8 +59,9 @@ Client::Client(IoService& t_ioService, TcpResolverIterator t_endpointIterator,
 void Client::openFile(std::string const& t_path)
 {
 	m_sourceFile.open(t_path, std::ios_base::binary | std::ios_base::ate);
-	if (m_sourceFile.fail())
-		throw  std::fstream::failure("打开文件失败" + t_path);
+	if (m_sourceFile.fail()) {
+		throw std::fstream::failure("打开文件失败" + t_path);
+	}
 
 	m_sourceFile.seekg(0, m_sourceFile.end);
 	auto fileSize = m_sourceFile.tellg();
