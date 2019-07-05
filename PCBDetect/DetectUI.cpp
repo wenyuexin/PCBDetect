@@ -766,13 +766,7 @@ void DetectUI::do_updateDetectState_detecter(int state)
 
 		//检查是否有未处理的事件
 		while (detectThread->isRunning()) pcb::delay(50); //等待提取线程结束
-		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1) { //当前PCB检测结束
-			runtimeParams->currentRow_detect += 1;
-			this->setPushButtonsEnabled(true); //启用按键
-		}
-		else { //当前PCB未检测完
-			if (eventCounter > 0) detectSampleImages(); //检测下一行分图
-		}
+		if (eventCounter > 0) detectSampleImages(); //检测下一行分图
 	}
 }
 
@@ -783,4 +777,19 @@ void DetectUI::on_detectFinished_detectThread(bool qualified)
 	//显示结果
 	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
 	ui.label_result->setText((qualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
+
+	//此处向复查设备发送检测结果
+	ui.label_status->setText(pcb::chinese("正在发送检测结果")); //更新状态栏
+	qApp->processEvents();
+
+	pcb::delay(1500);//假装正在发送
+
+	ui.label_status->setText(pcb::chinese("系统就绪")); //更新状态栏
+	qApp->processEvents();
+
+	//当前PCB检测结束
+	if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1) {
+		runtimeParams->currentRow_detect += 1;
+		this->setPushButtonsEnabled(true); //启用按键
+	}
 }
