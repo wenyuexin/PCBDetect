@@ -1,22 +1,23 @@
 #pragma once
 
 #include <iostream>
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 #include <array>
 #include <fstream>
-#include<memory>
+#include <memory>
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/log/trivial.hpp>
 
+
 class FileSender
 {
 public:
 	FileSender(std::string _ip,std::string port = "8888");//IPv4地址初始化，监听端口默认为8888
-	void SendFolder(const std::string& dir);//传入需要发送文件的完整路径
 	~FileSender();
+	void SendFolder(const std::string& dir);//传入需要发送文件的完整路径
 
 private:
 	std::string address;
