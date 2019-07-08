@@ -6,10 +6,7 @@
 #include <array>
 #include <fstream>
 #include <memory>
-#include <boost/asio.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/log/trivial.hpp>
+#include <asio.hpp>
 
 
 class FileSender
@@ -30,10 +27,10 @@ private:
 class Client
 {
 public:
-	using IoService = boost::asio::io_service;
-	using TcpResolver = boost::asio::ip::tcp::resolver;
+	using IoService = asio::io_service;
+	using TcpResolver = asio::ip::tcp::resolver;
 	using TcpResolverIterator = TcpResolver::iterator;
-	using TcpSocket = boost::asio::ip::tcp::socket;
+	using TcpSocket = asio::ip::tcp::socket;
 
 	Client(IoService& t_ioService, TcpResolverIterator t_endpointIterator,
 		std::string const& t_path);
@@ -41,7 +38,7 @@ public:
 private:
 	void openFile(std::string const& t_path);
 	void doConnect();
-	void doWriteFile(const boost::system::error_code& t_ec);
+	void doWriteFile();
 	template<class Buffer>
 	void writeBuffer(Buffer& t_buffer);
 
@@ -51,7 +48,7 @@ private:
 	TcpResolverIterator m_endpointIterator;
 	enum { MessageSize = 1024 * 40 };
 	std::array<char, MessageSize> m_buf;
-	boost::asio::streambuf m_request;
+	asio::streambuf m_request;
 	std::ifstream m_sourceFile;
 	std::string m_path;
 };

@@ -135,6 +135,9 @@ namespace pcb
 		int concaveRateThresh; //线路缺失率的阈值
 		int convexRateThresh; //线路凸起率的阈值
 
+		//参数 - 文件同步
+		QString inetAddressOfRecheckPC; //复查设备的IP地址
+
 		//参数索引
 		enum ConfigIndex {
 			Index_All,
@@ -157,7 +160,9 @@ namespace pcb
 			Index_defectTypeToBeProcessed,
 			Index_matchingAccuracyLevel,
 			Index_concaveRateThresh,
-			Index_convexRateThresh
+			Index_convexRateThresh,
+			//文件同步
+			Index_inetAddressOfRecheckPC
 		};
 
 		//错误代码
@@ -185,6 +190,8 @@ namespace pcb
 			Invalid_matchingAccuracyLevel = 0x20E,
 			Invalid_concaveRateThresh = 0x20F,
 			Invalid_convexRateThresh = 0x210,
+			//文件同步
+			Invalid_inetAddressOfRecheckPC = 0x211,
 			//其他
 			Default = 0x2FF
 		};
