@@ -135,3 +135,10 @@ vector<bool> pcb::stringToBoolVector(const QString &str, int n)
 	return vec;
 }
 
+
+//基于正则表达式判断IP地址的合法性
+bool pcb::isInetAddress(QString ip)
+{
+	QRegExp rx("^([1]?\\d\\d?|2[0-4]\\d|25[0-5])(\\.([1]?\\d\\d?|2[0-4]\\d|25[0-5])){2}\\.([1]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+	return  rx.exactMatch(ip.trimmed()); //去除空字符后进行匹配
+}
