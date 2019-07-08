@@ -265,12 +265,12 @@ __pycache__/
 buffer/
 GeneratedFiles/
 /PCBDetect.sln
-/PCBDetect/.admin.config
-/PCBDetect/.user.config
-/PCBDetect/PCBDetect.qrc
-/PCBDetect/OpenCV_contrib_x64_Debug_PS.props
-/PCBDetect/OpenCV_contrib_x64_Release_PS.props
 /PCBDetect/PCBDetect.vcxproj
 /PCBDetect/PCBDetect.vcxproj.filters
 /PCBDetect/PCBDetect.vcxproj.user
+/PCBDetect/PCBDetect.qrc
+/PCBDetect/OpenCV_contrib_x64_Debug_PS.props
+/PCBDetect/OpenCV_contrib_x64_Release_PS.props
+/PCBDetect/.admin.config
+/PCBDetect/.user.config
 !/config/*/*
