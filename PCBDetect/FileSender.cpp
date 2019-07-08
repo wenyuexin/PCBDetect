@@ -49,7 +49,7 @@ void Client::openFile(std::string const& t_path)
 
 	std::ostream requestStream(&m_request);
 	//filesystem::path p(t_path);
-	//requestStream << p.string() << "\n" << fileSize << "\n\n";
+	requestStream << t_path << "\n" << fileSize << "\n\n"; //文件名 和 文件大小放入 头文件中
 	std::cout << fileSize << std::endl;
 }
 
@@ -57,29 +57,39 @@ void Client::openFile(std::string const& t_path)
 void Client::doConnect()
 {
 	asio::async_connect(m_socket, m_endpointIterator,
-		[this](TcpResolverIterator)
+		[this](asio::error_code ec, TcpResolverIterator)
 	{
-		writeBuffer(m_request);
+		if (!ec) {
+			writeBuffer(m_request);
+		}
+		else {
+			std::cout << "无法连接到发送端，请检查发送端是否开启或者网络是否正常" << std::endl;
+			std::cout << "Error: " << ec.message();
+		}
 	});
 }
 
 
-void Client::doWriteFile()
+void Client::doWriteFile(const asio::error_code & t_ec)
 {
-	if (m_sourceFile) {
-		m_sourceFile.read(m_buf.data(), m_buf.size());
-		if (m_sourceFile.fail() && !m_sourceFile.eof()) {
-			auto msg = "打开文件失败";
-			//BOOST_LOG_TRIVIAL(error) << msg;
-			throw std::fstream::failure(msg);
-		}
-		std::stringstream ss;
-		ss << "Send " << m_sourceFile.gcount() << " bytes, total: "
-			<< m_sourceFile.tellg() << " bytes";
-		//std::cout << ss.str() << std::endl;
+	if (!t_ec) {
+		if (m_sourceFile) {
+			m_sourceFile.read(m_buf.data(), m_buf.size());
+			if (m_sourceFile.fail() && !m_sourceFile.eof()) {
+				auto msg = "打开文件失败";
+				throw std::fstream::failure(msg);
+			}
+			std::stringstream ss;
+			ss << "Send " << m_sourceFile.gcount() << " bytes, total: "
+				<< m_sourceFile.tellg() << " bytes";
+			std::cout << ss.str() << std::endl;//调试用信息，查看已发送文件大小，以及总大小
 
-		auto buf = asio::buffer(m_buf.data(), static_cast<size_t>(m_sourceFile.gcount()));
-		writeBuffer(buf);
+			auto buf = asio::buffer(m_buf.data(), static_cast<size_t>(m_sourceFile.gcount()));
+			writeBuffer(buf);
+		}
+	}
+	else {
+		std::cout << "Error: " << t_ec.message();
 	}
 }
 
@@ -89,8 +99,8 @@ void Client::writeBuffer(Buffer& t_buffer)
 {
 	asio::async_write(m_socket,
 		t_buffer,
-		[this]( size_t /*length*/)
+		[this](asio::error_code ec, size_t /*length*/)
 	{
-		doWriteFile();
+		doWriteFile(ec);
 	});
 }
