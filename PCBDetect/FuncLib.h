@@ -29,6 +29,7 @@ namespace pcb
 
 	QString boolVectorToString(const std::vector<bool> &vec);
 	std::vector<bool> stringToBoolVector(const QString &str, int n = -1);
+	bool isInetAddress(QString ip);
 #endif //PCB_FUNCTIONS
 
 

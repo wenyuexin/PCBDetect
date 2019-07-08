@@ -783,6 +783,8 @@ void DetectUI::on_detectFinished_detectThread(bool qualified)
 	qApp->processEvents();
 
 	pcb::delay(1500);//假装正在发送
+	QString path = runtimeParams->currentOutputDir;
+
 
 	ui.label_status->setText(pcb::chinese("系统就绪")); //更新状态栏
 	qApp->processEvents();
