@@ -1,22 +1,18 @@
 #include "FileSender.h"
 
 
-FileSender::FileSender(std::string _ip, std::string _port): address(_ip),port(_port)
+FileSender::FileSender(std::string _ip, std::string _port): address(_ip), port(_port)
 {
 }
 
 FileSender::~FileSender()
 {
+	qDebug() << "~FileSender";
 }
 
-void FileSender::SendFolder(const std::string & dir)
+//发送文件
+void FileSender::sendFiles(const std::vector<std::string> &fileList)
 {
-	std::vector<std::string> fileList;
-	if (!getFilesName(dir, fileList)) {
-		std::cout << "输入文件夹为空，请检查输入！";
-		return;
-	}
-
 	for (int i = 0; i < fileList.size(); i++) {
 		asio::io_service ioService;
 		asio::ip::tcp::resolver resolver(ioService);
@@ -27,25 +23,8 @@ void FileSender::SendFolder(const std::string & dir)
 }
 
 
-int FileSender::getFilesName(const std::string &dir, std::vector<std::string> &filenames)
-{
-	//filesystem::path path(dir);
-	//if (!filesystem::exists(path)) return -1;
 
-	//filesystem::directory_iterator end_iter;
-	//for (filesystem::directory_iterator iter(path); iter != end_iter; ++iter) {
-	//	if (filesystem::is_regular_file(iter->status())) {
-	//		filenames.push_back(iter->path().string());
-	//	}
-
-	//	if (filesystem::is_directory(iter->status())) {
-	//		getFilesName(iter->path().string(), filenames);
-	//	}
-	//}
-	//return filenames.size();
-	return 0;
-}
-
+/****************************************/
 
 Client::Client(IoService& t_ioService, TcpResolverIterator t_endpointIterator,
 	std::string const& t_path)
@@ -78,35 +57,30 @@ void Client::openFile(std::string const& t_path)
 void Client::doConnect()
 {
 	asio::async_connect(m_socket, m_endpointIterator,
-		[this]( TcpResolverIterator)
+		[this](TcpResolverIterator)
 	{
-	
-			writeBuffer(m_request);
-		
+		writeBuffer(m_request);
 	});
 }
 
 
 void Client::doWriteFile()
 {
-	
-		if (m_sourceFile) {
-			m_sourceFile.read(m_buf.data(), m_buf.size());
-			if (m_sourceFile.fail() && !m_sourceFile.eof()) {
-				auto msg = "打开文件失败";
-				//BOOST_LOG_TRIVIAL(error) << msg;
-				throw std::fstream::failure(msg);
-			}
-			std::stringstream ss;
-			ss << "Send " << m_sourceFile.gcount() << " bytes, total: "
-				<< m_sourceFile.tellg() << " bytes";
-			std::cout << ss.str() << std::endl;
-
-			auto buf = asio::buffer(m_buf.data(), static_cast<size_t>(m_sourceFile.gcount()));
-			writeBuffer(buf);
+	if (m_sourceFile) {
+		m_sourceFile.read(m_buf.data(), m_buf.size());
+		if (m_sourceFile.fail() && !m_sourceFile.eof()) {
+			auto msg = "打开文件失败";
+			//BOOST_LOG_TRIVIAL(error) << msg;
+			throw std::fstream::failure(msg);
 		}
-	
-	
+		std::stringstream ss;
+		ss << "Send " << m_sourceFile.gcount() << " bytes, total: "
+			<< m_sourceFile.tellg() << " bytes";
+		//std::cout << ss.str() << std::endl;
+
+		auto buf = asio::buffer(m_buf.data(), static_cast<size_t>(m_sourceFile.gcount()));
+		writeBuffer(buf);
+	}
 }
 
 

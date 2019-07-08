@@ -22,13 +22,16 @@ namespace pcb
 #ifndef PCB_FUNCTIONS
 #define PCB_FUNCTIONS
 	void delay(unsigned long msec);//·Ç×èÈûÑÓ³Ù
+
 	QString selectDirPath(QWidget *parent, QString windowTitle = "");//½»»¥Ê½ÎÄ¼þ¼ÐÂ·¾¶Ñ¡Ôñ
-	QString eraseNonDigitalCharInHeadAndTail(QString s); //É¾³ý×Ö·û´®Ê×Î²µÄ·ÇÊý×Ö×Ö·û
 	void clearFiles(const QString &folderFullPath);
 	void clearFolder(const QString &folderFullPath, bool included = false);
+	void getFilePathList(const QString &folderFullPath, std::vector<std::string> &list);
 
+	QString eraseNonDigitalCharInHeadAndTail(QString s); //É¾³ý×Ö·û´®Ê×Î²µÄ·ÇÊý×Ö×Ö·û
 	QString boolVectorToString(const std::vector<bool> &vec);
 	std::vector<bool> stringToBoolVector(const QString &str, int n = -1);
+
 	bool isInetAddress(QString ip);
 #endif //PCB_FUNCTIONS
 
