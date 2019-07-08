@@ -11,6 +11,7 @@
 #include "MotionControler.h"
 #include "CameraControler.h"
 #include "SerialNumberUI.h"
+//#include "FileSender.h"
 #include <vector>
 #include <QRect>
 #include <QList>
@@ -58,6 +59,8 @@ private:
 	DefectDetecter *defectDetecter; //检测核心类
 	pcb::DetectResult detectResult; //检测结果
 	int detectState; //检测状态
+
+	//FileSender *fileSender; //文件发送
 
 public:
 	DetectUI(QWidget *parent = Q_NULLPTR);

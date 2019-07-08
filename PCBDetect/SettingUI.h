@@ -22,6 +22,7 @@ private:
 	Ui::SettingUI ui;
 	QRect screenRect; //∆¡ƒªœ‘ æ«¯”Ú
 	QRegExpValidator *NumberValidator;
+	QRegExpValidator *NumberValidator2;
 	QButtonGroup CheckBoxGroup_colorMode;
 	QButtonGroup checkBoxGroup_matchingAccuracy;
 
