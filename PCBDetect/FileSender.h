@@ -38,7 +38,7 @@ public:
 private:
 	void openFile(std::string const& t_path);
 	void doConnect();
-	void doWriteFile();
+	void doWriteFile(const asio::error_code& t_ec);
 	template<class Buffer>
 	void writeBuffer(Buffer& t_buffer);
 
