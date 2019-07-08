@@ -7,20 +7,20 @@
 #include <fstream>
 #include <memory>
 #include <asio.hpp>
+#include <QDebug>
+#include "FuncLib.h"
 
 
 class FileSender
 {
 public:
-	FileSender(std::string _ip,std::string port = "8888");//IPv4地址初始化，监听端口默认为8888
+	FileSender(std::string _ip, std::string port = "8888");//IPv4地址初始化，监听端口默认为8888
 	~FileSender();
-	void SendFolder(const std::string& dir);//传入需要发送文件的完整路径
+	void sendFiles(const std::vector<std::string> &fileList);//传入需要发送文件的完整路径
 
 private:
 	std::string address;
-	std::string port ;
-private:
-	int getFilesName(const std::string& dir, std::vector<std::string>& filenames);//获取文件夹所有文件名
+	std::string port;
 };
 
 
