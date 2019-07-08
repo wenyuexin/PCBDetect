@@ -4,8 +4,14 @@
 
 int main(int argc, char *argv[])
 {
-	QApplication a(argc, argv);
-	a.processEvents();
-	PCBDetect w;
-	return a.exec();
+	QString path = "D:\\Workspace\\Qt\\PCBData\\output\\99\\1\\1";
+	std::vector<std::string> list;
+	pcb::getFilePathList(path, list);
+
+	//QApplication a(argc, argv);
+	//a.processEvents();
+	//PCBDetect w;
+	//return a.exec();
+
+	return 0;
 }
