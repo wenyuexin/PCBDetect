@@ -3,7 +3,7 @@
 #include "opencv2/opencv.hpp"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "ExtractFunc.h"
 #include <QStringList>
 
