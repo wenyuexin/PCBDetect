@@ -4,7 +4,7 @@
 #include "ui_SettingUI.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "PassWordUI.h" 
 #include "AdminSettingUI.h"
 #include "MotionControler.h"

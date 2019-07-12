@@ -8,7 +8,7 @@
 #include <memory>
 #include <asio.hpp>
 #include <QDebug>
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 
 
 class FileSender

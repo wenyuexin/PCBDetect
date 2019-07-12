@@ -5,7 +5,7 @@
 #include "ui_DetectUI.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "DetectThread.h"
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
