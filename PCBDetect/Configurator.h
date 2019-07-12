@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 
 
 //参数类与参数配置器

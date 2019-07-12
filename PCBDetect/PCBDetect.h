@@ -6,7 +6,7 @@
 #include "SysInitThread.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "DetectUI.h"
 #include "ExtractUI.h"
 #include "SettingUI.h"

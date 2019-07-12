@@ -3,7 +3,7 @@
 #include <QDebug>
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "DetectFunc.h"
 #include <vector>
 #include <map>

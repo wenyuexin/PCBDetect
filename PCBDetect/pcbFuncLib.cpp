@@ -1,4 +1,4 @@
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 //#include <QDebug>
 
 using std::vector;

@@ -2420,7 +2420,7 @@
        </font>
       </property>
       <property name="text">
-       <string>复查设备IP</string>
+       <string>存档设备IP</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>

@@ -1,7 +1,7 @@
 #pragma once
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "direct.h"
 #include <io.h>
 #include <string>
