@@ -249,6 +249,12 @@ RuntimeParams::ErrorCode RuntimeParams::parseSerialNum()
 	return ValidValue;
 }
 
+//将型号 批次号 样本编号组合为表示目录层次的字符串
+QString RuntimeParams::getDirHierarchy()
+{
+	return sampleModelNum + "/" + sampleBatchNum + "/" + sampleNum;
+}
+
 //获取系统重置代码
 int RuntimeParams::getSystemResetCode(RuntimeParams &newConfig)
 {
