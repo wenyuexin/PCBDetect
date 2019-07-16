@@ -8,6 +8,7 @@
 * OpenCV contrib 4.1.0  
 * Tesseract-OCR  
 * MindVision SDK  
+* Asio C++ Library (非Boost版)
 
 ## 主要模块  
 运动控制、相机控制、人机交互界面（主界面、参数设置界面、模板提取界面、检测界面、序号识别界面等）、核心算法（模板提取算法、缺陷检测算法）、字符识别（OCR）  
