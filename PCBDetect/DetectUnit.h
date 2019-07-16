@@ -57,7 +57,9 @@ public:
 	inline int getcurRow() { return curRow; }
 	inline int getcurCol() { return curCol; }
 
-
 protected:
 	void run();
+
+public:
+	cv::Mat rectBlack;
 };

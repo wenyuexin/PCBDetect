@@ -74,10 +74,7 @@ void DetectUnit::run()
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")"  << endl;
 
-	double ratio = 0.67;
-	Size roiSize = sampGray.size();
-	Rect upRect = Rect(0, 0, roiSize.width, int(ratio*roiSize.height));
-	Rect downRect = Rect(0, int(ratio*roiSize.height), roiSize.width, roiSize.height - int(ratio*roiSize.height));
+
 	
 	//样本二值化
 	Mat sampBw = Mat::zeros(sampGray.size(), CV_8UC1);
@@ -87,13 +84,20 @@ void DetectUnit::run()
 	//int meanSampGray = mean(samp_gray,mask_roi)[0];
 	//cv::threshold(samp_gray, sampBw, meanSampGray, 255, cv::THRESH_BINARY_INV);
 	//分块二值化
+	//double ratio = 0.67;
+	//Size roiSize = sampGray.size();
+	//Rect upRect = Rect(0, 0, roiSize.width, int(ratio*roiSize.height));
+	//Rect downRect = Rect(0, int(ratio*roiSize.height), roiSize.width, roiSize.height - int(ratio*roiSize.height));
 	//int meanSampGrayUp = mean(samp_gray(upRect), mask_roi(upRect))[0];
 	//cv::threshold(samp_gray(upRect), sampBw(upRect), meanSampGrayUp, 255, cv::THRESH_BINARY_INV);
 	//int meanSampGrayDown = mean(samp_gray(downRect), mask_roi(downRect))[0];
 	//cv::threshold(samp_gray(downRect), sampBw(downRect), meanSampGrayDown, 255, cv::THRESH_BINARY_INV);
 	//局部自适应二值化
+	//sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr);
 
+	//直接二值化
 	sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr);
+
 	Mat element_a = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
 	cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
@@ -116,6 +120,9 @@ void DetectUnit::run()
 	//int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
 	//cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
 	//局部自适应二值化
+	//templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
+
+	//直接二值化
 	templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
 
 	Mat elementTempl = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
@@ -148,16 +155,24 @@ void DetectUnit::run()
 	diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 	bitwise_and(diff_roi, diff, diff);
 
-	//保存用于调试的图片
-	//std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow) + "_" + std::to_string(curCol) + "_";
-	//cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-	//cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	//cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-	//cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-	//cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+
 
 	//标记缺陷
-	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage);
+	//rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+
+	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage,rectBlack);
+
+	//if (curRow == 2 && curCol == 3) {
+	//	//保存用于调试的图片
+	//	std::string debug_path = "F:\\000_PCBData\\PCBData\\debugImg\\midPic\\2" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	//	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+	//	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+	//	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+	//	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+	//	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+	//	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+	//}
+
 
 	//保存样本图片
 	double t5 = clock();
