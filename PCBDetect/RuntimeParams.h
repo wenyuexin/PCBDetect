@@ -124,6 +124,7 @@ namespace pcb
 		bool update(pcb::AdminConfig *adminConfig, pcb::UserConfig *userConfig);
 
 		ErrorCode parseSerialNum();
+		QString getDirHierarchy();
 		int getSystemResetCode(RuntimeParams &newConfig); //获取系统重置代码
 
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
@@ -131,6 +132,7 @@ namespace pcb
 		ErrorCode getErrorCode(ParamsIndex index = Index_All);//获取错误代码
 		void resetErrorCode(ParamsIndex index = Index_All);//重置错误代码
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
+
 	};
 #endif //STRUCT_DETECT_PARAMS
 }

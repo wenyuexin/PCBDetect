@@ -1,5 +1,7 @@
 #include "FileSender.h"
 
+using std::string;
+
 
 FileSender::FileSender(std::string _ip, std::string _port): address(_ip), port(_port)
 {
@@ -17,7 +19,7 @@ void FileSender::sendFiles(const std::vector<std::string> &fileList)
 		asio::io_service ioService;
 		asio::ip::tcp::resolver resolver(ioService);
 		auto endpointIterator = resolver.resolve({ address, port });
-		Client client(ioService, endpointIterator, fileList[i]);
+		Client client(ioService, endpointIterator, hierarchy, fileList[i]);
 		ioService.run();
 	}
 }
@@ -27,16 +29,16 @@ void FileSender::sendFiles(const std::vector<std::string> &fileList)
 /****************************************/
 
 Client::Client(IoService& t_ioService, TcpResolverIterator t_endpointIterator,
-	std::string const& t_path)
+	std::string hierarchy, std::string const& t_path)
 	: m_ioService(t_ioService), m_socket(t_ioService),
 	m_endpointIterator(t_endpointIterator), m_path(t_path)
 {
 	doConnect();
-	openFile(m_path);
+	openFile(hierarchy, m_path);
 }
 
 
-void Client::openFile(std::string const& t_path)
+void Client::openFile(std::string hierarchy, std::string const& t_path)
 {
 	m_sourceFile.open(t_path, std::ios_base::binary | std::ios_base::ate);
 	if (m_sourceFile.fail()) {
@@ -49,8 +51,10 @@ void Client::openFile(std::string const& t_path)
 
 	std::ostream requestStream(&m_request);
 	//filesystem::path p(t_path);
-	requestStream << t_path << "\n" << fileSize << "\n\n"; //文件名 和 文件大小放入 头文件中
-	std::cout << fileSize << std::endl;
+	requestStream << hierarchy << "\n"; //将目录层次写入头文件中
+	requestStream << t_path << "\n"; //将文件绝对路径写入头文件中
+	requestStream << fileSize << "\n\n"; //将文件大小放入头文件中
+	//std::cout << fileSize << std::endl;
 }
 
 
