@@ -24,25 +24,25 @@
 #include "pcbFuncLib.h"
 
 
-//²ÎÊıÀàÓë²ÎÊıÅäÖÃÆ÷
+//å‚æ•°ç±»ä¸å‚æ•°é…ç½®å™¨
 namespace pcb 
 {
 #ifndef CLASS_ADMIN_CONFIG
 #define CLASS_ADMIN_CONFIG 
-	//ÏµÍ³²ÎÊıÀà
+	//ç³»ç»Ÿå‚æ•°ç±»
 	class AdminConfig 
 	{
 	public:
-		int MaxMotionStroke; //»úĞµ½á¹¹µÄ×î´óÔË¶¯ĞĞ³Ì mm
-		int PulseNumInUnitTime; //µ¥Î»Ê±¼äÄÚµÄÂö³åÊı
+		int MaxMotionStroke; //æœºæ¢°ç»“æ„çš„æœ€å¤§è¿åŠ¨è¡Œç¨‹ mm
+		int PulseNumInUnitTime; //å•ä½æ—¶é—´å†…çš„è„‰å†²æ•°
 
-		int MaxCameraNum; //¿ÉÓÃÏà»ú×ÜÊı
-		double PixelsNumPerUnitLength; //µ¥Î»³¤¶ÈµÄÏñËØÊı pix/mm
-		double ImageOverlappingRate_W; //·ÖÍ¼ÖØµşÂÊ(¿í)
-		double ImageOverlappingRate_H; //·ÖÍ¼ÖØµşÂÊ(¸ß)
-		int ImageSize_W; //·ÖÍ¼¿í¶È
-		int ImageSize_H; //·ÖÍ¼¸ß¶È
-		double ImageAspectRatio; //Í¼Ïñ¿í¸ß±È
+		int MaxCameraNum; //å¯ç”¨ç›¸æœºæ€»æ•°
+		double PixelsNumPerUnitLength; //å•ä½é•¿åº¦çš„åƒç´ æ•° pix/mm
+		double ImageOverlappingRate_W; //åˆ†å›¾é‡å ç‡(å®½)
+		double ImageOverlappingRate_H; //åˆ†å›¾é‡å ç‡(é«˜)
+		int ImageSize_W; //åˆ†å›¾å®½åº¦
+		int ImageSize_H; //åˆ†å›¾é«˜åº¦
+		double ImageAspectRatio; //å›¾åƒå®½é«˜æ¯”
 
 		enum ConfigIndex {
 			Index_All,
@@ -58,7 +58,7 @@ namespace pcb
 			Index_ImageAspectRatio
 		};
 
-		//´íÎó´úÂë
+		//é”™è¯¯ä»£ç 
 		enum ErrorCode {
 			ValidConfig = 0x000,
 			ValidValue = 0x000,
@@ -84,65 +84,65 @@ namespace pcb
 	public:
 		AdminConfig();
 		~AdminConfig();
-		void loadDefaultValue(); //¼ÓÔØÄ¬ÈÏ²ÎÊı
+		void loadDefaultValue(); //åŠ è½½é»˜è®¤å‚æ•°
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All);
 		bool isValid(bool doCheck = false);
 		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; }
 		inline void resetErrorCode() { errorCode = Unchecked; }
-		inline ErrorCode getErrorCode() { return errorCode; } //»ñÈ¡´íÎó´úÂë
-		static ConfigIndex convertCodeToIndex(ErrorCode code); //´íÎó´úÂë×ª²ÎÊıË÷Òı
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //µ¯´°¾¯¸æ
+		inline ErrorCode getErrorCode() { return errorCode; } //è·å–é”™è¯¯ä»£ç 
+		static ConfigIndex convertCodeToIndex(ErrorCode code); //é”™è¯¯ä»£ç è½¬å‚æ•°ç´¢å¼•
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //å¼¹çª—è­¦å‘Š
 
-		ErrorCode calcImageAspectRatio(); //¼ÆËã¿í¸ß±È
-		ConfigIndex unequals(AdminConfig &other); //²»µÈĞÔÅĞ¶Ï
-		int getSystemResetCode(AdminConfig &newConfig); //»ñÈ¡ÏµÍ³ÖØÖÃ´úÂë
-		void copyTo(AdminConfig *dst); //¿½±´²ÎÊı
+		ErrorCode calcImageAspectRatio(); //è®¡ç®—å®½é«˜æ¯”
+		ConfigIndex unequals(AdminConfig &other); //ä¸ç­‰æ€§åˆ¤æ–­
+		int getSystemResetCode(AdminConfig &newConfig); //è·å–ç³»ç»Ÿé‡ç½®ä»£ç 
+		void copyTo(AdminConfig *dst); //æ‹·è´å‚æ•°
 	};
 #endif //CLASS_ADMIN_CONFIG
 
 
 #ifndef CLASS_DETECT_CONFIG
 #define CLASS_DETECT_CONFIG
-	//ÓÃ»§²ÎÊıÀà
+	//ç”¨æˆ·å‚æ•°ç±»
 	class UserConfig
 	{
 	public:
-		//Í¨ÓÃ³£Êı
+		//é€šç”¨å¸¸æ•°
 		const int MaxDefectTypeNum = 4;
 
-		//²ÎÊı - »ù±¾ÉèÖÃ
-		QString TemplDirPath; //Ä£°åÂ·¾¶
-		QString SampleDirPath;//Ñù±¾Â·¾¶
-		QString OutputDirPath;//½á¹ûÂ·¾¶
-		QString ImageFormat; //Í¼Ïñºó×º
+		//å‚æ•° - åŸºæœ¬è®¾ç½®
+		QString TemplDirPath; //æ¨¡æ¿è·¯å¾„
+		QString SampleDirPath;//æ ·æœ¬è·¯å¾„
+		QString OutputDirPath;//ç»“æœè·¯å¾„
+		QString ImageFormat; //å›¾åƒåç¼€
 
-		int ActualProductSize_W;//²úÆ·Êµ¼Ê¿í¶È,µ¥Î»mm
-		int ActualProductSize_H;//²úÆ·Êµ¼Ê¸ß¶È,µ¥Î»mm
-		int nBasicUnitInRow; //Ã¿Ò»ĞĞÖĞµÄ»ù±¾µ¥ÔªÊı
-		int nBasicUnitInCol; //Ã¿Ò»ÁĞÖĞµÄ»ù±¾µ¥ÔªÊı
+		int ActualProductSize_W;//äº§å“å®é™…å®½åº¦,å•ä½mm
+		int ActualProductSize_H;//äº§å“å®é™…é«˜åº¦,å•ä½mm
+		int nBasicUnitInRow; //æ¯ä¸€è¡Œä¸­çš„åŸºæœ¬å•å…ƒæ•°
+		int nBasicUnitInCol; //æ¯ä¸€åˆ—ä¸­çš„åŸºæœ¬å•å…ƒæ•°
 
-		//²ÎÊı - ÔË¶¯½á¹¹
-		QString clusterComPort; //COM´®¿Ú
+		//å‚æ•° - è¿åŠ¨ç»“æ„
+		QString clusterComPort; //COMä¸²å£
 
-		//²ÎÊı - Ïà»ú×é
-		int exposureTime; //ÆØ¹âÊ±¼ä ms £¨·¶Î§´ó¸Å50-500£©
-		int colorMode; //É«²ÊÄ£Ê½£º0²ÊÉ« 1ºÚ°×
+		//å‚æ•° - ç›¸æœºç»„
+		int exposureTime; //æ›å…‰æ—¶é—´ ms ï¼ˆèŒƒå›´å¤§æ¦‚50-500ï¼‰
+		int colorMode; //è‰²å½©æ¨¡å¼ï¼š0å½©è‰² 1é»‘ç™½
 
-		//²ÎÊı - ¼ì²âËã·¨
-		std::vector<bool> defectTypeToBeProcessed; //´ı´¦ÀíµÄÈ±ÏİÀàĞÍ£º0¶ÌÂ· 1¶ÏÂ· 2Í¹Æğ 3È±Ê§
-		int matchingAccuracyLevel; //Æ¥Åä¾«¶ÈµÈ¼¶£º1¸ß¾«¶È 2µÍ¾«¶È
-		int concaveRateThresh; //ÏßÂ·È±Ê§ÂÊµÄãĞÖµ
-		int convexRateThresh; //ÏßÂ·Í¹ÆğÂÊµÄãĞÖµ
+		//å‚æ•° - æ£€æµ‹ç®—æ³•
+		std::vector<bool> defectTypeToBeProcessed; //å¾…å¤„ç†çš„ç¼ºé™·ç±»å‹ï¼š0çŸ­è·¯ 1æ–­è·¯ 2å‡¸èµ· 3ç¼ºå¤±
+		int matchingAccuracyLevel; //åŒ¹é…ç²¾åº¦ç­‰çº§ï¼š1é«˜ç²¾åº¦ 2ä½ç²¾åº¦
+		int concaveRateThresh; //çº¿è·¯ç¼ºå¤±ç‡çš„é˜ˆå€¼
+		int convexRateThresh; //çº¿è·¯å‡¸èµ·ç‡çš„é˜ˆå€¼
 
-		//²ÎÊı - ÎÄ¼şÍ¬²½
-		QString inetAddressOfRecheckPC; //¸´²éÉè±¸µÄIPµØÖ·
+		//å‚æ•° - æ–‡ä»¶åŒæ­¥
+		QString inetAddressOfRecheckPC; //å¤æŸ¥è®¾å¤‡çš„IPåœ°å€
 
-		//²ÎÊıË÷Òı
+		//å‚æ•°ç´¢å¼•
 		enum ConfigIndex {
 			Index_All,
 			Index_None,
-			//»ù±¾²ÎÊı
+			//åŸºæœ¬å‚æ•°
 			Index_TemplDirPath,
 			Index_SampleDirPath,
 			Index_OutputDirPath,
@@ -151,27 +151,27 @@ namespace pcb
 			Index_ActualProductSize_H,
 			Index_nBasicUnitInRow,
 			Index_nBasicUnitInCol,
-			//ÔË¶¯½á¹¹
+			//è¿åŠ¨ç»“æ„
 			Index_clusterComPort,
-			//Ïà»ú
+			//ç›¸æœº
 			Index_exposureTime,
 			Index_colorMode,
-			//¼ì²âËã·¨
+			//æ£€æµ‹ç®—æ³•
 			Index_defectTypeToBeProcessed,
 			Index_matchingAccuracyLevel,
 			Index_concaveRateThresh,
 			Index_convexRateThresh,
-			//ÎÄ¼şÍ¬²½
+			//æ–‡ä»¶åŒæ­¥
 			Index_inetAddressOfRecheckPC
 		};
 
-		//´íÎó´úÂë
+		//é”™è¯¯ä»£ç 
 		enum ErrorCode {
 			ValidConfig = 0x000,
 			ValidValue = 0x000,
 			Unchecked = 0x200,
 			ConfigFileMissing = 0x201,
-			//»ù±¾²ÎÊı
+			//åŸºæœ¬å‚æ•°
 			Invalid_TemplDirPath = 0x202,
 			Invalid_SampleDirPath = 0x203,
 			Invalid_OutputDirPath = 0x204,
@@ -180,19 +180,19 @@ namespace pcb
 			Invalid_ActualProductSize_H = 0x207,
 			Invalid_nBasicUnitInRow = 0x208,
 			Invalid_nBasicUnitInCol = 0x209,
-			//ÔË¶¯½á¹¹
+			//è¿åŠ¨ç»“æ„
 			Invalid_clusterComPort = 0x20A,
-			//Ïà»ú
+			//ç›¸æœº
 			Invalid_exposureTime = 0x20B,
 			Invalid_colorMode = 0x20C,
-			//¼ì²âËã·¨
+			//æ£€æµ‹ç®—æ³•
 			Invalid_defectTypeToBeProcessed = 0x20D,
 			Invalid_matchingAccuracyLevel = 0x20E,
 			Invalid_concaveRateThresh = 0x20F,
 			Invalid_convexRateThresh = 0x210,
-			//ÎÄ¼şÍ¬²½
+			//æ–‡ä»¶åŒæ­¥
 			Invalid_inetAddressOfRecheckPC = 0x211,
-			//ÆäËû
+			//å…¶ä»–
 			Default = 0x2FF
 		};
 
@@ -202,34 +202,34 @@ namespace pcb
 	public:
 		UserConfig();
 		~UserConfig();
-		void loadDefaultValue(); //¼ÓÔØÄ¬ÈÏ²ÎÊı
+		void loadDefaultValue(); //åŠ è½½é»˜è®¤å‚æ•°
 
 		ErrorCode checkValidity(ConfigIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
 		bool isValid(AdminConfig *adminConfig = Q_NULLPTR, bool doCheck = false);
-		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; } //±ê¼ÇÎÄ¼ş¶ªÊ§
-		inline void resetErrorCode() { errorCode = Unchecked; } //ÖØÖÃ´íÎó´úÂë
-		inline ErrorCode getErrorCode() { return errorCode; } //»ñÈ¡´íÎó´úÂë
-		static ConfigIndex convertCodeToIndex(ErrorCode code); //´íÎó´úÂë×ªË÷Òı
-		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //µ¯´°¾¯¸æ
+		inline void markConfigFileMissing() { errorCode = ConfigFileMissing; } //æ ‡è®°æ–‡ä»¶ä¸¢å¤±
+		inline void resetErrorCode() { errorCode = Unchecked; } //é‡ç½®é”™è¯¯ä»£ç 
+		inline ErrorCode getErrorCode() { return errorCode; } //è·å–é”™è¯¯ä»£ç 
+		static ConfigIndex convertCodeToIndex(ErrorCode code); //é”™è¯¯ä»£ç è½¬ç´¢å¼•
+		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //å¼¹çª—è­¦å‘Š
 
-		ConfigIndex unequals(UserConfig &other); //²»µÈĞÔÅĞ¶Ï
-		void copyTo(UserConfig *dst); //¿½±´²ÎÊı
+		ConfigIndex unequals(UserConfig &other); //ä¸ç­‰æ€§åˆ¤æ–­
+		void copyTo(UserConfig *dst); //æ‹·è´å‚æ•°
 
-		int getSystemResetCode(UserConfig &newConfig); //»ñÈ¡ÏµÍ³ÖØÖÃ´úÂë
+		int getSystemResetCode(UserConfig &newConfig); //è·å–ç³»ç»Ÿé‡ç½®ä»£ç 
 	};
 #endif //CLASS_DETECT_CONFIG
 
 
 #ifndef CLASS_CONFIGURATOR
 #define CLASS_CONFIGURATOR 
-	//²ÎÊıÅäÖÃÆ÷£º
-	//ÓÃÓÚÍê³É²ÎÊıÀàºÍ²ÎÊıÅäÖÃÎÄ¼şÖ®¼äµÄ¶ÁĞ´²Ù×÷
+	//å‚æ•°é…ç½®å™¨ï¼š
+	//ç”¨äºå®Œæˆå‚æ•°ç±»å’Œå‚æ•°é…ç½®æ–‡ä»¶ä¹‹é—´çš„è¯»å†™æ“ä½œ
 	class Configurator
 	{
 	private:
 		QFile *configFile;
 		QDateTime fileDateTime;
-		ushort keys[4]; //ÃØÔ¿
+		ushort keys[4]; //ç§˜é’¥
 
 	public:
 		Configurator(QFile *file = Q_NULLPTR);
@@ -238,14 +238,14 @@ namespace pcb
 		static void createConfigFile(QString filePath);
 
 		
-		bool jsonSetValue(const QString &key, QString &value, bool encode); //Ğ´QString
-		bool jsonSetValue(const QString &key, int &value, bool encode); //Ğ´int
-		bool jsonSetValue(const QString &key, double &value, bool encode); //Ğ´double
+		bool jsonSetValue(const QString &key, QString &value, bool encode); //å†™QString
+		bool jsonSetValue(const QString &key, int &value, bool encode); //å†™int
+		bool jsonSetValue(const QString &key, double &value, bool encode); //å†™double
 		bool jsonSetValue(const QString &key, std::vector<bool> &value, bool encode);
 
-		bool jsonReadValue(const QString &key, QString &value, bool decode); //¶ÁQString
-		bool jsonReadValue(const QString &key, int &value, bool decode); //¶Áint
-		bool jsonReadValue(const QString &key, double &value, bool decode); //¶Ádouble
+		bool jsonReadValue(const QString &key, QString &value, bool decode); //è¯»QString
+		bool jsonReadValue(const QString &key, int &value, bool decode); //è¯»int
+		bool jsonReadValue(const QString &key, double &value, bool decode); //è¯»double
 		bool jsonReadValue(const QString &key, std::vector<bool> &value, bool decode);
 
 		static bool loadConfigFile(const QString &fileName, AdminConfig *config);
@@ -257,11 +257,11 @@ namespace pcb
 		//bool checkDir(QString dirpath);
 
 	private:
-		void updateKeys(); //¸üĞÂÃØÔ¿
-		QString encrypt(QString origin) const; //¼ÓÃÜ
-		QString encrypt(const char* origin) const; //¼ÓÃÜ
-		QString decrypt(QString origin) const; //½âÃÜ
-		QString decrypt(const char* origin) const; //½âÃÜ
+		void updateKeys(); //æ›´æ–°ç§˜é’¥
+		QString encrypt(QString origin) const; //åŠ å¯†
+		QString encrypt(const char* origin) const; //åŠ å¯†
+		QString decrypt(QString origin) const; //è§£å¯†
+		QString decrypt(const char* origin) const; //è§£å¯†
 
 		bool _jsonSetValue(const QString &key, QString &value, bool encode);
 		bool _jsonReadValue(const QString &key, QString &value, bool decode);
