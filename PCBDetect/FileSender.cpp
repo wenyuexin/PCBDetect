@@ -15,6 +15,7 @@ FileSender::~FileSender()
 //发送文件
 void FileSender::sendFiles(const std::vector<std::string> &fileList)
 {
+	double t1 = clock();
 	for (int i = 0; i < fileList.size(); i++) {
 		asio::io_service ioService;
 		asio::ip::tcp::resolver resolver(ioService);
@@ -22,6 +23,8 @@ void FileSender::sendFiles(const std::vector<std::string> &fileList)
 		Client client(ioService, endpointIterator, hierarchy, fileList[i]);
 		ioService.run();
 	}
+	double t2 = clock();
+	qDebug() << "====================" << pcb::chinese("文件传输：") << (t2-t1) << " ms" << endl;
 }
 
 

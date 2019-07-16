@@ -96,16 +96,16 @@
     <ClCompile Include="RuntimeParams.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FuncLib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DetectUnit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileReceiver.cpp">
+    <ClCompile Include="FileSyncThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileSender.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcbFuncLib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -164,6 +164,9 @@
     <QtMoc Include="DetectUnit.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="FileSyncThread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="PCBDetect.ui">
@@ -215,13 +218,10 @@
     <ClInclude Include="RuntimeParams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FuncLib.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileReceiver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FileSender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pcbFuncLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
