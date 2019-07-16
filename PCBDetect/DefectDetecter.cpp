@@ -67,6 +67,8 @@ void DefectDetecter::generateBigTempl()
 	double factorH = 1.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
 	scalingFactor = qMin(factorW, factorH); //缩放因子
 
+	scalingFactor = 1;
+
 	scaledSubImageSize = Size(scalingFactor * adminConfig->ImageSize_W,
 		scalingFactor * adminConfig->ImageSize_H); //分图经过缩放后的尺寸
 
