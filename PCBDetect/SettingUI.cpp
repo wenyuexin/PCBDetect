@@ -20,6 +20,7 @@ SettingUI::SettingUI(QWidget *parent)
 	sysResetCode = 0b00000000; //系统重置代码
 	NumberValidator = Q_NULLPTR;
 	NumberValidator = new QRegExpValidator(QRegExp("[0-9]+$"));
+	NumberValidator2 = new QRegExpValidator(QRegExp("[/.0-9]+$"));
 }
 
 void SettingUI::init()
@@ -45,6 +46,7 @@ void SettingUI::init()
 	ui.lineEdit_concaveRateThresh->setValidator(NumberValidator);
 	ui.lineEdit_convexRateThresh->setValidator(NumberValidator);
 	ui.lineEdit_exposureTime_camera->setValidator(NumberValidator);
+	ui.lineEdit_inetAddressOfRecheckPC->setValidator(NumberValidator2);
 
 	//相机曝光时间的确认框设为一组
 	CheckBoxGroup_colorMode.addButton(ui.lineEdit_colorMode_rgb_camera, 0);
@@ -140,6 +142,8 @@ void SettingUI::refresh()
 	ui.lineEdit_concaveRateThresh->setText(QString::number(userConfig->concaveRateThresh)); //缺失率阈值
 	ui.lineEdit_convexRateThresh->setText(QString::number(userConfig->convexRateThresh)); //凸起率阈值
 
+	//文件传输
+	ui.lineEdit_inetAddressOfRecheckPC->setText(userConfig->inetAddressOfRecheckPC); //复查设备的IP
 }
 
 //设置光标的位置
@@ -193,6 +197,10 @@ void SettingUI::setCursorLocation(UserConfig::ConfigIndex code)
 		ui.lineEdit_concaveRateThresh->setFocus(); break;
 	case pcb::UserConfig::Index_convexRateThresh:
 		ui.lineEdit_convexRateThresh->setFocus(); break;
+
+	//文件传输
+	case pcb::UserConfig::Index_inetAddressOfRecheckPC:
+		ui.lineEdit_inetAddressOfRecheckPC->setFocus(); break;
 	}
 }
 
@@ -441,6 +449,9 @@ void SettingUI::getConfigFromSettingUI()
 
 	tempConfig.concaveRateThresh = ui.lineEdit_concaveRateThresh->text().toInt();//缺失率阈值
 	tempConfig.convexRateThresh = ui.lineEdit_convexRateThresh->text().toInt();//凸起率阈值
+
+	//文件传输
+	tempConfig.inetAddressOfRecheckPC = ui.lineEdit_inetAddressOfRecheckPC->text(); //复查设备IP
 }
 
 

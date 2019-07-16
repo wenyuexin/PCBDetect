@@ -6,7 +6,7 @@
 #include "SysInitThread.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "DetectUI.h"
 #include "ExtractUI.h"
 #include "SettingUI.h"
@@ -17,20 +17,6 @@
 #include <QDesktopWidget>
 #include <QRect>
 #include <QTime>
-
-
-#ifndef STRUCT_DETECT_SYSTEM_UI
-#define STRUCT_DETECT_SYSTEM_UI 
-	//检测系统的主要模块
-	struct DetectSystemModules {
-		LaunchUI *launcher; //启动界面
-		SettingUI *settingUI; //参数设置界面
-		ExtractUI *templateUI; //模板提取界面
-		DetectUI *detectUI; //检测界面
-		MotionControler *motionControler;//运动控制器
-		CameraControler *cameraControler;//相机控制器
-	};
-#endif //STRUCT_DETECT_SYSTEM_UI
 
 
 //检测系统的主界面

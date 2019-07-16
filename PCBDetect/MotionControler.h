@@ -6,7 +6,7 @@
 #include "MOTION_DLL.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include <QObject>
 #include <QThread>
 #include <QMutex> 

@@ -3,7 +3,7 @@
 #include "Configurator.h"
 #include "RuntimeParams.h"
 #include "DetectUnit.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "DetectFunc.h"
 
 

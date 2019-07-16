@@ -4,7 +4,7 @@
 #include "ui_SettingUI.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "PassWordUI.h" 
 #include "AdminSettingUI.h"
 #include "MotionControler.h"
@@ -22,6 +22,7 @@ private:
 	Ui::SettingUI ui;
 	QRect screenRect; //∆¡ƒªœ‘ æ«¯”Ú
 	QRegExpValidator *NumberValidator;
+	QRegExpValidator *NumberValidator2;
 	QButtonGroup CheckBoxGroup_colorMode;
 	QButtonGroup checkBoxGroup_matchingAccuracy;
 

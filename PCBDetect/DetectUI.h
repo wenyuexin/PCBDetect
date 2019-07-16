@@ -5,12 +5,13 @@
 #include "ui_DetectUI.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "DetectThread.h"
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
 #include "SerialNumberUI.h"
+#include "FileSyncThread.h"
 #include <vector>
 #include <QRect>
 #include <QList>
@@ -58,6 +59,8 @@ private:
 	DefectDetecter *defectDetecter; //检测核心类
 	pcb::DetectResult detectResult; //检测结果
 	int detectState; //检测状态
+
+	FileSyncThread *fileSyncThread; //文件发送
 
 public:
 	DetectUI(QWidget *parent = Q_NULLPTR);

@@ -1,6 +1,8 @@
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
+//#include <QDebug>
 
 using std::vector;
+using std::string;
 
 
 //非阻塞延迟
@@ -10,6 +12,19 @@ void pcb::delay(unsigned long msec)
 	while (QTime::currentTime() < dieTime)
 		QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 }
+
+
+//删除字符串首尾的非数字字符
+QString pcb::eraseNonDigitalCharInHeadAndTail(QString s)
+{
+	if (s == "") return "";
+	int begin = 0;
+	for (; begin < s.size() && !s.at(begin).isDigit(); begin++) {}
+	int end = s.size() - 1;
+	for (; end > begin && !s.at(end).isDigit(); end--) {}
+	return s.mid(begin, end - begin + 1);
+}
+
 
 //交互式文件夹路径选择
 QString pcb::selectDirPath(QWidget *parent, QString windowTitle)
@@ -28,20 +43,8 @@ QString pcb::selectDirPath(QWidget *parent, QString windowTitle)
 	return path;
 }
 
-//删除字符串首尾的非数字字符
-QString pcb::eraseNonDigitalCharInHeadAndTail(QString s)
-{
-	if (s == "") return "";
-	int begin = 0;
-	for (; begin < s.size() && !s.at(begin).isDigit(); begin++) {}
-	int end = s.size() - 1;
-	for (; end > begin && !s.at(end).isDigit(); end--) {}
-	return s.mid(begin, end - begin + 1);
-}
-
-
 /*
- * clearFiles():仅清空文件夹内的文件(不包括子文件夹内的文件)
+ * 仅清空文件夹内的文件(不包括子文件夹内的文件)
  * folderFullPath:文件夹全路径
  */
 void pcb::clearFiles(const QString &folderFullPath)
@@ -54,9 +57,9 @@ void pcb::clearFiles(const QString &folderFullPath)
 }
 
 /*
- * clearFolder() - 删除非空文件夹
+ * 删除非空文件夹
  * folderFullPath - 文件夹全路径
- * include - 是否要删除输入路径对应的文件夹
+ * includeed - 是否要删除输入路径对应的文件夹
  */
 void pcb::clearFolder(const QString &folderFullPath, bool included)
 {
@@ -111,6 +114,25 @@ void pcb::clearFolder(const QString &folderFullPath, bool included)
 }
 
 
+//遍历文件夹以及子文件夹中的所有文件，并将文件路径添加到文件列表中
+//注意，调用函数前请清空fileList中的元素
+void pcb::getFilePathList(const QString &folderFullPath, vector<string> &fileList)
+{
+	QDir dir(folderFullPath);
+	dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+	QList<QFileInfo> fileInfo(dir.entryInfoList());
+	for (int i = 0; i < fileInfo.count(); i++) {
+		//qDebug() << fileInfo.at(i).filePath();
+		if (fileInfo.at(i).isFile()) {
+			fileList.push_back(fileInfo.at(i).filePath().toStdString());
+		}
+		else if (fileInfo.at(i).isDir()) { 
+			getFilePathList(fileInfo.at(i).filePath(), fileList);
+		}
+	}
+}
+
+
 //将bool向量转换为数字字符串
 QString pcb::boolVectorToString(const vector<bool> &vec)
 {
@@ -135,3 +157,10 @@ vector<bool> pcb::stringToBoolVector(const QString &str, int n)
 	return vec;
 }
 
+
+//基于正则表达式判断IP地址的合法性
+bool pcb::isInetAddress(QString ip)
+{
+	QRegExp rx("^([1]?\\d\\d?|2[0-4]\\d|25[0-5])(\\.([1]?\\d\\d?|2[0-4]\\d|25[0-5])){2}\\.([1]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+	return  rx.exactMatch(ip.trimmed()); //去除空字符后进行匹配
+}

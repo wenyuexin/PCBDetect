@@ -5,7 +5,7 @@
 #include "SysInitThread.h"
 #include "Configurator.h"
 #include "RuntimeParams.h"
-#include "FuncLib.h"
+#include "pcbFuncLib.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
 #include <QDesktopWidget>

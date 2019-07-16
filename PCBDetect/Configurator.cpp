@@ -271,6 +271,9 @@ UserConfig::UserConfig()
 	concaveRateThresh = 50; //线路缺失率的阈值
 	convexRateThresh = 50; //线路凸起率的阈值
 
+	//文件同步
+	inetAddressOfRecheckPC = "";
+
 	//其他
 	errorCode = Default;
 }
@@ -310,6 +313,9 @@ void UserConfig::loadDefaultValue()
 	matchingAccuracyLevel = 1; //匹配精度等级：1高精度 2低精度
 	concaveRateThresh = 50; //线路缺失率的阈值
 	convexRateThresh = 50; //线路凸起率的阈值
+
+	//文件同步
+	inetAddressOfRecheckPC = "0";
 
 	//其他
 	errorCode = Unchecked; //错误代码
@@ -386,6 +392,12 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 		if (concaveRateThresh <= 0 || concaveRateThresh >= 100)
 			code = Invalid_convexRateThresh;
 		if (code != Unchecked || index != Index_All) break;
+
+	//文件同步
+	case pcb::UserConfig::Index_inetAddressOfRecheckPC: //复查设备的IP地址
+		if (!pcb::isInetAddress(inetAddressOfRecheckPC))
+			code = Invalid_inetAddressOfRecheckPC;
+		if (code != Unchecked || index != Index_All) break;
 	}
 
 	if (code == Unchecked) code = ValidConfig;
@@ -441,6 +453,9 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 		return Index_concaveRateThresh;
 	case pcb::UserConfig::Invalid_convexRateThresh:
 		return Index_convexRateThresh;
+	//文件同步
+	case pcb::UserConfig::Invalid_inetAddressOfRecheckPC:
+		return Index_inetAddressOfRecheckPC;
 	}
 	return Index_None;
 }
@@ -495,6 +510,9 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 		valueName = pcb::chinese("缺失率阈值"); break;
 	case pcb::UserConfig::Invalid_convexRateThresh:
 		valueName = pcb::chinese("凸起率阈值"); break;
+	//文件同步
+	case pcb::UserConfig::Invalid_inetAddressOfRecheckPC:
+		valueName = pcb::chinese("复查设备IP"); break;
 	default:
 		valueName = ""; break;
 	}
@@ -532,6 +550,9 @@ UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
 	if (this->matchingAccuracyLevel != other.matchingAccuracyLevel) return Index_matchingAccuracyLevel;
 	if (this->concaveRateThresh != other.concaveRateThresh) return Index_concaveRateThresh;
 	if (this->convexRateThresh != other.convexRateThresh) return Index_convexRateThresh;
+
+	//文件同步
+	if (this->inetAddressOfRecheckPC != other.inetAddressOfRecheckPC) return Index_inetAddressOfRecheckPC;
 	return Index_None;
 }
 
@@ -562,6 +583,9 @@ void UserConfig::copyTo(UserConfig *dst)
 	dst->matchingAccuracyLevel = this->matchingAccuracyLevel; //匹配模式：0高精度 1低精度
 	dst->concaveRateThresh = this->concaveRateThresh; //线路缺失率的阈值
 	dst->convexRateThresh = this->convexRateThresh; //线路凸起率的阈值
+
+	//文件同步
+	dst->inetAddressOfRecheckPC = this->inetAddressOfRecheckPC; //复查设备的IP地址
 }
 
 //功能：获取系统重置代码
@@ -578,7 +602,6 @@ int UserConfig::getSystemResetCode(UserConfig &newConfig)
 	if (exposureTime != newConfig.exposureTime || colorMode != newConfig.colorMode) {
 		resetCode |= 0b000010000;
 	}
-
 	return resetCode;
 }
 
@@ -893,7 +916,7 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 }
 
 
-//将配置文件中的参数加载到UserConfig中
+//将配置文件中的参数加载到 UserConfig 中
 bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 {
 	bool success = true;
@@ -932,6 +955,9 @@ bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 		configurator.jsonReadValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonReadValue("concaveRateThresh", config->concaveRateThresh, false);
 		configurator.jsonReadValue("convexRateThresh", config->convexRateThresh, false);
+
+		//文件同步
+		configurator.jsonReadValue("inetAddressOfRecheckPC", config->inetAddressOfRecheckPC, false);
 		configFile.close();
 	}
 	return success;
@@ -976,6 +1002,9 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 		configurator.jsonSetValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonSetValue("concaveRateThresh", config->concaveRateThresh, false);
 		configurator.jsonSetValue("convexRateThresh", config->convexRateThresh, false);
+
+		//文件同步
+		configurator.jsonSetValue("inetAddressOfRecheckPC", config->inetAddressOfRecheckPC, false);
 		configFile.close();
 	}
 	return success;
