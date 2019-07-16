@@ -1,14 +1,16 @@
 #pragma once
 
 #include <QThread>
+#include <QDebug>
 #include "Configurator.h"
 #include "RuntimeParams.h"
 #include "pcbFuncLib.h"
-#include "ImageConverter.h"
-#include "DefectDetecter.h"
+#include "FileSender.h"
 
 
-class DetectThread : public QThread
+//文件同步线程
+//将检测设备上的检测结果同步到复查设备中
+class FileSyncThread : public QThread
 {
 	Q_OBJECT
 
@@ -17,22 +19,13 @@ private:
 	pcb::UserConfig *userConfig; //用户参数
 	pcb::RuntimeParams *runtimeParams; //运行参数
 
-	pcb::CvMatArray *cvmatSamples; //用于提取的样本图
-	pcb::DetectResult *detectResult; //检测结果
-	DefectDetecter *defectDetecter; //检测器
-
 public:
-	DetectThread();
-	~DetectThread();
+	FileSyncThread(QObject *parent = Q_NULLPTR);
+	~FileSyncThread();
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
-
-	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
-	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
-	inline void setDefectDetecter(DefectDetecter* ptr) { defectDetecter = ptr; }
-	void init();
 
 protected:
 	void run();

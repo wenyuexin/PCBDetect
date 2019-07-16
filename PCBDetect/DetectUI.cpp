@@ -19,9 +19,28 @@ DetectUI::DetectUI(QWidget *parent)
 	serialNumberUI = Q_NULLPTR;
 	defectDetecter = Q_NULLPTR;
 	detectThread = Q_NULLPTR;
+	fileSyncThread = Q_NULLPTR;
 	detectState = DefectDetecter::Default;
-	initCounter = 0;
+	//initCounter = 0;
 }
+
+DetectUI::~DetectUI()
+{
+	qDebug() << "~DetectUI";
+
+	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
+	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
+	deletePointersInQPixmapArray(qpixmapSamples);//删除qpixmapSamples中的指针
+	delete detectThread; //检测线程
+	detectThread = Q_NULLPTR;
+	delete defectDetecter; //缺陷检测器
+	defectDetecter = Q_NULLPTR;
+	delete serialNumberUI; //产品序号识别界面
+	serialNumberUI = Q_NULLPTR;
+	delete fileSyncThread; //文件同步线程
+	fileSyncThread = Q_NULLPTR;
+}
+
 
 void DetectUI::init()
 {
@@ -94,22 +113,15 @@ void DetectUI::init()
 	imgConvertThread.setCurrentRow(&currentRow_show);
 	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
 	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()), Qt::UniqueConnection);
+
+	//文件同步线程
+	delete fileSyncThread;
+	fileSyncThread = new FileSyncThread();
+	fileSyncThread->setAdminConfig(adminConfig);
+	fileSyncThread->setUserConfig(userConfig);
+	fileSyncThread->setRuntimeParams(runtimeParams);
 }
 
-DetectUI::~DetectUI()
-{
-	qDebug() << "~DetectUI";
-
-	deletePointersInItemArray(itemArray); //删除图元矩阵中的指针
-	deletePointersInCvMatArray(cvmatSamples); //删除cvmatSamples中的指针
-	deletePointersInQPixmapArray(qpixmapSamples);//删除qpixmapSamples中的指针
-	delete detectThread; //检测线程
-	detectThread = Q_NULLPTR;
-	delete defectDetecter; //缺陷检测器
-	defectDetecter = Q_NULLPTR;
-	delete serialNumberUI; //产品序号识别界面
-	serialNumberUI = Q_NULLPTR;
-}
 
 
 /****************** 界面的初始化与重置 *******************/
@@ -507,7 +519,7 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 			+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
 		if (!QFileInfo(runtimeParams->currentSampleDir).exists()) {
 			runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
-			return;
+			setPushButtonsEnabled(true); return;
 		}
 		
 		//直接显示新的样本行
@@ -766,13 +778,7 @@ void DetectUI::do_updateDetectState_detecter(int state)
 
 		//检查是否有未处理的事件
 		while (detectThread->isRunning()) pcb::delay(50); //等待提取线程结束
-		if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1) { //当前PCB检测结束
-			runtimeParams->currentRow_detect += 1;
-			this->setPushButtonsEnabled(true); //启用按键
-		}
-		else { //当前PCB未检测完
-			if (eventCounter > 0) detectSampleImages(); //检测下一行分图
-		}
+		if (eventCounter > 0) detectSampleImages(); //检测下一行分图
 	}
 }
 
@@ -783,4 +789,18 @@ void DetectUI::on_detectFinished_detectThread(bool qualified)
 	//显示结果
 	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
 	ui.label_result->setText((qualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
+
+	//此处向复查设备发送检测结果
+	ui.label_status->setText(pcb::chinese("正在发送检测结果")); //更新状态栏
+	qApp->processEvents();
+	fileSyncThread->start(); //发送当前检测结果
+
+	ui.label_status->setText(pcb::chinese("检测结束，系统就绪")); //更新状态栏
+	qApp->processEvents();
+
+	//当前PCB检测结束
+	if (runtimeParams->currentRow_detect == runtimeParams->nPhotographing - 1) {
+		runtimeParams->currentRow_detect += 1;
+		this->setPushButtonsEnabled(true); //启用按键
+	}
 }
