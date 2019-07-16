@@ -130,7 +130,7 @@ namespace pcb
 		int colorMode; //色彩模式：0彩色 1黑白
 
 		//参数 - 检测算法
-		std::vector<bool> defectTypeToBeProcessed; //待处理的缺陷类型
+		std::vector<bool> defectTypeToBeProcessed; //待处理的缺陷类型，0断路，1断路，2凸起，3缺失
 		int matchingAccuracyLevel; //匹配精度等级：1高精度 2低精度
 		int concaveRateThresh; //线路缺失率的阈值
 		int convexRateThresh; //线路凸起率的阈值
