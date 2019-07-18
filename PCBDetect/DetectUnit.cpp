@@ -146,8 +146,8 @@ void DetectUnit::run()
 
 	//做差
 	cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
-	//Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
-	Mat diff = detectFunc->sub_process_direct(templBw, sampBw, templGray, sampGrayReg, roi);
+	Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
+	//Mat diff = detectFunc->sub_process_direct(templBw, sampBw, templGray, sampGrayReg, roi);
 	//调试时候的边缘处理
 	Size szDiff = diff.size();
 	Mat diff_roi = Mat::zeros(szDiff, diff.type());
@@ -158,20 +158,20 @@ void DetectUnit::run()
 
 
 	//标记缺陷
-	//rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+	rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
 	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage,rectBlack);
 
-	//if (curRow == 2 && curCol == 3) {
-	//	//保存用于调试的图片
-	//	std::string debug_path = "F:\\000_PCBData\\PCBData\\debugImg\\midPic\\2" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
-	//	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-	//	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	//	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-	//	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-	//	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
-	//	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
-	//}
+//if (curRow == 0 && curCol == 0) {
+//	//保存用于调试的图片
+//	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+//	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+//	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+//	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+//	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+//	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+//	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+//}
 
 
 	//保存样本图片

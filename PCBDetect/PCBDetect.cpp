@@ -37,6 +37,7 @@ PCBDetect::PCBDetect(QWidget *parent)
 	//相机控制器
 	cameraControler = new CameraControler;
 	cameraControler->setAdminConfig(&adminConfig);
+	cameraControler->setUserConfig(&userConfig);
 	cameraControler->setRuntimeParams(&runtimeParams);
 
 	//启动界面

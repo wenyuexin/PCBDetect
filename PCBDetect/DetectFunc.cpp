@@ -212,7 +212,7 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	//int blockSize = longSize / 4 * 2 + 1;
 	//cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
 
-	cv::threshold(grayImg(rect), res(rect), 80, 255, cv::THRESH_BINARY);
+	cv::threshold(grayImg(rect), res(rect), 135, 255, cv::THRESH_BINARY);
 	return res;
 }
 
@@ -517,10 +517,10 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		rectPoints.push_back(rectPoints[0]);
 
 		//绘制变换矩形
-		//for (int j = 0; j < 4; j++)
-		//{
-		//	line(rectBlack, Point2f(rectPointsOfPart[j].x, rectPointsOfPart[j].y), Point2f(rectPointsOfPart[(j + 1) % 4].x, rectPointsOfPart[(j + 1) % 4].y), (255, 255, 255));
-		//}
+		for (int j = 0; j < 4; j++)
+		{
+			line(rectBlack, Point2f(rectPointsOfPart[j].x, rectPointsOfPart[j].y), Point2f(rectPointsOfPart[(j + 1) % 4].x, rectPointsOfPart[(j + 1) % 4].y), (255, 255, 255));
+		}
 
 
 
@@ -550,7 +550,11 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 					}
 					pre_iterator = temp_iterator;
 					++transNum;
-					//black_roi.at<Vec3b>(pre) = { 255, 255, 0 };//标记变换点
+					rectBlack.at<cv::Vec3b>(pre) = { 255, 255, 0 };//标记变换点
+
+				/*	if (pre.x == 3021 && pre.y == 925)
+						cout << "test" << endl;*/
+
 					/*cout << i << endl;*/
 					//cout << pre.x + rect_out.x << " " << pre.y + rect_out.y << endl;
 
@@ -565,7 +569,11 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 					{
 						change_point.push_back(temp);//保存变换点
 					}
-					/*black_roi.at<Vec3b>(pre) = { 255, 255, 0 };*/
+					rectBlack.at<cv::Vec3b>(pre) = { 255, 255, 0 };
+
+				/*	if (pre.x == 3021 && pre.y == 925)
+						cout << "test" << endl;*/
+
 					pre_iterator = temp_iterator;
 					++transNum;
 				}
@@ -681,12 +689,12 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		}
 
 
-		int concaveRateThresh; //线路缺失率的阈值
-		int convexRateThresh; //线路凸起率的阈值
+		//int concaveRateThresh; //线路缺失率的阈值
+		//int convexRateThresh; //线路凸起率的阈值
 
-		if (convexDetectFlag&&defect_flag == 4 && percentFlag&&percentage > convexRateThresh)
+		if (convexDetectFlag&&defect_flag == 4 && percentFlag&&percentage < userConfig->convexRateThresh)
 			continue;//凸起超过阈值
-		if (concaveDetectFlag&&defect_flag == 2 && percentFlag&&percentage > concaveRateThresh)
+		if (concaveDetectFlag&&defect_flag == 2 && percentFlag&&percentage < userConfig->concaveRateThresh)
 			continue;//缺失超过阈值
 
 	
