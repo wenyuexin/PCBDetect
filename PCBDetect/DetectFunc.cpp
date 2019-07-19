@@ -212,7 +212,8 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	//int blockSize = longSize / 4 * 2 + 1;
 	//cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
 
-	cv::threshold(grayImg(rect), res(rect), 135, 255, cv::THRESH_BINARY);
+	cv::threshold(grayImg(rect), res(rect), 160, 255, cv::THRESH_BINARY);
+	//cv::threshold(grayImg(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU);
 	return res;
 }
 
@@ -386,14 +387,14 @@ Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
 	bitwise_and(imgFlaw, mask_roi, imgFlaw);
 
 	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
-	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
 
 	////膨胀模板边缘，与形态学处理后的图片相乘，获取边界上的点消除
 	cv::Mat edges;
 	cv::Canny(templBw, edges, 150, 50);
-	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
 	cv::dilate(edges, edges, element_b);
 	edges = 255 - edges;
 	cv::bitwise_and(edges, imgFlaw, imgFlaw);
@@ -463,8 +464,9 @@ cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::
 *       currentCol:检测的列
 */
 cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayReg, double scalingFactor, Mat &templBw, Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat, cmp_point3i> &detailImage,cv::Mat rectBlack) {
-	//Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-	//dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
+	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	threshold(diffBw, diffBw, 0, 255, cv::THRESH_BINARY);
+	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 	
 	//模板二值图边缘做平滑处理
 	medianBlur(templBw, templBw, 3);
@@ -479,9 +481,10 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 	cv::Mat sampGrayRegCopyZoom;
 	cv::resize(sampGrayRegCopy, sampGrayRegCopyZoom, scaledSubImageSize, (0, 0), (0, 0), cv::INTER_LINEAR);
 
+	Mat diffBw_copy = diffBw.clone();
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i>   hierarchy;
-	cv::findContours(diffBw, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+	cv::findContours(diffBw_copy, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 	//如果存在缺陷，则按照给定PCB型号，批次号，编号建立目录，存储图片,不存在缺陷则结束
 	if (contours.size() == 0) {
@@ -490,7 +493,7 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 
 	for (int i = 0; i < contours.size(); i++) {
 		int conArea = contourArea(contours[i], false);
-		if (conArea < 49) continue; //缺陷最小面积
+		if (conArea < 45) continue; //缺陷最小面积
 		
 
 		/**************************计算缺陷判断次数*****************************/
@@ -755,7 +758,7 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		if (percentFlag)
 			defectInfo += to_string(int(percentage));
 	
-		cv::putText(sampGrayRegCopyZoom, defectInfo, Point(rect.x, rect.y), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(0, 255, 255), 1, 8, 0);
+		cv::putText(sampGrayRegCopyZoom, defectInfo, Point(rect.x, rect.y), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(255, 0, 0), 1, 8, 0);
 
 		QChar fillChar = '0'; //当字符串长度不够时使用此字符进行填充
 		QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录

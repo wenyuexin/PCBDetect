@@ -98,9 +98,11 @@ void DetectUnit::run()
 	//直接二值化
 	sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr);
 
-	Mat element_a = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
-	cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
-	cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
+	Mat sampBw_direct = sampBw.clone();
+
+	//Mat element_a = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
+	//cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
+	//cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
 
 	//直接载入二值化模板
 	//std::string templBwPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/bw/"
@@ -162,15 +164,17 @@ void DetectUnit::run()
 
 	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage,rectBlack);
 
-//if (curRow == 0 && curCol == 0) {
-//	//保存用于调试的图片
-//	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
-//	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-//	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-//	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-//	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-//	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
-//	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+//if (curRow == 1 && curCol == 0) {
+	//保存用于调试的图片
+	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
+	//sampBw_direct
 //}
 
 
