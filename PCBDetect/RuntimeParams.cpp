@@ -54,6 +54,7 @@ void RuntimeParams::resetSerialNum()
 	sampleModelNum = ""; //型号
 	sampleBatchNum = ""; //批次号
 	sampleNum = ""; //样本编号
+	errorCode_serialNum = ErrorCode::Unchecked;
 }
 
 //加载默认的运行参数
@@ -388,8 +389,6 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 //      adminConfig 判断初始化相关参数的有效性时，需要读取系统参数
 bool RuntimeParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminConfig)
 {
-	if (errorCode == ValidParams) return true;
-
 	//所有参数
 	if (index == Index_All) {
 		if (doCheck && errorCode == RuntimeParams::Unchecked)
@@ -410,6 +409,7 @@ bool RuntimeParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminC
 			checkValidity(index);
 		return (errorCode_serialNum == ValidValues);
 	}
+
 	return (errorCode == ValidParams);
 }
 
