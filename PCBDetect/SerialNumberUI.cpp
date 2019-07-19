@@ -363,13 +363,13 @@ void SerialNumberUI::on_pushButton_confirm_clicked()
 		this->setPushButtonsEnabled(true); return;
 	}
 
-	//向上一级界面发送识别结束的信号
-	emit recognizeFinished_serialNumUI();
-
 	//返回上一级界面，并执行下一步处理
 	emit on_pushButton_return_clicked();
 
 	this->setPushButtonsEnabled(true); //开启按键
+
+	//向上一级界面发送识别结束的信号
+	emit recognizeFinished_serialNumUI();
 }
 
 //返回
