@@ -3,13 +3,18 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>D:\opencv_new\opencv_build\install\include;D:\opencv_new\opencv_build\install\include\opencv;D:\opencv_new\opencv_build\install\include\opencv2;D:\tesseract\include;D:\tesseract\include\leptonica;D:\tesseract\include\tesseract;C:\Program Files (x86)\MindVision\Demo\VC++\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\opencv_new\opencv_build\install\x64\vc15\lib;D:\tesseract\lib\x64\release;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Apps\opencv_contrib_4.1.0\include;D:\Apps\opencv_contrib_4.1.0\include\opencv2;D:\PCBTools\tesseract\include;D:\PCBTools\tesseract\include\leptonica;D:\PCBTools\tesseract\include\tesseract;D:\PCBTools\MindVision\Demo\VC++\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Apps\opencv_contrib_4.1.0\x64\vc15\lib;D:\PCBTools\tesseract\lib\x64\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>opencv_world343.lib;libtesseract-4.lib;pvt.cppan.demo.danbloomberg.leptonica-1.74.1.lib;pvt.cppan.demo.gif-5.1.4.lib;pvt.cppan.demo.jpeg-9.2.0.lib;pvt.cppan.demo.madler.zlib-1.2.11.lib;pvt.cppan.demo.mgk25.jbig.ar-2.1.0.lib;pvt.cppan.demo.mgk25.jbig.jbig-2.1.0.lib;pvt.cppan.demo.openjpeg.openjp2-2.1.2.lib;pvt.cppan.demo.png-1.6.28.lib;pvt.cppan.demo.tiff-4.0.7.lib;pvt.cppan.demo.webp-0.6.0.lib;pvt.cppan.demo.xz_utils.lzma-5.2.2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world410.lib;libtesseract-4.lib;pvt.cppan.demo.danbloomberg.leptonica-1.74.1.lib;pvt.cppan.demo.gif-5.1.4.lib;pvt.cppan.demo.jpeg-9.2.0.lib;pvt.cppan.demo.madler.zlib-1.2.11.lib;pvt.cppan.demo.mgk25.jbig.ar-2.1.0.lib;pvt.cppan.demo.mgk25.jbig.jbig-2.1.0.lib;pvt.cppan.demo.openjpeg.openjp2-2.1.2.lib;pvt.cppan.demo.png-1.6.28.lib;pvt.cppan.demo.tiff-4.0.7.lib;pvt.cppan.demo.webp-0.6.0.lib;pvt.cppan.demo.xz_utils.lzma-5.2.2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\PCBTools\asio-1.12.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
