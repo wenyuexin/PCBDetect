@@ -504,10 +504,10 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		minRectOfPart.size += cv::Size2f(10, 10);
 		Point2f rectPointsOfPart[4];
 		minRectOfPart.points(rectPointsOfPart);
-		//for (int i = 0; i < 4; i++) {
-		//	if (abs(rectPointsOfPart[i].x - 3247) < 5)
-		//		cout << "test" << endl;
-		//}
+		for (int i = 0; i < 4; i++) {
+			if (abs(rectPointsOfPart[i].x - 3247) < 5)
+				cout << "test" << endl;
+		}
 	
 
 		vector<Point> rectPoints;//外接矩形上的点
