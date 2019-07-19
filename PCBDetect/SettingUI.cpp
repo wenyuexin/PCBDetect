@@ -431,7 +431,7 @@ void SettingUI::getConfigFromSettingUI()
 	if (ui.checkBox_defectType_short->isChecked()) defectTypeToBeProcessed;
 
 	//相机组
-	tempConfig.exposureTime = ui.lineEdit_ActualProductSize_W->text().toInt();//曝光时间
+	tempConfig.exposureTime = ui.lineEdit_exposureTime_camera->text().toInt();//曝光时间
 	if (ui.lineEdit_colorMode_rgb_camera->isChecked()) tempConfig.colorMode = 0;//色彩模式
 	if (ui.lineEdit_colorMode_gray_camera->isChecked()) tempConfig.colorMode = 1;
 
