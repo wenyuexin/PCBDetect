@@ -694,6 +694,7 @@ void ExtractUI::on_convertFinished_convertThread()
 	}
 
 	//更新状态栏
+	runtimeParams->checkValidity(RuntimeParams::Index_All_SerialNum);//检测产品序号的有效性
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false) && 
 		!runtimeParams->DeveloperMode)
 	{

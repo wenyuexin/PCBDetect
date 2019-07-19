@@ -529,8 +529,7 @@ void DetectUI::on_recognizeFinished_serialNumUI()
 		}
 	}
 	else { //标准模式
-		if (detectThread->isRunning()) 
-			return;
+		if (detectThread->isRunning()) return;
 
 		//判断对应模板文件夹是否存在
 		runtimeParams->currentTemplDir = userConfig->TemplDirPath + "/"
@@ -696,6 +695,7 @@ void DetectUI::on_convertFinished_convertThread()
 	showSampleImages();
 
 	//更新状态栏
+	runtimeParams->checkValidity(RuntimeParams::Index_All_SerialNum);//检测产品序号的有效性
 	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
 		&& !runtimeParams->DeveloperMode) 
 	{
