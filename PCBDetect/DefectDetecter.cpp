@@ -144,7 +144,7 @@ void DefectDetecter::detect()
 
 	//向检测单元传入适用于整个PCB板的参数
 	if (currentRow_detect == 0) {
-		for (int i = 0; i < nPhotographing; i++) {
+		for (int i = 0; i < nCamera; i++) {
 			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr);//设置掩模区域坐标
 			detectUnits[i]->setScalingFactor(scalingFactor); //设置缩放因子
 			detectUnits[i]->setScaledFullImageSize(&scaledFullImageSize); //设置缩放后的整图图像尺寸
@@ -152,25 +152,26 @@ void DefectDetecter::detect()
 		}
 	}
 
+	//nPhotographing
 	//向检测单元传入适用于当前行的参数
 	CvMatVector subImages = (*cvmatSamples)[currentRow_detect];
-	for (int i = 0; i < nPhotographing; i++) {
+	for (int i = 0; i < nCamera; i++) {
 		detectUnits[i]->setSubImage(*subImages[i]);//设置需要检测的分图
 	}
 
 	//开启若干检测线程，检测当前的一行分图
-	for (int i = 0; i < nPhotographing; i++) {
+	for (int i = 0; i < nCamera; i++) {
 		detectUnits[i]->start(); //开始转换
 	}
 
 	//等待所有检测单元运行结束
-	for (int i = 0; i < nPhotographing; i++) {
+	for (int i = 0; i < nCamera; i++) {
 		detectUnits[i]->wait();
 	}
 
 	//检测结束，整合当前行的检测结果
 	totalDefectNum = 0; //缺陷总数
-	for (int i = 0; i < nPhotographing; i++) {
+	for (int i = 0; i < nCamera; i++) {
 		//统计缺陷总数
 		int defectNum = detectUnits[i]->getDefectNum();
 		totalDefectNum += defectNum;
