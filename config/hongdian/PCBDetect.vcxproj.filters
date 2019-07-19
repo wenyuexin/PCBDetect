@@ -84,9 +84,6 @@
     <ClCompile Include="DefectDetecter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RuntimeLib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ExtractFunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -94,6 +91,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ExtractUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DetectUnit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSender.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSyncThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pcbFuncLib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RuntimeParams.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -149,6 +161,12 @@
     <QtMoc Include="ExtractUI.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="DetectUnit.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="FileSyncThread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="PCBDetect.ui">
@@ -194,10 +212,16 @@
     <ClInclude Include="MOTION_DLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RuntimeLib.h">
+    <ClInclude Include="ExtractFunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExtractFunc.h">
+    <ClInclude Include="FileSender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pcbFuncLib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeParams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
