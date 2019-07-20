@@ -662,6 +662,62 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 			continue;//不检测缺失
 		if (transNum == 0 && defect_flag == 4)//如果是残铜忽略
 			continue;
+
+		//for (int i = 0; i < change_point.size(); i++) {
+		//	if(abs(change_point[i].x - 2198) < 5&& abs(change_point[i].y - 1633) < 5)
+		//		std::cout << "test" << endl;
+		//}
+
+
+		//将缺失判断成断路，最小外接矩形跨越两条线路
+		if(transNum ==4 && defect_flag ==1 )
+		{
+			Point2f center;
+			center.x = (change_point[0].x+ change_point[1].x+ change_point[2].x+ change_point[3].x) / 4;
+			center.y = (change_point[0].y + change_point[1].y + change_point[2].y + change_point[3].y) / 4;
+			
+
+			if ((int)templBw.at<uchar>(center) > 0 )
+
+			{
+				defect_flag = 1;
+			}
+			else
+			{
+				defect_flag = 2;
+				vector<cv::Point2f> line{ contour_center,center };
+				float x1 = contour_center.x > center.x ? center.x : contour_center.x;
+				float x2 = contour_center.x < center.x ? center.x : contour_center.x;
+				float y1 = contour_center.y > center.y ? center.y : contour_center.y;
+				float y2 = contour_center.y < center.y ? center.y : contour_center.y;
+				
+
+				for (int j = 0;j<4;j++)
+				{
+					if (change_point[j].x>=x1&&change_point[j].x<=x2 && change_point[(j+1)%4].x >= x1 && change_point[(j+1)%4].x <= x2)
+					{
+						Point2f temp0 = change_point[j];
+						Point2f temp1 = change_point[(j+1)%4];
+						change_point.clear();
+						change_point.push_back(temp0);
+						change_point.push_back(temp1);
+						break;
+					}
+					else if (change_point[j].y >= y1 && change_point[j].y <= y2 && change_point[(j + 1) % 4].y >= y1 && change_point[(j + 1) % 4].y <= y2)
+					{
+						Point2f temp0 = change_point[(j+1)%4];
+						Point2f temp1 = change_point[j++];
+						change_point.clear();
+						change_point.push_back(temp0);
+						change_point.push_back(temp1);
+						break;
+					}
+
+				}
+				transNum = 2;
+			}
+		}
+
 		bool percentFlag = false;
 		float percentage;
 		if (transNum == 2/*&& defect_str[defect_flag] == "2"*/)//缺陷类型为缺失同时变化次数为2时计算缺失百分比
@@ -696,11 +752,11 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 			//continue;
 		}
 		
-		for (int i = 0; i < 4; i++) {
-			Point2f p1(3765, 1011),p2(3820,1011);
-			if (p1 == rectPointsOfPart[i]||p2== rectPointsOfPart[i])
-				cout << "test" << endl;
-		}
+		////for (int i = 0; i < 4; i++) {
+		////	Point2f p1(3765, 1011),p2(3820,1011);
+		////	if (p1 == rectPointsOfPart[i]||p2== rectPointsOfPart[i])
+		////		cout << "test" << endl;
+		////}
 		if ((transNum == 0||transNum==1) && defect_flag == 2) {
 			vector<int> angle = { 0,45,90,135,180,-180,-135,-90,-45 };
 			percentFlag = true;
