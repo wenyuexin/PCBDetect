@@ -705,8 +705,8 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 					}
 					else if (change_point[j].y >= y1 && change_point[j].y <= y2 && change_point[(j + 1) % 4].y >= y1 && change_point[(j + 1) % 4].y <= y2)
 					{
-						Point2f temp0 = change_point[(j+1)%4];
-						Point2f temp1 = change_point[j++];
+						Point2f temp0 = change_point[j];
+						Point2f temp1 = change_point[(j + 1) % 4];
 						change_point.clear();
 						change_point.push_back(temp0);
 						change_point.push_back(temp1);
