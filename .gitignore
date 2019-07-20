@@ -271,6 +271,7 @@ GeneratedFiles/
 /PCBDetect/PCBDetect.qrc
 /PCBDetect/OpenCV_contrib_x64_Debug_PS.props
 /PCBDetect/OpenCV_contrib_x64_Release_PS.props
+/PCBDetect/asio_x64.props
 /PCBDetect/.admin.config
 /PCBDetect/.user.config
 !/config/*/*
