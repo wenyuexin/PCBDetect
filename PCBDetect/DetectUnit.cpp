@@ -1,4 +1,5 @@
 #include "DetectUnit.h"
+#include <iostream>
 
 using cv::Mat;
 using cv::Size;
@@ -162,6 +163,7 @@ void DetectUnit::run()
 	//±ê¼ÇÈ±ÏÝ
 	rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
+	
 	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage,rectBlack);
 
 //if (curRow == 1 && curCol == 0) {
