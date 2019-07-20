@@ -62,4 +62,7 @@ public:
 
 	float bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Point> change_point, int angle);//计算缺失线路宽度
 	float bulge_missing_percentage(cv::Mat &templBw, std::vector<cv::Point> change_point, cv::Point2f *rectPointsOfPart);//计算缺失百分比
+
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Mat descriptors;
 };

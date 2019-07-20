@@ -7,6 +7,9 @@
 #include "DetectFunc.h"
 #include <vector>
 #include <map>
+#include "opencv2/opencv.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 
 //用于检测单个分图的线程
 class DetectUnit : public QThread
@@ -62,4 +65,12 @@ protected:
 
 public:
 	cv::Mat rectBlack;
+
+
+	bool alignImages_test_load(std::vector<cv::KeyPoint> &keypoints_1, cv::Mat& descriptors_1, cv::Mat &image_sample_gray, cv::Mat &imgReg, cv::Mat &H, cv::Mat &imMatches);
+	void save(const std::string& path, cv::Mat& image_template_gray);
+	void load(const std::string& path);
+
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Mat descriptors;
 };

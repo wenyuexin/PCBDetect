@@ -53,7 +53,7 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
 	pyrDown(image_sample_gray, pyr);
 	pyrDown(pyr, pyr);
-	pyrDown(pyr, pyr);
+	//pyrDown(pyr, pyr);
 
 	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
 
@@ -72,11 +72,11 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 
 
 
-	//Mat outImg;
-	//drawKeypoints(image_template, keypoints_1, image_template,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-	//imwrite("outImg.jpg", image_template);
+	////Mat outImg;
+	////drawKeypoints(image_template, keypoints_1, image_template,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	////imwrite("outImg.jpg", image_template);
 
-	std::sort(m_knnMatches.begin(), m_knnMatches.end(), [](const vector<DMatch> m1, const vector<DMatch> m2) {return m1[0].distance < m2[0].distance; });
+	std::sort(m_knnMatches.begin(), m_knnMatches.end(), [](const vector<DMatch> &m1, const vector<DMatch> &m2) {return m1[0].distance < m2[0].distance; });
 
 	for (int i = 0; i < m_knnMatches.size(); i++)
 	{
@@ -123,10 +123,10 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 
 
 		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-		H.at<double>(0, 2) *= 8;
-		H.at<double>(1, 2) *= 8;
-		H.at<double>(2, 0) /= 8;
-		H.at<double>(2, 1) /= 8;
+		H.at<double>(0, 2) *= 4;
+		H.at<double>(1, 2) *= 4;
+		H.at<double>(2, 0) /= 4;
+		H.at<double>(2, 1) /= 4;
 		warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
 	}
 
@@ -394,7 +394,7 @@ Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
 	////膨胀模板边缘，与形态学处理后的图片相乘，获取边界上的点消除
 	cv::Mat edges;
 	cv::Canny(templBw, edges, 150, 50);
-	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	cv::dilate(edges, edges, element_b);
 	edges = 255 - edges;
 	cv::bitwise_and(edges, imgFlaw, imgFlaw);
@@ -501,7 +501,8 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 
 		//获取缺陷轮廓最小外接矩形上的所有点
 		cv::RotatedRect minRectOfPart = cv::minAreaRect(contours[i]);
-		minRectOfPart.size += cv::Size2f(10, 10);
+		//minRectOfPart.size += cv::Size2f(10, 10);
+		minRectOfPart.size += cv::Size2f(8, 8);
 		Point2f rectPointsOfPart[4];
 		minRectOfPart.points(rectPointsOfPart);
 		//for (int i = 0; i < 4; i++) {
@@ -546,6 +547,8 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 				++temp_iterator;
 				/*	if (pre.x == 1940-rect_out.x && pre.y == 965-rect_out.y)
 						int a = 0;*/
+				/*if (abs(pre.x - 1749) < 5 && abs(pre.y - 2107) < 5)
+					std::cout << "test" << endl;*/
 				if (transNum < 1 && (int)templBw.at<uchar>(pre) != (int)templBw.at<uchar>(temp))
 				{
 					if (templBw.at<uchar>(pre) > 0)
@@ -663,10 +666,10 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		if (transNum == 0 && defect_flag == 4)//如果是残铜忽略
 			continue;
 
-		//for (int i = 0; i < change_point.size(); i++) {
-		//	if(abs(change_point[i].x - 2198) < 5&& abs(change_point[i].y - 1633) < 5)
-		//		std::cout << "test" << endl;
-		//}
+		/*for (int i = 0; i < change_point.size(); i++) {
+			if(abs(change_point[i].x - 1749) < 5&& abs(change_point[i].y - 2107) < 5)
+				std::cout << "test" << endl;
+		}*/
 
 
 		//将缺失判断成断路，最小外接矩形跨越两条线路
@@ -1442,4 +1445,28 @@ float DetectFunc::bulge_missing_percentage(cv::Mat &templBw, std::vector<cv::Poi
 
 
 	return bulge_missing_percentage;
+}
+
+void DetectFunc::save(const std::string& path, Mat& image_template_gray) {
+	Mat temp;
+	cv::pyrDown(image_template_gray, temp);
+	cv::pyrDown(temp, temp);
+	if (userConfig->matchingAccuracyLevel == 2)//低精度
+		cv::pyrDown(temp, temp);
+	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
+	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
+	cv::FileStorage store(path, cv::FileStorage::WRITE);
+	cv::write(store, "keypoints", keypoints);
+	cv::write(store, "descriptors", descriptors);
+	store.release();
+
+}
+
+void DetectFunc::load(const std::string& path) {
+	cv::FileStorage store(path, cv::FileStorage::READ);
+	cv::FileNode n1 = store["keypoints"];
+	cv::read(n1, keypoints);
+	cv::FileNode n2 = store["descriptors"];
+	cv::read(n2, descriptors);
+	store.release();
 }
