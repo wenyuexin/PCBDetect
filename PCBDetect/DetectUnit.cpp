@@ -177,20 +177,20 @@ void DetectUnit::run()
 
 //if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
-	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	/*std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
 	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
 	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
 	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
 	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
 	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
 	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
-	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
+	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);*/
 	//sampBw_direct
-//}
-
 
 	//保存样本图片
 	double t5 = clock();
+//}
+
 	QString sampPath = runtimeParams->currentSampleDir + "/" + QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + ".bmp";
 	cv::imwrite(sampPath.toStdString(), samp);
 
