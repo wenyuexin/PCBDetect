@@ -207,6 +207,7 @@ void DefectDetecter::detect()
 		//将缺陷细节图及其相关信息合并在一起
 		std::map<cv::Point3i, cv::Mat, cmp_point3i> detailImage = detectUnits[i]->getDetailImage();
 		allDetailImage.insert(detailImage.begin(), detailImage.end());
+		detectUnits[i]->clearDetailImage();
 	}
 
 	//检测结束
@@ -245,6 +246,7 @@ void DefectDetecter::detect()
 		emit detectFinished_detectThread(qualified);
 
 		//清空历史数据
+		allDetailImage.clear();
 		generateBigTempl(); //重新生成大图
 		totalDefectNum = -1;//将缺陷总数置位
 
