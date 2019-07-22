@@ -46,12 +46,15 @@ void DetectUnit::run()
 	//读取模板掩膜
 	QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/"
 		+ QString("%1_%2_mask").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
+	/*Mat mask_roi = cv::imread(mask_path.toStdString(), 0);*/
 
 	//读取模板图片
 	QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
 		+ QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	Mat templGray = cv::imread(templPath.toStdString(), 0);
+	///*Mat templGray = cv::imread(templPath.toStdString(), 0);*/
+
+	Mat mask_roi = detectFunc->maskVec[curRow][curCol];
+	Mat templGray = detectFunc->templateVec[curRow][curCol];
 
 	double t2 = clock();
 	qDebug() << "==========" << pcb::chinese("读取模板文件") << (t2 - t1) / CLOCKS_PER_SEC << "s" 
@@ -131,7 +134,7 @@ void DetectUnit::run()
 	//cv::threshold(templ_gray(upRect), templBw(upRect), meanTemplGrayUp, 255, cv::THRESH_BINARY_INV);
 	//int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
 	//cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
-	//局部自适应二值化
+	//局部自适应二值化.0
 	//templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
 
 	//直接二值化

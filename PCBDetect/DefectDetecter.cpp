@@ -54,6 +54,7 @@ void DefectDetecter::initDetectFunc()
 	detectFunc->setAdminConfig(adminConfig);
 	detectFunc->setUserConfig(userConfig);
 	detectFunc->setRuntimeParams(runtimeParams);
+	
 	//detectFunc->setDetectResult(detectResult);
 }
 
@@ -141,7 +142,27 @@ void DefectDetecter::detect()
 		maskRoi_tr = res[1];
 		store_new.release();
 	}
+	static int templateFlag = -999;
+	if (templateFlag != ((runtimeParams->sampleModelNum).toInt()) || ((detectFunc->templateVec).empty() || (detectFunc->maskVec).empty())) {
+		(detectFunc->templateVec).clear();
+		(detectFunc->maskVec).clear();
+		detectFunc->templateVec = std::vector<std::vector<cv::Mat>>(runtimeParams->nPhotographing, std::vector<cv::Mat>{});
+		detectFunc->maskVec = std::vector<std::vector<cv::Mat>>(runtimeParams->nPhotographing, std::vector<cv::Mat>{});
+		for (int i = 0; i < runtimeParams->nPhotographing; i++)
+			for (int j = 0; j < runtimeParams->nCamera; j++)
+			{
+				QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
+					+ QString("%1_%2").arg(i + 1).arg(j + 1) + userConfig->ImageFormat;
+				Mat templGray = cv::imread(templPath.toStdString(), 0);
+				detectFunc->templateVec[i].push_back(templGray);
 
+				QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/"
+					+ QString("%1_%2_mask").arg(i + 1).arg(j + 1) + userConfig->ImageFormat;
+				Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
+				detectFunc->maskVec[i].push_back(mask_roi);
+			}
+		templateFlag = (runtimeParams->sampleModelNum).toInt();
+	}
 	//向检测单元传入适用于整个PCB板的参数
 	if (currentRow_detect == 0) {
 		for (int i = 0; i < nCamera; i++) {
