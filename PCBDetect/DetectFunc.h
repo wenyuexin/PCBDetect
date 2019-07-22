@@ -65,4 +65,9 @@ public:
 
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
+
+	std::vector<std::vector<cv::Mat>> templateVec,maskVec;
+
+
+
 };

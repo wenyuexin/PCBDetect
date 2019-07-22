@@ -55,6 +55,7 @@ public:
 
 	inline int getDefectNum() { defectNum = detailImage.size(); return defectNum; } //获取分图的缺陷数
 	inline std::map<cv::Point3i, cv::Mat, cmp_point3i> getDetailImage(){ return detailImage; }//获取缺陷信息及细节图
+	inline void clearDetailImage() { detailImage.clear(); }
 	inline cv::Mat getMarkedSubImage() { return markedSubImage; }
 
 	inline int getcurRow() { return curRow; }

@@ -46,12 +46,15 @@ void DetectUnit::run()
 	//读取模板掩膜
 	QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/"
 		+ QString("%1_%2_mask").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
+	/*Mat mask_roi = cv::imread(mask_path.toStdString(), 0);*/
 
 	//读取模板图片
 	QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
 		+ QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	Mat templGray = cv::imread(templPath.toStdString(), 0);
+	///*Mat templGray = cv::imread(templPath.toStdString(), 0);*/
+
+	Mat mask_roi = detectFunc->maskVec[curRow][curCol];
+	Mat templGray = detectFunc->templateVec[curRow][curCol];
 
 	double t2 = clock();
 	qDebug() << "==========" << pcb::chinese("读取模板文件") << (t2 - t1) / CLOCKS_PER_SEC << "s" 
@@ -59,8 +62,10 @@ void DetectUnit::run()
 
 	//样本图片转为灰度图
 	Mat sampGray;
-	cv::cvtColor(samp, sampGray, cv::COLOR_BGR2GRAY);
-
+	if (userConfig->colorMode == 0)
+		cv::cvtColor(samp, sampGray, cv::COLOR_BGR2GRAY);
+	else
+		sampGray = samp;
 	double t3 = clock();
 	qDebug() << "==========" << pcb::chinese("模板形态学处理") << (t3 - t2) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")" << endl;
@@ -131,7 +136,7 @@ void DetectUnit::run()
 	//cv::threshold(templ_gray(upRect), templBw(upRect), meanTemplGrayUp, 255, cv::THRESH_BINARY_INV);
 	//int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
 	//cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
-	//局部自适应二值化
+	//局部自适应二值化.0
 	//templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
 
 	//直接二值化
@@ -177,20 +182,20 @@ void DetectUnit::run()
 
 //if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
-	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	/*std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
 	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
 	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
 	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
 	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
 	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
 	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
-	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
+	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);*/
 	//sampBw_direct
-//}
-
 
 	//保存样本图片
 	double t5 = clock();
+//}
+
 	QString sampPath = runtimeParams->currentSampleDir + "/" + QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + ".bmp";
 	cv::imwrite(sampPath.toStdString(), samp);
 
