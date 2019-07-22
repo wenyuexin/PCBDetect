@@ -62,8 +62,10 @@ void DetectUnit::run()
 
 	//样本图片转为灰度图
 	Mat sampGray;
-	cv::cvtColor(samp, sampGray, cv::COLOR_BGR2GRAY);
-
+	if (userConfig->colorMode == 0)
+		cv::cvtColor(samp, sampGray, cv::COLOR_BGR2GRAY);
+	else
+		sampGray = samp;
 	double t3 = clock();
 	qDebug() << "==========" << pcb::chinese("模板形态学处理") << (t3 - t2) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")" << endl;

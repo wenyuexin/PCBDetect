@@ -153,7 +153,8 @@ bool CameraControler::initCameras2()
 		//CameraSetExposureTime(cameraList2[i], userConfig->exposureTime * 1000);
 		CameraSetExposureTime(cameraList2[i], 200 * 1000);
 		//设置色彩模式 - 0彩色 1黑白 -1默认
-		if (userConfig->colorMode == 1) CameraSetIspOutFormat(cameraList2[i], CAMERA_MEDIA_TYPE_MONO8);
+		if (userConfig->colorMode == 1) 
+			CameraSetIspOutFormat(cameraList2[i], CAMERA_MEDIA_TYPE_MONO8);
 		
 		//设置相机的触发模式。0表示连续采集模式；1表示软件触发模式；2表示硬件触发模式。
 		CameraSetTriggerMode(cameraList2[i], 1);
