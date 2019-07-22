@@ -1,4 +1,5 @@
 #include "ImageConverter.h"
+#include "pcbFuncLib.h"
 
 using cv::Mat;
 
@@ -164,6 +165,7 @@ QImage ImageConverter::CvMatToQImage(const cv::Mat &mat)
 		}
 		QImage image(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
 		image.setColorTable(sColorTable);
+		pcb::delay(10);
 		return image;
 	}
 
@@ -177,5 +179,6 @@ QImage ImageConverter::CvMatToQImage(const cv::Mat &mat)
 
 QPixmap ImageConverter::CvMatToQPixmap(const cv::Mat &inMat)
 {
-	return QPixmap::fromImage(CvMatToQImage(inMat));
+	QImage img = CvMatToQImage(inMat);
+	return QPixmap::fromImage(img);
 }
