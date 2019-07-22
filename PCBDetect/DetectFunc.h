@@ -65,4 +65,6 @@ public:
 
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptors;
+
+
 };

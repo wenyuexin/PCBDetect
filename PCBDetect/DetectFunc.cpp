@@ -50,10 +50,11 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 	double t1 = clock();
 	cv::Mat pyr;
 	cv::Size sz = image_sample_gray.size();
-	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
+	
 	pyrDown(image_sample_gray, pyr);
 	pyrDown(pyr, pyr);
-	//pyrDown(pyr, pyr);
+	if (userConfig->matchingAccuracyLevel == 2)//µÍ¾«¶È
+		pyrDown(pyr, pyr);
 
 	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
 
@@ -123,10 +124,13 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 
 
 		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-		H.at<double>(0, 2) *= 4;
-		H.at<double>(1, 2) *= 4;
-		H.at<double>(2, 0) /= 4;
-		H.at<double>(2, 1) /= 4;
+
+		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
+		H.at<double>(0, 2) *= matrixAdj;
+		H.at<double>(1, 2) *= matrixAdj;
+		H.at<double>(2, 0) /= matrixAdj;
+		H.at<double>(2, 1) /= matrixAdj;
+
 		warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
 	}
 
