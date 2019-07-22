@@ -165,6 +165,7 @@ void DefectDetecter::detect()
 	}
 	//向检测单元传入适用于整个PCB板的参数
 	if (currentRow_detect == 0) {
+		totalDefectNum = 0; //缺陷总数
 		for (int i = 0; i < nCamera; i++) {
 			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr);//设置掩模区域坐标
 			detectUnits[i]->setScalingFactor(scalingFactor); //设置缩放因子
@@ -191,7 +192,7 @@ void DefectDetecter::detect()
 	}
 
 	//检测结束，整合当前行的检测结果
-	totalDefectNum = 0; //缺陷总数
+	
 	for (int i = 0; i < nCamera; i++) {
 		//统计缺陷总数
 		int defectNum = detectUnits[i]->getDefectNum();

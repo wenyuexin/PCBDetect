@@ -663,12 +663,7 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		else {
 			defect_flag = transNum > 2 ? 3 : 4;//短路:凸起
 		}
-		if (!convexDetectFlag&&defect_flag == 4)
-			continue;//不检测凸起
-		if (!concaveDetectFlag&&defect_flag == 2)
-			continue;//不检测缺失
-		if (transNum == 0 && defect_flag == 4)//如果是残铜忽略
-			continue;
+		
 
 		/*for (int i = 0; i < change_point.size(); i++) {
 			if(abs(change_point[i].x - 1749) < 5&& abs(change_point[i].y - 2107) < 5)
@@ -724,6 +719,13 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 				transNum = 2;
 			}
 		}
+
+		if (!convexDetectFlag&&defect_flag == 4)
+			continue;//不检测凸起
+		if (!concaveDetectFlag&&defect_flag == 2)
+			continue;//不检测缺失
+		if (transNum == 0 && defect_flag == 4)//如果是残铜忽略
+			continue;
 
 		bool percentFlag = false;
 		float percentage;
