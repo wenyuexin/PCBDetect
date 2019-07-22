@@ -94,7 +94,7 @@ bool CameraControler::initCameras2()
 	errorCode = CameraControler::NoError;
 
 	//若相机已经初始化，则直接跳过后续步骤
-	if (isCamerasInitialized()) return true;
+	//if (isCamerasInitialized()) return true;
 
 	//关闭已经打开的相机并释放相机列表
 	this->closeCameras();
