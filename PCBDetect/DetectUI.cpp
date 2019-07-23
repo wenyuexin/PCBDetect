@@ -492,12 +492,16 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 	QSize graphicsViewSize = ui.graphicsView->size();
 	QRect graphicsViewRect = QRect(graphicsViewPos, graphicsViewSize);
 	QPoint mousePosition(event->x(), event->y());
+	if (!graphicsViewRect.contains(mousePosition)) return;//保证点击的位置在视图中
 
 	//判断鼠标点击的是哪个分图
-	if (!graphicsViewRect.contains(mousePosition)) return;
-	QPoint relativePos = mousePosition - graphicsViewPos; //相对位置
-	int gridRowIdx = (int) (relativePos.y() / gridSize.height());//点击位置在第几行
-	int gridColIdx = (int) (relativePos.x() / gridSize.width());//点击位置在第几列
+	QPointF posInScene = ui.graphicsView->mapToScene(event->pos());//点击位置相对于场景的坐标
+	int gridRowIdx = (int) (posInScene.y() / gridSize.height());//计算点击位置在第几行
+	int gridColIdx = (int) (posInScene.x() / gridSize.width());//计算点击位置在第几列
+
+	////QPoint relativePos = mousePosition - graphicsViewPos; //相对位置
+	////int gridRowIdx = (int) (relativePos.y() / gridSize.height());//点击位置在第几行
+	////int gridColIdx = (int) (relativePos.x() / gridSize.width());//点击位置在第几列
 
 	if (gridRowIdx <= currentRow_show && qpixmapSamples[gridRowIdx][gridColIdx] != Q_NULLPTR) {
 		serialNumberUI->showSampleImage(gridRowIdx, gridColIdx);
