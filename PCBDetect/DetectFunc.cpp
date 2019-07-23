@@ -391,7 +391,7 @@ Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
 	bitwise_and(imgFlaw, mask_roi, imgFlaw);
 
 	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
-	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
 
