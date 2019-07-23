@@ -240,7 +240,8 @@ bool DetectUnit::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
 	pyrDown(image_sample_gray, pyr);
 	pyrDown(pyr, pyr);
-	pyrDown(pyr, pyr);
+	if (userConfig->matchingAccuracyLevel == 2)//µÍ¾«¶È
+		pyrDown(pyr, pyr);
 
 	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
 
@@ -310,10 +311,13 @@ bool DetectUnit::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 
 
 		H = cv::findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-		H.at<double>(0, 2) *= 8;
-		H.at<double>(1, 2) *= 8;
-		H.at<double>(2, 0) /= 8;
-		H.at<double>(2, 1) /= 8;
+
+		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
+		H.at<double>(0, 2) *= matrixAdj;
+		H.at<double>(1, 2) *= matrixAdj;
+		H.at<double>(2, 0) /= matrixAdj;
+		H.at<double>(2, 1) /= matrixAdj;
+
 		cv::warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
 	}
 
