@@ -150,8 +150,8 @@ bool CameraControler::initCameras2()
 		//如果相机没有打开，则直接跳过
 		if (!cameraState[i]) continue;
 		//设置曝光时间，单位us
-		//CameraSetExposureTime(cameraList2[i], userConfig->exposureTime * 1000);
-		CameraSetExposureTime(cameraList2[i], 200 * 1000);
+		CameraSetExposureTime(cameraList2[i], userConfig->exposureTime * 1000);
+		//CameraSetExposureTime(cameraList2[i], 200 * 1000);
 		//设置色彩模式 - 0彩色 1黑白 -1默认
 		if (userConfig->colorMode == 1) 
 			CameraSetIspOutFormat(cameraList2[i], CAMERA_MEDIA_TYPE_MONO8);

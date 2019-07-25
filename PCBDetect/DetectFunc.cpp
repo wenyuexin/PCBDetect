@@ -216,8 +216,8 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	//int blockSize = longSize / 4 * 2 + 1;
 	//cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
 
-	//cv::threshold(grayImg(rect), res(rect), 160, 255, cv::THRESH_BINARY);
-	cv::threshold(grayImg(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU);
+	cv::threshold(grayImg(rect), res(rect), 73, 255, cv::THRESH_BINARY);
+	//cv::threshold(grayImg(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU);
 	return res;
 }
 

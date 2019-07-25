@@ -126,7 +126,7 @@ namespace pcb
 		QString clusterComPort; //COM串口
 
 		//参数 - 相机组
-		int exposureTime; //曝光时间 ms （范围大概50-500）
+		int exposureTime; //曝光时间 ms （范围大概10-500）
 		int colorMode; //色彩模式：0彩色 1黑白
 
 		//参数 - 检测算法
