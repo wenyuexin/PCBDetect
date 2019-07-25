@@ -82,8 +82,8 @@ void DetectUnit::run()
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
-	//detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
-	detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
+	detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
+	//detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
 
 	double t4 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
@@ -182,14 +182,14 @@ void DetectUnit::run()
 
 //if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
-	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
-	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
-	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
-	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
+	///*std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	//cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+	//cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+	//cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+	//cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+	//cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+	//cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+	//cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);*/
 	//sampBw_direct
 
 	//保存样本图片
