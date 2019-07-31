@@ -82,8 +82,8 @@ void DetectUnit::run()
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
-	//detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
-	detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
+	detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
+	//detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
 
 	double t4 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
@@ -182,14 +182,14 @@ void DetectUnit::run()
 
 //if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
-	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
-	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
-	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
-	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
+	///*std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	//cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+	//cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+	//cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+	//cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+	//cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+	//cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+	//cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);*/
 	//sampBw_direct
 
 	//保存样本图片
@@ -240,7 +240,8 @@ bool DetectUnit::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
 	pyrDown(image_sample_gray, pyr);
 	pyrDown(pyr, pyr);
-	pyrDown(pyr, pyr);
+	if (userConfig->matchingAccuracyLevel == 2)//低精度
+		pyrDown(pyr, pyr);
 
 	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
 
@@ -310,10 +311,13 @@ bool DetectUnit::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& 
 
 
 		H = cv::findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-		H.at<double>(0, 2) *= 8;
-		H.at<double>(1, 2) *= 8;
-		H.at<double>(2, 0) /= 8;
-		H.at<double>(2, 1) /= 8;
+
+		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
+		H.at<double>(0, 2) *= matrixAdj;
+		H.at<double>(1, 2) *= matrixAdj;
+		H.at<double>(2, 0) /= matrixAdj;
+		H.at<double>(2, 1) /= matrixAdj;
+
 		cv::warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
 	}
 
