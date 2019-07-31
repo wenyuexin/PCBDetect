@@ -127,9 +127,9 @@ void TemplateExtractor::extract()
 		filePath = bw_path + fileName + "_bw" + userConfig->ImageFormat;
 		cv::imwrite(filePath.toStdString(), templbw);
 
-		//提取模板特征并保存
-		filePath = bin_path + fileName + ".bin";
-		templFunc->save(filePath.toStdString(), src);
+		////提取模板特征并保存
+		//filePath = bin_path + fileName + ".bin";
+		//templFunc->save(filePath.toStdString(), src);
 
 
 
@@ -203,6 +203,12 @@ void TemplateExtractor::extract()
 			/*	imwrite(mask_path + "/2.jpg", mask);*/
 			cv::imwrite(resPath, mask);
 
+
+			//提取模板特征并保存
+			Mat src_mask;
+			cv::bitwise_and(image, mask, src_mask);
+			filePath = bin_path + fileName + ".bin";
+			templFunc->save(filePath.toStdString(), src_mask);
 		}
 
 		Mat scaledFullImage;
