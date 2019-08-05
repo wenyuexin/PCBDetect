@@ -152,12 +152,12 @@ void DefectDetecter::detect()
 			for (int j = 0; j < runtimeParams->nCamera; j++)
 			{
 				QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
-					+ QString("%1_%2").arg(i + 1).arg(j + 1) + userConfig->ImageFormat;
+					+ QString("%1_%2").arg(i + 1).arg(j + 1) + ".bmp";
 				Mat templGray = cv::imread(templPath.toStdString(), 0);
 				detectFunc->templateVec[i].push_back(templGray);
 
 				QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/"
-					+ QString("%1_%2_mask").arg(i + 1).arg(j + 1) + userConfig->ImageFormat;
+					+ QString("%1_%2_mask").arg(i + 1).arg(j + 1) + ".bmp";
 				Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
 				detectFunc->maskVec[i].push_back(mask_roi);
 			}
