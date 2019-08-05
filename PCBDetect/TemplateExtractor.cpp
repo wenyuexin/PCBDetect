@@ -108,7 +108,7 @@ void TemplateExtractor::extract()
 		fileName = QString("%1_%2").arg(currentRow_extract + 1).arg(col + 1);
 
 		//±£´æÄ£°æÍ¼Æ¬
-		filePath = subtempl_path + fileName + userConfig->ImageFormat;
+		filePath = subtempl_path + fileName + ".bmp";
 		cv::imwrite(filePath.toStdString(), src);//±£´æÄ£°åÍ¼Æ¬
 		
 		//±£´æÑÚÄ¤Í¼Æ¬
@@ -124,7 +124,7 @@ void TemplateExtractor::extract()
 		cv::morphologyEx(templbw, templbw, cv::MORPH_OPEN, element_b);
 		cv::morphologyEx(templbw, templbw, cv::MORPH_CLOSE, element_b);
 
-		filePath = bw_path + fileName + "_bw" + userConfig->ImageFormat;
+		filePath = bw_path + fileName + "_bw" + ".bmp";
 		cv::imwrite(filePath.toStdString(), templbw);
 
 		////ÌáÈ¡Ä£°åÌØÕ÷²¢±£´æ
@@ -199,7 +199,7 @@ void TemplateExtractor::extract()
 
 			image = cv::imread(filename[num]);//¶ÁÍ¼Ïñ
 			Mat mask = templFunc->cutting(num_cols, num_rows, runtimeParams->nCamera, runtimeParams->nPhotographing, image, point_bl, point_tr);//µ÷º¯Êý
-			string resPath = mask_path.toStdString() + "/" + std::to_string(num_rows) + "_" + std::to_string(num_cols) + "_mask" + userConfig->ImageFormat.toStdString();
+			string resPath = mask_path.toStdString() + "/" + std::to_string(num_rows) + "_" + std::to_string(num_cols) + "_mask" + ".bmp";
 			/*	imwrite(mask_path + "/2.jpg", mask);*/
 			cv::imwrite(resPath, mask);
 
