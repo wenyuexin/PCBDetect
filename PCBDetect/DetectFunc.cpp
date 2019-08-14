@@ -295,6 +295,7 @@ cv::Rect DetectFunc::getRect(int curCol, int curRow, const cv::Mat& grayImg, cv:
 		rect.width = grayImg.cols;
 		rect.height = grayImg.rows;
 	}
+
 	return rect;
 }
 
