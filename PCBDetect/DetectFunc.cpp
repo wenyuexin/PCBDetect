@@ -393,7 +393,7 @@ Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
 	bitwise_and(imgFlaw, mask_roi, imgFlaw);
 
 	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
-	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(1, 1));
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
 
@@ -472,7 +472,7 @@ cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::
 cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayReg, double scalingFactor, Mat &templBw, Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat, cmp_point3i> &detailImage,cv::Mat rectBlack) {
 	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	threshold(diffBw, diffBw, 0, 255, cv::THRESH_BINARY);
-	dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
+	//dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 	
 	//模板二值图边缘做平滑处理
 	medianBlur(templBw, templBw, 3);
@@ -499,9 +499,59 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 
 	for (int i = 0; i < contours.size(); i++) {
 		int conArea = contourArea(contours[i], false);
-		if (conArea < 45) continue; //缺陷最小面积
+		if (conArea <= 2) continue; //缺陷最小面积
 		
+		//轮廓外接矩形rect_out为轮廓外接矩形往外括20个像素
+		Rect rectCon = boundingRect(Mat(contours[i]));
+		int larger_width = 10;//稍微扩大缺陷所在的矩形区域
+		int larger_height = 10;
+		Rect rect_out = Rect(rectCon.x - larger_width, rectCon.y - larger_height, rectCon.width + 2 * larger_width, rectCon.height + 2 * larger_height);
+		Mat temp_area;
+		Mat samp_area;
+		Mat tempBwPart;
+		Mat diffBwPart;
 
+
+		//防止分图越界
+		int width_sub = 0, height_sub = 0;
+		if (rect_out.x < 0)
+			rect_out.x = 0;
+		if (rect_out.y < 0)
+			rect_out.y = 0;
+		if ((rect_out.x + 2 * larger_width + rectCon.width) > (sampGrayReg.cols - 1)) {
+			width_sub = sampGrayReg.cols - 1 - rect_out.x - rectCon.width;
+			larger_width = (width_sub - 1) / 2;
+		}//最后一个减一是由于四舍五入的误差造成的
+		if ((rect_out.y + 2 * larger_height + rectCon.height) > (sampGrayReg.rows - 1)) {
+			height_sub = sampGrayReg.rows - 1 - rect_out.y - rectCon.height;
+			larger_height = (height_sub - 1) / 2;
+		}
+		rect_out = Rect(rect_out.x, rect_out.y, rectCon.width + 2 * larger_width, rectCon.height + 2 * larger_height);
+
+		Point rect_out_rb = Point(rect_out.x + rect_out.width, rect_out.y + rect_out.height);
+		int boundary_x = sampGrayReg.cols - 1;
+		int boundary_y = sampGrayReg.rows - 1;
+		if (rect_out.x<0 || rect_out.y <0 || rect_out_rb.x > boundary_x || rect_out_rb.y> boundary_y) {
+			cout << "rect_out越界" << endl;
+		}
+
+		try {
+			temp_area = templGray(rect_out);
+			samp_area = sampGrayReg(rect_out);
+			tempBwPart = templBw(rect_out).clone();
+			diffBwPart = diffBw(rect_out).clone();
+		}
+		catch (std::exception e) {
+			qDebug() << QString::fromLocal8Bit("矩形越界");
+		};
+
+		vector<cv::Point2i> locations;
+		cv::findNonZero(diffBwPart, locations);
+
+		if (locations.size() <= 10) {
+			Size szDiff = diffBwPart.size();
+			continue;
+		}
 		/**************************计算缺陷判断次数*****************************/
 		int transNum = 0;
 
@@ -631,23 +681,7 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 			//cout << "缺陷中心坐标计算错误";
 		}
 
-		//轮廓外接矩形rect_out为轮廓外接矩形往外括20个像素
-		Rect rectCon = boundingRect(Mat(contours[i]));
-		int larger = 20;//稍微扩大缺陷所在的矩形区域
-		Rect rect_out = Rect(rectCon.x - larger, rectCon.y - larger, rectCon.width + 2 * larger, rectCon.height + 2 * larger);
-		Mat temp_area;
-		Mat samp_area;
-		Mat tempBwPart;
-		Mat diffBwPart;
-		try {
-			temp_area = templGray(rect_out);
-			samp_area = sampGrayReg(rect_out);
-			tempBwPart = templBw(rect_out).clone();
-			diffBwPart = diffBw(rect_out).clone();
-		}
-		catch (std::exception e) {
-			qDebug()<<QString::fromLocal8Bit("矩形越界");
-		};
+		
 
 
 	/********************根据状态变换次数和是否存在缺失对缺陷进行分类**********************************/
