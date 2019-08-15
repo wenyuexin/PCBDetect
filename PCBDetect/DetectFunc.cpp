@@ -43,7 +43,7 @@ DetectFunc::~DetectFunc()
 bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
 {
 
-	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
+	Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
 	std::vector<KeyPoint> keypoints_2;
 	Mat descriptors_2;
 
