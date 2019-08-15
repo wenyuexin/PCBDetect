@@ -82,8 +82,8 @@ void DetectUnit::run()
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
-	//detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
-	detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
+	detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
+	/*detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);*/
 
 	double t4 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
