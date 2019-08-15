@@ -142,7 +142,7 @@ void DetectUnit::run()
 	//直接二值化
 	templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
 
-	Mat elementTempl = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
+	Mat elementTempl = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(1, 1));
 	cv::morphologyEx(templBw, templBw, cv::MORPH_OPEN, elementTempl);
 	cv::morphologyEx(templBw, templBw, cv::MORPH_CLOSE, elementTempl);
 
@@ -168,7 +168,7 @@ void DetectUnit::run()
 	//调试时候的边缘处理
 	Size szDiff = diff.size();
 	Mat diff_roi = Mat::zeros(szDiff, diff.type());
-	int zoom = 50;//忽略的边缘宽度
+	int zoom = 5;//忽略的边缘宽度
 	diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 	bitwise_and(diff_roi, diff, diff);
 
