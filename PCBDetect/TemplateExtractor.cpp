@@ -207,8 +207,9 @@ void TemplateExtractor::extract()
 			//提取模板特征并保存
 			Mat src_mask;
 			cv::bitwise_and(image, mask, src_mask);
-			filePath = bin_path + fileName + ".bin";
-			templFunc->save(filePath.toStdString(), src_mask);
+			string file_Path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
+				+ "/bin/" + std::to_string(num_rows) + "_" + std::to_string(num_cols) + ".bin";
+			templFunc->save(file_Path, src_mask);
 		}
 
 		Mat scaledFullImage;
