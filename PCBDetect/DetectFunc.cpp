@@ -216,9 +216,13 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	//int blockSize = longSize / 4 * 2 + 1;
 	//cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
 
-	int grayImgMean = mean(grayImg(rect))[0];
-	cv::threshold(grayImg(rect), res(rect), grayImgMean, 255, cv::THRESH_BINARY);
-	//cv::threshold(grayImg(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU);
+	/*int revise = 20;
+	int grayImgMean = mean(grayImg(rect))[0] + revise;
+	cv::threshold(grayImg(rect), res(rect), grayImgMean, 255, cv::THRESH_BINARY);*/
+
+	Mat grayImgCopy = grayImg.clone();
+	int threshold_otsu = cv::threshold(grayImgCopy(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU) + 10;
+	cv::threshold(grayImg(rect), res(rect), threshold_otsu , 255, cv::THRESH_BINARY);
 	return res;
 }
 
@@ -1009,7 +1013,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 			Point pre0 = Point(change_point[0].x++, change_point[0].y);
 			Point temp0 = Point(pre0.x + 1, pre0.y);
 			/*cout << "pre0:" << pre0 << "temp0:" << temp0 << endl;*/
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y||(int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y||(int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = pre0;
 				traverse_number0 = k + 1;
@@ -1044,7 +1048,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 			temp0 = Point(change0_pos.x++, change0_pos.y--);
 		/*	Point pre1 = change1_pos;
 			Point temp1 = Point(change1_pos.x++, change1_pos.y++);*/
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = pre0;
 				traverse_number0 = k + 1;
@@ -1071,7 +1075,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 		{
 			Point pre0 = Point(change_point[0].x, change_point[0].y++);
 			Point temp0 = Point(pre0.x, pre0.y + 1);
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = pre0;
 				traverse_number0 = k + 1;
@@ -1099,7 +1103,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 			Point pre0 = Point(change_point[0].x--, change_point[0].y++);
 			Point temp0 = Point(pre0.x - 1, pre0.y + 1);
 			/*cout << "pre0:" << pre0 << "temp0:" << temp0 << endl;*/
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = pre0;
 				traverse_number0 = k + 1;
@@ -1127,7 +1131,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 		{
 			Point pre0 = Point(change_point[0].x--, change_point[0].y);
 			Point temp0 = Point(pre0.x - 1, pre0.y);
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = pre0;
 				traverse_number0 = k + 1;
@@ -1157,7 +1161,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 			//Point pre1 = change1_pos;
 			//Point temp1 = Point(change1_pos.x--, change1_pos.y--);
 
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = temp0;
 				traverse_number0 = k + 1;
@@ -1186,7 +1190,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 			Point temp0 = Point(pre0.x, pre0.y - 1);
 			/*cout << "pre0:" << pre0 << "temp0:" << temp0 << endl;*/
 			/*for (int i = 0; i <= 2; i++)*/
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = pre0;
 				traverse_number0 = k + 1;
@@ -1215,7 +1219,7 @@ float DetectFunc::bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Poi
 		{
 			Point pre0 = Point(change_point[0].x++, change_point[0].y--);
 			Point temp0 = Point(pre0.x + 1, pre0.y - 1);
-			if (temp0.x == 0 || temp0.x == boundary_x || temp0.y == 0 || temp0.y == boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
+			if (temp0.x <= 0 || temp0.x >= boundary_x || temp0.y <= 0 || temp0.y >= boundary_y || (int)templBw.at<uchar>(pre0) != (int)templBw.at<uchar>(temp0))
 			{
 				correspond0 = pre0;
 				traverse_number0 = k + 1;

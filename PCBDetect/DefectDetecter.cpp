@@ -243,7 +243,7 @@ void DefectDetecter::detect()
 		}
 		
 		//向检测界面发送是否合格的信息
-		bool qualified = (totalDefectNum < 100);
+		bool qualified = (totalDefectNum < 1);
 		emit detectFinished_detectThread(qualified);
 
 		//清空历史数据
