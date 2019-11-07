@@ -1,5 +1,9 @@
 #pragma once
+#ifndef WIN32
 
+#define WIN32
+
+#endif
 #include <iostream>
 #include <string>
 #include <vector>

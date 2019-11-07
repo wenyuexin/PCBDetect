@@ -550,13 +550,13 @@ void ExtractUI::on_getMaskRoiFinished_serialNumUI()
 //到初始达拍照位置
 void ExtractUI::on_moveToInitialPosFinished_motion(int errorcode)
 {
-	if (motionControler->getCaller() != 1) return;
+	//if (motionControler->getCaller() != 1) return;
 
-	//检查运动结构的状态
-	if (!motionControler->isReady()) {
-		motionControler->showMessageBox(this);
-		pcb::delay(10); return;
-	}
+	////检查运动结构的状态
+	//if (!motionControler->isReady()) {
+	//	motionControler->showMessageBox(this);
+	//	pcb::delay(10); return;
+	//}
 
 	//调用相机进行拍照
 	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
