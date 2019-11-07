@@ -31,14 +31,14 @@ AdminConfig::~AdminConfig()
 void AdminConfig::loadDefaultValue()
 {
 	this->errorCode = Unchecked; //错误代码
-	this->MaxMotionStroke = 80 * 5; //机械结构的最大运动行程
-	this->PulseNumInUnitTime = 85; //单位时间内的脉冲数
-	this->MaxCameraNum = 5; //可用相机的总数
-	this->PixelsNumPerUnitLength = 40; //单位长度内的像素个数
-	this->ImageOverlappingRate_W = 345.0 / 4384.0; //分图重叠率(宽)
-	this->ImageOverlappingRate_H = 0.050000; //分图重叠率(高)
-	this->ImageSize_W = 4384; //宽高比中的宽
-	this->ImageSize_H = 3288; //宽高比中的高
+	this->MaxMotionStroke = 120 * 5; //机械结构的最大运动行程
+	this->PulseNumInUnitTime = 126; //单位时间内的脉冲数
+	this->MaxCameraNum = 3; //可用相机的总数
+	this->PixelsNumPerUnitLength = 30.30; //单位长度内的像素个数
+	this->ImageOverlappingRate_W = 316.5 / 5472.0; //分图重叠率(宽)
+	this->ImageOverlappingRate_H = 110.7/3648; //分图重叠率(高)
+	this->ImageSize_W = 5472; //宽高比中的宽
+	this->ImageSize_H = 3648; //宽高比中的高
 	this->ImageAspectRatio = 1.0 * ImageSize_W / ImageSize_H; //样本图像的宽高比
 }
 
@@ -235,6 +235,7 @@ void AdminConfig::copyTo(AdminConfig *dst)
 	dst->MaxCameraNum = this->MaxCameraNum;
 	dst->PixelsNumPerUnitLength = this->PixelsNumPerUnitLength;
 	dst->ImageOverlappingRate_W = this->ImageOverlappingRate_W;
+	dst->ImageOverlappingRate_H = this->ImageOverlappingRate_H;
 	dst->ImageSize_W = this->ImageSize_W;
 	dst->ImageSize_H = this->ImageSize_H;
 	dst->ImageAspectRatio = this->ImageAspectRatio;
@@ -297,9 +298,9 @@ void UserConfig::loadDefaultValue()
 	ImageFormat = ".bmp"; //图像后缀
 
 	ActualProductSize_W = 500;//产品实际宽度
-	ActualProductSize_H = 300;//产品实际高度
-	nBasicUnitInRow = 4; //每一行中的基本单元数
-	nBasicUnitInCol = 6; //每一列中的基本单元数
+	ActualProductSize_H = 580;//产品实际高度
+	nBasicUnitInRow = 5; //每一行中的基本单元数
+	nBasicUnitInCol = 3; //每一列中的基本单元数
 
 	//运动结构
 	clusterComPort = "COM1"; //COM口

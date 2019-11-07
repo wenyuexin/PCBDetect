@@ -39,8 +39,8 @@ void SysInitThread::run()
 		emit initGraphicsView_initThread(0);
 		qApp->processEvents();
 
-		//初始化运动结构
-		if (!initMotionControler()) { bootStatus |= 0x0010; return; }
+		////初始化运动结构
+		//if (!initMotionControler()) { bootStatus |= 0x0010; return; }
 
 		//初始化相机
 		if (!initCameraControler()) { bootStatus |= 0x0001; return; }
