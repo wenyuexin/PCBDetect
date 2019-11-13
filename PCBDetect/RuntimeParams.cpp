@@ -75,9 +75,9 @@ void RuntimeParams::loadDefaultValue()
 	maskRoi_br = QPoint(0, 0); //模板掩膜右下角在分图上的坐标位置
 
 	errorCode_sysInit = Unchecked;
-	singleMotionStroke = 79.0; //运功动结构的单步行程
-	nCamera = 5; //相机个数
-	nPhotographing = 4; //拍照次数
+	singleMotionStroke = 116.8; //运功动结构的单步行程
+	nCamera = 3; //相机个数
+	nPhotographing = 5; //拍照次数
 	initialPhotoPos = 245.0; //初始拍照位置
 
 	AppDirPath = QDir::currentPath(); //程序所在目录

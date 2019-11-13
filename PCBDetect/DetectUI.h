@@ -1,5 +1,10 @@
-#pragma once
 
+#pragma once
+#ifndef WIN32
+
+#define WIN32
+
+#endif
 #include "AMC98C.h"
 #include <QWidget>
 #include "ui_DetectUI.h"

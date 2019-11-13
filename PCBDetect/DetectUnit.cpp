@@ -82,8 +82,8 @@ void DetectUnit::run()
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
-	/*detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);*/
-	detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
+	detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
+	/*detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);*/
 
 	double t4 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
@@ -153,7 +153,48 @@ void DetectUnit::run()
 	Mat templRoiReverse = 255 - templ_roi;
 	cv::add(sampGrayReg, templGray, sampGrayReg, templRoiReverse);
 
-	//总的roi
+	//消除重叠区域重复检测的问题
+	if (curCol!= runtimeParams->nCamera-1&&curRow!= runtimeParams->nPhotographing-1) {
+		//纵向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols /*- adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W*/;
+		rect.height = templGray.rows - adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+		//横向重叠区域
+		/*cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());*/
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols - adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W;
+		rect.height = templGray.rows /*- adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H*/;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}else if(curCol == runtimeParams->nCamera - 1&& curRow != runtimeParams->nPhotographing - 1){//最后一列
+		//纵向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols /*- adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W*/;
+		rect.height = templGray.rows - adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}else if (curCol != runtimeParams->nCamera - 1 && curRow == runtimeParams->nPhotographing - 1){//最后一行
+		//横向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols - adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W;
+		rect.height = templGray.rows /*- adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H*/;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}
+
+	//总的roi  ImageOverlappingRate_W
 	Mat roi;
 	cv::bitwise_and(templ_roi, mask_roi, roi);
 
@@ -182,14 +223,15 @@ void DetectUnit::run()
 
 //if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
-	///*std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
-	//cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-	//cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	//cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-	//cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-	//cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
-	//cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
-	//cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);*/
+	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
+	cv::imwrite(debug_path + std::to_string(8) + ".bmp", markedSubImage);
 	//sampBw_direct
 
 	//保存样本图片

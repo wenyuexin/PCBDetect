@@ -216,13 +216,13 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	//int blockSize = longSize / 4 * 2 + 1;
 	//cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
 
-	/*int revise = 20;
-	int grayImgMean = mean(grayImg(rect))[0] + revise;
-	cv::threshold(grayImg(rect), res(rect), grayImgMean, 255, cv::THRESH_BINARY);*/
+	int revise = 20;
+	int grayImgMean = mean(grayImg(rect))[0] ;
+	cv::threshold(grayImg(rect), res(rect), grayImgMean, 255, cv::THRESH_BINARY);
 
-	Mat grayImgCopy = grayImg.clone();
-	int threshold_otsu = cv::threshold(grayImgCopy(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU) + 10;
-	cv::threshold(grayImg(rect), res(rect), threshold_otsu , 255, cv::THRESH_BINARY);
+	//Mat grayImgCopy = grayImg.clone();
+	//int threshold_otsu = cv::threshold(grayImgCopy(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU) + 10;
+	//cv::threshold(grayImg(rect), res(rect), threshold_otsu , 255, cv::THRESH_BINARY);
 	return res;
 }
 
@@ -306,7 +306,7 @@ cv::Rect DetectFunc::getRect(int curCol, int curRow, const cv::Mat& grayImg, cv:
 
 
 bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches) {
-	//Ptr<SURF> detector = SURF::create(3500, 3, 3, true, true);
+	/*Ptr<SURF> detector = SURF::create(500, 4, 3, true, true);*/
 	Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
 	std::vector<KeyPoint> keypoints_1, keypoints_2;
 	Mat descriptors_1, descriptors_2;
@@ -316,7 +316,7 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 	pyrDown(image_template_gray, pyrTemp);
 	pyrDown(pyrTemp, pyrTemp);
 	if(userConfig->matchingAccuracyLevel==2)//低精度
-		pyrDown(pyrTemp, pyrTemp);
+		pyrDown(pyrTemp, pyrTemp);	
 
 	pyrDown(image_sample_gray, pyrSamp);
 	pyrDown(pyrSamp, pyrSamp);
@@ -351,6 +351,11 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 			matches.push_back(bestMatch);
 		}
 	}
+	//-- Draw matches
+	Mat img_matches;
+	drawMatches(pyrTemp, keypoints_1, pyrSamp, keypoints_2, matches, img_matches, Scalar::all(-1),
+		Scalar::all(-1), std::vector<char>(),cv:: DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+	imwrite("D:\\PCBData\\drawMatches.jpg", img_matches);
 
 
 	if (!matches.size())
@@ -397,7 +402,7 @@ Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
 	bitwise_and(imgFlaw, mask_roi, imgFlaw);
 
 	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
-	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(1, 1));
+	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
 
