@@ -229,7 +229,7 @@ bool MotionControler::moveToInitialPos()
 	//	}
 	//}
 
-	pcb::delay(8000);
+	pcb::delay(10000);
 
 	//到达初始拍照位置
 	errorCode = ErrorCode::NoError;

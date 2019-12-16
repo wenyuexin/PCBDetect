@@ -117,9 +117,16 @@ void TemplateExtractor::extract()
 		//cv::imwrite(filePath.toStdString(), mask);
 
 		//保存二值化图片
-		Mat srcGray, templbw;
+		int temp_mean;
+		Mat  templbw;
+		temp_mean = mean(src)[0];
+		cv::threshold(src, templbw, temp_mean, 255, cv::THRESH_BINARY);
+		/*cv::adaptiveThreshold(src, templbw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);*/
+
+		/*Mat srcGray, templbw;
 		cv::cvtColor(src, srcGray, cv::COLOR_RGB2GRAY);
-		cv::adaptiveThreshold(srcGray, templbw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
+		cv::adaptiveThreshold(srcGray, templbw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);*/
+
 		Mat element_b = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
 		cv::morphologyEx(templbw, templbw, cv::MORPH_OPEN, element_b);
 		cv::morphologyEx(templbw, templbw, cv::MORPH_CLOSE, element_b);
