@@ -1,6 +1,7 @@
 #pragma once
 //#include"Windows.h"
 
+
 #include "Configurator.h"
 #include "RuntimeParams.h"
 #include "pcbFuncLib.h"
@@ -19,20 +20,20 @@
 
 
 
-//Ïà»ú¿ØÖÆÆ÷
+//ç›¸æœºæ§åˆ¶å™¨
 class CameraControler : public QThread
 {
 	Q_OBJECT
 
 public:
-	//Ïà»úµÄÏà¹Ø²Ù×÷
+	//ç›¸æœºçš„ç›¸å…³æ“ä½œ
 	enum Operation {
 		NoOperation,
 		InitCameras,
 		TakePhotos
 	};
 
-	//Ïà»úµÄ´íÎó´úÂë
+	//ç›¸æœºçš„é”™è¯¯ä»£ç 
 	enum ErrorCode {
 		NoError = 0x000,
 		Unchecked = 0x500,
@@ -43,48 +44,48 @@ public:
 	};
 
 private:
-	int caller; //Ä£¿éµÄµ÷ÓÃÕß
-	pcb::CvMatArray *cvmatSamples; //ÓÃÓÚ¼ì²âµÄÑù±¾Í¼
-	int *currentRow; //µ±Ç°ĞĞºÅ
+	int caller; //æ¨¡å—çš„è°ƒç”¨è€…
+	pcb::CvMatArray *cvmatSamples; //ç”¨äºæ£€æµ‹çš„æ ·æœ¬å›¾
+	int *currentRow; //å½“å‰è¡Œå·
 
-	pcb::AdminConfig *adminConfig; //ÏµÍ³²ÎÊı
-	pcb::UserConfig *userConfig; //ÓÃ»§²ÎÊı
-	pcb::RuntimeParams *runtimeParams; //ÔËĞĞ²ÎÊı
+	pcb::AdminConfig *adminConfig; //ç³»ç»Ÿå‚æ•°
+	pcb::UserConfig *userConfig; //ç”¨æˆ·å‚æ•°
+	pcb::RuntimeParams *runtimeParams; //è¿è¡Œå‚æ•°
 
-	int32_t status;//×´Ì¬
+	int32_t status;//çŠ¶æ€
 
 	//OPT
 	std::vector<GENICAM_Camera*> pCameraList2;
 	/*GENICAM_Frame *pFrame = NULL;*/
-	GENICAM_System *pSystem = NULL;//·¢ÏÖÉè±¸¡¢´´½¨³£ÓÃÊôĞÔ¶ÔÏó
-	GENICAM_Camera *pCamera = NULL;//Ïà»ú¶ÔÏó½Ó¿ÚÀà
+	GENICAM_System *pSystem = NULL;//å‘ç°è®¾å¤‡ã€åˆ›å»ºå¸¸ç”¨å±æ€§å¯¹è±¡
+	GENICAM_Camera *pCamera = NULL;//ç›¸æœºå¯¹è±¡æ¥å£ç±»
 	GENICAM_Camera *pCameraList = NULL;
 	GENICAM_StreamSource *pStreamSource = NULL;
-	GENICAM_AcquisitionControl *pAcquisitionCtrl = NULL;//ÏÂÊôĞÔ²Ù×÷Àà
+	GENICAM_AcquisitionControl *pAcquisitionCtrl = NULL;//ä¸‹å±æ€§æ“ä½œç±»
 	GENICAM_AcquisitionControlInfo acquisitionControlInfo = { 0 };
 	std::vector<GENICAM_AcquisitionControl*> pAcquisitionCtrlList{NULL,NULL,NULL};
 
-	bool m_bRun; //ÏÔÊ¾Ïß³Ì±êÖ¾
+	bool m_bRun; //æ˜¾ç¤ºçº¿ç¨‹æ ‡å¿—
 
-	uint32_t cameraCnt = 12;//Ïà»úÊıÄ¿
+	uint32_t cameraCnt = 12;//ç›¸æœºæ•°ç›®
 	HANDLE threadHandle;
-	unsigned threadID;//Ïß³ÌÊı
+	unsigned threadID;//çº¿ç¨‹æ•°
 	int cameraIndex = -1;
 
 
-	std::vector<int> deviceIndex = {}; //Éè±¸ºÅ
-	std::vector<cv::VideoCapture> cameraList; //Ïà»úÁĞ±í
-	std::map<int, bool> cameraState; //Ïà»ú×´Ì¬ <Éè±¸ºÅ,×´Ì¬Öµ>
+	std::vector<int> deviceIndex = {}; //è®¾å¤‡å·
+	std::vector<cv::VideoCapture> cameraList; //ç›¸æœºåˆ—è¡¨
+	std::map<int, bool> cameraState; //ç›¸æœºçŠ¶æ€ <è®¾å¤‡å·,çŠ¶æ€å€¼>
 
 	std::vector<CameraHandle> cameraList2;
-	tSdkCameraDevInfo sCameraList[12]; //×î¶à²»ÄÜ³¬¹ı12Ì¨Ïà»ú
+	tSdkCameraDevInfo sCameraList[12]; //æœ€å¤šä¸èƒ½è¶…è¿‡12å°ç›¸æœº
 	int CameraNums = 12;
 
 	double *pfExposureTime = NULL;
 	tSdkImageResolution sImageSize;
 
-	ErrorCode errorCode; //¿ØÖÆÆ÷µÄ´íÎóÂë
-	Operation operation; //²Ù×÷Ö¸Áî
+	ErrorCode errorCode; //æ§åˆ¶å™¨çš„é”™è¯¯ç 
+	Operation operation; //æ“ä½œæŒ‡ä»¤
 
 public:
 	static int isGrabbingFlag ;
@@ -107,50 +108,50 @@ public:
 	inline void setDeviceIndex(std::vector<int> &iv) { deviceIndex = iv; }
 	inline void setOperation(Operation op) { operation = op; }
 
-	ErrorCode resetDeviceIndex(std::vector<int> iv = {}); //Éè¶¨½ÓÈëµÄ×ÜÉè±¸Êı
+	ErrorCode resetDeviceIndex(std::vector<int> iv = {}); //è®¾å®šæ¥å…¥çš„æ€»è®¾å¤‡æ•°
 	inline bool getCameraState(int index) { return cameraState[index]; }
 
 	inline bool isReady() { return errorCode == NoError; }
-	inline ErrorCode getErrorCode() { return errorCode; } //»ñÈ¡µ±Ç°µÄ´íÎó´úÂë
-	bool showMessageBox(QWidget *parent); //µ¯´°¾¯¸æ
+	inline ErrorCode getErrorCode() { return errorCode; } //è·å–å½“å‰çš„é”™è¯¯ä»£ç 
+	bool showMessageBox(QWidget *parent); //å¼¹çª—è­¦å‘Š
 
 private:
 	//OPT
-	//¶Ï¿ªÁ¬½Ó£¬Ïà»ú
+	//æ–­å¼€è¿æ¥ï¼Œç›¸æœº
 	int32_t GENICAM_disconnect(GENICAM_Camera *pGetCamera);
-	//Á¬½ÓÏà»ú
+	//è¿æ¥ç›¸æœº
 	int32_t GENICAM_connect(GENICAM_Camera *pGetCamera);
-	//ĞŞ¸ÄÆØ¹âÊ±¼ä
+	//ä¿®æ”¹æ›å…‰æ—¶é—´
 	int32_t modifyCamralExposureTime(GENICAM_Camera *pGetCamera);
-	//ĞŞ¸ÄÍ¼Ïñ¿í¶È
+	//ä¿®æ”¹å›¾åƒå®½åº¦
 	int32_t modifyCameraWidth(GENICAM_Camera *pGetCamera);
-	//ĞŞ¸ÄÍ¼Ïñ¸ß¶È
+	//ä¿®æ”¹å›¾åƒé«˜åº¦
 	int32_t modifyCameraHeight(GENICAM_Camera *pGetCamera);
-	//ĞŞ¸ÄÏà»úX·½Ïò
+	//ä¿®æ”¹ç›¸æœºXæ–¹å‘
 	int32_t modifyCameraReverseX(GENICAM_Camera *pGetCamera);
-	//ÉèÖÃ´¥·¢·½Ê½
+	//è®¾ç½®è§¦å‘æ–¹å¼
 	int32_t setSoftTriggerConf(GENICAM_AcquisitionControl *pAcquisitionCtrl);
-	//´´½¨Á÷¶ÔÏó
+	//åˆ›å»ºæµå¯¹è±¡
 	int32_t GENICAM_CreateStreamSource(GENICAM_Camera *pGetCamera, GENICAM_StreamSource **ppStreamSource);
-	//¿ªÊ¼×¥Á÷
+	//å¼€å§‹æŠ“æµ
 	int32_t GENICAM_startGrabbing(GENICAM_StreamSource *pStreamSource);
-	//Í£Ö¹×¥Á÷
+	//åœæ­¢æŠ“æµ
 	int32_t GENICAM_stopGrabbing(GENICAM_StreamSource *pStreamSource);
-	//Ö´ĞĞ´¥·¢
+	//æ‰§è¡Œè§¦å‘
 	int32_t executeTriggerSoftware(GENICAM_AcquisitionControl *pAcquisitionCtrl);
 
-	ErrorCode initCameras(); //³õÊ¼»¯ - OpenCV
-	bool initCameras2(); //³õÊ¼»¯ - ÂõµÂÍşÊÓ
-	bool initCameras3();//³õÊ¼»¯-OPT
-	QString cameraStatusMapToString(); //Ïà»ú×´Ì¬×ª×Ö·û´®
+	ErrorCode initCameras(); //åˆå§‹åŒ– - OpenCV
+	bool initCameras2(); //åˆå§‹åŒ– - è¿ˆå¾·å¨è§†
+	bool initCameras3();//åˆå§‹åŒ–-OPT
+	QString cameraStatusMapToString(); //ç›¸æœºçŠ¶æ€è½¬å­—ç¬¦ä¸²
 
-	bool isCamerasInitialized(); //ÅĞ¶ÏÏà»úÊÇ·ñÒÑ¾­³õÊ¼»¯
-	void closeCameras();//¹Ø±ÕÒÑ¾­´ò¿ªµÄÏà»ú
-	void closeCameras3();//¹Ø±ÕÒÑ¾­´ò¿ªµÄÏà»ú-OPT
+	bool isCamerasInitialized(); //åˆ¤æ–­ç›¸æœºæ˜¯å¦å·²ç»åˆå§‹åŒ–
+	void closeCameras();//å…³é—­å·²ç»æ‰“å¼€çš„ç›¸æœº
+	void closeCameras3();//å…³é—­å·²ç»æ‰“å¼€çš„ç›¸æœº-OPT
 
-	ErrorCode takePhotos();//ÅÄÉã
+	ErrorCode takePhotos();//æ‹æ‘„
 	void takePhotos2();
-	void takePhotos3();//ÅÄÉãÍ¼Ïñ - OPT
+	void takePhotos3();//æ‹æ‘„å›¾åƒ - OPT
 
 protected:
 	void run();
