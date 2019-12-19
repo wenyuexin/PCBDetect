@@ -82,8 +82,12 @@ void DetectUnit::run()
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
-	detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);
-	/*detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);*/
+	//ECC配准方法
+	/*detectFunc->alignImagesECC(templGrayRoi, sampGray, sampGrayReg, h);*/
+	//未载入特征
+	/*detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);*/
+	//载入的特征
+	detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
 
 	double t4 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
@@ -149,6 +153,9 @@ void DetectUnit::run()
 	//透射变换后有一个roi
 	Mat templ_roi = Mat::ones(templGray.size(), templGray.type()) * 255;
 	cv::warpPerspective(templ_roi, templ_roi, h, templ_roi.size());
+	threshold(templ_roi, templ_roi, 254, 255, cv::THRESH_BINARY);
+	//ECC
+	/*warpAffine(templ_roi, templ_roi, h, templ_roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
 
 	Mat templRoiReverse = 255 - templ_roi;
 	cv::add(sampGrayReg, templGray, sampGrayReg, templRoiReverse);
@@ -200,11 +207,18 @@ void DetectUnit::run()
 
 	//直接对roi掩膜做投射变换
 	cv::warpPerspective(mask_roi, roi, h, templ_roi.size());
+	threshold(roi, roi, 254, 255, cv::THRESH_BINARY);
+	//ECC
+	/*warpAffine(mask_roi, roi, h, templ_roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
 	cv::bitwise_and(roi, mask_roi, roi);
 
 	//做差
 	cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
-	Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
+	threshold(sampBw, sampBw, 254, 255, cv::THRESH_BINARY);
+	//ECC
+	/*warpAffine(sampBw, sampBw, h, roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
+	Mat directFlaw, MorphFlaw,cannyFlaw;
+	Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi,directFlaw,MorphFlaw,cannyFlaw);
 	//Mat diff = detectFunc->sub_process_direct(templBw, sampBw, templGray, sampGrayReg, roi);
 	//调试时候的边缘处理
 	Size szDiff = diff.size();
@@ -219,7 +233,7 @@ void DetectUnit::run()
 	rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
 	
-	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage,rectBlack);
+	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, sampBw, defectNum, detailImage,rectBlack);
 
 //if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
@@ -232,6 +246,9 @@ void DetectUnit::run()
 	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
 	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
 	cv::imwrite(debug_path + std::to_string(8) + ".bmp", markedSubImage);
+	cv::imwrite(debug_path + std::to_string(9) + ".bmp", directFlaw);
+	cv::imwrite(debug_path + std::to_string(10) + ".bmp", MorphFlaw);
+	cv::imwrite(debug_path + std::to_string(11) + ".bmp", cannyFlaw);
 	//sampBw_direct
 
 	//保存样本图片
@@ -248,9 +265,11 @@ void DetectUnit::run()
 void DetectUnit::save(const std::string& path, Mat& image_template_gray) {
 	Mat temp;
 	cv::pyrDown(image_template_gray, temp);
-	cv::pyrDown(temp, temp);
 	if (userConfig->matchingAccuracyLevel == 2)//低精度
+	{
 		cv::pyrDown(temp, temp);
+		cv::pyrDown(temp, temp);
+	}
 	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
 	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
 	cv::FileStorage store(path, cv::FileStorage::WRITE);

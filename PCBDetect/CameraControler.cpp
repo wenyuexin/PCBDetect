@@ -216,7 +216,8 @@ int32_t CameraControler::modifyCamralExposureTime(GENICAM_Camera *pGetCamera)
 		printf("GENICAM_createDoubleNode fail.\n");
 		return -1;
 	}
-	exposureTimeValue = 0.0;
+
+	exposureTimeValue = -1;
 	isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
 	if (0 != isDoubleNodeSuccess) {
 		printf("get ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存
@@ -226,26 +227,30 @@ int32_t CameraControler::modifyCamralExposureTime(GENICAM_Camera *pGetCamera)
 	else {
 		printf("before change ,ExposureTime is %f\n", exposureTimeValue);
 	}
-	exposureTimeValue = userConfig->exposureTime * 1000;
-	isDoubleNodeSuccess = pDoubleNode->setValue(pDoubleNode, (exposureTimeValue));
-	if (0 != isDoubleNodeSuccess) {
-		printf("set ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存
-		pDoubleNode->release(pDoubleNode);
-		return -1;
-	}
-	isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
-	if (0 != isDoubleNodeSuccess) {
-		printf("get ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存  
-		pDoubleNode->release(pDoubleNode);
-		return -1;
-	}
-	else {
-		printf("after change ,ExposureTime is %f\n", exposureTimeValue);
-		//注意：需要释放pDoubleNode内部对象内存        
-		pDoubleNode->release(pDoubleNode);
+	//如果当前曝光时间不等于期望值
+	if (exposureTimeValue != userConfig->exposureTime * 1000)
+	{
+		isDoubleNodeSuccess = pDoubleNode->setValue(pDoubleNode, (userConfig->exposureTime * 1000));
+		if (0 != isDoubleNodeSuccess) {
+			printf("set ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存
+			pDoubleNode->release(pDoubleNode);
+			return -1;
+		}
+		isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
+		if (0 != isDoubleNodeSuccess) {
+			printf("get ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存  
+			pDoubleNode->release(pDoubleNode);
+			return -1;
+		}
+		else {
+			printf("after change ,ExposureTime is %f\n", exposureTimeValue);
+			//注意：需要释放pDoubleNode内部对象内存        
+			pDoubleNode->release(pDoubleNode);
+		}
 	}
 	return 0;
 }
+
 //设置触发模式
 int32_t CameraControler::setSoftTriggerConf(GENICAM_AcquisitionControl *pAcquisitionCtrl)
 {
@@ -314,7 +319,7 @@ int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 		return -1;
 	}
 
-	widthValue = 0;
+	widthValue = -1;
 	isIntNodeSuccess = pIntNode->getValue(pIntNode, &widthValue);
 	if (0 != isIntNodeSuccess != 0)
 	{
@@ -327,34 +332,35 @@ int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 	{
 		printf("before change ,Width is %d\n", widthValue);
 	}
+	//如果当前图像的宽度不等于期望值
+	if (widthValue != adminConfig->ImageSize_W) {
+		isIntNodeSuccess = pIntNode->setValue(pIntNode, (adminConfig->ImageSize_W));
+		if (0 != isIntNodeSuccess)
+		{
+			printf("set Width fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
 
-	widthValue = adminConfig->ImageSize_W;
-	isIntNodeSuccess = pIntNode->setValue(pIntNode, (widthValue));
-	if (0 != isIntNodeSuccess)
-	{
-		printf("set Width fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
+		isIntNodeSuccess = pIntNode->getValue(pIntNode, &widthValue);
+		if (0 != isIntNodeSuccess)
+		{
+			printf("get Width fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
+		else
+		{
+			printf("after change ,Width is %d\n", widthValue);
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+		}
 	}
-
-	isIntNodeSuccess = pIntNode->getValue(pIntNode, &widthValue);
-	if (0 != isIntNodeSuccess)
-	{
-		printf("get Width fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
-	}
-	else
-	{
-		printf("after change ,Width is %d\n", widthValue);
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-	}
-
 	return 0;
 }
+
 //设置像素高度
 int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 {
@@ -374,7 +380,7 @@ int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 		return -1;
 	}
 
-	heightValue = 0;
+	heightValue = -1;
 	isIntNodeSuccess = pIntNode->getValue(pIntNode, &heightValue);
 	if (0 != isIntNodeSuccess != 0)
 	{
@@ -387,33 +393,32 @@ int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 	{
 		printf("before change ,Height is %d\n", heightValue);
 	}
+	if (heightValue != adminConfig->ImageSize_H) {
+		isIntNodeSuccess = pIntNode->setValue(pIntNode, (adminConfig->ImageSize_H));
+		/*isIntNodeSuccess = pIntNode->setValue(pIntNode, (widthValue - 8));*/
+		if (0 != isIntNodeSuccess)
+		{
+			printf("set Height fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
 
-	heightValue = adminConfig->ImageSize_H;
-	isIntNodeSuccess = pIntNode->setValue(pIntNode, (heightValue));
-	/*isIntNodeSuccess = pIntNode->setValue(pIntNode, (widthValue - 8));*/
-	if (0 != isIntNodeSuccess)
-	{
-		printf("set Height fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
+		isIntNodeSuccess = pIntNode->getValue(pIntNode, &heightValue);
+		if (0 != isIntNodeSuccess)
+		{
+			printf("get Height fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
+		else
+		{
+			printf("after change ,Height is %d\n", heightValue);
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+		}
 	}
-
-	isIntNodeSuccess = pIntNode->getValue(pIntNode, &heightValue);
-	if (0 != isIntNodeSuccess)
-	{
-		printf("get Height fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
-	}
-	else
-	{
-		printf("after change ,Height is %d\n", heightValue);
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-	}
-
 	return 0;
 }
 
@@ -894,11 +899,14 @@ void CameraControler::takePhotos3()
 		}
 		Sleep(250);//延迟50毫秒
 
-
-		////具有bug,触发没进入回调函数，就会陷入死循环
-		//while (isGrabbingFlag)
+		//double triggerTime = clock();
+		//double interval = 0;
+		//////具有bug,触发没进入回调函数，就会陷入死循环
+		//while (interval < 500 && isGrabbingFlag )
 		//{
 		//	Sleep(50);
+		//	double onGetTime = clock();
+		//	interval = onGetTime - triggerTime;
 		//}
 
 		////注意：需要释放pAcquisitionCtrl内部对象内存

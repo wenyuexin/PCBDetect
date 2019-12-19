@@ -214,11 +214,25 @@ void ExtractFunc::generateBigTempl()
 
 
 void ExtractFunc::save(const std::string& path, Mat& image_template_gray) {
+	//Mat temp;
+	//cv::pyrDown(image_template_gray, temp);
+	//cv::pyrDown(temp, temp);
+	//if (userConfig->matchingAccuracyLevel == 2)//低精度
+	//	cv::pyrDown(temp, temp);
+	//Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
+	//detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
+	//cv::FileStorage store(path, cv::FileStorage::WRITE);
+	//cv::write(store, "keypoints", keypoints);
+	//cv::write(store, "descriptors", descriptors);
+	//store.release();
+
 	Mat temp;
 	cv::pyrDown(image_template_gray, temp);
-	cv::pyrDown(temp, temp);
 	if (userConfig->matchingAccuracyLevel == 2)//低精度
+	{
 		cv::pyrDown(temp, temp);
+	}
+
 	Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
 	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
 	cv::FileStorage store(path, cv::FileStorage::WRITE);
