@@ -27,7 +27,7 @@ SysInitThread::~SysInitThread()
 void SysInitThread::run()
 {
 	//初次执行初始化
-	if (bootStatus == 0x0000) {  
+	if (bootStatus == 0x0000) {
 		//参数类的初始化
 		if (!initAdminConfig()) { bootStatus |= 0x0100; return; }
 		if (!initUserConfig()) { bootStatus |= 0x0100; return; }
@@ -39,13 +39,13 @@ void SysInitThread::run()
 		emit initGraphicsView_initThread(0);
 		qApp->processEvents();
 
-		////初始化运动结构
-		//if (!initMotionControler()) { bootStatus |= 0x0010; return; }
+		//初始化运动结构
+		if (!initMotionControler()) { bootStatus |= 0x0010; return; }
 
 		//初始化相机
 		if (!initCameraControler()) { bootStatus |= 0x0001; return; }
 	}
-	
+
 	////系统参数adminConfig初始化异常
 	//if (!((bootStatus & 0xF000) >> 12)) { 
 	//	if (!initAdminConfig()) { bootStatus |= 0x1000; return; }
@@ -66,7 +66,7 @@ void SysInitThread::run()
 	//	if (!initCameraControler()) { bootStatus |= 0x0001; return; }
 	//	else                        { bootStatus &= 0xFFF0; }
 	//}
-	
+
 	//初始化结束
 	emit sysInitFinished_initThread();
 }
@@ -89,12 +89,12 @@ bool SysInitThread::initAdminConfig()
 		//计算宽高比
 		code = adminConfig->calcImageAspectRatio();
 		if (code != AdminConfig::ValidValue) {
-			emit adminConfigError_initThread(); return false; 
+			emit adminConfigError_initThread(); return false;
 		}
 		//参数有效性判断
 		code = adminConfig->checkValidity(AdminConfig::Index_All);
-		if (code != AdminConfig::ValidConfig) { 
-			emit adminConfigError_initThread(); return false; 
+		if (code != AdminConfig::ValidConfig) {
+			emit adminConfigError_initThread(); return false;
 		}
 	}
 
@@ -117,8 +117,8 @@ bool SysInitThread::initUserConfig()
 		UserConfig::ErrorCode code;//错误代码
 		//参数有效性判断
 		code = userConfig->checkValidity(UserConfig::Index_All, adminConfig);
-		if (code != UserConfig::ValidConfig) { 
-			emit userConfigError_initThread(); return false; 
+		if (code != UserConfig::ValidConfig) {
+			emit userConfigError_initThread(); return false;
 		}
 	}
 
@@ -133,7 +133,7 @@ bool SysInitThread::initRuntimeParams()
 	emit sysInitStatus_initThread(pcb::chinese("正在更新运行参数 ..."));
 	qApp->processEvents();
 	pcb::delay(1000);
-	
+
 	RuntimeParams::ErrorCode code;
 
 	//计算单步前进距离
@@ -162,13 +162,13 @@ bool SysInitThread::initMotionControler()
 {
 	emit sysInitStatus_initThread(pcb::chinese("正在初始化运动结构 ..."));
 	pcb::delay(800);
-	
+
 	motionControler->setOperation(MotionControler::InitControler);
 	motionControler->start(); //执行初始化
 	motionControler->wait(); //线程等待
 	if (!motionControler->isReady()) {
 		emit motionError_initThread(MotionControler::InitFailed);
-		return false; 
+		return false;
 	}
 
 	emit sysInitStatus_initThread(pcb::chinese("运动结构初始化结束    "));
@@ -185,8 +185,8 @@ bool SysInitThread::initCameraControler()
 	cameraControler->setOperation(CameraControler::InitCameras);
 	cameraControler->start(); //启动线程
 	cameraControler->wait(); //线程等待
-	if (!cameraControler->isReady()) { 
-		emit cameraError_initThread(); return false; 
+	if (!cameraControler->isReady()) {
+		emit cameraError_initThread(); return false;
 	}
 	emit sysInitStatus_initThread(pcb::chinese("相机初始化结束    "));
 	pcb::delay(600);
