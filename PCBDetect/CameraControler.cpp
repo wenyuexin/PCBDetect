@@ -1,6 +1,5 @@
 #include "CameraControler.h"
 
-
 using cv::Mat;
 using cv::Size;
 using pcb::CvMatVector;
@@ -10,6 +9,7 @@ using pcb::CvMatVector;
 #else
 #pragma comment(lib, ".\\MVCAMSDK.lib")
 #endif
+
 CameraControler::CameraControler(QThread *parent)
 	: QThread(parent)
 {
@@ -21,8 +21,9 @@ CameraControler::CameraControler(QThread *parent)
 CameraControler::~CameraControler()
 {
 	qDebug() << "~CameraControler";
-	closeCameras3(); //关闭相机并释放相机列表
+	closeCameras(); //关闭相机并释放相机列表
 }
+
 //启动线程
 void CameraControler::run()
 {
@@ -39,23 +40,6 @@ void CameraControler::run()
 		break;
 	}
 }
-
-////启动线程
-//void CameraControler::run()
-//{
-//	switch (operation) {
-//	case Operation::NoOperation: //无操作
-//		break;
-//	case Operation::InitCameras: //初始化
-//		this->initCameras2();
-//		emit initCamerasFinished_camera(errorCode);
-//		break;
-//	case Operation::TakePhotos: //拍照
-//		this->takePhotos2();
-//		emit takePhotosFinished_camera(errorCode);
-//		break;
-//	}
-//}
 
 
 /**************** 相机初始化与关闭 ******************/
@@ -102,14 +86,11 @@ CameraControler::ErrorCode CameraControler::initCameras()
 		}
 	}
 	return errorCode;
-	
 }
-
 
 //相机初始化 - 迈德威视
 bool CameraControler::initCameras2()
 {
-
 	errorCode = CameraControler::NoError;
 
 	//若相机已经初始化，则直接跳过后续步骤
@@ -192,6 +173,8 @@ bool CameraControler::initCameras2()
 	return true;
 }
 
+
+/******************OPT相机相关函数************************/
 ////断开设备
 int32_t CameraControler::GENICAM_disconnect(GENICAM_Camera *pGetCamera)
 {
@@ -208,7 +191,7 @@ int32_t CameraControler::GENICAM_disconnect(GENICAM_Camera *pGetCamera)
 }
 
 //连接设备
- int32_t CameraControler::GENICAM_connect(GENICAM_Camera *pGetCamera) {
+int32_t CameraControler::GENICAM_connect(GENICAM_Camera *pGetCamera) {
 	int32_t isConnectSuccess;
 	isConnectSuccess = pGetCamera->connect(pGetCamera, accessPermissionControl);
 	if (isConnectSuccess != 0) {
@@ -220,50 +203,56 @@ int32_t CameraControler::GENICAM_disconnect(GENICAM_Camera *pGetCamera)
 
 
 //修改曝光时间
- int32_t CameraControler::modifyCamralExposureTime(GENICAM_Camera *pGetCamera)
+int32_t CameraControler::modifyCamralExposureTime(GENICAM_Camera *pGetCamera)
 {
-	 int32_t isDoubleNodeSuccess;
-	 double exposureTimeValue;
-	 GENICAM_DoubleNode *pDoubleNode = NULL;
-	 GENICAM_DoubleNodeInfo doubleNodeInfo = { 0 };
-	 doubleNodeInfo.pCamera = pGetCamera;
-	 memcpy(doubleNodeInfo.attrName, "ExposureTime", sizeof("ExposureTime"));
-	 isDoubleNodeSuccess = GENICAM_createDoubleNode(&doubleNodeInfo, &pDoubleNode);
-	 if (isDoubleNodeSuccess != 0) {
-		 printf("GENICAM_createDoubleNode fail.\n");
-		 return -1;
-	 }
-	 exposureTimeValue = 0.0;
-	 isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
-	 if (0 != isDoubleNodeSuccess) {
-		 printf("get ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存
-		 pDoubleNode->release(pDoubleNode);
-		 return -1;
-	 }
-	 else {
-		 printf("before change ,ExposureTime is %f\n", exposureTimeValue);
-	 }
-	 isDoubleNodeSuccess = pDoubleNode->setValue(pDoubleNode, (exposureTimeValue));
-	 if (0 != isDoubleNodeSuccess) {
-		 printf("set ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存
-		 pDoubleNode->release(pDoubleNode);
-		 return -1;
-	 }
-	 isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
-	 if (0 != isDoubleNodeSuccess) {
-		 printf("get ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存  
-		 pDoubleNode->release(pDoubleNode);
-		 return -1;
-	 }
-	 else {
-		 printf("after change ,ExposureTime is %f\n", exposureTimeValue);
-		 //注意：需要释放pDoubleNode内部对象内存        
-		 pDoubleNode->release(pDoubleNode);
-	 }   
-	 return 0;
+	int32_t isDoubleNodeSuccess;
+	double exposureTimeValue;
+	GENICAM_DoubleNode *pDoubleNode = NULL;
+	GENICAM_DoubleNodeInfo doubleNodeInfo = { 0 };
+	doubleNodeInfo.pCamera = pGetCamera;
+	memcpy(doubleNodeInfo.attrName, "ExposureTime", sizeof("ExposureTime"));
+	isDoubleNodeSuccess = GENICAM_createDoubleNode(&doubleNodeInfo, &pDoubleNode);
+	if (isDoubleNodeSuccess != 0) {
+		printf("GENICAM_createDoubleNode fail.\n");
+		return -1;
+	}
+
+	exposureTimeValue = -1;
+	isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
+	if (0 != isDoubleNodeSuccess) {
+		printf("get ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存
+		pDoubleNode->release(pDoubleNode);
+		return -1;
+	}
+	else {
+		printf("before change ,ExposureTime is %f\n", exposureTimeValue);
+	}
+	//如果当前曝光时间不等于期望值
+	if (exposureTimeValue != userConfig->exposureTime * 1000)
+	{
+		isDoubleNodeSuccess = pDoubleNode->setValue(pDoubleNode, (userConfig->exposureTime * 1000));
+		if (0 != isDoubleNodeSuccess) {
+			printf("set ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存
+			pDoubleNode->release(pDoubleNode);
+			return -1;
+		}
+		isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
+		if (0 != isDoubleNodeSuccess) {
+			printf("get ExposureTime fail.\n");        //注意：需要释放pDoubleNode内部对象内存  
+			pDoubleNode->release(pDoubleNode);
+			return -1;
+		}
+		else {
+			printf("after change ,ExposureTime is %f\n", exposureTimeValue);
+			//注意：需要释放pDoubleNode内部对象内存        
+			pDoubleNode->release(pDoubleNode);
+		}
+	}
+	return 0;
 }
+
 //设置触发模式
- int32_t CameraControler::setSoftTriggerConf(GENICAM_AcquisitionControl *pAcquisitionCtrl)
+int32_t CameraControler::setSoftTriggerConf(GENICAM_AcquisitionControl *pAcquisitionCtrl)
 {
 	int32_t nRet;
 	GENICAM_EnumNode enumNode = { 0 };
@@ -330,7 +319,7 @@ int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 		return -1;
 	}
 
-	widthValue = 0;
+	widthValue = -1;
 	isIntNodeSuccess = pIntNode->getValue(pIntNode, &widthValue);
 	if (0 != isIntNodeSuccess != 0)
 	{
@@ -343,34 +332,35 @@ int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 	{
 		printf("before change ,Width is %d\n", widthValue);
 	}
+	//如果当前图像的宽度不等于期望值
+	if (widthValue != adminConfig->ImageSize_W) {
+		isIntNodeSuccess = pIntNode->setValue(pIntNode, (adminConfig->ImageSize_W));
+		if (0 != isIntNodeSuccess)
+		{
+			printf("set Width fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
 
-	widthValue = adminConfig->ImageSize_W;
-	isIntNodeSuccess = pIntNode->setValue(pIntNode, (widthValue ));
-	if (0 != isIntNodeSuccess)
-	{
-		printf("set Width fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
+		isIntNodeSuccess = pIntNode->getValue(pIntNode, &widthValue);
+		if (0 != isIntNodeSuccess)
+		{
+			printf("get Width fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
+		else
+		{
+			printf("after change ,Width is %d\n", widthValue);
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+		}
 	}
-
-	isIntNodeSuccess = pIntNode->getValue(pIntNode, &widthValue);
-	if (0 != isIntNodeSuccess)
-	{
-		printf("get Width fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
-	}
-	else
-	{
-		printf("after change ,Width is %d\n", widthValue);
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-	}
-
 	return 0;
 }
+
 //设置像素高度
 int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 {
@@ -390,7 +380,7 @@ int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 		return -1;
 	}
 
-	heightValue = 0;
+	heightValue = -1;
 	isIntNodeSuccess = pIntNode->getValue(pIntNode, &heightValue);
 	if (0 != isIntNodeSuccess != 0)
 	{
@@ -403,37 +393,36 @@ int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 	{
 		printf("before change ,Height is %d\n", heightValue);
 	}
+	if (heightValue != adminConfig->ImageSize_H) {
+		isIntNodeSuccess = pIntNode->setValue(pIntNode, (adminConfig->ImageSize_H));
+		/*isIntNodeSuccess = pIntNode->setValue(pIntNode, (widthValue - 8));*/
+		if (0 != isIntNodeSuccess)
+		{
+			printf("set Height fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
 
-	heightValue = adminConfig->ImageSize_H;
-	isIntNodeSuccess = pIntNode->setValue(pIntNode, (heightValue ));
-	/*isIntNodeSuccess = pIntNode->setValue(pIntNode, (widthValue - 8));*/
-	if (0 != isIntNodeSuccess)
-	{
-		printf("set Height fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
+		isIntNodeSuccess = pIntNode->getValue(pIntNode, &heightValue);
+		if (0 != isIntNodeSuccess)
+		{
+			printf("get Height fail.\n");
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+			return -1;
+		}
+		else
+		{
+			printf("after change ,Height is %d\n", heightValue);
+			//注意：需要释放pIntNode内部对象内存
+			pIntNode->release(pIntNode);
+		}
 	}
-
-	isIntNodeSuccess = pIntNode->getValue(pIntNode, &heightValue);
-	if (0 != isIntNodeSuccess)
-	{
-		printf("get Height fail.\n");
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-		return -1;
-	}
-	else
-	{
-		printf("after change ,Height is %d\n", heightValue);
-		//注意：需要释放pIntNode内部对象内存
-		pIntNode->release(pIntNode);
-	}
-
 	return 0;
 }
 
- int32_t CameraControler::modifyCameraReverseX(GENICAM_Camera *pGetCamera)
+int32_t CameraControler::modifyCameraReverseX(GENICAM_Camera *pGetCamera)
 {
 	int32_t isBoolNodeSuccess;
 	uint32_t reverseXValue;
@@ -525,7 +514,7 @@ static void onGetFrame(GENICAM_Frame* pFrame)
 	{
 		blockId = pFrame->getBlockId(pFrame);
 		printf("blockId = %d.\r\n", blockId);
-	/*	CameraControler::isGrabbingFlag  = 0;*/
+	    CameraControler::isGrabbingFlag  = 0;
 
 		IMGCNV_SOpenParam openParam;
 		openParam.width = pFrame->getImageWidth(pFrame);
@@ -539,8 +528,8 @@ static void onGetFrame(GENICAM_Frame* pFrame)
 			cv::Mat image = cv::Mat(pFrame->getImageHeight(pFrame), pFrame->getImageWidth(pFrame), CV_8U, (uint8_t*)((pFrame->getImage(pFrame))));
 			cv::Mat* pMat = new cv::Mat(image.clone());
 			CameraControler::pImageFrame = pMat;
-			cv::imwrite("D:\\0000000_project\\opt_image\\image1008-1623.jpg", image);
-			
+		/*	cv::imwrite("D:\\0000000_project\\opt_image\\image1008-1623.jpg", image);*/
+
 		}
 		else {
 			printf("openParam.pixelForamt!gvspPixelMono8");
@@ -573,7 +562,7 @@ int32_t CameraControler::GENICAM_startGrabbing(GENICAM_StreamSource *pStreamSour
 	return 0;
 }
 //停止抓流
- int32_t CameraControler::GENICAM_stopGrabbing(GENICAM_StreamSource *pStreamSource)
+int32_t CameraControler::GENICAM_stopGrabbing(GENICAM_StreamSource *pStreamSource)
 {
 	int32_t isStopGrabbingSuccess;
 
@@ -592,8 +581,8 @@ int32_t CameraControler::executeTriggerSoftware(GENICAM_AcquisitionControl *pAcq
 
 	GENICAM_CmdNode cmdNode = pAcquisitionCtrl->triggerSoftware(pAcquisitionCtrl);
 	int count = 10;
-	while (count>0) {
-	isTriggerSoftwareSuccess = cmdNode.execute(&cmdNode);
+	while (count > 0) {
+		isTriggerSoftwareSuccess = cmdNode.execute(&cmdNode);
 		if (isTriggerSoftwareSuccess == 0) {
 			break;
 		}
@@ -617,7 +606,7 @@ int32_t CameraControler::executeTriggerSoftware(GENICAM_AcquisitionControl *pAcq
 
 	return 0;
 }
-
+/******************OPT相机相关函数************************/
 //相机初始化-OPT
 bool CameraControler::initCameras3()
 {
@@ -626,10 +615,10 @@ bool CameraControler::initCameras3()
 	//关闭已经打开的相机并释放相机列表
 	//关闭失败，最初相机对象为空
 	//this->closeCameras3();
-	
+
 	//生成系统单例
-    status = GENICAM_getSystemInstance(&pSystem);
-	if (-1==status) 
+	status = GENICAM_getSystemInstance(&pSystem);
+	if (-1 == status)
 	{
 		errorCode = CameraControler::InitFailed;
 		return false;
@@ -652,7 +641,7 @@ bool CameraControler::initCameras3()
 	//	return false;
 	//}
 	//设备连接
-	for (int i = 0; i <1/* adminConfig->MaxCameraNum*/; i++) {
+	for (int i = 0; i < 3 /*adminConfig->MaxCameraNum*/; i++) {
 		pCamera = &pCameraList[i];
 		/*pCameraList2[i] = pCamera;*/
 		status = GENICAM_connect(pCamera);
@@ -666,15 +655,16 @@ bool CameraControler::initCameras3()
 		//创建属性节点 AcquisitionControl
 		acquisitionControlInfo.pCamera = pCamera;
 		status = GENICAM_createAcquisitionControl(&acquisitionControlInfo, &pAcquisitionCtrl);
+		pAcquisitionCtrlList[i] = pAcquisitionCtrl;
 		if (status != 0)
 		{
 			errorCode = CameraControler::InitFailed;
 			return false;
 		}
-        //设置相机参数
+		//设置相机参数
 
 		//如果相机没有打开，则直接跳过
-	/*	if (!cameraState[i]) continue;*/
+		if (!cameraState[i]) continue;
 		//设置曝光时间，单位us
 		modifyCamralExposureTime(pCamera);
 		// 修改相机像素宽度,和高度，通用int型属性访问实例
@@ -682,12 +672,12 @@ bool CameraControler::initCameras3()
 		modifyCameraHeight(pCamera);
 
 		//设置触发模式
-		status = setSoftTriggerConf(pAcquisitionCtrl);
+		status = setSoftTriggerConf(pAcquisitionCtrlList[i]);
 		if (status != 0)
 		{
 			errorCode = CameraControler::InitFailed;
 			//注意：需要释放pAcquisitionCtrl内部对象内存
-			pAcquisitionCtrl->release(pAcquisitionCtrl);
+			pAcquisitionCtrl->release(pAcquisitionCtrlList[i]);
 			return false;
 		}
 
@@ -695,7 +685,6 @@ bool CameraControler::initCameras3()
 		status = GENICAM_CreateStreamSource(pCamera, &pStreamSource);
 		if ((status != 0) || (NULL == pStreamSource))
 		{
-			printf("create stream obj  fail.\r\n");
 			//注意：需要释放pAcquisitionCtrl内部对象内存
 			pAcquisitionCtrl->release(pAcquisitionCtrl);
 			return false;
@@ -704,9 +693,8 @@ bool CameraControler::initCameras3()
 		status = pStreamSource->attachGrabbing(pStreamSource, onGetFrame);
 		if (status != 0)
 		{
-			printf("attch Grabbing fail!\n");
 			//注意：需要释放pAcquisitionCtrl内部对象内存
-			pAcquisitionCtrl->release(pAcquisitionCtrl);
+			pAcquisitionCtrl->release(pAcquisitionCtrlList[i]);
 
 			//注意：需要释放pStreamSource内部对象内存
 			pStreamSource->release(pStreamSource);
@@ -716,10 +704,9 @@ bool CameraControler::initCameras3()
 
 		if (status != 0)
 		{
-			printf("StartGrabbing  fail.\n");
-			/*isGrabbingFlag = 0;*/
+			isGrabbingFlag = 0;
 			//注意：需要释放pAcquisitionCtrl内部对象内存
-			pAcquisitionCtrl->release(pAcquisitionCtrl);
+			pAcquisitionCtrl->release(pAcquisitionCtrlList[i]);
 
 			//注意：需要释放pStreamSource内部对象内存
 			pStreamSource->release(pStreamSource);
@@ -727,7 +714,7 @@ bool CameraControler::initCameras3()
 		}
 		else
 		{
-			/*isGrabbingFlag = 1;*/
+			isGrabbingFlag = 1;
 		}
 		////执行一次软触发
 		//status = executeTriggerSoftware(pAcquisitionCtrl);
@@ -743,13 +730,11 @@ bool CameraControler::initCameras3()
 		//}
 
 	}
-		////修改相机ReverseX，通用bool型属性访问实例
-		//modifyCameraReverseX(pCamera);
+	////修改相机ReverseX，通用bool型属性访问实例
+	//modifyCameraReverseX(pCamera);
 	return true;
 
 }
-
-
 
 //将相机状态map转为字符串
 QString CameraControler::cameraStatusMapToString()
@@ -768,9 +753,9 @@ QString CameraControler::cameraStatusMapToString()
 //判断相机是否已经初始化
 bool CameraControler::isCamerasInitialized()
 {
-	if (cameraState.size() <1 /*runtimeParams->nCamera*/) return false;
+	if (cameraState.size() < runtimeParams->nCamera) return false;
 
-	for (int i = 0; i < 1/*runtimeParams->nCamera*/; i++) {
+	for (int i = 0; i < runtimeParams->nCamera; i++) {
 		int iCamera = adminConfig->MaxCameraNum - i - 1;
 		if (!cameraState[iCamera]) return false;
 	}
@@ -789,26 +774,6 @@ void CameraControler::closeCameras()
 	for (int i = 0; i < cameraList2.size(); i++)
 		CameraUnInit(cameraList2[i]);
 	cameraList2.clear(); //清空列表
-
-	//清空相机状态
-	cameraState.clear();
-}
-
-//关闭已经打开的相机设备
-void CameraControler::closeCameras3()
-{
-
-	//关闭相机设备 - OPT pCameraList[i]
-	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
-		status = GENICAM_disconnect(&pCameraList[i]);
-		if (status != 0)
-		{
-			printf("disconnect camera failed.\n");
-			getchar();
-			return;
-		}
-	}
-	pCameraList = NULL;; //清空列表
 
 	//清空相机状态
 	cameraState.clear();
@@ -874,8 +839,6 @@ void CameraControler::takePhotos2()
 		double t0 = clock();
 		int counter = 5;
 		while (counter > 0) {
-		
-
 			CameraClearBuffer(cameraList2[iCamera]);
 			CameraSoftTrigger(cameraList2[iCamera]);
 			int flag = CameraGetImageBuffer(cameraList2[iCamera], &FrameInfo, &pRawBuffer, 10000);
@@ -896,7 +859,7 @@ void CameraControler::takePhotos2()
 		//处理图像，并得到RGB格式的数据
 		CameraImageProcess(cameraList2[iCamera], pRawBuffer, pRgbBuffer, &FrameInfo);
 		//释放由CameraSnapToBuffer、CameraGetImageBuffer获得的图像缓冲区
-		while (CameraReleaseImageBuffer(cameraList2[iCamera], pRawBuffer) != CAMERA_STATUS_SUCCESS);
+			while (CameraReleaseImageBuffer(cameraList2[iCamera], pRawBuffer) != CAMERA_STATUS_SUCCESS);
 		//将pRgbBuffer转换为Mat类
 		cv::Mat fram(frameSize, dataType, pRgbBuffer);
 
@@ -922,8 +885,8 @@ void CameraControler::takePhotos3()
 
 	for (int i = 0; i < runtimeParams->nCamera; i++) {
 		//执行一次软触发
-	/*	isGrabbingFlag = 1;*/
-		status = executeTriggerSoftware(pAcquisitionCtrl);
+		isGrabbingFlag = 1;
+		status = executeTriggerSoftware(pAcquisitionCtrlList[i]);
 		if (status != 0)
 		{
 			printf("TriggerSoftware fail.\n");
@@ -934,12 +897,16 @@ void CameraControler::takePhotos3()
 			pStreamSource->release(pStreamSource);
 			return;
 		}
-		Sleep(2000);
+		Sleep(250);//延迟50毫秒
 
-		//具有bug,触发没进入回调函数，就会陷入死循环
-		//while (isGrabbingFlag)
+		//double triggerTime = clock();
+		//double interval = 0;
+		//////具有bug,触发没进入回调函数，就会陷入死循环
+		//while (interval < 500 && isGrabbingFlag )
 		//{
 		//	Sleep(50);
+		//	double onGetTime = clock();
+		//	interval = onGetTime - triggerTime;
 		//}
 
 		////注意：需要释放pAcquisitionCtrl内部对象内存
@@ -987,7 +954,7 @@ void CameraControler::takePhotos3()
 
 		// disconnect camera
 		//断开设备
-		
+
 	/*	return;*/
 	}
 	clock_t t2 = clock();
@@ -1037,6 +1004,5 @@ bool CameraControler::showMessageBox(QWidget *parent)
 		QString::fromLocal8Bit("确定"));
 	return true;
 }
-
-//int CameraControler::isGrabbingFlag = 0;
+int CameraControler::isGrabbingFlag = 0;
 cv::Mat* CameraControler::pImageFrame;

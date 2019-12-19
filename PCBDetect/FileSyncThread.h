@@ -4,7 +4,6 @@
 #define WIN32
 
 #endif
-
 #include <QThread>
 #include <QDebug>
 #include "Configurator.h"

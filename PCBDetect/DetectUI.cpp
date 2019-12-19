@@ -3,11 +3,8 @@
 #define WIN32
 
 #endif
-
-
 #include "DetectUI.h"
 #include <time.h>
-
 
 using pcb::UserConfig;
 using pcb::RuntimeParams;

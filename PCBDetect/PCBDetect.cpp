@@ -178,6 +178,16 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 {
 	bool noError = true; //系统是否正常
 
+	//重新初始化模板提取界面
+	if (noError && ((code & 0b000000010) > 0)) {
+		extractUI->init();
+	}
+
+	//重新初始化缺陷检测界面
+	if (noError && ((code & 0b000000001) > 0)) {
+		detectUI->init();
+	}
+
 	//重新初始化运动控制模块
 	if (noError && ((code & 0b000100000) > 0)) {
 		motionControler->setOperation(MotionControler::InitControler);
@@ -193,16 +203,6 @@ void PCBDetect::do_resetDetectSystem_settingUI(int code)
 		while (cameraControler->isRunning()) pcb::delay(50);
 	}
 	noError &= cameraControler->isReady();
-
-	//重新初始化模板提取界面
-	if (noError && ((code & 0b000000010) > 0)) {
-		extractUI->init();
-	}
-
-	//重新初始化缺陷检测界面
-	if (noError && ((code & 0b000000001) > 0)) {
-		detectUI->init();
-	}
 
 	//若各模块状态正常，则将模板提取按键、检测按键设为可点击
 	if (noError) { this->setPushButtonsEnabled(true); }

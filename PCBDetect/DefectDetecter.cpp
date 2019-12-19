@@ -64,8 +64,8 @@ void DefectDetecter::generateBigTempl()
 	Size originalfullImgSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera,
 		adminConfig->ImageSize_H * runtimeParams->nPhotographing); //整图的原始尺寸
 
-	double factorW = 1.0 * runtimeParams->ScreenRect.width() / originalfullImgSize.width;
-	double factorH = 1.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
+	double factorW = 2.0 * runtimeParams->ScreenRect.width() / originalfullImgSize.width;
+	double factorH = 2.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
 	scalingFactor = qMin(factorW, factorH); //缩放因子
 
 	//scalingFactor = 1; 1

@@ -82,7 +82,11 @@ void DetectUnit::run()
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
+	//ECC配准方法
+	/*detectFunc->alignImagesECC(templGrayRoi, sampGray, sampGrayReg, h);*/
+	//未载入特征
 	/*detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);*/
+	//载入的特征
 	detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
 
 	double t4 = clock();
@@ -149,21 +153,72 @@ void DetectUnit::run()
 	//透射变换后有一个roi
 	Mat templ_roi = Mat::ones(templGray.size(), templGray.type()) * 255;
 	cv::warpPerspective(templ_roi, templ_roi, h, templ_roi.size());
+	threshold(templ_roi, templ_roi, 254, 255, cv::THRESH_BINARY);
+	//ECC
+	/*warpAffine(templ_roi, templ_roi, h, templ_roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
 
 	Mat templRoiReverse = 255 - templ_roi;
 	cv::add(sampGrayReg, templGray, sampGrayReg, templRoiReverse);
 
-	//总的roi
+	//消除重叠区域重复检测的问题
+	if (curCol!= runtimeParams->nCamera-1&&curRow!= runtimeParams->nPhotographing-1) {
+		//纵向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols /*- adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W*/;
+		rect.height = templGray.rows - adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+		//横向重叠区域
+		/*cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());*/
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols - adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W;
+		rect.height = templGray.rows /*- adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H*/;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}else if(curCol == runtimeParams->nCamera - 1&& curRow != runtimeParams->nPhotographing - 1){//最后一列
+		//纵向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols /*- adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W*/;
+		rect.height = templGray.rows - adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}else if (curCol != runtimeParams->nCamera - 1 && curRow == runtimeParams->nPhotographing - 1){//最后一行
+		//横向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols - adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W;
+		rect.height = templGray.rows /*- adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H*/;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}
+
+	//总的roi  ImageOverlappingRate_W
 	Mat roi;
 	cv::bitwise_and(templ_roi, mask_roi, roi);
 
 	//直接对roi掩膜做投射变换
 	cv::warpPerspective(mask_roi, roi, h, templ_roi.size());
+	threshold(roi, roi, 254, 255, cv::THRESH_BINARY);
+	//ECC
+	/*warpAffine(mask_roi, roi, h, templ_roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
 	cv::bitwise_and(roi, mask_roi, roi);
 
 	//做差
 	cv::warpPerspective(sampBw, sampBw, h, roi.size());//样本二值图做相应的变换，以和模板对齐
-	Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi);
+	threshold(sampBw, sampBw, 254, 255, cv::THRESH_BINARY);
+	//ECC
+	/*warpAffine(sampBw, sampBw, h, roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
+	Mat directFlaw, MorphFlaw,cannyFlaw;
+	Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi,directFlaw,MorphFlaw,cannyFlaw);
 	//Mat diff = detectFunc->sub_process_direct(templBw, sampBw, templGray, sampGrayReg, roi);
 	//调试时候的边缘处理
 	Size szDiff = diff.size();
@@ -178,18 +233,22 @@ void DetectUnit::run()
 	rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
 	
-	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, defectNum, detailImage,rectBlack);
+	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, sampBw, defectNum, detailImage,rectBlack);
 
 //if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
-	///*std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
-	//cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
-	//cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
-	//cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
-	//cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
-	//cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
-	//cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
-	//cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);*/
+	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
+	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
+	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
+	cv::imwrite(debug_path + std::to_string(3) + ".bmp", sampGrayReg);
+	cv::imwrite(debug_path + std::to_string(4) + ".bmp", sampBw);
+	cv::imwrite(debug_path + std::to_string(5) + ".bmp", diff);
+	cv::imwrite(debug_path + std::to_string(6) + ".bmp", rectBlack);
+	cv::imwrite(debug_path + std::to_string(7) + ".bmp", sampBw_direct);
+	cv::imwrite(debug_path + std::to_string(8) + ".bmp", markedSubImage);
+	cv::imwrite(debug_path + std::to_string(9) + ".bmp", directFlaw);
+	cv::imwrite(debug_path + std::to_string(10) + ".bmp", MorphFlaw);
+	cv::imwrite(debug_path + std::to_string(11) + ".bmp", cannyFlaw);
 	//sampBw_direct
 
 	//保存样本图片
@@ -206,9 +265,11 @@ void DetectUnit::run()
 void DetectUnit::save(const std::string& path, Mat& image_template_gray) {
 	Mat temp;
 	cv::pyrDown(image_template_gray, temp);
-	cv::pyrDown(temp, temp);
 	if (userConfig->matchingAccuracyLevel == 2)//低精度
+	{
 		cv::pyrDown(temp, temp);
+		cv::pyrDown(temp, temp);
+	}
 	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
 	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
 	cv::FileStorage store(path, cv::FileStorage::WRITE);

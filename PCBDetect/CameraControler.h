@@ -1,5 +1,6 @@
 #pragma once
 //#include"Windows.h"
+
 #include "Configurator.h"
 #include "RuntimeParams.h"
 #include "pcbFuncLib.h"
@@ -61,6 +62,7 @@ private:
 	GENICAM_StreamSource *pStreamSource = NULL;
 	GENICAM_AcquisitionControl *pAcquisitionCtrl = NULL;//下属性操作类
 	GENICAM_AcquisitionControlInfo acquisitionControlInfo = { 0 };
+	std::vector<GENICAM_AcquisitionControl*> pAcquisitionCtrlList{NULL,NULL,NULL};
 
 	bool m_bRun; //显示线程标志
 
@@ -85,7 +87,7 @@ private:
 	Operation operation; //操作指令
 
 public:
-	/*static int isGrabbingFlag ;*/
+	static int isGrabbingFlag ;
 	static cv::Mat* pImageFrame;
 
 public:
@@ -96,7 +98,7 @@ public:
 	inline int getCaller() { return caller; }
 
 	inline void setCvMatSamples(pcb::CvMatArray *ptr) { cvmatSamples = ptr; }
-	inline void setCurrentRow(int *row) { currentRow = row;  }
+	inline void setCurrentRow(int *row) { currentRow = row; }
 
 	inline void setAdminConfig(pcb::AdminConfig *ptr) { adminConfig = ptr; }
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
@@ -152,7 +154,7 @@ private:
 
 protected:
 	void run();
-	
+
 Q_SIGNALS:
 	void initCamerasFinished_camera(int);
 	void takePhotosFinished_camera(int);

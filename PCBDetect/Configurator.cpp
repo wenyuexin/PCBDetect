@@ -32,9 +32,9 @@ void AdminConfig::loadDefaultValue()
 {
 	this->errorCode = Unchecked; //错误代码
 	this->MaxMotionStroke = 120 * 5; //机械结构的最大运动行程
-	this->PulseNumInUnitTime = 126; //单位时间内的脉冲数
+	this->PulseNumInUnitTime = 90; //单位时间内的脉冲数
 	this->MaxCameraNum = 3; //可用相机的总数
-	this->PixelsNumPerUnitLength = 30.30; //单位长度内的像素个数
+	this->PixelsNumPerUnitLength = 30.3; //单位长度内的像素个数
 	this->ImageOverlappingRate_W = 316.5 / 5472.0; //分图重叠率(宽)
 	this->ImageOverlappingRate_H = 110.7/3648; //分图重叠率(高)
 	this->ImageSize_W = 5472; //宽高比中的宽
@@ -306,7 +306,7 @@ void UserConfig::loadDefaultValue()
 	clusterComPort = "COM1"; //COM口
 	
 	//相机
-	exposureTime = 200; //曝光时间 ms （范围大概50-500）
+	exposureTime = 10; //曝光时间 ms （范围大概10-500）
 	colorMode = 0; //色彩模式：0彩色 1黑白
 
 	//算法

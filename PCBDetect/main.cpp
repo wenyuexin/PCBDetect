@@ -1,3 +1,7 @@
+
+#ifndef WIN32
+#define WIN32
+#endif
 #include "PCBDetect.h"
 #include <QtWidgets/QApplication>
 
