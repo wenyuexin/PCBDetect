@@ -13,44 +13,44 @@ using pcb::CvMatVector;
 CameraControler::CameraControler(QThread *parent)
 	: QThread(parent)
 {
-	caller = -1; //æ¨¡å—çš„è°ƒç”¨è€…
-	errorCode = Unchecked; //æ§åˆ¶å™¨çš„é”™è¯¯ç 
-	operation = NoOperation;//æ“ä½œæŒ‡ä»¤
+	caller = -1; //Ä£¿éµÄµ÷ÓÃÕß
+	errorCode = Unchecked; //¿ØÖÆÆ÷µÄ´íÎóÂë
+	operation = NoOperation;//²Ù×÷Ö¸Áî
 }
 
 CameraControler::~CameraControler()
 {
 	qDebug() << "~CameraControler";
-	closeCameras3(); //å…³é—­ç›¸æœºå¹¶é‡Šæ”¾ç›¸æœºåˆ—è¡¨
+	closeCameras3(); //¹Ø±ÕÏà»ú²¢ÊÍ·ÅÏà»úÁĞ±í
 }
-//å¯åŠ¨çº¿ç¨‹
+//Æô¶¯Ïß³Ì
 void CameraControler::run()
 {
 	switch (operation) {
-	case Operation::NoOperation: //æ— æ“ä½œ
+	case Operation::NoOperation: //ÎŞ²Ù×÷
 		break;
-	case Operation::InitCameras: //åˆå§‹åŒ–
+	case Operation::InitCameras: //³õÊ¼»¯
 		this->initCameras3();
 		emit initCamerasFinished_camera(errorCode);
 		break;
-	case Operation::TakePhotos: //æ‹ç…§
+	case Operation::TakePhotos: //ÅÄÕÕ
 		this->takePhotos3();
 		emit takePhotosFinished_camera(errorCode);
 		break;
 	}
 }
 
-////å¯åŠ¨çº¿ç¨‹
+////Æô¶¯Ïß³Ì
 //void CameraControler::run()
 //{
 //	switch (operation) {
-//	case Operation::NoOperation: //æ— æ“ä½œ
+//	case Operation::NoOperation: //ÎŞ²Ù×÷
 //		break;
-//	case Operation::InitCameras: //åˆå§‹åŒ–
+//	case Operation::InitCameras: //³õÊ¼»¯
 //		this->initCameras2();
 //		emit initCamerasFinished_camera(errorCode);
 //		break;
-//	case Operation::TakePhotos: //æ‹ç…§
+//	case Operation::TakePhotos: //ÅÄÕÕ
 //		this->takePhotos2();
 //		emit takePhotosFinished_camera(errorCode);
 //		break;
@@ -58,26 +58,26 @@ void CameraControler::run()
 //}
 
 
-/**************** ç›¸æœºåˆå§‹åŒ–ä¸å…³é—­ ******************/
+/**************** Ïà»ú³õÊ¼»¯Óë¹Ø±Õ ******************/
 
-//ç›¸æœºåˆå§‹åŒ– - OpenCV
-//å¹´ä¹…å¤±ä¿®ï¼Œè°¨æ…ä½¿ç”¨
-//ç›¸æœºæ’åˆ—é¡ºåºä¸è®¾å¤‡é¡ºåºä¸ä¸€è‡´æ—¶ï¼Œéœ€è¦ä½¿ç”¨ç¬¬äºŒä¸ªå‚æ•°
-//è¾“å…¥ç›¸æœºå®é™…æ’åˆ—é¡ºåºå¯¹åº”çš„è®¾å¤‡ç¼–å·è¿›è¡Œåˆå§‹åŒ–,ç³»ç»Ÿè®¾å¤‡ç¼–å·ä»0å¼€å§‹
+//Ïà»ú³õÊ¼»¯ - OpenCV
+//Äê¾ÃÊ§ĞŞ£¬½÷É÷Ê¹ÓÃ
+//Ïà»úÅÅÁĞË³ĞòÓëÉè±¸Ë³Ğò²»Ò»ÖÂÊ±£¬ĞèÒªÊ¹ÓÃµÚ¶ş¸ö²ÎÊı
+//ÊäÈëÏà»úÊµ¼ÊÅÅÁĞË³Ğò¶ÔÓ¦µÄÉè±¸±àºÅ½øĞĞ³õÊ¼»¯,ÏµÍ³Éè±¸±àºÅ´Ó0¿ªÊ¼
 CameraControler::ErrorCode CameraControler::initCameras()
 {
 	if (runtimeParams->nCamera <= 0)
 		return errorCode = CameraControler::InvalidCameraNum;
 
-	//åˆå§‹åŒ–ç›¸æœºåˆ—è¡¨
+	//³õÊ¼»¯Ïà»úÁĞ±í
 	errorCode = CameraControler::NoError;
-	if (deviceIndex.size() == 0) { //ä½¿ç”¨é»˜è®¤çš„è®¾å¤‡å·åˆå§‹åŒ–
-		if (runtimeParams->nCamera > adminConfig->MaxCameraNum) //åˆ¤æ–­è°ƒç”¨çš„ç›¸æœºä¸ªæ•°æ˜¯å¦è¿‡å¤š
+	if (deviceIndex.size() == 0) { //Ê¹ÓÃÄ¬ÈÏµÄÉè±¸ºÅ³õÊ¼»¯
+		if (runtimeParams->nCamera > adminConfig->MaxCameraNum) //ÅĞ¶Ïµ÷ÓÃµÄÏà»ú¸öÊıÊÇ·ñ¹ı¶à
 			return errorCode = CameraControler::InvalidCameraNum;
 
-		for (int i = 0; i < runtimeParams->nCamera; i++) { //æ·»åŠ ç›¸æœº
+		for (int i = 0; i < runtimeParams->nCamera; i++) { //Ìí¼ÓÏà»ú
 			cameraList.push_back(cv::VideoCapture(i));
-			cameraState[i] = cameraList[i].isOpened(); //åˆ¤æ–­ç›¸æœºæ˜¯å¦èƒ½æ‰“å¼€
+			cameraState[i] = cameraList[i].isOpened(); //ÅĞ¶ÏÏà»úÊÇ·ñÄÜ´ò¿ª
 			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
 			else {
 				cameraList[i].set(cv::CAP_PROP_FRAME_HEIGHT, adminConfig->ImageSize_H);
@@ -86,13 +86,13 @@ CameraControler::ErrorCode CameraControler::initCameras()
 			}
 		}
 	}
-	else { //ä½¿ç”¨è®¾å®šçš„è®¾å¤‡å·åˆå§‹åŒ–
-		if (runtimeParams->nCamera > deviceIndex.size()) //åˆ¤æ–­è°ƒç”¨çš„ç›¸æœºä¸ªæ•°æ˜¯å¦è¿‡å¤š
+	else { //Ê¹ÓÃÉè¶¨µÄÉè±¸ºÅ³õÊ¼»¯
+		if (runtimeParams->nCamera > deviceIndex.size()) //ÅĞ¶Ïµ÷ÓÃµÄÏà»ú¸öÊıÊÇ·ñ¹ı¶à
 			return errorCode = CameraControler::InvalidCameraNum;
 
-		for (int i = 0; i < deviceIndex.size(); i++) { //æ·»åŠ ç›¸æœº
+		for (int i = 0; i < deviceIndex.size(); i++) { //Ìí¼ÓÏà»ú
 			cameraList.push_back(cv::VideoCapture(deviceIndex[i]));
-			cameraState[i] = cameraList[i].isOpened(); //åˆ¤æ–­ç›¸æœºæ˜¯å¦èƒ½æ‰“å¼€
+			cameraState[i] = cameraList[i].isOpened(); //ÅĞ¶ÏÏà»úÊÇ·ñÄÜ´ò¿ª
 			if (!cameraState[i]) errorCode = CameraControler::InitFailed;
 			else {
 				cameraList[i].set(cv::CAP_PROP_FRAME_HEIGHT, adminConfig->ImageSize_H);
@@ -106,33 +106,33 @@ CameraControler::ErrorCode CameraControler::initCameras()
 }
 
 
-//ç›¸æœºåˆå§‹åŒ– - è¿ˆå¾·å¨è§†
+//Ïà»ú³õÊ¼»¯ - ÂõµÂÍşÊÓ
 bool CameraControler::initCameras2()
 {
 
 	errorCode = CameraControler::NoError;
 
-	//è‹¥ç›¸æœºå·²ç»åˆå§‹åŒ–ï¼Œåˆ™ç›´æ¥è·³è¿‡åç»­æ­¥éª¤
+	//ÈôÏà»úÒÑ¾­³õÊ¼»¯£¬ÔòÖ±½ÓÌø¹ıºóĞø²½Öè
 	//if (isCamerasInitialized()) return true;
 
-	//å…³é—­å·²ç»æ‰“å¼€çš„ç›¸æœºå¹¶é‡Šæ”¾ç›¸æœºåˆ—è¡¨
+	//¹Ø±ÕÒÑ¾­´ò¿ªµÄÏà»ú²¢ÊÍ·ÅÏà»úÁĞ±í
 	this->closeCameras();
 
 
-	//ç›¸æœºsdkåˆå§‹åŒ–
+	//Ïà»úsdk³õÊ¼»¯
 	if (CameraSdkInit(1) != CAMERA_STATUS_SUCCESS) { 
 		errorCode = CameraControler::InitFailed;
 		return false;
 	}
 
-	//åˆ¤æ–­æ˜¯å¦å­˜åœ¨ï¼šæšä¸¾è®¾å¤‡å¤±è´¥æˆ–è€…ç³»ç»Ÿä¸­çš„è®¾å¤‡æ•°é‡å°‘äºè®¾å®šå€¼
+	//ÅĞ¶ÏÊÇ·ñ´æÔÚ£ºÃ¶¾ÙÉè±¸Ê§°Ü»òÕßÏµÍ³ÖĞµÄÉè±¸ÊıÁ¿ÉÙÓÚÉè¶¨Öµ
 	if (CameraEnumerateDevice(sCameraList, &CameraNums) != CAMERA_STATUS_SUCCESS ||
 		CameraNums < adminConfig->MaxCameraNum)
 	{
 		errorCode = CameraControler::InitFailed; return false;
 	}
 
-	//è·å–ç›¸æœºåˆ—è¡¨
+	//»ñÈ¡Ïà»úÁĞ±í
 	CameraSdkStatus status;
 	if (deviceIndex.empty() || deviceIndex.size() < adminConfig->MaxCameraNum) {
 		for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
@@ -149,7 +149,7 @@ bool CameraControler::initCameras2()
 		}
 	}
 
-	//è®¾ç½®ç›¸æœºå‚æ•°
+	//ÉèÖÃÏà»ú²ÎÊı
 	sImageSize.iIndex = 255;
 	sImageSize.uBinSumMode = 0;
 	sImageSize.uBinAverageMode = 0;
@@ -167,17 +167,17 @@ bool CameraControler::initCameras2()
 	sImageSize.iHeightZoomSw = 0;
 
 	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
-		//å¦‚æœç›¸æœºæ²¡æœ‰æ‰“å¼€ï¼Œåˆ™ç›´æ¥è·³è¿‡
+		//Èç¹ûÏà»úÃ»ÓĞ´ò¿ª£¬ÔòÖ±½ÓÌø¹ı
 		if (!cameraState[i]) continue;
-		//è®¾ç½®æ›å…‰æ—¶é—´ï¼Œå•ä½us
+		//ÉèÖÃÆØ¹âÊ±¼ä£¬µ¥Î»us
 		CameraSetExposureTime(cameraList2[i], userConfig->exposureTime * 1000);
 		//CameraSetExposureTime(cameraList2[i], 200 * 1000);
 
-		//è®¾ç½®è‰²å½©æ¨¡å¼ - 0å½©è‰² 1é»‘ç™½ -1é»˜è®¤
+		//ÉèÖÃÉ«²ÊÄ£Ê½ - 0²ÊÉ« 1ºÚ°× -1Ä¬ÈÏ
 		if (userConfig->colorMode == 1) 
 			CameraSetIspOutFormat(cameraList2[i], CAMERA_MEDIA_TYPE_MONO8);
 		
-		//è®¾ç½®ç›¸æœºçš„è§¦å‘æ¨¡å¼ã€‚0è¡¨ç¤ºè¿ç»­é‡‡é›†æ¨¡å¼ï¼›1è¡¨ç¤ºè½¯ä»¶è§¦å‘æ¨¡å¼ï¼›2è¡¨ç¤ºç¡¬ä»¶è§¦å‘æ¨¡å¼ã€‚
+		//ÉèÖÃÏà»úµÄ´¥·¢Ä£Ê½¡£0±íÊ¾Á¬Ğø²É¼¯Ä£Ê½£»1±íÊ¾Èí¼ş´¥·¢Ä£Ê½£»2±íÊ¾Ó²¼ş´¥·¢Ä£Ê½¡£
 		CameraSetTriggerMode(cameraList2[i], 1);
 		CameraSetTriggerCount(cameraList2[i], 1);
 		if (CameraSetResolutionForSnap(cameraList2[i], &sImageSize) != CAMERA_STATUS_SUCCESS) {
@@ -186,7 +186,7 @@ bool CameraControler::initCameras2()
 		CameraPlay(cameraList2[i]);
 	}
 
-	//æ£€æŸ¥ç›¸æœºæ˜¯å¦å·²ç»æˆåŠŸåˆå§‹åŒ–
+	//¼ì²éÏà»úÊÇ·ñÒÑ¾­³É¹¦³õÊ¼»¯
 	if (!isCamerasInitialized()) {
 		errorCode = CameraControler::InitFailed;
 		return false;
@@ -195,8 +195,8 @@ bool CameraControler::initCameras2()
 }
 
 
-/******************OPTç›¸æœºç›¸å…³å‡½æ•°************************/
-////æ–­å¼€è®¾å¤‡
+/******************OPTÏà»úÏà¹Øº¯Êı************************/
+////¶Ï¿ªÉè±¸
 int32_t CameraControler::GENICAM_disconnect(GENICAM_Camera *pGetCamera)
 {
 	int32_t isDisconnectSuccess;
@@ -211,7 +211,7 @@ int32_t CameraControler::GENICAM_disconnect(GENICAM_Camera *pGetCamera)
 	return 0;
 }
 
-//è¿æ¥è®¾å¤‡
+//Á¬½ÓÉè±¸
 
 int32_t CameraControler::GENICAM_connect(GENICAM_Camera *pGetCamera) {
 	int32_t isConnectSuccess;
@@ -224,7 +224,7 @@ int32_t CameraControler::GENICAM_connect(GENICAM_Camera *pGetCamera) {
 }
 
 
-//ä¿®æ”¹æ›å…‰æ—¶é—´
+//ĞŞ¸ÄÆØ¹âÊ±¼ä
 int32_t CameraControler::modifyCamralExposureTime(GENICAM_Camera *pGetCamera)
 {
 	int32_t isDoubleNodeSuccess;
@@ -242,7 +242,7 @@ int32_t CameraControler::modifyCamralExposureTime(GENICAM_Camera *pGetCamera)
 	exposureTimeValue = -1;
 	isDoubleNodeSuccess = pDoubleNode->getValue(pDoubleNode, &exposureTimeValue);
 	if (0 != isDoubleNodeSuccess) {
-		printf("get ExposureTime fail.\n");        //æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pDoubleNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		printf("get ExposureTime fail.\n");        //×¢Òâ£ºĞèÒªÊÍ·ÅpDoubleNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		pDoubleNode->release(pDoubleNode);
 		return -1;
 	}
@@ -279,51 +279,51 @@ int32_t CameraControler::setSoftTriggerConf(GENICAM_AcquisitionControl *pAcquisi
 	int32_t nRet;
 	GENICAM_EnumNode enumNode = { 0 };
 
-	// è®¾ç½®è§¦å‘æºä¸ºè½¯è§¦å‘
+	// ÉèÖÃ´¥·¢Ô´ÎªÈí´¥·¢
 	enumNode = pAcquisitionCtrl->triggerSource(pAcquisitionCtrl);
 	nRet = enumNode.setValueBySymbol(&enumNode, "Software");
 	if (nRet != 0)
 	{
 		printf("set trigger source failed.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾enumNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅenumNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		enumNode.release(&enumNode);
 		return -1;
 	}
-	//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾enumNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+	//×¢Òâ£ºĞèÒªÊÍ·ÅenumNodeÄÚ²¿¶ÔÏóÄÚ´æ
 	enumNode.release(&enumNode);
 
-	// è®¾ç½®è§¦å‘å™¨
+	// ÉèÖÃ´¥·¢Æ÷
 	memset(&enumNode, 0, sizeof(enumNode));
 	enumNode = pAcquisitionCtrl->triggerSelector(pAcquisitionCtrl);
 	nRet = enumNode.setValueBySymbol(&enumNode, "FrameStart");
 	if (nRet != 0)
 	{
 		printf("set trigger selector failed.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾enumNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅenumNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		enumNode.release(&enumNode);
 		return -1;
 	}
-	//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾enumNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+	//×¢Òâ£ºĞèÒªÊÍ·ÅenumNodeÄÚ²¿¶ÔÏóÄÚ´æ
 	enumNode.release(&enumNode);
 
-	// è®¾ç½®è§¦å‘æ¨¡å¼
+	// ÉèÖÃ´¥·¢Ä£Ê½
 	memset(&enumNode, 0, sizeof(enumNode));
 	enumNode = pAcquisitionCtrl->triggerMode(pAcquisitionCtrl);
 	nRet = enumNode.setValueBySymbol(&enumNode, "On");
 	if (nRet != 0)
 	{
 		printf("set trigger mode failed.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾enumNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅenumNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		enumNode.release(&enumNode);
 		return -1;
 	}
-	//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾enumNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+	//×¢Òâ£ºĞèÒªÊÍ·ÅenumNodeÄÚ²¿¶ÔÏóÄÚ´æ
 	enumNode.release(&enumNode);
 
 	return 0;
 }
 
-//è®¾ç½®åƒç´ å®½åº¦
+//ÉèÖÃÏñËØ¿í¶È
 int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 {
 	int32_t isIntNodeSuccess;
@@ -346,7 +346,7 @@ int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 	if (0 != isIntNodeSuccess != 0)
 	{
 		printf("get Width fail.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pIntNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅpIntNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		pIntNode->release(pIntNode);
 		return -1;
 	}
@@ -354,13 +354,12 @@ int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 	{
 		printf("before change ,Width is %d\n", widthValue);
 	}
-	//ï¿½ï¿½ï¿½Ç°Í¼ï¿½ï¿½Ä¿ï¿½È²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
+	
 	if (widthValue != adminConfig->ImageSize_W) {
 		isIntNodeSuccess = pIntNode->setValue(pIntNode, (adminConfig->ImageSize_W));
 		if (0 != isIntNodeSuccess)
 		{
 			printf("set Width fail.\n");
-			//×¢ï¿½â£ºï¿½ï¿½Òªï¿½Í·ï¿½pIntNodeï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½
 			pIntNode->release(pIntNode);
 			return -1;
 		}
@@ -383,7 +382,7 @@ int32_t CameraControler::modifyCameraWidth(GENICAM_Camera *pGetCamera)
 
 
 
-//è®¾ç½®åƒç´ é«˜åº¦
+//ÉèÖÃÏñËØ¸ß¶È
 int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 {
 	int32_t isIntNodeSuccess;
@@ -407,7 +406,7 @@ int32_t CameraControler::modifyCameraHeight(GENICAM_Camera *pGetCamera)
 	if (0 != isIntNodeSuccess != 0)
 	{
 		printf("get Height fail.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pIntNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅpIntNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		pIntNode->release(pIntNode);
 		return -1;
 	}
@@ -465,7 +464,7 @@ int32_t CameraControler::modifyCameraReverseX(GENICAM_Camera *pGetCamera)
 	if (0 != isBoolNodeSuccess)
 	{
 		printf("get ReverseX fail.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pBoolNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅpBoolNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		pBoolNode->release(pBoolNode);
 		return -1;
 	}
@@ -478,7 +477,7 @@ int32_t CameraControler::modifyCameraReverseX(GENICAM_Camera *pGetCamera)
 	if (0 != isBoolNodeSuccess)
 	{
 		printf("set ReverseX fail.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pBoolNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅpBoolNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		pBoolNode->release(pBoolNode);
 		return -1;
 	}
@@ -487,14 +486,14 @@ int32_t CameraControler::modifyCameraReverseX(GENICAM_Camera *pGetCamera)
 	if (0 != isBoolNodeSuccess)
 	{
 		printf("get ReverseX fail.\n");
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pBoolNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅpBoolNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		pBoolNode->release(pBoolNode);
 		return -1;
 	}
 	else
 	{
 		printf("after change ,ReverseX is %u\n", reverseXValue);
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pBoolNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅpBoolNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		pBoolNode->release(pBoolNode);
 	}
 
@@ -527,7 +526,7 @@ static void onGetFrame(GENICAM_Frame* pFrame)
 	uint64_t blockId = 0;
 	/*CameraControler *cameraControler;*/
 
-	// æ ‡å‡†è¾“å‡ºæ¢è¡Œ
+	// ±ê×¼Êä³ö»»ĞĞ
 	printf("\r\n");
 
 	ret = pFrame->valid(pFrame);
@@ -558,12 +557,12 @@ static void onGetFrame(GENICAM_Frame* pFrame)
 	{
 		printf("Frame is invalid!\n");
 	}
-	//æ³¨æ„ï¼šä¸ç®¡å¸§æ˜¯å¦æœ‰æ•ˆï¼Œéƒ½éœ€è¦é‡Šæ”¾pFrameå†…éƒ¨å¯¹è±¡å†…å­˜
+	//×¢Òâ£º²»¹ÜÖ¡ÊÇ·ñÓĞĞ§£¬¶¼ĞèÒªÊÍ·ÅpFrameÄÚ²¿¶ÔÏóÄÚ´æ
 	ret = pFrame->release(pFrame);
 
 	return;
 }
-//å¼€å§‹æŠ“æµ
+//¿ªÊ¼×¥Á÷
 int32_t CameraControler::GENICAM_startGrabbing(GENICAM_StreamSource *pStreamSource)
 {
 	int32_t isStartGrabbingSuccess;
@@ -580,7 +579,7 @@ int32_t CameraControler::GENICAM_startGrabbing(GENICAM_StreamSource *pStreamSour
 
 	return 0;
 }
-//åœæ­¢æŠ“æµ
+//Í£Ö¹×¥Á÷
 int32_t CameraControler::GENICAM_stopGrabbing(GENICAM_StreamSource *pStreamSource)
 {
 	int32_t isStopGrabbingSuccess;
@@ -615,34 +614,34 @@ int32_t CameraControler::executeTriggerSoftware(GENICAM_AcquisitionControl *pAcq
 	{
 		printf("Execute triggerSoftware fail.\n");
 
-		//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾cmdNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+		//×¢Òâ£ºĞèÒªÊÍ·ÅcmdNodeÄÚ²¿¶ÔÏóÄÚ´æ
 		cmdNode.release(&cmdNode);
 		return -1;
 	}
 
-	//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾cmdNodeå†…éƒ¨å¯¹è±¡å†…å­˜
+	//×¢Òâ£ºĞèÒªÊÍ·ÅcmdNodeÄÚ²¿¶ÔÏóÄÚ´æ
 	cmdNode.release(&cmdNode);
 
 	return 0;
 }
-/******************OPTç›¸æœºç›¸å…³å‡½æ•°************************/
-//ç›¸æœºåˆå§‹åŒ–-OPT
+/******************OPTÏà»úÏà¹Øº¯Êı************************/
+//Ïà»ú³õÊ¼»¯-OPT
 bool CameraControler::initCameras3()
 {
 	errorCode = CameraControler::NoError;
 
-	//å…³é—­å·²ç»æ‰“å¼€çš„ç›¸æœºå¹¶é‡Šæ”¾ç›¸æœºåˆ—è¡¨
-	//å…³é—­å¤±è´¥ï¼Œæœ€åˆç›¸æœºå¯¹è±¡ä¸ºç©º
+	//¹Ø±ÕÒÑ¾­´ò¿ªµÄÏà»ú²¢ÊÍ·ÅÏà»úÁĞ±í
+	//¹Ø±ÕÊ§°Ü£¬×î³õÏà»ú¶ÔÏóÎª¿Õ
 	//this->closeCameras3();
 
-	//ç”Ÿæˆç³»ç»Ÿå•ä¾‹
+	//Éú³ÉÏµÍ³µ¥Àı
 	status = GENICAM_getSystemInstance(&pSystem);
 	if (-1 == status)
 	{
 		errorCode = CameraControler::InitFailed;
 		return false;
 	}
-	//å‘ç°ç›¸æœº
+	//·¢ÏÖÏà»ú
 	status = pSystem->discovery(pSystem, &pCameraList, &cameraCnt, typeAll);
 	if (-1 == status)
 	{
@@ -654,12 +653,12 @@ bool CameraControler::initCameras3()
 		printf("there is no device.\r\n");
 		return false;
 	}
-	////ç³»ç»Ÿä¸­çš„è®¾å¤‡æ•°é‡å°‘äºè®¾å®šå€¼
+	////ÏµÍ³ÖĞµÄÉè±¸ÊıÁ¿ÉÙÓÚÉè¶¨Öµ
 	//if (cameraCnt < adminConfig->MaxCameraNum) {
 	//	errorCode = CameraControler::InitFailed; 
 	//	return false;
 	//}
-	//è®¾å¤‡è¿æ¥
+	//Éè±¸Á¬½Ó
 	for (int i = 0; i < 3 /*adminConfig->MaxCameraNum*/; i++) {
 		pCamera = &pCameraList[i];
 		/*pCameraList2[i] = pCamera;*/
@@ -671,7 +670,7 @@ bool CameraControler::initCameras3()
 			return false;
 		}
 
-		//åˆ›å»ºå±æ€§èŠ‚ç‚¹ AcquisitionControl
+		//´´½¨ÊôĞÔ½Úµã AcquisitionControl
 		acquisitionControlInfo.pCamera = pCamera;
 		status = GENICAM_createAcquisitionControl(&acquisitionControlInfo, &pAcquisitionCtrl);
 		pAcquisitionCtrlList[i] = pAcquisitionCtrl;
@@ -680,42 +679,42 @@ bool CameraControler::initCameras3()
 			errorCode = CameraControler::InitFailed;
 			return false;
 		}
-		//è®¾ç½®ç›¸æœºå‚æ•°
+		//ÉèÖÃÏà»ú²ÎÊı
 
-		//å¦‚æœç›¸æœºæ²¡æœ‰æ‰“å¼€ï¼Œåˆ™ç›´æ¥è·³è¿‡
+		//Èç¹ûÏà»úÃ»ÓĞ´ò¿ª£¬ÔòÖ±½ÓÌø¹ı
 		if (!cameraState[i]) continue;
-		//è®¾ç½®æ›å…‰æ—¶é—´ï¼Œå•ä½us
+		//ÉèÖÃÆØ¹âÊ±¼ä£¬µ¥Î»us
 		modifyCamralExposureTime(pCamera);
-		// ä¿®æ”¹ç›¸æœºåƒç´ å®½åº¦,å’Œé«˜åº¦ï¼Œé€šç”¨intå‹å±æ€§è®¿é—®å®ä¾‹
+		// ĞŞ¸ÄÏà»úÏñËØ¿í¶È,ºÍ¸ß¶È£¬Í¨ÓÃintĞÍÊôĞÔ·ÃÎÊÊµÀı
 		modifyCameraWidth(pCamera);
 		modifyCameraHeight(pCamera);
 
-		//è®¾ç½®è§¦å‘æ¨¡å¼
+		//ÉèÖÃ´¥·¢Ä£Ê½
 		status = setSoftTriggerConf(pAcquisitionCtrlList[i]);
 		if (status != 0)
 		{
 			errorCode = CameraControler::InitFailed;
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pAcquisitionCtrlå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpAcquisitionCtrlÄÚ²¿¶ÔÏóÄÚ´æ
 			pAcquisitionCtrl->release(pAcquisitionCtrlList[i]);
 			return false;
 		}
 
-		//åˆ›å»ºæµå¯¹è±¡
+		//´´½¨Á÷¶ÔÏó
 		status = GENICAM_CreateStreamSource(pCamera, &pStreamSource);
 		if ((status != 0) || (NULL == pStreamSource))
 		{
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pAcquisitionCtrlå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpAcquisitionCtrlÄÚ²¿¶ÔÏóÄÚ´æ
 			pAcquisitionCtrl->release(pAcquisitionCtrl);
 			return false;
 		}
-		//æ³¨å†Œå›è°ƒå‡½æ•°ï¼ˆè·å–å›¾åƒï¼‰
+		//×¢²á»Øµ÷º¯Êı£¨»ñÈ¡Í¼Ïñ£©
 		status = pStreamSource->attachGrabbing(pStreamSource, onGetFrame);
 		if (status != 0)
 		{
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pAcquisitionCtrlå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpAcquisitionCtrlÄÚ²¿¶ÔÏóÄÚ´æ
 			pAcquisitionCtrl->release(pAcquisitionCtrlList[i]);
 
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pStreamSourceå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpStreamSourceÄÚ²¿¶ÔÏóÄÚ´æ
 			pStreamSource->release(pStreamSource);
 			return false;
 		}
@@ -724,10 +723,10 @@ bool CameraControler::initCameras3()
 		if (status != 0)
 		{
 			isGrabbingFlag = 0;
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pAcquisitionCtrlå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpAcquisitionCtrlÄÚ²¿¶ÔÏóÄÚ´æ
 			pAcquisitionCtrl->release(pAcquisitionCtrlList[i]);
 
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pStreamSourceå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpStreamSourceÄÚ²¿¶ÔÏóÄÚ´æ
 			pStreamSource->release(pStreamSource);
 			return false;
 		}
@@ -735,27 +734,27 @@ bool CameraControler::initCameras3()
 		{
 			isGrabbingFlag = 1;
 		}
-		////æ‰§è¡Œä¸€æ¬¡è½¯è§¦å‘
+		////Ö´ĞĞÒ»´ÎÈí´¥·¢
 		//status = executeTriggerSoftware(pAcquisitionCtrl);
 		//if (status != 0)
 		//{
 		//	printf("TriggerSoftware fail.\n");
-		//	//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pAcquisitionCtrlå†…éƒ¨å¯¹è±¡å†…å­˜
+		//	//×¢Òâ£ºĞèÒªÊÍ·ÅpAcquisitionCtrlÄÚ²¿¶ÔÏóÄÚ´æ
 		//	pAcquisitionCtrl->release(pAcquisitionCtrl);
 
-		//	//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pStreamSourceå†…éƒ¨å¯¹è±¡å†…å­˜
+		//	//×¢Òâ£ºĞèÒªÊÍ·ÅpStreamSourceÄÚ²¿¶ÔÏóÄÚ´æ
 		//	pStreamSource->release(pStreamSource);
 		//	return false;
 		//}
 
 	}
-	////ä¿®æ”¹ç›¸æœºReverseXï¼Œé€šç”¨boolå‹å±æ€§è®¿é—®å®ä¾‹
+	////ĞŞ¸ÄÏà»úReverseX£¬Í¨ÓÃboolĞÍÊôĞÔ·ÃÎÊÊµÀı
 	//modifyCameraReverseX(pCamera);
 	return true;
 
 }
 
-//å°†ç›¸æœºçŠ¶æ€mapè½¬ä¸ºå­—ç¬¦ä¸²
+//½«Ïà»ú×´Ì¬map×ªÎª×Ö·û´®
 QString CameraControler::cameraStatusMapToString()
 {
 	QString available = "";
@@ -769,7 +768,7 @@ QString CameraControler::cameraStatusMapToString()
 	return available + " (" + QString::number(runtimeParams->nCamera) + ")";
 }
 
-//åˆ¤æ–­ç›¸æœºæ˜¯å¦å·²ç»åˆå§‹åŒ–
+//ÅĞ¶ÏÏà»úÊÇ·ñÒÑ¾­³õÊ¼»¯
 bool CameraControler::isCamerasInitialized()
 {
 	if (cameraState.size() <1 /*runtimeParams->nCamera*/) return false;
@@ -781,28 +780,28 @@ bool CameraControler::isCamerasInitialized()
 	return true;
 }
 
-//å…³é—­å·²ç»æ‰“å¼€çš„ç›¸æœºè®¾å¤‡
+//¹Ø±ÕÒÑ¾­´ò¿ªµÄÏà»úÉè±¸
 void CameraControler::closeCameras()
 {
-	//å…³é—­ç›¸æœºè®¾å¤‡ - OpenCV
+	//¹Ø±ÕÏà»úÉè±¸ - OpenCV
 	for (int i = 0; i < cameraList.size(); i++)
 		cameraList[i].release();
-	cameraList.clear(); //æ¸…ç©ºåˆ—è¡¨
+	cameraList.clear(); //Çå¿ÕÁĞ±í
 
-	//å…³é—­ç›¸æœºè®¾å¤‡ - è¿ˆå¾·å¨è§†
+	//¹Ø±ÕÏà»úÉè±¸ - ÂõµÂÍşÊÓ
 	for (int i = 0; i < cameraList2.size(); i++)
 		CameraUnInit(cameraList2[i]);
-	cameraList2.clear(); //æ¸…ç©ºåˆ—è¡¨
+	cameraList2.clear(); //Çå¿ÕÁĞ±í
 
-	//æ¸…ç©ºç›¸æœºçŠ¶æ€
+	//Çå¿ÕÏà»ú×´Ì¬
 	cameraState.clear();
 }
 
-//å…³é—­å·²ç»æ‰“å¼€çš„ç›¸æœºè®¾å¤‡
+//¹Ø±ÕÒÑ¾­´ò¿ªµÄÏà»úÉè±¸
 void CameraControler::closeCameras3()
 {
 
-	//å…³é—­ç›¸æœºè®¾å¤‡ - OPT pCameraList[i]
+	//¹Ø±ÕÏà»úÉè±¸ - OPT pCameraList[i]
 	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
 		status = GENICAM_disconnect(&pCameraList[i]);
 		if (status != 0)
@@ -812,17 +811,17 @@ void CameraControler::closeCameras3()
 			return;
 		}
 	}
-	pCameraList = NULL;; //æ¸…ç©ºåˆ—è¡¨
+	pCameraList = NULL;; //Çå¿ÕÁĞ±í
 
-	//æ¸…ç©ºç›¸æœºçŠ¶æ€
+	//Çå¿ÕÏà»ú×´Ì¬
 	cameraState.clear();
 }
 
 
-/******************* ç›¸æœºæ‹ç…§ ********************/
+/******************* Ïà»úÅÄÕÕ ********************/
 
-//æ‹æ‘„å›¾åƒ - OpenCV
-//å¹´ä¹…å¤±ä¿®ï¼Œè°¨æ…ä½¿ç”¨
+//ÅÄÉãÍ¼Ïñ - OpenCV
+//Äê¾ÃÊ§ĞŞ£¬½÷É÷Ê¹ÓÃ
 CameraControler::ErrorCode CameraControler::takePhotos()
 {
 	errorCode = CameraControler::NoError;
@@ -852,13 +851,13 @@ CameraControler::ErrorCode CameraControler::takePhotos()
 	return errorCode;
 }
 
-//æ‹æ‘„å›¾åƒ - è¿ˆå¾·å¨è§†
+//ÅÄÉãÍ¼Ïñ - ÂõµÂÍşÊÓ
 void CameraControler::takePhotos2()
 {
 	clock_t t1 = clock();
 	Size frameSize(adminConfig->ImageSize_W, adminConfig->ImageSize_H);
-	int colorMode = userConfig->colorMode; //è‰²å½©æ¨¡å¼
-	int dataType = (colorMode == 1) ? CV_8UC1 : CV_8UC3; //Matçš„æ•°æ®ç±»å‹
+	int colorMode = userConfig->colorMode; //É«²ÊÄ£Ê½
+	int dataType = (colorMode == 1) ? CV_8UC1 : CV_8UC3; //MatµÄÊı¾İÀàĞÍ
 
 	for (int i = 0; i < runtimeParams->nCamera; i++) {
 		int iCamera = adminConfig->MaxCameraNum - i - 1;
@@ -881,12 +880,12 @@ void CameraControler::takePhotos2()
 			CameraClearBuffer(cameraList2[iCamera]);
 			CameraSoftTrigger(cameraList2[iCamera]);
 			int flag = CameraGetImageBuffer(cameraList2[iCamera], &FrameInfo, &pRawBuffer, 10000);
-			if (CAMERA_STATUS_SUCCESS == flag) break; //æŠ“ä¸€å¼ å›¾
+			if (CAMERA_STATUS_SUCCESS == flag) break; //×¥Ò»ÕÅÍ¼
 			counter--;
 		}
-		//CameraSnapToBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//æŠ“ä¸€æ•´å›¾
+		//CameraSnapToBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//×¥Ò»ÕûÍ¼
 
-		//ç”³è¯·ä¸€ä¸ªbufferï¼Œç”¨æ¥å°†è·å¾—çš„åŸå§‹æ•°æ®è½¬æ¢ä¸ºRGBæ•°æ®ï¼Œå¹¶åŒæ—¶è·å¾—å›¾åƒå¤„ç†æ•ˆæœ
+		//ÉêÇëÒ»¸öbuffer£¬ÓÃÀ´½«»ñµÃµÄÔ­Ê¼Êı¾İ×ª»»ÎªRGBÊı¾İ£¬²¢Í¬Ê±»ñµÃÍ¼Ïñ´¦ÀíĞ§¹û
 		counter = 10;
 		int bufferSize = FrameInfo.iWidth * FrameInfo.iHeight * (colorMode == 1 ? 1 : 3);
 		while (counter > 0) {
@@ -895,16 +894,16 @@ void CameraControler::takePhotos2()
 			counter--;
 		}
 
-		//å¤„ç†å›¾åƒï¼Œå¹¶å¾—åˆ°RGBæ ¼å¼çš„æ•°æ®
+		//´¦ÀíÍ¼Ïñ£¬²¢µÃµ½RGB¸ñÊ½µÄÊı¾İ
 		CameraImageProcess(cameraList2[iCamera], pRawBuffer, pRgbBuffer, &FrameInfo);
 
-		//é‡Šæ”¾ç”±CameraSnapToBufferã€CameraGetImageBufferè·å¾—çš„å›¾åƒç¼“å†²åŒº
+		//ÊÍ·ÅÓÉCameraSnapToBuffer¡¢CameraGetImageBuffer»ñµÃµÄÍ¼Ïñ»º³åÇø
 			while (CameraReleaseImageBuffer(cameraList2[iCamera], pRawBuffer) != CAMERA_STATUS_SUCCESS);
-		//å°†pRgbBufferè½¬æ¢ä¸ºMatç±»
+		//½«pRgbBuffer×ª»»ÎªMatÀà
 
 		cv::Mat fram(frameSize, dataType, pRgbBuffer);
 
-		cv::flip(fram, fram, -1); //ç›´æ¥è·å–çš„å›¾åƒæ—¶åçš„ï¼Œè¿™é‡Œæ—‹è½¬180åº¦
+		cv::flip(fram, fram, -1); //Ö±½Ó»ñÈ¡µÄÍ¼ÏñÊ±·´µÄ£¬ÕâÀïĞı×ª180¶È
 		cv::flip(fram, fram, 1);
 		cv::Mat* pMat = new cv::Mat(fram.clone());
 		(*cvmatSamples)[*currentRow][i] = pMat;
@@ -913,35 +912,35 @@ void CameraControler::takePhotos2()
 
 	clock_t t2 = clock();
 
-	qDebug() << "====================" << pcb::chinese("ç›¸æœºæ‹å›¾ï¼š") << (t2 - t1) << "ms" 
+	qDebug() << "====================" << pcb::chinese("Ïà»úÅÄÍ¼£º") << (t2 - t1) << "ms" 
 		<< "( currentRow_show =" << *currentRow << ")" << endl;
 	return;
 }
 
-//æ‹æ‘„å›¾åƒ - OPT
+//ÅÄÉãÍ¼Ïñ - OPT
 void CameraControler::takePhotos3()
 {
 	clock_t t1 = clock();
-	//int colorMode = userConfig->colorMode; //è‰²å½©æ¨¡å¼
-	//int dataType = (colorMode == 1) ? CV_8UC1 : CV_8UC3; //Matçš„æ•°æ®ç±»å‹
+	//int colorMode = userConfig->colorMode; //É«²ÊÄ£Ê½
+	//int dataType = (colorMode == 1) ? CV_8UC1 : CV_8UC3; //MatµÄÊı¾İÀàĞÍ
 
 	for (int i = 0; i < runtimeParams->nCamera; i++) {
-		//æ‰§è¡Œä¸€æ¬¡è½¯è§¦å‘
+		//Ö´ĞĞÒ»´ÎÈí´¥·¢
 		isGrabbingFlag = 1;
 		status = executeTriggerSoftware(pAcquisitionCtrlList[i]);
 		if (status != 0)
 		{
 			printf("TriggerSoftware fail.\n");
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pAcquisitionCtrlå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpAcquisitionCtrlÄÚ²¿¶ÔÏóÄÚ´æ
 			pAcquisitionCtrl->release(pAcquisitionCtrl);
 
-			//æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pStreamSourceå†…éƒ¨å¯¹è±¡å†…å­˜
+			//×¢Òâ£ºĞèÒªÊÍ·ÅpStreamSourceÄÚ²¿¶ÔÏóÄÚ´æ
 			pStreamSource->release(pStreamSource);
 			return;
 		}
 
 
-		Sleep(250);//å»¶è¿Ÿ50æ¯«ç§’
+		Sleep(250);//ÑÓ³Ù50ºÁÃë
 
 
 		//{
@@ -950,12 +949,12 @@ void CameraControler::takePhotos3()
 		//	interval = onGetTime - triggerTime;
 		//}
 
-		////æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pAcquisitionCtrlå†…éƒ¨å¯¹è±¡å†…å­˜
+		////×¢Òâ£ºĞèÒªÊÍ·ÅpAcquisitionCtrlÄÚ²¿¶ÔÏóÄÚ´æ
 		//pAcquisitionCtrl->release(pAcquisitionCtrl);
 
 		(*cvmatSamples)[*currentRow][i] = pImageFrame;
 
-		////æ³¨é”€å›è°ƒå‡½æ•°
+		////×¢Ïú»Øµ÷º¯Êı
 	/*	status = pStreamSource->detachGrabbing(pStreamSource, onGetFrame);
 		if (status != 0)*/
 		//{
@@ -963,28 +962,28 @@ void CameraControler::takePhotos3()
 		//}
 
 		//// stop grabbing from camera
-		////åœæ­¢æŠ“æµ
+		////Í£Ö¹×¥Á÷
 		//status = GENICAM_stopGrabbing(pStreamSource);
 		//if (status != 0)
 		//{
 		//	printf("Stop Grabbing  fail.\n");
 		//}
 
-		////æ³¨æ„ï¼šéœ€è¦é‡Šæ”¾pStreamSourceå†…éƒ¨å¯¹è±¡å†…å­˜
+		////×¢Òâ£ºĞèÒªÊÍ·ÅpStreamSourceÄÚ²¿¶ÔÏóÄÚ´æ
 		//pStreamSource->release(pStreamSource);
 
 
 
-		//å°†å›¾åƒè½¬æ¢ä¸ºMatç±»
+		//½«Í¼Ïñ×ª»»ÎªMatÀà
 		//if (colorMode == 1) {
-		//	//ç›¸æœºæ ¼å¼æ˜¯Mono8æ—¶
+		//	//Ïà»ú¸ñÊ½ÊÇMono8Ê±
 		//	cv::Mat image = cv::Mat(pFrame->getImageHeight(pFrame),
 		//		pFrame->getImageWidth(pFrame),
 		//		CV_8U,
 		//		(uint8_t*)((pFrame->getImage(pFrame)));
 		//}
 		//else {
-		//	//ç›¸æœºå›¾åƒæ ¼å¼ä¸ºå½©è‰²æ ¼å¼
+		//	//Ïà»úÍ¼Ïñ¸ñÊ½Îª²ÊÉ«¸ñÊ½
 		//	cv::Mat image = cv::Mat(pFrame->getImageHeight(pFrame),
 		//		pFrame->getImageWidth(pFrame),
 		//		CV_8UC3,
@@ -994,22 +993,22 @@ void CameraControler::takePhotos3()
 
 
 		// disconnect camera
-		//æ–­å¼€è®¾å¤‡
+		//¶Ï¿ªÉè±¸
 
 
 	/*	return;*/
 	}
 	clock_t t2 = clock();
-	qDebug() << "====================" << pcb::chinese("ç›¸æœºæ‹å›¾ï¼š") << (t2 - t1) << "ms"
+	qDebug() << "====================" << pcb::chinese("Ïà»úÅÄÍ¼£º") << (t2 - t1) << "ms"
 		<< "( currentRow_show =" << *currentRow << ")" << endl;
 	return;
 }
 
 
 
-/********************* å…¶ä»– ********************/
+/********************* ÆäËû ********************/
 
-//è®¾ç½®è®¾å¤‡å·
+//ÉèÖÃÉè±¸ºÅ
 CameraControler::ErrorCode CameraControler::resetDeviceIndex(std::vector<int> iv)
 {
 	deviceIndex = iv;
@@ -1019,7 +1018,7 @@ CameraControler::ErrorCode CameraControler::resetDeviceIndex(std::vector<int> iv
 	return initCameras();
 }
 
-//å‚æ•°æŠ¥é”™
+//²ÎÊı±¨´í
 bool CameraControler::showMessageBox(QWidget *parent)
 {
 	if (errorCode == CameraControler::NoError) return false;
@@ -1028,22 +1027,22 @@ bool CameraControler::showMessageBox(QWidget *parent)
 	switch (errorCode)
 	{
 	case CameraControler::Unchecked:
-		warningMessage = QString::fromLocal8Bit("ç›¸æœºçŠ¶æ€æœªç¡®è®¤ï¼"); break;
+		warningMessage = QString::fromLocal8Bit("Ïà»ú×´Ì¬Î´È·ÈÏ£¡"); break;
 	case CameraControler::InvalidCameraNum:
-		warningMessage = QString::fromLocal8Bit("å½“å‰è°ƒç”¨çš„ç›¸æœºä¸ªæ•°æ— æ•ˆï¼"); break;
+		warningMessage = QString::fromLocal8Bit("µ±Ç°µ÷ÓÃµÄÏà»ú¸öÊıÎŞĞ§£¡"); break;
 	case CameraControler::InitFailed:
-		warningMessage = QString::fromLocal8Bit("ç›¸æœºåˆå§‹åŒ–å¤±è´¥ï¼     \n");
+		warningMessage = QString::fromLocal8Bit("Ïà»ú³õÊ¼»¯Ê§°Ü£¡     \n");
 		warningMessage += "CameraState: " + cameraStatusMapToString(); break;
 	case CameraControler::TakePhotosFailed:
-		warningMessage = QString::fromLocal8Bit("æ‹ç…§å¤±è´¥ï¼"); break;
+		warningMessage = QString::fromLocal8Bit("ÅÄÕÕÊ§°Ü£¡"); break;
 	default:
-		warningMessage = QString::fromLocal8Bit("æœªçŸ¥é”™è¯¯ï¼"); break;
+		warningMessage = QString::fromLocal8Bit("Î´Öª´íÎó£¡"); break;
 	}
 
-	QMessageBox::warning(parent, QString::fromLocal8Bit("è­¦å‘Š"),
+	QMessageBox::warning(parent, QString::fromLocal8Bit("¾¯¸æ"),
 		warningMessage + "    \n" +
 		"CameraControler: ErrorCode: " + QString::number(errorCode),
-		QString::fromLocal8Bit("ç¡®å®š"));
+		QString::fromLocal8Bit("È·¶¨"));
 	return true;
 }
 int CameraControler::isGrabbingFlag = 0;
