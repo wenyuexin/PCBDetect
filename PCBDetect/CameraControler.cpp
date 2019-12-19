@@ -100,7 +100,7 @@ bool CameraControler::initCameras2()
 	this->closeCameras();
 
 	//相机sdk初始化
-	if (CameraSdkInit(1) != CAMERA_STATUS_SUCCESS) { 
+	if (CameraSdkInit(1) != CAMERA_STATUS_SUCCESS) {
 		errorCode = CameraControler::InitFailed;
 		return false;
 	}
@@ -153,9 +153,9 @@ bool CameraControler::initCameras2()
 		CameraSetExposureTime(cameraList2[i], userConfig->exposureTime * 1000);
 		//CameraSetExposureTime(cameraList2[i], 200 * 1000);
 		//设置色彩模式 - 0彩色 1黑白 -1默认
-		if (userConfig->colorMode == 1) 
+		if (userConfig->colorMode == 1)
 			CameraSetIspOutFormat(cameraList2[i], CAMERA_MEDIA_TYPE_MONO8);
-		
+
 		//设置相机的触发模式。0表示连续采集模式；1表示软件触发模式；2表示硬件触发模式。
 		CameraSetTriggerMode(cameraList2[i], 1);
 		CameraSetTriggerCount(cameraList2[i], 1);
@@ -514,7 +514,7 @@ static void onGetFrame(GENICAM_Frame* pFrame)
 	{
 		blockId = pFrame->getBlockId(pFrame);
 		printf("blockId = %d.\r\n", blockId);
-	    CameraControler::isGrabbingFlag  = 0;
+		CameraControler::isGrabbingFlag = 0;
 
 		IMGCNV_SOpenParam openParam;
 		openParam.width = pFrame->getImageWidth(pFrame);
@@ -528,7 +528,7 @@ static void onGetFrame(GENICAM_Frame* pFrame)
 			cv::Mat image = cv::Mat(pFrame->getImageHeight(pFrame), pFrame->getImageWidth(pFrame), CV_8U, (uint8_t*)((pFrame->getImage(pFrame))));
 			cv::Mat* pMat = new cv::Mat(image.clone());
 			CameraControler::pImageFrame = pMat;
-		/*	cv::imwrite("D:\\0000000_project\\opt_image\\image1008-1623.jpg", image);*/
+			/*	cv::imwrite("D:\\0000000_project\\opt_image\\image1008-1623.jpg", image);*/
 
 		}
 		else {
@@ -835,7 +835,7 @@ void CameraControler::takePhotos2()
 		//CameraGetInformation(camList[i], &FrameInfo)
 		//CameraSoftTrigger(camList[i]);//执行一次软触发。执行后，会触发由CameraSetTriggerCount指定的帧数。
 		//CameraGetImageBuffer(camList[i], &FrameInfo, &pRawBuffer, 10000);//抓一张图
-		
+
 		double t0 = clock();
 		int counter = 5;
 		while (counter > 0) {
@@ -849,9 +849,9 @@ void CameraControler::takePhotos2()
 
 		//申请一个buffer，用来将获得的原始数据转换为RGB数据，并同时获得图像处理效果
 		counter = 10;
-		int bufferSize = FrameInfo.iWidth * FrameInfo.iHeight * (colorMode==1 ? 1 : 3);
+		int bufferSize = FrameInfo.iWidth * FrameInfo.iHeight * (colorMode == 1 ? 1 : 3);
 		while (counter > 0) {
-			pRgbBuffer = (unsigned char *) CameraAlignMalloc(bufferSize, 16);
+			pRgbBuffer = (unsigned char *)CameraAlignMalloc(bufferSize, 16);
 			if (pRgbBuffer != NULL) break;
 			counter--;
 		}
@@ -859,7 +859,7 @@ void CameraControler::takePhotos2()
 		//处理图像，并得到RGB格式的数据
 		CameraImageProcess(cameraList2[iCamera], pRawBuffer, pRgbBuffer, &FrameInfo);
 		//释放由CameraSnapToBuffer、CameraGetImageBuffer获得的图像缓冲区
-			while (CameraReleaseImageBuffer(cameraList2[iCamera], pRawBuffer) != CAMERA_STATUS_SUCCESS);
+		while (CameraReleaseImageBuffer(cameraList2[iCamera], pRawBuffer) != CAMERA_STATUS_SUCCESS);
 		//将pRgbBuffer转换为Mat类
 		cv::Mat fram(frameSize, dataType, pRgbBuffer);
 
@@ -868,10 +868,10 @@ void CameraControler::takePhotos2()
 		cv::Mat* pMat = new cv::Mat(fram.clone());
 		(*cvmatSamples)[*currentRow][i] = pMat;
 		CameraAlignFree(pRgbBuffer);
-	} 
+	}
 
 	clock_t t2 = clock();
-	qDebug() << "====================" << pcb::chinese("相机拍图：") << (t2 - t1) << "ms" 
+	qDebug() << "====================" << pcb::chinese("相机拍图：") << (t2 - t1) << "ms"
 		<< "( currentRow_show =" << *currentRow << ")" << endl;
 	return;
 }
@@ -973,7 +973,7 @@ CameraControler::ErrorCode CameraControler::resetDeviceIndex(std::vector<int> iv
 	deviceIndex = iv;
 	for (int i = 0; i < cameraList.size(); i++) {
 		cameraList[i].release();
-	}     
+	}
 	return initCameras();
 }
 
