@@ -23,6 +23,7 @@ using cv::DMatch;
 using cv::FlannBasedMatcher;
 using cv::xfeatures2d::SURF;
 
+
 #define M_PI       3.14159265358979323846   // pi
 
 
@@ -52,9 +53,11 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 	cv::Size sz = image_sample_gray.size();
 	
 	pyrDown(image_sample_gray, pyr);
-	pyrDown(pyr, pyr);
 	if (userConfig->matchingAccuracyLevel == 2)//低精度
+	{
 		pyrDown(pyr, pyr);
+	}
+     
 
 	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
 
@@ -125,7 +128,7 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 
 		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
 
-		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
+		int matrixAdj = 2 * (userConfig->matchingAccuracyLevel);
 		H.at<double>(0, 2) *= matrixAdj;
 		H.at<double>(1, 2) *= matrixAdj;
 		H.at<double>(2, 0) /= matrixAdj;
@@ -217,7 +220,7 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	//cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
 
 	int revise = 20;
-	int grayImgMean = mean(grayImg(rect))[0] ;
+	int grayImgMean = mean(grayImg(rect))[0];
 	cv::threshold(grayImg(rect), res(rect), grayImgMean, 255, cv::THRESH_BINARY);
 
 	//Mat grayImgCopy = grayImg.clone();
@@ -304,9 +307,82 @@ cv::Rect DetectFunc::getRect(int curCol, int curRow, const cv::Mat& grayImg, cv:
 	return rect;
 }
 
+bool  DetectFunc::alignImagesECC(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &warp_matrix) {
+	Mat pyrTemp, pyrSamp;
+	pyrDown(image_template_gray, pyrTemp);
+	pyrDown(pyrTemp, pyrTemp);
+	pyrDown(pyrTemp, pyrTemp);
+	pyrDown(pyrTemp, pyrTemp);
+
+	pyrDown(image_sample_gray, pyrSamp);
+	pyrDown(pyrSamp, pyrSamp);
+	pyrDown(pyrSamp, pyrSamp);
+	pyrDown(pyrSamp, pyrSamp);
+
+	// Define the motion model 定义运动模型
+	const int warp_mode =cv:: MOTION_EUCLIDEAN;
+
+	// Set a 2x3 or 3x3 warp matrix depending on the motion model. 变换矩阵
+	//Mat warp_matrix;
+
+	// Initialize the matrix to identity
+	if (warp_mode ==cv:: MOTION_HOMOGRAPHY)
+	{
+		warp_matrix = Mat::eye(3, 3, CV_32F);
+	}
+	else
+	{
+		warp_matrix = Mat::eye(2, 3, CV_32F);
+	}
+	imwrite("D:\\0000000_project\\000_PCBData_0729\\PCBData\\warp_matrix.bmp", warp_matrix);
+	// Specify the number of iterations. 算法迭代次数
+	int number_of_iterations = 5000;
+
+	// Specify the threshold of the increment
+	// in the correlation coefficient between two iterations 设定阈值
+	double termination_eps = 1e-10;
+
+	// Define termination criteria 定义终止条件
+	cv::TermCriteria criteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, number_of_iterations, termination_eps);
+
+	// Run the ECC algorithm. The results are stored in warp_matrix. ECC算法
+	//imwrite("D:\\0000000_project\\000_PCBData_0729\\PCBData\\image_template_gray.bmp", image_template_gray);
+	//imwrite("D:\\0000000_project\\000_PCBData_0729\\PCBData\\image_sample_gray.bmp", image_sample_gray);
+	int typeTemplate = image_template_gray.type();
+	int typeSample = image_sample_gray.type();
+	try {
+		findTransformECC(pyrSamp, pyrTemp, warp_matrix, warp_mode, criteria, cv::noArray());
+	}
+	catch (cv::Exception& e) {
+		const char* err_msg = e.what();
+		cout << err_msg;
+		return false;
+	}
+
+	// Storage for warped image.
+
+	if (warp_mode != cv::MOTION_HOMOGRAPHY)
+	{
+		// Use warpAffine for Translation, Euclidean and Affine
+		warpAffine(image_sample_gray, imgReg, warp_matrix, image_template_gray.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+	}
+	else
+	{
+		// Use warpPerspective for Homography
+		warpPerspective(image_sample_gray, imgReg, warp_matrix, image_template_gray.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+	}
+
+	// Show final result
+	//imshow("Image 1", im1);
+	//imshow("Image 2", im2);
+	//imshow("Image 2 Aligned", im2_aligned);
+	//waitKey(0);
+
+	return true;
+}
 
 bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches) {
-	/*Ptr<SURF> detector = SURF::create(500, 4, 3, true, true);*/
+	/*Ptr<SURF> detector = SURF::create(3500, 4, 3, true, true);*/
 	Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
 	std::vector<KeyPoint> keypoints_1, keypoints_2;
 	Mat descriptors_1, descriptors_2;
@@ -325,6 +401,9 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 
 	detector->detectAndCompute(pyrTemp, Mat(), keypoints_1, descriptors_1);
 	detector->detectAndCompute(pyrSamp, Mat(), keypoints_2, descriptors_2);
+
+	//detector->detectAndCompute(image_template_gray, Mat(), keypoints_1, descriptors_1);
+	//detector->detectAndCompute(image_sample_gray, Mat(), keypoints_2, descriptors_2);
 
 	double t2 = clock();
 	cout << "获取特征点时间" << double(t2 - t1) / CLOCKS_PER_SEC << endl;
@@ -352,10 +431,10 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 		}
 	}
 	//-- Draw matches
-	Mat img_matches;
-	drawMatches(pyrTemp, keypoints_1, pyrSamp, keypoints_2, matches, img_matches, Scalar::all(-1),
-		Scalar::all(-1), std::vector<char>(),cv:: DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-	imwrite("D:\\PCBData\\drawMatches.jpg", img_matches);
+	//Mat img_matches;
+	//drawMatches(image_template_gray, keypoints_1, image_sample_gray, keypoints_2, matches, img_matches, Scalar::all(-1),
+	//	Scalar::all(-1), std::vector<char>(),cv:: DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+	//imwrite("D:\\PCBData\\drawMatches.jpg", img_matches);
 
 
 	if (!matches.size())
@@ -382,13 +461,25 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 		cout << "匹配获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
 
 		H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-		
 		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
 		H.at<double>(0, 2) *= matrixAdj;
 		H.at<double>(1, 2) *= matrixAdj;
 		H.at<double>(2, 0) /= matrixAdj;
-		H.at<double>(2, 1) /= matrixAdj;
+		H.at<double>(2, 1) /= matrixAdj; 
 		warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
+
+		/*H = Mat::eye(3, 3, CV_8U);*/
+		//H = findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
+		//std::vector<Point2f> obj_corners(4);
+		//obj_corners[0] = Point2f(0, 0);
+		//obj_corners[1] = Point2f(0, image_template_gray.rows - 1);
+		//obj_corners[2] = Point2f(image_template_gray.cols - 1, image_template_gray.rows - 1);
+		//obj_corners[3] = Point2f(image_template_gray.cols - 1, 0);
+		//std::vector<Point2f> scene_corners(4);
+		//perspectiveTransform(obj_corners, scene_corners,H);
+		//Mat warpPerspective_mat(3, 3, CV_8U);
+		//warpPerspective_mat = getPerspectiveTransform(scene_corners, obj_corners);
+		//warpPerspective(image_sample_gray, imgReg, warpPerspective_mat, image_sample_gray.size());
 	}
 	return true;
 }
@@ -396,28 +487,33 @@ bool DetectFunc::alignImages_test(Mat &image_template_gray, Mat &image_sample_gr
 /**
  *先进行阈值处理，再进行差值处理
  */
-Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi) {
+Mat DetectFunc::sub_process_new(Mat &templBw, Mat &sampBw, Mat& mask_roi, Mat& directFlaw, Mat& MorphFlaw,Mat& cannyFlaw) {
 	Mat imgFlaw;
+	
 	cv::absdiff(templBw, sampBw, imgFlaw);
+	directFlaw = imgFlaw.clone();
 	bitwise_and(imgFlaw, mask_roi, imgFlaw);
+	
 
 	//对差值图像做形态学处理，先开后闭，这里的处理与最小线宽有关
 	cv::Mat element_a = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
 	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
+	MorphFlaw = imgFlaw.clone();
 
 	////膨胀模板边缘，与形态学处理后的图片相乘，获取边界上的点消除
-	cv::Mat edges;
-	cv::Canny(templBw, edges, 150, 50);
-	cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-	cv::dilate(edges, edges, element_b);
-	edges = 255 - edges;
-	cv::bitwise_and(edges, imgFlaw, imgFlaw);
+	//cv::Mat edges;
+	//cv::Canny(templBw, edges, 150, 50);
+	//cv::Mat element_b = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+	//cv::dilate(edges, edges, element_b);
+	//edges = 255 - edges;
+	//cv::bitwise_and(edges, imgFlaw, imgFlaw);
+	//cannyFlaw = imgFlaw.clone();
 
 
-	//再进行一次形态学处理
-	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
-	cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
+	////再进行一次形态学处理
+	//cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_OPEN, element_a);
+	//cv::morphologyEx(imgFlaw, imgFlaw, cv::MORPH_CLOSE, element_a);
 
 
 	return imgFlaw;
@@ -478,9 +574,9 @@ cv::Mat DetectFunc::sub_process_direct(cv::Mat & templBw, cv::Mat & sampBw, cv::
 *       defectNum:缺陷序号
 *       currentCol:检测的列
 */
-cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayReg, double scalingFactor, Mat &templBw, Mat &templGray, int &defectNum, std::map<cv::Point3i, cv::Mat, cmp_point3i> &detailImage,cv::Mat rectBlack) {
+cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayReg, double scalingFactor, Mat &templBw, Mat &templGray,Mat sampBw, int &defectNum, std::map<cv::Point3i, cv::Mat, cmp_point3i> &detailImage,cv::Mat rectBlack) {
 	Mat kernel_small = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-	threshold(diffBw, diffBw, 0, 255, cv::THRESH_BINARY);
+	//threshold(diffBw, diffBw, 0, 255, cv::THRESH_BINARY);
 	//dilate(diffBw, diffBw, kernel_small);//对差值图像做膨胀，方便对类型进行判断
 	
 	//模板二值图边缘做平滑处理
@@ -557,109 +653,141 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		vector<cv::Point2i> locations;
 		cv::findNonZero(diffBwPart, locations);
 
-		if (locations.size() <= 10) {
+		if (locations.size()<9/* <= 10*/) {
 			Size szDiff = diffBwPart.size();
 			continue;
 		}
 		/**************************计算缺陷判断次数*****************************/
 		int transNum = 0;
-
-		//获取缺陷轮廓最小外接矩形上的所有点
-		cv::RotatedRect minRectOfPart = cv::minAreaRect(contours[i]);
-		//minRectOfPart.size += cv::Size2f(10, 10);
-		minRectOfPart.size += cv::Size2f(8, 8);
-		Point2f rectPointsOfPart[4];
-		minRectOfPart.points(rectPointsOfPart);
-		//for (int i = 0; i < 4; i++) {
-		//	if (abs(rectPointsOfPart[i].x - 3247) < 5)
-		//		cout << "test" << endl;
-		//}
-	
-
-		vector<Point> rectPoints;//外接矩形上的点
-		vector<vector<Point>> fourLines(4);//四条线上的点
-		for (int i = 0; i < 4; i++) {
-			cv::LineIterator it(diffBw, rectPointsOfPart[i], rectPointsOfPart[(i + 1) % 4], 8);
-			for (int j = 0; j < it.count; j++, ++it)
-			{
-				fourLines[i].push_back(it.pos());
-			}
-			fourLines[i].pop_back();//删除最后一个点
-			//将整条线的坐标插入矩形坐标集合
-			rectPoints.insert(rectPoints.end(), fourLines[i].begin(), fourLines[i].end());
-		}
-		rectPoints.push_back(rectPoints[0]);
-
-		//绘制变换矩形
-		for (int j = 0; j < 4; j++)
-		{
-			line(rectBlack, Point2f(rectPointsOfPart[j].x, rectPointsOfPart[j].y), Point2f(rectPointsOfPart[(j + 1) % 4].x, rectPointsOfPart[(j + 1) % 4].y), (255, 255, 255));
-		}
-
-
-
-
 		//寻找状态变换点的个数
+		Point2f rectPointsOfPart[4];
+		vector<Point> rectPoints;//外接矩形上的点
 		vector<Point> change_point;
-		try{
-			auto temp_iterator = rectPoints.begin();
-			auto pre_iterator = rectPoints.begin();
-			Point pre, temp;
-			for (int k = 1; k < rectPoints.size() && temp_iterator != rectPoints.end(); k++)
-			{
-				pre = rectPoints[k - 1];
-				temp = rectPoints[k];
-				++temp_iterator;
-				/*	if (pre.x == 1940-rect_out.x && pre.y == 965-rect_out.y)
-						int a = 0;*/
-				/*if (abs(pre.x - 1749) < 5 && abs(pre.y - 2107) < 5)
-					std::cout << "test" << endl;*/
-				if (transNum < 1 && (int)templBw.at<uchar>(pre) != (int)templBw.at<uchar>(temp))
+		int size = 0;
+		while (/*change_point.empty()&&*/size<=6) {
+			vector<Point> change_point_temp;
+			transNum = 0;
+			rectPoints.clear();
+			//获取缺陷轮廓最小外接矩形上的所有点
+			cv::RotatedRect minRectOfPart = cv::minAreaRect(contours[i]);
+			minRectOfPart.size += cv::Size2f(size, size);
+			size += 2;			
+			minRectOfPart.points(rectPointsOfPart);
+
+		/*	for (int i = 0; i < 4; i++) {
+				if (abs(rectPointsOfPart[i].x - 2131) < 5&&size==4)
+					cout << "test" << endl;
+			}*/	
+			//Point2i testPoint;
+			//for (int i = 0; i < 4; i++) {
+			//	if (abs(rectPointsOfPart[i].x - 3701) <3 && size == 4) {
+			//		testPoint.x = 3700;
+			//		testPoint.y = 3161;
+			//		vector<Point2i> neighbors{ testPoint,
+			//							Point2i(testPoint.x + 1,testPoint.y),//右
+			//							Point2i(testPoint.x - 1,testPoint.y),//左
+			//							Point2i(testPoint.x ,testPoint.y + 1),//下
+			//							Point2i(testPoint.x ,testPoint.y - 1) };//变化点的右上左下邻域
+			//		for (int i = 0; i < 5; i++) {
+			//			if ((int)templBw.at<uchar>(neighbors[i]) == 0) {
+			//				cout << "test" << endl;
+			//			}
+			//		}
+			//	}
+			//		
+			//}
+			//
+			vector<vector<Point>> fourLines(4);//四条线上的点
+			for (int i = 0; i < 4; i++) {
+				cv::LineIterator it(diffBw, rectPointsOfPart[i], rectPointsOfPart[(i + 1) % 4], 8);
+				for (int j = 0; j < it.count; j++, ++it)
 				{
-					if (templBw.at<uchar>(pre) > 0)
-					{
-						change_point.push_back(pre);//保存变换点
-					}
-					else if (templBw.at<uchar>(temp) > 0)
-					{
-						change_point.push_back(temp);//保存变换点
-					}
-					pre_iterator = temp_iterator;
-					++transNum;
-					rectBlack.at<cv::Vec3b>(pre) = { 255, 255, 0 };//标记变换点
-
-				/*	if (pre.x == 3021 && pre.y == 925)
-						cout << "test" << endl;*/
-
-					/*cout << i << endl;*/
-					//cout << pre.x + rect_out.x << " " << pre.y + rect_out.y << endl;
-
+					fourLines[i].push_back(it.pos());
 				}
-				else if (transNum >= 1 && (int)templBw.at<uchar>(pre) != (int)templBw.at<uchar>(temp) && (temp_iterator - pre_iterator) > 5)
+				fourLines[i].pop_back();//删除最后一个点
+				//将整条线的坐标插入矩形坐标集合
+				rectPoints.insert(rectPoints.end(), fourLines[i].begin(), fourLines[i].end());
+			}
+			rectPoints.push_back(rectPoints[0]);//作用：外接矩形的最后一个点与第一点需要进行比较
+
+			//绘制变换矩形
+			for (int j = 0; j < 4; j++)
+			{
+				line(rectBlack, Point2f(rectPointsOfPart[j].x, rectPointsOfPart[j].y), Point2f(rectPointsOfPart[(j + 1) % 4].x, rectPointsOfPart[(j + 1) % 4].y), (255, 255, 255));
+			}
+
+			//寻找变化点
+			try {
+				auto temp_iterator = rectPoints.begin();
+				auto pre_iterator = rectPoints.begin();
+				Point pre, temp;
+				for (int k = 1; k < rectPoints.size() && temp_iterator != rectPoints.end(); k++)
 				{
-					if (templBw.at<uchar>(pre) > 0)
+					pre = rectPoints[k - 1];
+					temp = rectPoints[k];
+					++temp_iterator;
+					/*	if (pre.x == 1940-rect_out.x && pre.y == 965-rect_out.y)
+							int a = 0;*/
+							/*if (abs(pre.x - 1749) < 5 && abs(pre.y - 2107) < 5)
+								std::cout << "test" << endl;*/
+					if (transNum < 1 && (int)templBw.at<uchar>(pre) != (int)templBw.at<uchar>(temp))
 					{
-						change_point.push_back(pre);//保存变换点
+						if (templBw.at<uchar>(pre) > 0)
+						{
+							change_point_temp.push_back(pre);//保存变换点
+							//change_point.push_back(temp);//保存变换点
+							rectBlack.at<cv::Vec3b>(pre) = { 255, 255, 0 };//标记变换点
+						}
+						else if (templBw.at<uchar>(temp) > 0)
+						{
+							change_point_temp.push_back(temp);//保存变换点
+							//change_point.push_back(temp);//保存变换点
+							rectBlack.at<cv::Vec3b>(temp) = { 255, 255, 0 };//标记变换点
+						}
+						++transNum;
+						pre_iterator = temp_iterator;
+					/*	if (pre.x == 3021 && pre.y == 925)
+							cout << "test" << endl;*/
+
+							/*cout << i << endl;*/
+							//cout << pre.x + rect_out.x << " " << pre.y + rect_out.y << endl;
+
 					}
-					else if (templBw.at<uchar>(temp) > 0)
+					else if (transNum >= 1 && (int)templBw.at<uchar>(pre) != (int)templBw.at<uchar>(temp) && (temp_iterator - pre_iterator) > 5)
 					{
-						change_point.push_back(temp);//保存变换点
+						if (templBw.at<uchar>(pre) > 0)
+						{
+							change_point_temp.push_back(pre);//保存变换点
+							//change_point.push_back(temp);//保存变换点
+							rectBlack.at<cv::Vec3b>(pre) = { 255, 255, 0 };//标记变换点
+						}
+						else if (templBw.at<uchar>(temp) > 0)
+						{
+							change_point_temp.push_back(temp);//保存变换点
+							//change_point.push_back(temp);//保存变换点
+							rectBlack.at<cv::Vec3b>(temp) = { 255, 255, 0 };//标记变换点
+						}
+
+						/*	if (pre.x == 3021 && pre.y == 925)
+								cout << "test" << endl;*/
+						++transNum;
+						pre_iterator = temp_iterator;
 					}
-					rectBlack.at<cv::Vec3b>(pre) = { 255, 255, 0 };
+				}
 
-				/*	if (pre.x == 3021 && pre.y == 925)
-						cout << "test" << endl;*/
-
-					pre_iterator = temp_iterator;
-					++transNum;
+				if (change_point_temp.size() > change_point.size()) {
+					change_point = change_point_temp;
+					transNum = change_point.size();
 				}
 			}
+			catch (std::exception)
+			{
+				qDebug() << QString::fromLocal8Bit("旋转矩形坐标计算错误");
+				//cout << "旋转矩形坐标计算错误";
+			}
 		}
-		catch (std::exception)
-		{
-			qDebug() << QString::fromLocal8Bit("旋转矩形坐标计算错误");
-			//cout << "旋转矩形坐标计算错误";
-		}
+       
+
 
 
 		//获取缺陷最小外接矩形的宽和高，用宽边代表缺陷长度
@@ -702,12 +830,128 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		if (neighbors_sum >= 255 * 2) lack_flag = 1;
 
 		int defect_flag = 0;
+		//int trans = 0;
+		//int boundaryX = sampBw.cols-1;
+		//minRectOfPart.size -= cv::Size2f(8, 8);
+		//minRectOfPart.points(rectPointsOfPart);
 		if (lack_flag) {
 			defect_flag = transNum > 2 ? 1 : 2;//断路:缺失
+			//for (int i = 0; i < 4; i++) {
+			//	for (int j = 1; j < 2; j++) {
+			//		Point tempVaule = rectPointsOfPart[(i + 1) % 4];
+			//		rectPointsOfPart[(i + 1) % 4].x += j;
+			//		if (rectPointsOfPart[(i + 1) % 4].x > boundaryX) { 
+			//			trans++;
+			//			continue; 
+			//		}else if (rectPointsOfPart[(i + 1) % 4].x== boundaryX ||(int)sampBw.at<uchar>(rectPointsOfPart[(i + 1) % 4]) != (int)sampBw.at<uchar>(tempVaule)) {
+			//			trans++;
+			//		}
+			//	}
+			//}
+			//defect_flag = trans >= 4 ? 1 : 2;//断路:缺失
 		}
 		else {
 			defect_flag = transNum > 2 ? 3 : 4;//短路:凸起
+			//for (int i = 0; i < 4; i++) {
+			//	for (int j = 1; j < 2; j++) {
+			//		Point tempVaule = rectPointsOfPart[(i + 1) % 4];
+			//		rectPointsOfPart[(i + 1) % 4].x += j;
+			//		if (rectPointsOfPart[(i + 1) % 4].x > boundaryX) {
+			//			trans++;
+			//			continue;
+			//		}else if (rectPointsOfPart[(i + 1) % 4].x == boundaryX || (int)sampBw.at<uchar>(rectPointsOfPart[(i + 1) % 4]) != (int)sampBw.at<uchar>(tempVaule)) {
+			//			trans++;
+			//		}
+			//	}
+			//}
+			//defect_flag = trans >= 4 ? 3 : 4;//断路:缺失
 		}
+
+
+		////对判断为缺失、凸起的缺陷进行二次判断，避免发生误检，检测为开路、短路
+		//if (defect_flag == 2) {
+		//	cv::RotatedRect minRect = minRectOfPart;
+		//	minRect.size -= cv::Size2f(8, 8);
+		//	int isNoLineDrop = 0;
+		//	for (int k = 0; k < 2; k++) {
+		//		Point2f minRectPoints[4];
+		//		minRect.points(minRectPoints);
+		//		vector<vector<Point>> minRectFourLines(4);//旋转矩形四条线上的点
+		//		for (int i = 0; i < 4; i++) {
+		//			cv::LineIterator minIt(diffBw, minRectPoints[i], minRectPoints[(i + 1) % 4], 8);
+		//			for (int j = 0; j < minIt.count; j++, ++minIt)
+		//			{
+		//				minRectFourLines[i].push_back(minIt.pos());
+		//			}
+		//		}
+
+		//		//获取最小旋转矩阵四条边非线路部分的变化情况，如果存在有一条边有下降的趋势，说明该缺陷为缺失否则为凸起
+		//		vector<int> NoLineNumTemp(4, 0);
+		//		int count = 0;
+		//		for (vector<vector<Point>>::iterator iter = minRectFourLines.begin(); iter != minRectFourLines.end(); ++iter) {
+		//			for (int m = 0; m < (*iter).size(); ++m) {
+		//				if ((int)sampBw.at<uchar>((*iter)[m]) == 0) {
+		//					NoLineNumTemp[count]++;
+		//				}
+		//			}
+		//			count++;
+		//		}
+		//		vector<int> NoLineNumPre;
+		//		NoLineNumPre.insert(NoLineNumPre.end(), NoLineNumTemp.begin(), NoLineNumTemp.end());
+		//		for (int i = 0; i < 4; i++) {
+		//			if (NoLineNumTemp[i] < NoLineNumPre[i]) {
+		//				isNoLineDrop++;
+		//			}
+		//		}
+		//		minRect.size += cv::Size2f(1, 1);
+		//	}
+		//	if (isNoLineDrop == 0) {
+		//		defect_flag = 1;
+		//	}
+		//}
+
+		//if (defect_flag == 4) {
+		//	cv::RotatedRect minRect = minRectOfPart;
+		//	minRect.size -= cv::Size2f(8, 8);
+		//	int isNoLineRise = 0;
+		//	for (int k = 0; k < 2; k++) {
+		//		Point2f minRectPoints[4];
+		//		minRect.points(minRectPoints);
+		//		vector<vector<Point>> minRectFourLines(4);//旋转矩形四条线上的点
+		//		for (int i = 0; i < 4; i++) {
+		//			cv::LineIterator minIt(diffBw, minRectPoints[i], minRectPoints[(i + 1) % 4], 8);
+		//			for (int j = 0; j < minIt.count; j++, ++minIt)
+		//			{
+		//				minRectFourLines[i].push_back(minIt.pos());
+		//			}
+		//		}
+
+		//		//获取最小旋转矩阵四条边非线路部分的变化情况，如果存在有一条边有下降的趋势，说明该缺陷为缺失否则为凸起
+		//		vector<int> NoLineNumTemp(4, 0);
+		//		int count = 0;
+		//		for (vector<vector<Point>>::iterator iter = minRectFourLines.begin(); iter != minRectFourLines.end(); ++iter) {
+		//			for (int m = 0; m < (*iter).size(); ++m) {
+		//				if ((int)sampBw.at<uchar>((*iter)[m]) == 0) {
+		//					NoLineNumTemp[count]++;
+		//				}
+		//			}
+		//			count++;
+		//		}
+		//		vector<int> NoLineNumPre;
+		//		NoLineNumPre.insert(NoLineNumPre.end(), NoLineNumTemp.begin(), NoLineNumTemp.end());
+		//		for (int i = 0; i < 4; i++) {
+		//			if (NoLineNumTemp[i] > NoLineNumPre[i]) {
+		//				isNoLineRise++;
+		//			}
+		//		}
+		//		minRect.size += cv::Size2f(1, 1);
+		//	}
+		//	if (isNoLineRise == 0) {
+		//		defect_flag = 3;
+		//	}
+		//}
+		
+		
 		
 
 		/*for (int i = 0; i < change_point.size(); i++) {
@@ -835,10 +1079,11 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		//int concaveRateThresh; //线路缺失率的阈值
 		//int convexRateThresh; //线路凸起率的阈值
 
-		if (convexDetectFlag&&defect_flag == 4 && percentFlag&&percentage < userConfig->convexRateThresh)
-			continue;//凸起超过阈值
-		if (concaveDetectFlag&&defect_flag == 2 && percentFlag&&percentage < userConfig->concaveRateThresh)
-			continue;//缺失超过阈值
+		//percentFlag只代表有两个变化点的缺失或凸起
+		if (convexDetectFlag&&defect_flag == 4 && percentFlag&&percentage >= userConfig->convexRateThresh)
+			defect_flag = 3;//凸起超过阈值
+		if (concaveDetectFlag&&defect_flag == 2 && percentFlag&&percentage >= userConfig->concaveRateThresh)
+			defect_flag = 1;//缺失超过阈值
 
 	
 		/********************截取缺陷所在分图，并在上面标记************************/
@@ -1268,10 +1513,10 @@ float DetectFunc::bulge_missing_percentage(cv::Mat &templBw, std::vector<cv::Poi
 			Point2i(change_point[0].x ,change_point[0].y + 1)/*,Point2i(change_point[0].x ,change_point[0].y + 2),Point2i(change_point[0].x ,change_point[0].y + 3)*/ };//变化点的右上左下邻域
 	float change_line = 0, vertical_line = 0, vertical_angle = 0, change_angle = 0, vertical_rangle = 0;//求变化点斜率，法线斜率，法线角度，以及确定距法线最近的遍历方向
 	float rect_line0, rect_angle0, rect_line1, rect_angle1;
-	float flaw_width, flaw_height, flaw_length;
+	float flaw_width, flaw_height, flaw_length;//缺陷的宽，高
 	flaw_width = sqrt((rectPointsOfPart[1].x - rectPointsOfPart[0].x)*(rectPointsOfPart[1].x - rectPointsOfPart[0].x) + (rectPointsOfPart[1].y - rectPointsOfPart[0].y)*(rectPointsOfPart[1].y - rectPointsOfPart[0].y)) - 10;//旋转矩形向外扩张了10像素，计算旋转矩形的边长需要复原
 	flaw_height = sqrt((rectPointsOfPart[2].x - rectPointsOfPart[1].x)*(rectPointsOfPart[2].x - rectPointsOfPart[1].x) + (rectPointsOfPart[2].y - rectPointsOfPart[1].y)*(rectPointsOfPart[2].y - rectPointsOfPart[1].y)) - 10;
-	if (change_point[1].y - change_point[0].y == 0)
+	if (change_point[1].y - change_point[0].y == 0)//两变化点的连线平行于水平线
 	{
 		//if (templBw.at<uchar>(neighbors[2]) != templBw.at<uchar>(neighbors[3]))
 		//{
@@ -1289,7 +1534,7 @@ float DetectFunc::bulge_missing_percentage(cv::Mat &templBw, std::vector<cv::Poi
 		//}
 		//else if (templBw.at<uchar>(neighbors[2]) == templBw.at<uchar>(neighbors[3]))
 		//{
-		vertical_angle = -90;
+		vertical_angle = -90;//确定变化点连线的法线方向
 		vertical_rangle = 90;
 
 		//}
@@ -1498,13 +1743,15 @@ float DetectFunc::bulge_missing_percentage(cv::Mat &templBw, std::vector<cv::Poi
 	return bulge_missing_percentage;
 }
 
-void DetectFunc::save(const std::string& path, Mat& image_template_gray) {
+void DetectFunc::save(const std::string& path, Mat& image_template_gray) {//实际上没有调用，只是为了统一
 	Mat temp;
-	cv::pyrDown(image_template_gray, temp);
-	cv::pyrDown(temp, temp);
+	cv::pyrDown(image_template_gray, temp);	
 	if (userConfig->matchingAccuracyLevel == 2)//低精度
+	{
 		cv::pyrDown(temp, temp);
-	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
+	}
+		
+	Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
 	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
 	cv::FileStorage store(path, cv::FileStorage::WRITE);
 	cv::write(store, "keypoints", keypoints);
