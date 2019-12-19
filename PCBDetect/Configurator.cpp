@@ -12,14 +12,14 @@ using std::vector;
 
 AdminConfig::AdminConfig()
 {
-	MaxMotionStroke = -1; //»úĞµ½á¹¹µÄ×î´óÔË¶¯ĞĞ³Ì
-	MaxCameraNum = -1; //¿ÉÓÃÏà»ú×ÜÊı
-	PixelsNumPerUnitLength = -1; //µ¥Î»³¤¶ÈµÄÏñËØ pix/mm
-	ImageOverlappingRate_W = -1; //·ÖÍ¼ÖØµşÂÊ(¿í)
-	ImageOverlappingRate_H = -1; //·ÖÍ¼ÖØµşÂÊ(¸ß)
-	ImageSize_W = -1; //·ÖÍ¼¿í¶È
-	ImageSize_H = -1; //·ÖÍ¼¸ß¶È
-	ImageAspectRatio = -1; //Í¼Ïñ¿í¸ß±È
+	MaxMotionStroke = -1; //æœºæ¢°ç»“æ„çš„æœ€å¤§è¿åŠ¨è¡Œç¨‹
+	MaxCameraNum = -1; //å¯ç”¨ç›¸æœºæ€»æ•°
+	PixelsNumPerUnitLength = -1; //å•ä½é•¿åº¦çš„åƒç´  pix/mm
+	ImageOverlappingRate_W = -1; //åˆ†å›¾é‡å ç‡(å®½)
+	ImageOverlappingRate_H = -1; //åˆ†å›¾é‡å ç‡(é«˜)
+	ImageSize_W = -1; //åˆ†å›¾å®½åº¦
+	ImageSize_H = -1; //åˆ†å›¾é«˜åº¦
+	ImageAspectRatio = -1; //å›¾åƒå®½é«˜æ¯”
 }
 
 AdminConfig::~AdminConfig()
@@ -27,61 +27,61 @@ AdminConfig::~AdminConfig()
 	qDebug() << "~AdminConfig";
 }
 
-//¼ÓÔØÄ¬ÈÏ²ÎÊı
+//åŠ è½½é»˜è®¤å‚æ•°
 void AdminConfig::loadDefaultValue()
 {
-	this->errorCode = Unchecked; //´íÎó´úÂë
-	this->MaxMotionStroke = 120 * 5; //»úĞµ½á¹¹µÄ×î´óÔË¶¯ĞĞ³Ì
-	this->PulseNumInUnitTime = 90; //µ¥Î»Ê±¼äÄÚµÄÂö³åÊı
-	this->MaxCameraNum = 3; //¿ÉÓÃÏà»úµÄ×ÜÊı
-	this->PixelsNumPerUnitLength = 30.3; //µ¥Î»³¤¶ÈÄÚµÄÏñËØ¸öÊı
-	this->ImageOverlappingRate_W = 316.5 / 5472.0; //·ÖÍ¼ÖØµşÂÊ(¿í)
-	this->ImageOverlappingRate_H = 110.7/3648; //·ÖÍ¼ÖØµşÂÊ(¸ß)
-	this->ImageSize_W = 5472; //¿í¸ß±ÈÖĞµÄ¿í
-	this->ImageSize_H = 3648; //¿í¸ß±ÈÖĞµÄ¸ß
-	this->ImageAspectRatio = 1.0 * ImageSize_W / ImageSize_H; //Ñù±¾Í¼ÏñµÄ¿í¸ß±È
+	this->errorCode = Unchecked; //é”™è¯¯ä»£ç 
+	this->MaxMotionStroke = 120 * 5; //æœºæ¢°ç»“æ„çš„æœ€å¤§è¿åŠ¨è¡Œç¨‹
+	this->PulseNumInUnitTime = 90; //å•ä½æ—¶é—´å†…çš„è„‰å†²æ•°
+	this->MaxCameraNum = 3; //å¯ç”¨ç›¸æœºçš„æ€»æ•°
+	this->PixelsNumPerUnitLength = 30.3; //å•ä½é•¿åº¦å†…çš„åƒç´ ä¸ªæ•°
+	this->ImageOverlappingRate_W = 316.5 / 5472.0; //åˆ†å›¾é‡å ç‡(å®½)
+	this->ImageOverlappingRate_H = 110.7/3648; //åˆ†å›¾é‡å ç‡(é«˜)
+	this->ImageSize_W = 5472; //å®½é«˜æ¯”ä¸­çš„å®½
+	this->ImageSize_H = 3648; //å®½é«˜æ¯”ä¸­çš„é«˜
+	this->ImageAspectRatio = 1.0 * ImageSize_W / ImageSize_H; //æ ·æœ¬å›¾åƒçš„å®½é«˜æ¯”
 }
 
-//²ÎÊıÓĞĞ§ĞÔ¼ì²é
+//å‚æ•°æœ‰æ•ˆæ€§æ£€æŸ¥
 AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index)
 {
 	AdminConfig::ErrorCode code = Unchecked;
 	switch (index)
 	{
 	case pcb::AdminConfig::Index_All:
-	case pcb::AdminConfig::Index_MaxMotionStroke: //»úĞµ½á¹¹µÄ×î´óÔË¶¯ĞĞ³Ì
+	case pcb::AdminConfig::Index_MaxMotionStroke: //æœºæ¢°ç»“æ„çš„æœ€å¤§è¿åŠ¨è¡Œç¨‹
 		if (MaxMotionStroke <= 0 || MaxMotionStroke > 650)
 			code = Invalid_MaxMotionStroke;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_PulseNumInUnitTime: //»úĞµ½á¹¹µÄ×î´óÔË¶¯ĞĞ³Ì
+	case pcb::AdminConfig::Index_PulseNumInUnitTime: //æœºæ¢°ç»“æ„çš„æœ€å¤§è¿åŠ¨è¡Œç¨‹
 		if (PulseNumInUnitTime <= 0 || PulseNumInUnitTime > 300)
 			code = Invalid_PulseNumInUnitTime;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_MaxCameraNum: //¿ÉÓÃÏà»ú×ÜÊı
+	case pcb::AdminConfig::Index_MaxCameraNum: //å¯ç”¨ç›¸æœºæ€»æ•°
 		if (MaxCameraNum <= 0 || MaxCameraNum > 10)
 			code = Invalid_MaxCameraNum;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_PixelsNumPerUnitLength: //µ¥Î»³¤¶ÈµÄÏñËØ
+	case pcb::AdminConfig::Index_PixelsNumPerUnitLength: //å•ä½é•¿åº¦çš„åƒç´ 
 		if (PixelsNumPerUnitLength <= 0 || PixelsNumPerUnitLength > 1000)
 			code = Invalid_PixelsNumPerUnitLength;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageOverlappingRate_W: //·ÖÍ¼ÖØµşÂÊ(¿í)
+	case pcb::AdminConfig::Index_ImageOverlappingRate_W: //åˆ†å›¾é‡å ç‡(å®½)
 		if (ImageOverlappingRate_W <= 0 || ImageOverlappingRate_W >= 1) 
 			code = Invalid_ImageOverlappingRate_W;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageOverlappingRate_H: //·ÖÍ¼ÖØµşÂÊ(¸ß)
+	case pcb::AdminConfig::Index_ImageOverlappingRate_H: //åˆ†å›¾é‡å ç‡(é«˜)
 		if (ImageOverlappingRate_H <= 0 || ImageOverlappingRate_H >= 1)
 			code = Invalid_ImageOverlappingRate_H;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageSize_W: //·ÖÍ¼¿í¶È
+	case pcb::AdminConfig::Index_ImageSize_W: //åˆ†å›¾å®½åº¦
 		if (ImageSize_W <= 0 || ImageSize_W > MaxResolutionOfCamera.width())
 			code = Invalid_ImageSize_W;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageSize_H: //·ÖÍ¼¸ß¶È
+	case pcb::AdminConfig::Index_ImageSize_H: //åˆ†å›¾é«˜åº¦
 		if (ImageSize_H <= 0 || ImageSize_H > MaxResolutionOfCamera.height())
 			code = Invalid_ImageSize_H;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::AdminConfig::Index_ImageAspectRatio: //Í¼Ïñ¿í¸ß±È
+	case pcb::AdminConfig::Index_ImageAspectRatio: //å›¾åƒå®½é«˜æ¯”
 		if (code != Unchecked || index != Index_All) break;
 	}
 
@@ -90,7 +90,7 @@ AdminConfig::ErrorCode AdminConfig::checkValidity(AdminConfig::ConfigIndex index
 	return code;
 }
 
-//ÅĞ¶Ï²ÎÊıÊÇ·ñÓĞĞ§
+//åˆ¤æ–­å‚æ•°æ˜¯å¦æœ‰æ•ˆ
 bool AdminConfig::isValid(bool doCheck) 
 {
 	if (doCheck && errorCode == AdminConfig::Unchecked)
@@ -98,7 +98,7 @@ bool AdminConfig::isValid(bool doCheck)
 	return errorCode == ValidConfig;
 }
 
-//´íÎó´úÂë×ª²ÎÊıË÷Òı
+//é”™è¯¯ä»£ç è½¬å‚æ•°ç´¢å¼•
 AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
 {
 	switch (code)
@@ -127,7 +127,7 @@ AdminConfig::ConfigIndex AdminConfig::convertCodeToIndex(ErrorCode code)
 	return Index_None;
 }
 
-//µ¯´°±¨´í
+//å¼¹çª—æŠ¥é”™
 bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 {
 	AdminConfig::ErrorCode tempCode = (code == Default) ? errorCode : code;
@@ -135,44 +135,44 @@ bool AdminConfig::showMessageBox(QWidget *parent, AdminConfig::ErrorCode code)
 
 	QString valueName;
 	if (tempCode == AdminConfig::ConfigFileMissing) {
-		QString message = pcb::chinese(".admin.configÎÄ¼ş¶ªÊ§£¬ÒÑÉú³ÉÄ¬ÈÏÎÄ¼ş!  \n")
-			+ pcb::chinese("ÇëÁªÏµ¹ÜÀíÔ±È·ÈÏ²ÎÊıÊÇ·ñÓĞĞ§ ...  \n");
-		QMessageBox::warning(parent, pcb::chinese("¾¯¸æ"),
+		QString message = pcb::chinese(".admin.configæ–‡ä»¶ä¸¢å¤±ï¼Œå·²ç”Ÿæˆé»˜è®¤æ–‡ä»¶!  \n")
+			+ pcb::chinese("è¯·è”ç³»ç®¡ç†å‘˜ç¡®è®¤å‚æ•°æ˜¯å¦æœ‰æ•ˆ ...  \n");
+		QMessageBox::warning(parent, pcb::chinese("è­¦å‘Š"),
 			message + "Config: Admin: ErrorCode: " + QString::number(tempCode),
-			pcb::chinese("È·¶¨"));
+			pcb::chinese("ç¡®å®š"));
 		return true;
 	}
 
 	switch (tempCode)
 	{
 	case pcb::AdminConfig::Invalid_MaxMotionStroke:
-		valueName = pcb::chinese("ÔËĞĞ½á¹¹µÄ×î´óĞĞ³Ì"); break;
+		valueName = pcb::chinese("è¿è¡Œç»“æ„çš„æœ€å¤§è¡Œç¨‹"); break;
 	case pcb::AdminConfig::Invalid_PulseNumInUnitTime:
-		valueName = pcb::chinese("ÔË¶¯½á¹¹µÄµ¥Î»Âö³åÊı"); break;
+		valueName = pcb::chinese("è¿åŠ¨ç»“æ„çš„å•ä½è„‰å†²æ•°"); break;
 	case pcb::AdminConfig::Invalid_MaxCameraNum:
-		valueName = pcb::chinese("¿ÉÓÃÏà»ú×ÜÊı"); break;
+		valueName = pcb::chinese("å¯ç”¨ç›¸æœºæ€»æ•°"); break;
 	case pcb::AdminConfig::Invalid_PixelsNumPerUnitLength:
-		valueName = pcb::chinese("Ã¿ºÁÃ×ÏñËØÊı"); break;
+		valueName = pcb::chinese("æ¯æ¯«ç±³åƒç´ æ•°"); break;
 	case pcb::AdminConfig::Invalid_ImageOverlappingRate_W:
-		valueName = pcb::chinese("·ÖÍ¼ÖØµşÂÊ(¿í)"); break;
+		valueName = pcb::chinese("åˆ†å›¾é‡å ç‡(å®½)"); break;
 	case pcb::AdminConfig::Invalid_ImageOverlappingRate_H:
-		valueName = pcb::chinese("·ÖÍ¼ÖØµşÂÊ(¸ß)"); break;
+		valueName = pcb::chinese("åˆ†å›¾é‡å ç‡(é«˜)"); break;
 	case pcb::AdminConfig::Invalid_ImageSize_W:
 	case pcb::AdminConfig::Invalid_ImageSize_H:
 	case pcb::AdminConfig::Invalid_ImageAspectRatio:
-		valueName = pcb::chinese("·ÖÍ¼³ß´ç"); break;
+		valueName = pcb::chinese("åˆ†å›¾å°ºå¯¸"); break;
 	default:
 		valueName = ""; break;
 	}
 
-	QMessageBox::warning(parent, pcb::chinese("¾¯¸æ"),
-		pcb::chinese("ÏµÍ³²ÎÊıÎŞĞ§£¬ÇëÁªÏµ¹ÜÀíÔ±ÖØĞÂÉèÖÃ") + valueName + "!        \n" +
+	QMessageBox::warning(parent, pcb::chinese("è­¦å‘Š"),
+		pcb::chinese("ç³»ç»Ÿå‚æ•°æ— æ•ˆï¼Œè¯·è”ç³»ç®¡ç†å‘˜é‡æ–°è®¾ç½®") + valueName + "!        \n" +
 		"Config: Admin: ErrorCode: " + QString::number(tempCode),
-		pcb::chinese("È·¶¨"));
+		pcb::chinese("ç¡®å®š"));
 	return true;
 }
 
-//¼ÆËã¿í¸ß±È
+//è®¡ç®—å®½é«˜æ¯”
 AdminConfig::ErrorCode AdminConfig::calcImageAspectRatio() 
 {
 	ErrorCode code = checkValidity(Index_ImageSize_W);
@@ -183,7 +183,7 @@ AdminConfig::ErrorCode AdminConfig::calcImageAspectRatio()
 	return ValidValue;
 }
 
-//²»ÏàµÈÅĞ¶Ï
+//ä¸ç›¸ç­‰åˆ¤æ–­
 AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 {
 	if (this->MaxMotionStroke != other.MaxMotionStroke) return Index_MaxMotionStroke;
@@ -197,25 +197,25 @@ AdminConfig::ConfigIndex AdminConfig::unequals(AdminConfig &other)
 	return Index_None;
 }
 
-//¹¦ÄÜ£º»ñÈ¡ÏµÍ³ÖØÖÃ´úÂë
+//åŠŸèƒ½ï¼šè·å–ç³»ç»Ÿé‡ç½®ä»£ç 
 int AdminConfig::getSystemResetCode(AdminConfig &newConfig)
 {
-	int resetCode = 0b000000000;//ÖØÖÃ´úÂë
+	int resetCode = 0b000000000;//é‡ç½®ä»£ç 
 
-	//ÖØÖÃÄ£°åÌáÈ¡¡¢¼ì²â½çÃæ
+	//é‡ç½®æ¨¡æ¿æå–ã€æ£€æµ‹ç•Œé¢
 	if (ImageSize_W != newConfig.ImageSize_W || ImageSize_H != newConfig.ImageSize_H) {
 		if (abs(ImageAspectRatio - newConfig.ImageAspectRatio) > 1E-6) {
 			resetCode |= 0x000000011;
 		}
 	}
-	//ÖØÖÃÔË¶¯½á¹¹Ä£¿é
+	//é‡ç½®è¿åŠ¨ç»“æ„æ¨¡å—
 	if (this->MaxMotionStroke != newConfig.MaxMotionStroke ||
 		this->PulseNumInUnitTime != newConfig.PulseNumInUnitTime) 
 	{
 		resetCode |= 0x000100000;
 	}
 
-	//ÖØÖÃÏà»úÄ£¿é
+	//é‡ç½®ç›¸æœºæ¨¡å—
 	if (this->MaxCameraNum != newConfig.MaxCameraNum ||
 		this->ImageSize_W != newConfig.ImageSize_W ||
 		this->ImageSize_H != newConfig.ImageSize_H)
@@ -226,7 +226,7 @@ int AdminConfig::getSystemResetCode(AdminConfig &newConfig)
 	return resetCode;
 }
 
-//¿½±´½á¹¹Ìå
+//æ‹·è´ç»“æ„ä½“
 void AdminConfig::copyTo(AdminConfig *dst)
 {
 	dst->errorCode = this->errorCode;
@@ -249,33 +249,33 @@ void AdminConfig::copyTo(AdminConfig *dst)
 
 UserConfig::UserConfig()
 {
-	//»ù±¾ÉèÖÃ
-	TemplDirPath = ""; //Ä£°åÂ·¾¶
-	SampleDirPath = "";//Ñù±¾Â·¾¶
-	OutputDirPath = "";//½á¹ûÂ·¾¶
-	ImageFormat = ""; //Í¼Ïñºó×º
-	ActualProductSize_W = -1;//²úÆ·Êµ¼Ê¿í¶È,µ¥Î»mm
-	ActualProductSize_H = -1;//²úÆ·Êµ¼Ê¸ß¶È,µ¥Î»mm
-	nBasicUnitInRow = -1; //Ã¿Ò»ĞĞÖĞµÄ»ù±¾µ¥ÔªÊı
-	nBasicUnitInCol = -1; //Ã¿Ò»ÁĞÖĞµÄ»ù±¾µ¥ÔªÊı
+	//åŸºæœ¬è®¾ç½®
+	TemplDirPath = ""; //æ¨¡æ¿è·¯å¾„
+	SampleDirPath = "";//æ ·æœ¬è·¯å¾„
+	OutputDirPath = "";//ç»“æœè·¯å¾„
+	ImageFormat = ""; //å›¾åƒåç¼€
+	ActualProductSize_W = -1;//äº§å“å®é™…å®½åº¦,å•ä½mm
+	ActualProductSize_H = -1;//äº§å“å®é™…é«˜åº¦,å•ä½mm
+	nBasicUnitInRow = -1; //æ¯ä¸€è¡Œä¸­çš„åŸºæœ¬å•å…ƒæ•°
+	nBasicUnitInCol = -1; //æ¯ä¸€åˆ—ä¸­çš„åŸºæœ¬å•å…ƒæ•°
 
-	//ÔË¶¯½á¹¹
-	clusterComPort = ""; //COM´®¿Ú
+	//è¿åŠ¨ç»“æ„
+	clusterComPort = ""; //COMä¸²å£
 
-	//Ïà»ú
-	exposureTime = -1; //ÆØ¹âÊ±¼ä ms £¨·¶Î§´ó¸Å50-500£©
-	colorMode = -1; //É«²ÊÄ£Ê½£º0²ÊÉ« 1ºÚ°×
+	//ç›¸æœº
+	exposureTime = -1; //æ›å…‰æ—¶é—´ ms ï¼ˆèŒƒå›´å¤§æ¦‚50-500ï¼‰
+	colorMode = -1; //è‰²å½©æ¨¡å¼ï¼š0å½©è‰² 1é»‘ç™½
 
-	//¼ì²âËã·¨
-	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //ĞèÒª¼ì²âµÄÈ±ÏİÀàĞÍ
-	matchingAccuracyLevel = 1; //Æ¥ÅäÄ£Ê½£º1¸ß¾«¶È 2µÍ¾«¶È
-	concaveRateThresh = 50; //ÏßÂ·È±Ê§ÂÊµÄãĞÖµ
-	convexRateThresh = 50; //ÏßÂ·Í¹ÆğÂÊµÄãĞÖµ
+	//æ£€æµ‹ç®—æ³•
+	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //éœ€è¦æ£€æµ‹çš„ç¼ºé™·ç±»å‹
+	matchingAccuracyLevel = 1; //åŒ¹é…æ¨¡å¼ï¼š1é«˜ç²¾åº¦ 2ä½ç²¾åº¦
+	concaveRateThresh = 50; //çº¿è·¯ç¼ºå¤±ç‡çš„é˜ˆå€¼
+	convexRateThresh = 50; //çº¿è·¯å‡¸èµ·ç‡çš„é˜ˆå€¼
 
-	//ÎÄ¼şÍ¬²½
+	//æ–‡ä»¶åŒæ­¥
 	inetAddressOfRecheckPC = "";
 
-	//ÆäËû
+	//å…¶ä»–
 	errorCode = Default;
 }
 
@@ -284,45 +284,45 @@ UserConfig::~UserConfig()
 	qDebug() << "~UserConfig";
 }
 
-//¼ÓÔØÄ¬ÈÏÖµ
+//åŠ è½½é»˜è®¤å€¼
 void UserConfig::loadDefaultValue()
 {
-	//»ù±¾ÉèÖÃ
+	//åŸºæœ¬è®¾ç½®
 	QDir dir(QDir::currentPath());
-	dir.cdUp(); //×ªµ½ÉÏÒ»¼¶Ä¿Â¼
-	QString appDirPath = dir.absolutePath(); //ÉÏÒ»¼¶Ä¿Â¼µÄ¾ø¶ÔÂ·¾¶
+	dir.cdUp(); //è½¬åˆ°ä¸Šä¸€çº§ç›®å½•
+	QString appDirPath = dir.absolutePath(); //ä¸Šä¸€çº§ç›®å½•çš„ç»å¯¹è·¯å¾„
 
-	TemplDirPath = appDirPath + "/template";//Ä£°åÂ·¾¶
-	SampleDirPath = appDirPath + "/sample"; //Ñù±¾Â·¾¶
-	OutputDirPath = appDirPath + "/output"; //½á¹ûÂ·¾¶
-	ImageFormat = ".bmp"; //Í¼Ïñºó×º
+	TemplDirPath = appDirPath + "/template";//æ¨¡æ¿è·¯å¾„
+	SampleDirPath = appDirPath + "/sample"; //æ ·æœ¬è·¯å¾„
+	OutputDirPath = appDirPath + "/output"; //ç»“æœè·¯å¾„
+	ImageFormat = ".bmp"; //å›¾åƒåç¼€
 
-	ActualProductSize_W = 500;//²úÆ·Êµ¼Ê¿í¶È
-	ActualProductSize_H = 580;//²úÆ·Êµ¼Ê¸ß¶È
-	nBasicUnitInRow = 5; //Ã¿Ò»ĞĞÖĞµÄ»ù±¾µ¥ÔªÊı
-	nBasicUnitInCol = 3; //Ã¿Ò»ÁĞÖĞµÄ»ù±¾µ¥ÔªÊı
+	ActualProductSize_W = 500;//äº§å“å®é™…å®½åº¦
+	ActualProductSize_H = 580;//äº§å“å®é™…é«˜åº¦
+	nBasicUnitInRow = 5; //æ¯ä¸€è¡Œä¸­çš„åŸºæœ¬å•å…ƒæ•°
+	nBasicUnitInCol = 3; //æ¯ä¸€åˆ—ä¸­çš„åŸºæœ¬å•å…ƒæ•°
 
-	//ÔË¶¯½á¹¹
-	clusterComPort = "COM1"; //COM¿Ú
+	//è¿åŠ¨ç»“æ„
+	clusterComPort = "COM1"; //COMå£
 	
-	//Ïà»ú
-	exposureTime = 10; //ÆØ¹âÊ±¼ä ms £¨·¶Î§´ó¸Å10-500£©
-	colorMode = 0; //É«²ÊÄ£Ê½£º0²ÊÉ« 1ºÚ°×
+	//ç›¸æœº
+	exposureTime = 10; //æ›å…‰æ—¶é—´ ms ï¼ˆèŒƒå›´å¤§æ¦‚10-500ï¼‰
+	colorMode = 0; //è‰²å½©æ¨¡å¼ï¼š0å½©è‰² 1é»‘ç™½
 
-	//Ëã·¨
-	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //ĞèÒª¼ì²âµÄÈ±ÏİÀàĞÍ
-	matchingAccuracyLevel = 1; //Æ¥Åä¾«¶ÈµÈ¼¶£º1¸ß¾«¶È 2µÍ¾«¶È
-	concaveRateThresh = 50; //ÏßÂ·È±Ê§ÂÊµÄãĞÖµ
-	convexRateThresh = 50; //ÏßÂ·Í¹ÆğÂÊµÄãĞÖµ
+	//ç®—æ³•
+	defectTypeToBeProcessed = vector<bool>{ true,true,false,false }; //éœ€è¦æ£€æµ‹çš„ç¼ºé™·ç±»å‹
+	matchingAccuracyLevel = 1; //åŒ¹é…ç²¾åº¦ç­‰çº§ï¼š1é«˜ç²¾åº¦ 2ä½ç²¾åº¦
+	concaveRateThresh = 50; //çº¿è·¯ç¼ºå¤±ç‡çš„é˜ˆå€¼
+	convexRateThresh = 50; //çº¿è·¯å‡¸èµ·ç‡çš„é˜ˆå€¼
 
-	//ÎÄ¼şÍ¬²½
+	//æ–‡ä»¶åŒæ­¥
 	inetAddressOfRecheckPC = "0";
 
-	//ÆäËû
-	errorCode = Unchecked; //´íÎó´úÂë
+	//å…¶ä»–
+	errorCode = Unchecked; //é”™è¯¯ä»£ç 
 }
 
-//²ÎÊıÓĞĞ§ĞÔ¼ì²é
+//å‚æ•°æœ‰æ•ˆæ€§æ£€æŸ¥
 UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *adminConfig)
 {
 	ErrorCode code = Unchecked;
@@ -330,72 +330,72 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 	{
 	case pcb::UserConfig::Index_All:
 
-	//»ù±¾ÉèÖÃ
-	case pcb::UserConfig::Index_TemplDirPath: //Ä£°åÂ·¾¶
+	//åŸºæœ¬è®¾ç½®
+	case pcb::UserConfig::Index_TemplDirPath: //æ¨¡æ¿è·¯å¾„
 		if (TemplDirPath == "" || !QFileInfo(TemplDirPath).isDir())
 			code = Invalid_TemplDirPath;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_SampleDirPath: //Ñù±¾Â·¾¶
+	case pcb::UserConfig::Index_SampleDirPath: //æ ·æœ¬è·¯å¾„
 		if (SampleDirPath == "" || !QFileInfo(SampleDirPath).isDir())
 			code = Invalid_SampleDirPath;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_OutputDirPath: //Êä³öÂ·¾¶
+	case pcb::UserConfig::Index_OutputDirPath: //è¾“å‡ºè·¯å¾„
 		if (OutputDirPath == "" || !QFileInfo(OutputDirPath).isDir())
 			code = Invalid_OutputDirPath;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_ImageFormat: //Í¼Ïñ¸ñÊ½
+	case pcb::UserConfig::Index_ImageFormat: //å›¾åƒæ ¼å¼
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_clusterComPort: //COM´®¿Ú
+	case pcb::UserConfig::Index_clusterComPort: //COMä¸²å£
 		if (code != Unchecked || index != Index_All) break;
 
-	case pcb::UserConfig::Index_ActualProductSize_W: //²úÆ·Êµ¼Ê¿í¶È
+	case pcb::UserConfig::Index_ActualProductSize_W: //äº§å“å®é™…å®½åº¦
 		if (ActualProductSize_W < 1)
 			code = Invalid_ActualProductSize_W;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_ActualProductSize_H: //²úÆ·Êµ¼Ê¸ß¶È
+	case pcb::UserConfig::Index_ActualProductSize_H: //äº§å“å®é™…é«˜åº¦
 		if (adminConfig == Q_NULLPTR)
 			qDebug() << "Warning: UserConfig: checkValidity: adminConfig is null !";
 		if (ActualProductSize_H < 1 || 
 			ActualProductSize_H > adminConfig->MaxMotionStroke)
 			code = Invalid_ActualProductSize_H;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_nBasicUnitInRow: //Ã¿Ò»ĞĞÖĞµÄ»ù±¾µ¥ÔªÊı
+	case pcb::UserConfig::Index_nBasicUnitInRow: //æ¯ä¸€è¡Œä¸­çš„åŸºæœ¬å•å…ƒæ•°
 		if (nBasicUnitInRow < 1)
 			code = Invalid_nBasicUnitInRow;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_nBasicUnitInCol: //Ã¿Ò»ÁĞÖĞµÄ»ù±¾µ¥ÔªÊı
+	case pcb::UserConfig::Index_nBasicUnitInCol: //æ¯ä¸€åˆ—ä¸­çš„åŸºæœ¬å•å…ƒæ•°
 		if (nBasicUnitInCol < 1)
 			code = Invalid_nBasicUnitInCol;
 		if (code != Unchecked || index != Index_All) break;
 
-	//Ïà»ú
-	case pcb::UserConfig::Index_exposureTime: //ÆØ¹âÊ±¼ä ms
+	//ç›¸æœº
+	case pcb::UserConfig::Index_exposureTime: //æ›å…‰æ—¶é—´ ms
 		if (exposureTime < 10 || exposureTime > 500)
 			code = Invalid_exposureTime;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_colorMode: //É«²ÊÄ£Ê½£º0²ÊÉ« 1ºÚ°×
+	case pcb::UserConfig::Index_colorMode: //è‰²å½©æ¨¡å¼ï¼š0å½©è‰² 1é»‘ç™½
 		if (colorMode < 0 || colorMode > 1)
 			code = Invalid_colorMode;
 		if (code != Unchecked || index != Index_All) break;
 
-	//¼ì²âËã·¨
-	case pcb::UserConfig::Index_defectTypeToBeProcessed: //ĞèÒª¼ì²âµÄÈ±ÏİÀàĞÍ
+	//æ£€æµ‹ç®—æ³•
+	case pcb::UserConfig::Index_defectTypeToBeProcessed: //éœ€è¦æ£€æµ‹çš„ç¼ºé™·ç±»å‹
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_matchingAccuracyLevel: //Æ¥ÅäÄ£Ê½
+	case pcb::UserConfig::Index_matchingAccuracyLevel: //åŒ¹é…æ¨¡å¼
 		if (matchingAccuracyLevel < 1 || matchingAccuracyLevel>2)
 			code = Invalid_matchingAccuracyLevel;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_concaveRateThresh: //È±Ê§ÂÊãĞÖµ
+	case pcb::UserConfig::Index_concaveRateThresh: //ç¼ºå¤±ç‡é˜ˆå€¼
 		if (concaveRateThresh <= 0 || concaveRateThresh >= 100)
 			code = Invalid_concaveRateThresh;
 		if (code != Unchecked || index != Index_All) break;
-	case pcb::UserConfig::Index_convexRateThresh: //Í¹ÆğÂÊãĞÖµ
+	case pcb::UserConfig::Index_convexRateThresh: //å‡¸èµ·ç‡é˜ˆå€¼
 		if (concaveRateThresh <= 0 || concaveRateThresh >= 100)
 			code = Invalid_convexRateThresh;
 		if (code != Unchecked || index != Index_All) break;
 
-	//ÎÄ¼şÍ¬²½
-	case pcb::UserConfig::Index_inetAddressOfRecheckPC: //¸´²éÉè±¸µÄIPµØÖ·
+	//æ–‡ä»¶åŒæ­¥
+	case pcb::UserConfig::Index_inetAddressOfRecheckPC: //å¤æŸ¥è®¾å¤‡çš„IPåœ°å€
 		if (!pcb::isInetAddress(inetAddressOfRecheckPC))
 			code = Invalid_inetAddressOfRecheckPC;
 		if (code != Unchecked || index != Index_All) break;
@@ -406,21 +406,21 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 	return code;
 }
 
-//ÅĞ¶Ï²ÎÊıÊÇ·ñÓĞĞ§
+//åˆ¤æ–­å‚æ•°æ˜¯å¦æœ‰æ•ˆ
 bool UserConfig::isValid(AdminConfig *adminConfig, bool doCheck) {
 	if (doCheck && this->errorCode == UserConfig::Unchecked)
 		checkValidity(Index_All, adminConfig);
 	return this->errorCode == ValidConfig;
 }
 
-//½«´íÎó´úÂë×ªÎª²ÎÊıË÷Òı
+//å°†é”™è¯¯ä»£ç è½¬ä¸ºå‚æ•°ç´¢å¼•
 UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 {
 	switch (code)
 	{
 	case pcb::UserConfig::ValidConfig:
 		return Index_None;
-	//»ù±¾ÉèÖÃ
+	//åŸºæœ¬è®¾ç½®
 	case pcb::UserConfig::Invalid_TemplDirPath:
 		return Index_TemplDirPath;
 	case pcb::UserConfig::Invalid_SampleDirPath:
@@ -437,15 +437,15 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 		return Index_nBasicUnitInRow;
 	case pcb::UserConfig::Invalid_nBasicUnitInCol:
 		return Index_nBasicUnitInCol;
-	//ÔË¶¯½á¹¹
+	//è¿åŠ¨ç»“æ„
 	case pcb::UserConfig::Invalid_clusterComPort:
 		return Index_clusterComPort;
-	//Ïà»ú×é
+	//ç›¸æœºç»„
 	case pcb::UserConfig::Invalid_exposureTime:
 		return Index_exposureTime;
 	case pcb::UserConfig::Invalid_colorMode:
 		return Index_colorMode;
-	//¼ì²âËã·¨
+	//æ£€æµ‹ç®—æ³•
 	case pcb::UserConfig::Invalid_defectTypeToBeProcessed:
 		return Index_defectTypeToBeProcessed;
 	case pcb::UserConfig::Invalid_matchingAccuracyLevel:
@@ -454,14 +454,14 @@ UserConfig::ConfigIndex UserConfig::convertCodeToIndex(ErrorCode code)
 		return Index_concaveRateThresh;
 	case pcb::UserConfig::Invalid_convexRateThresh:
 		return Index_convexRateThresh;
-	//ÎÄ¼şÍ¬²½
+	//æ–‡ä»¶åŒæ­¥
 	case pcb::UserConfig::Invalid_inetAddressOfRecheckPC:
 		return Index_inetAddressOfRecheckPC;
 	}
 	return Index_None;
 }
 
-//²ÎÊı±¨´í
+//å‚æ•°æŠ¥é”™
 bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 {
 	ErrorCode tempCode = (code == Default) ? errorCode : code;
@@ -469,66 +469,66 @@ bool UserConfig::showMessageBox(QWidget *parent, ErrorCode code)
 
 	QString valueName;
 	if (tempCode == ConfigFileMissing) {
-		QString message = pcb::chinese(".user.configÎÄ¼ş¶ªÊ§£¬ÒÑÉú³ÉÄ¬ÈÏÎÄ¼ş!    \n")
-			+ pcb::chinese("ÇëÔÚ²ÎÊıÉèÖÃ½çÃæÈ·ÈÏ²ÎÊıÊÇ·ñÓĞĞ§ ...   \n");
-		QMessageBox::warning(parent, pcb::chinese("¾¯¸æ"),
+		QString message = pcb::chinese(".user.configæ–‡ä»¶ä¸¢å¤±ï¼Œå·²ç”Ÿæˆé»˜è®¤æ–‡ä»¶!    \n")
+			+ pcb::chinese("è¯·åœ¨å‚æ•°è®¾ç½®ç•Œé¢ç¡®è®¤å‚æ•°æ˜¯å¦æœ‰æ•ˆ ...   \n");
+		QMessageBox::warning(parent, pcb::chinese("è­¦å‘Š"),
 			message + "Config: User: ErrorCode: " + QString::number(tempCode),
-			pcb::chinese("È·¶¨"));
+			pcb::chinese("ç¡®å®š"));
 		return true;
 	}
 
 	switch (tempCode)
 	{
-	//»ù±¾ÉèÖÃ
+	//åŸºæœ¬è®¾ç½®
 	case pcb::UserConfig::Invalid_SampleDirPath:
-		valueName = pcb::chinese("Ä£°åÂ·¾¶"); break;
+		valueName = pcb::chinese("æ¨¡æ¿è·¯å¾„"); break;
 	case pcb::UserConfig::Invalid_OutputDirPath:
-		valueName = pcb::chinese("Ñù±¾Â·¾¶"); break;
+		valueName = pcb::chinese("æ ·æœ¬è·¯å¾„"); break;
 	case pcb::UserConfig::Invalid_TemplDirPath:
-		valueName = pcb::chinese("Êä³öÂ·¾¶"); break;
+		valueName = pcb::chinese("è¾“å‡ºè·¯å¾„"); break;
 	case pcb::UserConfig::Invalid_ImageFormat:
-		valueName = pcb::chinese("Í¼Ïñ¸ñÊ½"); break;
+		valueName = pcb::chinese("å›¾åƒæ ¼å¼"); break;
 	case pcb::UserConfig::Invalid_ActualProductSize_W:
 	case pcb::UserConfig::Invalid_ActualProductSize_H:
-		valueName = pcb::chinese("²úÆ·Êµ¼Ê³ß´ç"); break;
+		valueName = pcb::chinese("äº§å“å®é™…å°ºå¯¸"); break;
 	case pcb::UserConfig::Invalid_nBasicUnitInRow:
 	case pcb::UserConfig::Invalid_nBasicUnitInCol:
-		valueName = pcb::chinese("»ù±¾µ¥ÔªÊı"); break;
-	//ÔË¶¯½á¹¹
+		valueName = pcb::chinese("åŸºæœ¬å•å…ƒæ•°"); break;
+	//è¿åŠ¨ç»“æ„
 	case pcb::UserConfig::Invalid_clusterComPort:
-		valueName = pcb::chinese("ÔË¶¯¿ØÖÆ´®¿Ú"); break;
-	//Ïà»ú×é
+		valueName = pcb::chinese("è¿åŠ¨æ§åˆ¶ä¸²å£"); break;
+	//ç›¸æœºç»„
 	case pcb::UserConfig::Invalid_exposureTime:
-		valueName = pcb::chinese("Ïà»úÆØ¹âÊ±¼ä"); break;
+		valueName = pcb::chinese("ç›¸æœºæ›å…‰æ—¶é—´"); break;
 	case pcb::UserConfig::Invalid_colorMode:
-		valueName = pcb::chinese("Ïà»úÉ«²ÊÄ£Ê½"); break;
-	//¼ì²âËã·¨
+		valueName = pcb::chinese("ç›¸æœºè‰²å½©æ¨¡å¼"); break;
+	//æ£€æµ‹ç®—æ³•
 	case pcb::UserConfig::Invalid_defectTypeToBeProcessed:
-		valueName = pcb::chinese("´ı´¦ÀíµÄÈ±ÏİÀàĞÍ"); break;
+		valueName = pcb::chinese("å¾…å¤„ç†çš„ç¼ºé™·ç±»å‹"); break;
 	case pcb::UserConfig::Invalid_matchingAccuracyLevel:
-		valueName = pcb::chinese("Æ¥Åä¾«¶È"); break;
+		valueName = pcb::chinese("åŒ¹é…ç²¾åº¦"); break;
 	case pcb::UserConfig::Invalid_concaveRateThresh:
-		valueName = pcb::chinese("È±Ê§ÂÊãĞÖµ"); break;
+		valueName = pcb::chinese("ç¼ºå¤±ç‡é˜ˆå€¼"); break;
 	case pcb::UserConfig::Invalid_convexRateThresh:
-		valueName = pcb::chinese("Í¹ÆğÂÊãĞÖµ"); break;
-	//ÎÄ¼şÍ¬²½
+		valueName = pcb::chinese("å‡¸èµ·ç‡é˜ˆå€¼"); break;
+	//æ–‡ä»¶åŒæ­¥
 	case pcb::UserConfig::Invalid_inetAddressOfRecheckPC:
-		valueName = pcb::chinese("¸´²éÉè±¸IP"); break;
+		valueName = pcb::chinese("å¤æŸ¥è®¾å¤‡IP"); break;
 	default:
 		valueName = ""; break;
 	}
 
-	QMessageBox::warning(parent, pcb::chinese("¾¯¸æ"),
-		pcb::chinese("ÓÃ»§²ÎÊıÎŞĞ§£¬ÇëÔÚ²ÎÊıÉèÖÃ½çÃæÖØĞÂÉèÖÃ£¡ \n") +
-		pcb::chinese("´íÎóÀ´Ô´£º") + valueName + "\n" + 
+	QMessageBox::warning(parent, pcb::chinese("è­¦å‘Š"),
+		pcb::chinese("ç”¨æˆ·å‚æ•°æ— æ•ˆï¼Œè¯·åœ¨å‚æ•°è®¾ç½®ç•Œé¢é‡æ–°è®¾ç½®ï¼ \n") +
+		pcb::chinese("é”™è¯¯æ¥æºï¼š") + valueName + "\n" + 
 		"Config: User: ErrorCode: " + QString::number(tempCode),
-		pcb::chinese("È·¶¨"));
+		pcb::chinese("ç¡®å®š"));
 	return true;
 }
 
-//²»ÏàµÈÅĞ¶Ï
+//ä¸ç›¸ç­‰åˆ¤æ–­
 UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
-	//»ù±¾ÉèÖÃ
+	//åŸºæœ¬è®¾ç½®
 	if (this->TemplDirPath != other.TemplDirPath) return Index_TemplDirPath;
 	if (this->SampleDirPath != other.SampleDirPath) return Index_SampleDirPath;
 	if (this->OutputDirPath != other.OutputDirPath) return Index_OutputDirPath;
@@ -539,67 +539,67 @@ UserConfig::ConfigIndex UserConfig::unequals(UserConfig &other) {
 	if (this->nBasicUnitInRow != other.nBasicUnitInRow) return Index_nBasicUnitInRow;
 	if (this->nBasicUnitInCol != other.nBasicUnitInCol) return Index_nBasicUnitInCol;
 
-	//ÔË¶¯½á¹¹
+	//è¿åŠ¨ç»“æ„
 	if (this->clusterComPort != other.clusterComPort) return Index_clusterComPort;
 	
-	//Ïà»ú×é
+	//ç›¸æœºç»„
 	if (this->exposureTime != other.exposureTime) return Index_exposureTime;
 	if (this->colorMode != other.colorMode) return Index_colorMode;
 	
-	//¼ì²âËã·¨
+	//æ£€æµ‹ç®—æ³•
 	if (this->defectTypeToBeProcessed != other.defectTypeToBeProcessed) return Index_defectTypeToBeProcessed;
 	if (this->matchingAccuracyLevel != other.matchingAccuracyLevel) return Index_matchingAccuracyLevel;
 	if (this->concaveRateThresh != other.concaveRateThresh) return Index_concaveRateThresh;
 	if (this->convexRateThresh != other.convexRateThresh) return Index_convexRateThresh;
 
-	//ÎÄ¼şÍ¬²½
+	//æ–‡ä»¶åŒæ­¥
 	if (this->inetAddressOfRecheckPC != other.inetAddressOfRecheckPC) return Index_inetAddressOfRecheckPC;
 	return Index_None;
 }
 
-//¿½±´½á¹¹Ìå
+//æ‹·è´ç»“æ„ä½“
 void UserConfig::copyTo(UserConfig *dst)
 {
-	//»ù±¾ÉèÖÃ
-	dst->errorCode = this->errorCode; //²ÎÊıÓĞĞ§ĞÔ
-	dst->TemplDirPath = this->TemplDirPath;//Ä£°åÎÄ¼şµÄ´æ´¢Â·¾¶
-	dst->SampleDirPath = this->SampleDirPath;//Ñù±¾ÎÄ¼ş´æ´¢Â·¾¶
-	dst->OutputDirPath = this->OutputDirPath;//¼ì²â½á¹û´æ´¢Â·¾¶
-	dst->ImageFormat = this->ImageFormat; //Í¼Ïñºó×º
+	//åŸºæœ¬è®¾ç½®
+	dst->errorCode = this->errorCode; //å‚æ•°æœ‰æ•ˆæ€§
+	dst->TemplDirPath = this->TemplDirPath;//æ¨¡æ¿æ–‡ä»¶çš„å­˜å‚¨è·¯å¾„
+	dst->SampleDirPath = this->SampleDirPath;//æ ·æœ¬æ–‡ä»¶å­˜å‚¨è·¯å¾„
+	dst->OutputDirPath = this->OutputDirPath;//æ£€æµ‹ç»“æœå­˜å‚¨è·¯å¾„
+	dst->ImageFormat = this->ImageFormat; //å›¾åƒåç¼€
 
-	dst->ActualProductSize_W = this->ActualProductSize_W; //²úÆ·Êµ¼Ê¿í¶È
-	dst->ActualProductSize_H = this->ActualProductSize_H; //²úÆ·Êµ¼Ê¸ß¶È
-	dst->nBasicUnitInRow = this->nBasicUnitInRow; //Ã¿Ò»ĞĞÖĞµÄ»ù±¾µ¥ÔªÊı
-	dst->nBasicUnitInCol = this->nBasicUnitInCol; //Ã¿Ò»ÁĞÖĞµÄ»ù±¾µ¥ÔªÊı
+	dst->ActualProductSize_W = this->ActualProductSize_W; //äº§å“å®é™…å®½åº¦
+	dst->ActualProductSize_H = this->ActualProductSize_H; //äº§å“å®é™…é«˜åº¦
+	dst->nBasicUnitInRow = this->nBasicUnitInRow; //æ¯ä¸€è¡Œä¸­çš„åŸºæœ¬å•å…ƒæ•°
+	dst->nBasicUnitInCol = this->nBasicUnitInCol; //æ¯ä¸€åˆ—ä¸­çš„åŸºæœ¬å•å…ƒæ•°
 
-	//ÔË¶¯½á¹¹
-	dst->clusterComPort = this->clusterComPort; //COM¿Ú
+	//è¿åŠ¨ç»“æ„
+	dst->clusterComPort = this->clusterComPort; //COMå£
 
-	//Ïà»ú×é
-	dst->exposureTime = this->exposureTime; //Ïà»úÆØ¹âÊ±¼ä
-	dst->colorMode = this->colorMode; //Ïà»úÉ«²ÊÄ£Ê½
+	//ç›¸æœºç»„
+	dst->exposureTime = this->exposureTime; //ç›¸æœºæ›å…‰æ—¶é—´
+	dst->colorMode = this->colorMode; //ç›¸æœºè‰²å½©æ¨¡å¼
 
-	//¼ì²âËã·¨
-	dst->defectTypeToBeProcessed = this->defectTypeToBeProcessed; //ĞèÒª¼ì²âµÄÈ±ÏİÀàĞÍ
-	dst->matchingAccuracyLevel = this->matchingAccuracyLevel; //Æ¥ÅäÄ£Ê½£º0¸ß¾«¶È 1µÍ¾«¶È
-	dst->concaveRateThresh = this->concaveRateThresh; //ÏßÂ·È±Ê§ÂÊµÄãĞÖµ
-	dst->convexRateThresh = this->convexRateThresh; //ÏßÂ·Í¹ÆğÂÊµÄãĞÖµ
+	//æ£€æµ‹ç®—æ³•
+	dst->defectTypeToBeProcessed = this->defectTypeToBeProcessed; //éœ€è¦æ£€æµ‹çš„ç¼ºé™·ç±»å‹
+	dst->matchingAccuracyLevel = this->matchingAccuracyLevel; //åŒ¹é…æ¨¡å¼ï¼š0é«˜ç²¾åº¦ 1ä½ç²¾åº¦
+	dst->concaveRateThresh = this->concaveRateThresh; //çº¿è·¯ç¼ºå¤±ç‡çš„é˜ˆå€¼
+	dst->convexRateThresh = this->convexRateThresh; //çº¿è·¯å‡¸èµ·ç‡çš„é˜ˆå€¼
 
-	//ÎÄ¼şÍ¬²½
-	dst->inetAddressOfRecheckPC = this->inetAddressOfRecheckPC; //¸´²éÉè±¸µÄIPµØÖ·
+	//æ–‡ä»¶åŒæ­¥
+	dst->inetAddressOfRecheckPC = this->inetAddressOfRecheckPC; //å¤æŸ¥è®¾å¤‡çš„IPåœ°å€
 }
 
-//¹¦ÄÜ£º»ñÈ¡ÏµÍ³ÖØÖÃ´úÂë
+//åŠŸèƒ½ï¼šè·å–ç³»ç»Ÿé‡ç½®ä»£ç 
 int UserConfig::getSystemResetCode(UserConfig &newConfig)
 {
 	int resetCode = 0b000000000;
 
-	//ÔË¶¯½á¹¹
+	//è¿åŠ¨ç»“æ„
 	if (clusterComPort != newConfig.clusterComPort) {
 		resetCode |= 0b000100000;
 	}
 
-	//Ïà»ú×é
+	//ç›¸æœºç»„
 	if (exposureTime != newConfig.exposureTime || colorMode != newConfig.colorMode) {
 		resetCode |= 0b000010000;
 	}
@@ -623,13 +623,13 @@ Configurator::~Configurator()
 	qDebug() << "~Configurator";
 }
 
-/********** Éú³ÉÄ¬ÈÏµÄ²ÎÊıÅäÖÃÎÄ¼ş **********/
+/********** ç”Ÿæˆé»˜è®¤çš„å‚æ•°é…ç½®æ–‡ä»¶ **********/
 
-//Éú³ÉÄ¬ÈÏµÄ²ÎÊıÅäÖÃÎÄ¼ş
+//ç”Ÿæˆé»˜è®¤çš„å‚æ•°é…ç½®æ–‡ä»¶
 void Configurator::createConfigFile(QString filePath)
 {
 	QFileInfo config(filePath);
-	if (!config.isFile()) { //Ã»ÓĞÅäÖÃÎÄ¼ş  Ôò´´½¨ÎÄ¼ş ; Éú³ÉÅäÖÃÎÄ¼ş
+	if (!config.isFile()) { //æ²¡æœ‰é…ç½®æ–‡ä»¶  åˆ™åˆ›å»ºæ–‡ä»¶ ; ç”Ÿæˆé…ç½®æ–‡ä»¶
 		QFile file(filePath);
 		file.open(QIODevice::WriteOnly);
 		QTextStream textStrteam(&file);
@@ -642,9 +642,9 @@ void Configurator::createConfigFile(QString filePath)
 }
 
 
-/********** ½«Ä³¸ö²ÎÊıµÄĞ´ÈëconfigÎÄ¼şÖĞ ************/
+/********** å°†æŸä¸ªå‚æ•°çš„å†™å…¥configæ–‡ä»¶ä¸­ ************/
 
-//½«²ÎÊıĞ´ÈëÅäÖÃÎÄ¼şÖĞ - QString
+//å°†å‚æ•°å†™å…¥é…ç½®æ–‡ä»¶ä¸­ - QString
 bool Configurator::_jsonSetValue(const QString &key, QString &value, bool encode)
 {
 	QTextStream textStrteam(configFile);
@@ -657,29 +657,29 @@ bool Configurator::_jsonSetValue(const QString &key, QString &value, bool encode
 		if (!confDcoument.isNull() || !confDcoument.isEmpty()) {
 			if (confDcoument.isObject()) {
 				QJsonObject obj = confDcoument.object();
-				if (encode) { //¼ÓÃÜ
+				if (encode) { //åŠ å¯†
 					QString encodeKey = encrypt(key); 
 					QString encodeValue = encrypt(value);
 					obj[encodeKey] = encodeValue;
 				}
-				else { //²»¼ÓÃÜ
+				else { //ä¸åŠ å¯†
 					obj[key] = value;
 				}
 				QJsonDocument document = QJsonDocument::fromVariant(obj.toVariantMap());
 				configFile->resize(0);
 				textStrteam << document.toJson();
-				updateKeys();//¸üĞÂÃØÔ¿
+				updateKeys();//æ›´æ–°ç§˜é’¥
 				return true;
 			}
 		}
-		else { //ÎÄ¼şÎª¿Õ
-			qDebug() << "ÎÄ¼ş¿Õ";
+		else { //æ–‡ä»¶ä¸ºç©º
+			qDebug() << "æ–‡ä»¶ç©º";
 		}
 	}
 	return false;
 }
 
-//½«²ÎÊıĞ´ÈëÅäÖÃÎÄ¼şÖĞ - QString
+//å°†å‚æ•°å†™å…¥é…ç½®æ–‡ä»¶ä¸­ - QString
 bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
 {
 	int counter = 5;
@@ -691,19 +691,19 @@ bool Configurator::jsonSetValue(const QString &key, QString &value, bool encode)
 	return false;
 }
 
-//½«²ÎÊıĞ´ÈëÅäÖÃÎÄ¼şÖĞ - int
+//å°†å‚æ•°å†™å…¥é…ç½®æ–‡ä»¶ä¸­ - int
 bool Configurator::jsonSetValue(const QString &key, int &value, bool encode)
 {
 	return jsonSetValue(key, QString::number(value), encode);
 }
 
-//½«²ÎÊıĞ´ÈëÅäÖÃÎÄ¼şÖĞ - double
+//å°†å‚æ•°å†™å…¥é…ç½®æ–‡ä»¶ä¸­ - double
 bool Configurator::jsonSetValue(const QString &key, double &value, bool encode)
 {
 	return jsonSetValue(key, QString::number(value, 'f', 6), encode);
 }
 
-//½«²ÎÊıĞ´ÈëÅäÖÃÎÄ¼şÖĞ - vector<bool>
+//å°†å‚æ•°å†™å…¥é…ç½®æ–‡ä»¶ä¸­ - vector<bool>
 bool Configurator::jsonSetValue(const QString &key, vector<bool> &value, bool encode)
 {
 	QString valueStr = pcb::boolVectorToString(value);
@@ -711,12 +711,12 @@ bool Configurator::jsonSetValue(const QString &key, vector<bool> &value, bool en
 }
 
 
-/************* ´ÓconfigÎÄ¼şÖĞ¶ÁÈ¡Ä³¸ö²ÎÊı ************/
+/************* ä»configæ–‡ä»¶ä¸­è¯»å–æŸä¸ªå‚æ•° ************/
 
-//´ÓÅäÖÃÎÄ¼şÖĞ¶ÁÈ¡²ÎÊı - QString
+//ä»é…ç½®æ–‡ä»¶ä¸­è¯»å–å‚æ•° - QString
 bool Configurator::_jsonReadValue(const QString &key, QString &value, bool decode)
 {
-	value = ""; //¸³³õÖµ
+	value = ""; //èµ‹åˆå€¼
 
 	configFile->seek(0);
 	QString val = configFile->readAll();
@@ -726,19 +726,19 @@ bool Configurator::_jsonReadValue(const QString &key, QString &value, bool decod
 		if (!confDcoument.isNull() || !confDcoument.isEmpty()) {
 			if (confDcoument.isObject()) {
 				QJsonObject obj = confDcoument.object();
-				if (decode) { //½âÃÜ
+				if (decode) { //è§£å¯†
 					QString encodeKey = encrypt(key); 
 					QString encodeValue = obj[encodeKey].toString();
 					value = decrypt(encodeValue); 
 				}
-				else { //²»¼ÓÃÜ
+				else { //ä¸åŠ å¯†
 					value = obj[key].toString();
 				}
 				return true;
 			}
 		}
 		else {
-			qDebug() << "ÎÄ¼ş¿Õ";
+			qDebug() << "æ–‡ä»¶ç©º";
 		}
 	}
 	return false;
@@ -755,7 +755,7 @@ bool Configurator::jsonReadValue(const QString &key, QString &value, bool decode
 	return false;
 }
 
-//´ÓÅäÖÃÎÄ¼şÖĞ¶ÁÈ¡²ÎÊı - double
+//ä»é…ç½®æ–‡ä»¶ä¸­è¯»å–å‚æ•° - double
 bool Configurator::jsonReadValue(const QString &key, double &value, bool decode)
 {
 	value = -1;
@@ -766,7 +766,7 @@ bool Configurator::jsonReadValue(const QString &key, double &value, bool decode)
 	return false;
 }
 
-//´ÓÅäÖÃÎÄ¼şÖĞ¶ÁÈ¡²ÎÊı - int
+//ä»é…ç½®æ–‡ä»¶ä¸­è¯»å–å‚æ•° - int
 bool Configurator::jsonReadValue(const QString &key, int &value, bool decode)
 {
 	value = -1;
@@ -777,7 +777,7 @@ bool Configurator::jsonReadValue(const QString &key, int &value, bool decode)
 	return false;
 }
 
-//´ÓÅäÖÃÎÄ¼şÖĞ¶ÁÈ¡²ÎÊı - vector<bool>
+//ä»é…ç½®æ–‡ä»¶ä¸­è¯»å–å‚æ•° - vector<bool>
 bool Configurator::jsonReadValue(const QString &key, vector<bool> &value, bool decode)
 {
 	value.clear();
@@ -789,14 +789,14 @@ bool Configurator::jsonReadValue(const QString &key, vector<bool> &value, bool d
 }
 
 
-/******************* ¼ÓÃÜÓë½âÃÜ ********************/
+/******************* åŠ å¯†ä¸è§£å¯† ********************/
 
-//¸üĞÂÃØÔ¿
+//æ›´æ–°ç§˜é’¥
 void Configurator::updateKeys()
 {
 	QFileInfo fileInfo = QFileInfo(*configFile);
 
-	//Èç¹û×î½üµÄĞŞ¸ÄÊ±¼äÎª¿Õ£¬ÔòÊ¹ÓÃÎÄ¼şµÄ´´½¨Ê±¼ä
+	//å¦‚æœæœ€è¿‘çš„ä¿®æ”¹æ—¶é—´ä¸ºç©ºï¼Œåˆ™ä½¿ç”¨æ–‡ä»¶çš„åˆ›å»ºæ—¶é—´
 	if (fileDateTime.isNull() || fileDateTime != fileInfo.lastModified()) {
 		fileDateTime = fileInfo.lastModified();
 		//if (fileDateTime.isNull()) fileDateTime = fileInfo.created();
@@ -813,7 +813,7 @@ void Configurator::updateKeys()
 }
 
 
-//¼ÓÃÜ
+//åŠ å¯†
 QString Configurator::encrypt(QString origin) const
 {
 	QString encodeStr;
@@ -833,7 +833,7 @@ QString Configurator::encrypt(const char* origin) const
 }
 
 
-//½âÃÜ
+//è§£å¯†
 QString Configurator::decrypt(QString origin) const
 {
 	QStringList chList = origin.split("_");
@@ -852,9 +852,9 @@ QString Configurator::decrypt(const char* origin) const
 }
 
 
-/****************** ÅäÖÃÀàµÄ¶ÁĞ´ ********************/
+/****************** é…ç½®ç±»çš„è¯»å†™ ********************/
 
-//½«ÅäÖÃÎÄ¼şÖĞµÄ²ÎÊı¼ÓÔØµ½ AdminConfig ÖĞ
+//å°†é…ç½®æ–‡ä»¶ä¸­çš„å‚æ•°åŠ è½½åˆ° AdminConfig ä¸­
 bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 {
 	bool success = true;
@@ -862,14 +862,14 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	QFile configFile(configFilePath);
 	pcb::delay(50);
 
-	if (!configFile.exists()) { //ÅĞ¶ÏÅäÖÃÎÄ¼ş¶ÁĞ´È¨ÏŞ
-		createConfigFile(configFilePath);//´´½¨ÅäÖÃÎÄ¼ş
-		config->loadDefaultValue();//¼ÓÔØÄ¬ÈÏÖµ
-		config->markConfigFileMissing();//±ê¼ÇÎÄ¼ş¶ªÊ§
-		saveConfigFile(fileName, config);//±£´æÄ¬ÈÏconfig
+	if (!configFile.exists()) { //åˆ¤æ–­é…ç½®æ–‡ä»¶è¯»å†™æƒé™
+		createConfigFile(configFilePath);//åˆ›å»ºé…ç½®æ–‡ä»¶
+		config->loadDefaultValue();//åŠ è½½é»˜è®¤å€¼
+		config->markConfigFileMissing();//æ ‡è®°æ–‡ä»¶ä¸¢å¤±
+		saveConfigFile(fileName, config);//ä¿å­˜é»˜è®¤config
 		success = false;
 	}
-	else { //ÎÄ¼ş´æÔÚ£¬²¢ÇÒ¿ÉÒÔÕı³£¶ÁĞ´
+	else { //æ–‡ä»¶å­˜åœ¨ï¼Œå¹¶ä¸”å¯ä»¥æ­£å¸¸è¯»å†™
 		if (!configFile.open(QIODevice::ReadOnly)) {
 			if (!configFile.open(QIODevice::ReadOnly)) return false;
 		}
@@ -888,7 +888,7 @@ bool Configurator::loadConfigFile(const QString &fileName, AdminConfig *config)
 	return success;
 }
 
-//½«AdminConfigÖĞµÄ²ÎÊı±£´æµ½ÅäÖÃÎÄ¼şÖĞ
+//å°†AdminConfigä¸­çš„å‚æ•°ä¿å­˜åˆ°é…ç½®æ–‡ä»¶ä¸­
 bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 {
 	bool success = true;
@@ -897,11 +897,11 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
 		createConfigFile(configFilePath);
 		UserConfig defaultConfig;
-		defaultConfig.loadDefaultValue();//¼ÓÔØÄ¬ÈÏÖµ
-		saveConfigFile(fileName, &defaultConfig);//±£´æÄ¬ÈÏconfig
+		defaultConfig.loadDefaultValue();//åŠ è½½é»˜è®¤å€¼
+		saveConfigFile(fileName, &defaultConfig);//ä¿å­˜é»˜è®¤config
 		success = false;
 	}
-	else { //ÎÄ¼ş´æÔÚ£¬²¢ÇÒ¿ÉÒÔÕı³£¶ÁĞ´
+	else { //æ–‡ä»¶å­˜åœ¨ï¼Œå¹¶ä¸”å¯ä»¥æ­£å¸¸è¯»å†™
 		Configurator configurator(&configFile);
 		configurator.jsonSetValue("MaxMotionStroke", config->MaxMotionStroke, true);
 		configurator.jsonSetValue("PulseNumInUnitTime", config->PulseNumInUnitTime, true);
@@ -917,23 +917,23 @@ bool Configurator::saveConfigFile(const QString &fileName, AdminConfig *config)
 }
 
 
-//½«ÅäÖÃÎÄ¼şÖĞµÄ²ÎÊı¼ÓÔØµ½ UserConfig ÖĞ
+//å°†é…ç½®æ–‡ä»¶ä¸­çš„å‚æ•°åŠ è½½åˆ° UserConfig ä¸­
 bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 {
 	bool success = true;
 	QString configFilePath = QDir::currentPath() + "/" + fileName;
 	QFile configFile(configFilePath);
-	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //ÅĞ¶ÏÅäÖÃÎÄ¼ş¶ÁĞ´È¨ÏŞ
-		createConfigFile(configFilePath);//´´½¨ÅäÖÃÎÄ¼ş
-		config->loadDefaultValue();//¼ÓÔØÄ¬ÈÏÖµ
-		config->markConfigFileMissing();//±ê¼ÇÎÄ¼ş¶ªÊ§
-		saveConfigFile(fileName, config);//±£´æÄ¬ÈÏconfig
+	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) { //åˆ¤æ–­é…ç½®æ–‡ä»¶è¯»å†™æƒé™
+		createConfigFile(configFilePath);//åˆ›å»ºé…ç½®æ–‡ä»¶
+		config->loadDefaultValue();//åŠ è½½é»˜è®¤å€¼
+		config->markConfigFileMissing();//æ ‡è®°æ–‡ä»¶ä¸¢å¤±
+		saveConfigFile(fileName, config);//ä¿å­˜é»˜è®¤config
 		success = false;
 	}
-	else { //ÎÄ¼ş´æÔÚ£¬²¢ÇÒ¿ÉÒÔÕı³£¶ÁĞ´
+	else { //æ–‡ä»¶å­˜åœ¨ï¼Œå¹¶ä¸”å¯ä»¥æ­£å¸¸è¯»å†™
 		Configurator configurator(&configFile);
 
-		//»ù±¾ÉèÖÃ
+		//åŸºæœ¬è®¾ç½®
 		configurator.jsonReadValue("SampleDirPath", config->SampleDirPath, false);
 		configurator.jsonReadValue("TemplDirPath", config->TemplDirPath, false);
 		configurator.jsonReadValue("OutputDirPath", config->OutputDirPath, false);
@@ -944,27 +944,27 @@ bool Configurator::loadConfigFile(const QString &fileName, UserConfig *config)
 		configurator.jsonReadValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonReadValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
 
-		//ÔË¶¯½á¹¹
+		//è¿åŠ¨ç»“æ„
 		configurator.jsonReadValue("clusterComPort", config->clusterComPort, false);
 
-		//Ïà»ú×é
+		//ç›¸æœºç»„
 		configurator.jsonReadValue("exposureTime", config->exposureTime, false);
 		configurator.jsonReadValue("colorMode", config->colorMode, false);
 
-		//¼ì²âËã·¨
+		//æ£€æµ‹ç®—æ³•
 		configurator.jsonReadValue("defectTypeToBeProcessed", config->defectTypeToBeProcessed, false);
 		configurator.jsonReadValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonReadValue("concaveRateThresh", config->concaveRateThresh, false);
 		configurator.jsonReadValue("convexRateThresh", config->convexRateThresh, false);
 
-		//ÎÄ¼şÍ¬²½
+		//æ–‡ä»¶åŒæ­¥
 		configurator.jsonReadValue("inetAddressOfRecheckPC", config->inetAddressOfRecheckPC, false);
 		configFile.close();
 	}
 	return success;
 }
 
-//½« UserConfig ÖĞµÄ²ÎÊı±£´æµ½ÅäÖÃÎÄ¼şÖĞ
+//å°† UserConfig ä¸­çš„å‚æ•°ä¿å­˜åˆ°é…ç½®æ–‡ä»¶ä¸­
 bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 {
 	bool success = true;
@@ -973,38 +973,38 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 	if (!configFile.exists() || !configFile.open(QIODevice::ReadWrite)) {
 		createConfigFile(configFilePath);
 		UserConfig defaultConfig;
-		defaultConfig.loadDefaultValue();//¼ÓÔØÄ¬ÈÏÖµ
-		saveConfigFile(fileName, &defaultConfig);//±£´æÄ¬ÈÏconfig
+		defaultConfig.loadDefaultValue();//åŠ è½½é»˜è®¤å€¼
+		saveConfigFile(fileName, &defaultConfig);//ä¿å­˜é»˜è®¤config
 		success = false;
 	}
-	else { //ÎÄ¼ş´æÔÚ£¬²¢ÇÒ¿ÉÒÔÕı³£¶ÁĞ´
+	else { //æ–‡ä»¶å­˜åœ¨ï¼Œå¹¶ä¸”å¯ä»¥æ­£å¸¸è¯»å†™
 		Configurator configurator(&configFile);
 
-		//»ù±¾ÉèÖÃ
-		configurator.jsonSetValue("SampleDirPath", config->SampleDirPath, false);//Ñù±¾ÎÄ¼ş¼Ğ
-		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath, false);//Ä£°åÎÄ¼ş¼Ğ
-		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath, false);//Êä³öÎÄ¼ş¼Ğ
-		configurator.jsonSetValue("ImageFormat", config->ImageFormat, false);//Í¼Ïñ¸ñÊ½
+		//åŸºæœ¬è®¾ç½®
+		configurator.jsonSetValue("SampleDirPath", config->SampleDirPath, false);//æ ·æœ¬æ–‡ä»¶å¤¹
+		configurator.jsonSetValue("TemplDirPath", config->TemplDirPath, false);//æ¨¡æ¿æ–‡ä»¶å¤¹
+		configurator.jsonSetValue("OutputDirPath", config->OutputDirPath, false);//è¾“å‡ºæ–‡ä»¶å¤¹
+		configurator.jsonSetValue("ImageFormat", config->ImageFormat, false);//å›¾åƒæ ¼å¼
 
 		configurator.jsonSetValue("ActualProductSize_W", config->ActualProductSize_W, false);
 		configurator.jsonSetValue("ActualProductSize_H", config->ActualProductSize_H, false);
 		configurator.jsonSetValue("nBasicUnitInRow", config->nBasicUnitInRow, false);
 		configurator.jsonSetValue("nBasicUnitInCol", config->nBasicUnitInCol, false);
 
-		//ÔË¶¯½á¹¹
+		//è¿åŠ¨ç»“æ„
 		configurator.jsonSetValue("clusterComPort", config->clusterComPort, false);
 
-		//Ïà»ú×é
+		//ç›¸æœºç»„
 		configurator.jsonSetValue("exposureTime", config->exposureTime, false);
 		configurator.jsonSetValue("colorMode", config->colorMode, false);
 
-		//¼ì²âËã·¨
+		//æ£€æµ‹ç®—æ³•
 		configurator.jsonSetValue("defectTypeToBeProcessed", config->defectTypeToBeProcessed, false);
 		configurator.jsonSetValue("matchingAccuracyLevel", config->matchingAccuracyLevel, false);
 		configurator.jsonSetValue("concaveRateThresh", config->concaveRateThresh, false);
 		configurator.jsonSetValue("convexRateThresh", config->convexRateThresh, false);
 
-		//ÎÄ¼şÍ¬²½
+		//æ–‡ä»¶åŒæ­¥
 		configurator.jsonSetValue("inetAddressOfRecheckPC", config->inetAddressOfRecheckPC, false);
 		configFile.close();
 	}
@@ -1012,9 +1012,9 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 }
 
 
-/******************* ÆäËû ********************/
+/******************* å…¶ä»– ********************/
 
-//»ñÈ¡µ±Ç°´ÅÅÌÊ£Óà¿Õ¼ä
+//è·å–å½“å‰ç£ç›˜å‰©ä½™ç©ºé—´
 //quint64 Configurator::getDiskFreeSpace(QString driver)
 //{
 //	LPCWSTR lpcwstrDriver = (LPCWSTR)driver.utf16();
@@ -1027,7 +1027,7 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 //	return (quint64)liTotalFreeBytes.QuadPart / 1024 / 1024 / 1024;
 //}
 
-//ÔİÊ±Ã»ÓÃ
+//æš‚æ—¶æ²¡ç”¨
 //bool Configurator::checkDir(QString dirpath)
 //{
 //	QDir dir(dirpath);
@@ -1047,7 +1047,7 @@ bool Configurator::saveConfigFile(const QString &fileName, UserConfig *config)
 //
 //		QString name2 = file_list.at(0).absoluteFilePath();
 //		QFileInfo config(name2 + "/" + "outputImage/");
-//		if (!config.isDir()) return false; //Ã»ÓĞÅäÖÃÎÄ¼ş Ôò´´½¨ÎÄ¼ş
+//		if (!config.isDir()) return false; //æ²¡æœ‰é…ç½®æ–‡ä»¶ åˆ™åˆ›å»ºæ–‡ä»¶
 //	}
 //	return true;
 //}

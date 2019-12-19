@@ -12,16 +12,16 @@
 #include "FileSender.h"
 
 
-//ÎÄ¼şÍ¬²½Ïß³Ì
-//½«¼ì²âÉè±¸ÉÏµÄ¼ì²â½á¹ûÍ¬²½µ½¸´²éÉè±¸ÖĞ
+//æ–‡ä»¶åŒæ­¥çº¿ç¨‹
+//å°†æ£€æµ‹è®¾å¤‡ä¸Šçš„æ£€æµ‹ç»“æœåŒæ­¥åˆ°å¤æŸ¥è®¾å¤‡ä¸­
 class FileSyncThread : public QThread
 {
 	Q_OBJECT
 
 private:
-	pcb::AdminConfig *adminConfig; //ÏµÍ³²ÎÊı
-	pcb::UserConfig *userConfig; //ÓÃ»§²ÎÊı
-	pcb::RuntimeParams *runtimeParams; //ÔËĞĞ²ÎÊı
+	pcb::AdminConfig *adminConfig; //ç³»ç»Ÿå‚æ•°
+	pcb::UserConfig *userConfig; //ç”¨æˆ·å‚æ•°
+	pcb::RuntimeParams *runtimeParams; //è¿è¡Œå‚æ•°
 
 public:
 	FileSyncThread(QObject *parent = Q_NULLPTR);
