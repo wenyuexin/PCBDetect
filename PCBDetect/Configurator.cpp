@@ -370,7 +370,7 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 
 	//相机
 	case pcb::UserConfig::Index_exposureTime: //曝光时间 ms
-		if (exposureTime < 10 || exposureTime > 500)
+		if (exposureTime < 5 || exposureTime > 500)
 			code = Invalid_exposureTime;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_colorMode: //色彩模式：0彩色 1黑白
