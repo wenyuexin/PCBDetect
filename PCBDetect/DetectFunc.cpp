@@ -1143,7 +1143,7 @@ cv::Mat DetectFunc::markDefect_test(int currentCol, Mat &diffBw, Mat &sampGrayRe
 		if (percentFlag)
 			defectInfo += to_string(int(percentage));
 	
-		cv::putText(sampGrayRegCopyZoom, defectInfo, Point(rect.x, rect.y), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(255, 0, 0), 1, 8, 0);
+		//cv::putText(sampGrayRegCopyZoom, defectInfo, Point(rect.x, rect.y), cv::FONT_HERSHEY_COMPLEX, 2, cv::Scalar(255, 0, 0), 1, 8, 0);
 
 		QChar fillChar = '0'; //当字符串长度不够时使用此字符进行填充
 		QString outPath = runtimeParams->currentOutputDir + "/"; //当前序号对应的输出目录
