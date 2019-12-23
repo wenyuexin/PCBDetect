@@ -330,16 +330,6 @@ void PCBDetect::switchToExtractUI()
 	this->setPushButtonsEnabled(false, true);
 	pcb::delay(10);
 
-	//if (!runtimeParams.DeveloperMode) {
-	//	//运动结构复位
-	//	motionControler->setOperation(MotionControler::MotionReset);
-	//	motionControler->start(); //复位
-	//	while (motionControler->isRunning()) pcb::delay(100);
-	//	if (!motionControler->isReady()) {
-	//		motionControler->showMessageBox(this);//错误提示
-	//	}
-	//}
-
 	extractUI->resetExtractUI(); //重置提取界面
 	if (!runtimeParams.DeveloperMode) extractUI->refreshCameraControler();//更新相机参数
 	this->showExtractUI(); //显示模板提取界面
