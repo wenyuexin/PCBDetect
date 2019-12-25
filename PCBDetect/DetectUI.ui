@@ -305,6 +305,31 @@
     </item>
    </layout>
   </widget>
+  <widget class="QLabel" name="label_currentTime">
+   <property name="geometry">
+    <rect>
+     <x>1250</x>
+     <y>10</y>
+     <width>181</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>SimSun-ExtB</family>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="text">
+    <string>2019/01/01 00:00:00</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
   <zorder>layoutWidget</zorder>
   <zorder>label_3</zorder>
   <zorder>label_title</zorder>
@@ -315,6 +340,7 @@
   <zorder>label_status</zorder>
   <zorder>line</zorder>
   <zorder>label</zorder>
+  <zorder>label_currentTime</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
