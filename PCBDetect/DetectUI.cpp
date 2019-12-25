@@ -519,10 +519,6 @@ void DetectUI::mouseDoubleClickEvent(QMouseEvent *event)
 	int gridRowIdx = (int) (posInScene.y() / gridSize.height());//计算点击位置在第几行
 	int gridColIdx = (int) (posInScene.x() / gridSize.width());//计算点击位置在第几列
 
-	////QPoint relativePos = mousePosition - graphicsViewPos; //相对位置
-	////int gridRowIdx = (int) (relativePos.y() / gridSize.height());//点击位置在第几行
-	////int gridColIdx = (int) (relativePos.x() / gridSize.width());//点击位置在第几列
-
 	if (gridRowIdx <= currentRow_show && qpixmapSamples[gridRowIdx][gridColIdx] != Q_NULLPTR) {
 		serialNumberUI->showSampleImage(gridRowIdx, gridColIdx);
 		pcb::delay(3);//延迟
@@ -808,11 +804,16 @@ void DetectUI::do_updateDetectState_detecter(int state)
 
 
 //检测线程结束后
-void DetectUI::on_detectFinished_detectThread(bool qualified)
+void DetectUI::on_detectFinished_detectThread(bool SampleIsQualified)
 {
 	//显示结果
-	ui.label_indicator->setPixmap((qualified) ? lightOffIcon : lightOnIcon); //切换指示灯
-	ui.label_result->setText((qualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
+	ui.label_indicator->setPixmap((SampleIsQualified) ? lightOffIcon : lightOnIcon); //切换指示灯
+	ui.label_result->setText((SampleIsQualified) ? pcb::chinese("合格") : pcb::chinese("不合格"));
+
+	//若产品不合格则直接显示检测结果
+	if (SampleIsQualified) {
+		//recheckUI->show();
+	}
 
 	//此处向复查设备发送检测结果
 	ui.label_status->setText(pcb::chinese("正在发送检测结果")); //更新状态栏
