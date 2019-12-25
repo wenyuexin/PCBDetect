@@ -1,10 +1,5 @@
-
 #pragma once
-#ifndef WIN32
 
-#define WIN32
-
-#endif
 #include "AMC98C.h"
 #include <QWidget>
 #include "ui_DetectUI.h"
@@ -18,6 +13,7 @@
 #include "SerialNumberUI.h"
 #include "FileSyncThread.h"
 #include <vector>
+#include <QTimer>
 #include <QRect>
 #include <QList>
 #include <QGraphicsItem>
@@ -84,6 +80,7 @@ public:
 	void refreshCameraControler();
 
 private:
+	void showCurrentTime();//获取并显示时间
 	void initItemGrid(pcb::ItemGrid &grid);//初始化图元网格
 	void initPointersInItemArray(pcb::ItemArray &items);//初始化itemArray
 	void deletePointersInItemArray(pcb::ItemArray &items);//删除itemArray中的指针
