@@ -772,6 +772,9 @@ void ExtractUI::update_extractState_extractor(int state)
 		//检查是否有未处理的事件
 		while (extractThread->isRunning()) pcb::delay(50); //等待提取线程结束
 		if (runtimeParams->currentRow_extract == runtimeParams->nPhotographing - 1) { //当前PCB提取结束
+			ui.label_status->setText(pcb::chinese("提取结束，系统就绪")); //更新状态栏
+			qApp->processEvents();
+
 			runtimeParams->currentRow_extract += 1;
 			this->setPushButtonsEnabled(true); //启用按键
 		}

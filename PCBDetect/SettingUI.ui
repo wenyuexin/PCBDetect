@@ -48,15 +48,16 @@
    </property>
    <property name="font">
     <font>
-     <family>SimSun-ExtB</family>
-     <pointsize>22</pointsize>
+     <family>黑体</family>
+     <pointsize>21</pointsize>
      <weight>12</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">font: 100 22pt &quot;SimSun-ExtB&quot;;</string>
+    <string notr="true">font: 100 21pt &quot;黑体&quot;;
+</string>
    </property>
    <property name="text">
     <string>PCB检测系统 - 设置</string>
