@@ -12,7 +12,6 @@
 #include "CameraControler.h"
 #include "SerialNumberUI.h"
 #include "FileSyncThread.h"
-#include <vector>
 #include <QTimer>
 #include <QRect>
 #include <QList>
@@ -20,6 +19,7 @@
 #include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QDebug>
+#include <vector>
 
 
 //检测界面

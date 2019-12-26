@@ -6,7 +6,7 @@
 
 //复查界面的构造函数
 PCBRecheck::PCBRecheck(QWidget *parent)
-	: QMainWindow(parent)
+	: QWidget(parent)
 {
 	ui.setupUi(this);
 
