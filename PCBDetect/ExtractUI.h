@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QWidget>
-#include "ui_TemplateUI.h"
+#include "ui_ExtractUI.h"
 #include "Configurator.h"
 #include "ExtractThread.h"
 #include "ImgConvertThread.h"
@@ -18,7 +18,7 @@ class ExtractUI : public QWidget
 	Q_OBJECT
 
 private:
-	Ui::TemplateUI ui;
+	Ui::ExtractUI ui;
 	SerialNumberUI *serialNumberUI; //产品序号识别界面
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数

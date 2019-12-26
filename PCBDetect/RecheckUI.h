@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
+#include <QWidget>
 #include "ui_RecheckUI.h"
 #include <QKeyEvent>
 #include <QDebug>
@@ -24,7 +24,7 @@
 
 
 //检修主界面
-class PCBRecheck : public QMainWindow
+class PCBRecheck : public QWidget
 {
 	Q_OBJECT
 
@@ -43,7 +43,7 @@ public:
 	};
 
 private:
-	Ui::PCBRecheckClass ui;
+	Ui::RecheckUI ui;
 	SysInitThread *sysInitThread; //系统初始化线程
 	SerialNumberUI *serialNumberUI; //pcb编号设置界面
 	//ExitQueryUI *exitQueryUI; //退出询问界面
