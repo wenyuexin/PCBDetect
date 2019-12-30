@@ -129,7 +129,7 @@ void DefectDetecter::detect()
 
 	//读取掩膜区域坐标值
 	if (currentRow_detect == 0) {
-		QString cornerPointsPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/cornerPoints.bin";
+		QString cornerPointsPath = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/mask/cornerPoints.bin";
 		cv::FileStorage store_new(cornerPointsPath.toStdString(), cv::FileStorage::READ);
 		cv::FileNode node = store_new["cornerPoints"];
 		vector<cv::Point2i> res;
@@ -142,8 +142,9 @@ void DefectDetecter::detect()
 		maskRoi_tr = res[1];
 		store_new.release();
 	}
+
 	static int templateFlag = -999;
-	if (templateFlag != ((runtimeParams->sampleModelNum).toInt()) || ((detectFunc->templateVec).empty() || (detectFunc->maskVec).empty())) {
+	if (templateFlag != ((runtimeParams->productID.modelType).toInt()) || ((detectFunc->templateVec).empty() || (detectFunc->maskVec).empty())) {
 		(detectFunc->templateVec).clear();
 		(detectFunc->maskVec).clear();
 		detectFunc->templateVec = std::vector<std::vector<cv::Mat>>(runtimeParams->nPhotographing, std::vector<cv::Mat>{});
@@ -151,18 +152,19 @@ void DefectDetecter::detect()
 		for (int i = 0; i < runtimeParams->nPhotographing; i++)
 			for (int j = 0; j < runtimeParams->nCamera; j++)
 			{
-				QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
+				QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/subtempl/"
 					+ QString("%1_%2").arg(i + 1).arg(j + 1) + ".bmp";
 				Mat templGray = cv::imread(templPath.toStdString(), 0);
 				detectFunc->templateVec[i].push_back(templGray);
 
-				QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/"
+				QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/mask/"
 					+ QString("%1_%2_mask").arg(i + 1).arg(j + 1) + ".bmp";
 				Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
 				detectFunc->maskVec[i].push_back(mask_roi);
 			}
-		templateFlag = (runtimeParams->sampleModelNum).toInt();
+		templateFlag = (runtimeParams->productID.modelType).toInt();
 	}
+
 	//向检测单元传入适用于整个PCB板的参数
 	if (currentRow_detect == 0) {
 		totalDefectNum = 0; //缺陷总数
@@ -269,17 +271,17 @@ void DefectDetecter::makeCurrentSampleDir(std::vector<QString> &subFolders)
 	if (!outputDir.exists()) outputDir.mkdir(runtimeParams->currentSampleDir);
 
 	//判断对应的型号文件夹是否存在
-	runtimeParams->currentSampleDir += "/" + runtimeParams->sampleModelNum;
+	runtimeParams->currentSampleDir += "/" + runtimeParams->productID.modelType;
 	QDir modelDir(runtimeParams->currentSampleDir);
 	if (!modelDir.exists()) modelDir.mkdir(runtimeParams->currentSampleDir);
 
 	//判断对应的批次号文件夹是否存在
-	runtimeParams->currentSampleDir += "/" + runtimeParams->sampleBatchNum;
+	runtimeParams->currentSampleDir += "/" + runtimeParams->productID.getDateString();
 	QDir batchDir(runtimeParams->currentSampleDir);
 	if (!batchDir.exists()) batchDir.mkdir(runtimeParams->currentSampleDir);
 
 	//判断对应的样本编号文件夹是否存在
-	runtimeParams->currentSampleDir += "/" + runtimeParams->sampleNum;
+	runtimeParams->currentSampleDir += "/" + QString::number(runtimeParams->productID.serialNum);
 	QDir resultDir(runtimeParams->currentSampleDir);
 	if (!resultDir.exists()) {
 		resultDir.mkdir(runtimeParams->currentSampleDir);//创建文件夹
@@ -303,17 +305,17 @@ void DefectDetecter::makeCurrentOutputDir(vector<QString> &subFolders)
 	if (!outputDir.exists()) outputDir.mkdir(runtimeParams->currentOutputDir);
 
 	//判断对应的型号文件夹是否存在
-	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleModelNum;
+	runtimeParams->currentOutputDir += "/" + runtimeParams->productID.modelType;
 	QDir modelDir(runtimeParams->currentOutputDir);
 	if (!modelDir.exists()) modelDir.mkdir(runtimeParams->currentOutputDir);
 
 	//判断对应的批次号文件夹是否存在
-	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleBatchNum;
+	runtimeParams->currentOutputDir += "/" + runtimeParams->productID.getDateString();
 	QDir batchDir(runtimeParams->currentOutputDir);
 	if (!batchDir.exists()) batchDir.mkdir(runtimeParams->currentOutputDir);
 
 	//判断对应的样本编号文件夹是否存在
-	runtimeParams->currentOutputDir += "/" + runtimeParams->sampleNum;
+	runtimeParams->currentOutputDir += "/" + QString::number(runtimeParams->productID.serialNum);
 	QDir resultDir(runtimeParams->currentOutputDir);
 	if (!resultDir.exists()) {
 		resultDir.mkdir(runtimeParams->currentOutputDir);//创建文件夹

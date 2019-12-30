@@ -44,14 +44,14 @@ void DetectUnit::run()
 	curRow = runtimeParams->currentRow_detect; //当前正在检测的行
 
 	//读取模板掩膜
-	QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/mask/"
+	QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/mask/"
 		+ QString("%1_%2_mask").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	/*Mat mask_roi = cv::imread(mask_path.toStdString(), 0);*/
+	//Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
 
 	//读取模板图片
-	QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->sampleModelNum + "/subtempl/"
+	QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/subtempl/"
 		+ QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
-	///*Mat templGray = cv::imread(templPath.toStdString(), 0);*/
+	//Mat templGray = cv::imread(templPath.toStdString(), 0);
 
 	Mat mask_roi = detectFunc->maskVec[curRow][curCol];
 	Mat templGray = detectFunc->templateVec[curRow][curCol];
@@ -75,9 +75,9 @@ void DetectUnit::run()
 	Mat sampGrayReg, h;
 	Mat imMatches;
 	//载入特征的方法
-	string bin_path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
-		+ "/bin/" + std::to_string(curRow + 1) + "_" + std::to_string(curCol+1) + ".bin";
-	load(bin_path);
+	QString bin_path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType
+		+ "/bin/" + QString::number(curRow + 1) + "_" + QString::number(curCol+1) + ".bin";
+	load(bin_path.toStdString());
 
 	//每次计算的方法
 	Mat templGrayRoi, sampGrayRoi;

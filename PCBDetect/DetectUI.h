@@ -10,8 +10,8 @@
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
-#include "SerialNumberUI.h"
 #include "FileSyncThread.h"
+#include "RecheckUI.h"
 #include <QTimer>
 #include <QRect>
 #include <QList>
@@ -33,7 +33,6 @@ private:
 	QPixmap lightOnIcon; //亮灯图标 red
 	QPixmap lightOffIcon; //灭灯图标 grey
 	QPixmap defaultIcon; //默认图标
-	SerialNumberUI *serialNumberUI; //产品序号识别界面
 	int initCounter; //初始化次数的计数器
 
 	pcb::AdminConfig *adminConfig; //系统参数
@@ -62,6 +61,7 @@ private:
 	int detectState; //检测状态
 
 	FileSyncThread *fileSyncThread; //文件发送
+	RecheckUI *recheckUI; //复查界面
 
 public:
 	DetectUI(QWidget *parent = Q_NULLPTR);
@@ -93,12 +93,15 @@ private:
 	void showSampleImages();
 	void readSampleImages();
 	void detectSampleImages(); //检测
+	bool detectionHasNotStartedAndAllImagesHasBeenDisplayed();
+	void switchToRecheckUI();
 
 Q_SIGNALS:
 	void showDetectMainUI();
 	void invalidNumberOfSampleImage();
 
 private Q_SLOTS:
+	void on_pushButton_modelType_clicked();
 	void on_pushButton_start_clicked();
 	void on_pushButton_return_clicked();
 
@@ -114,7 +117,5 @@ private Q_SLOTS:
 	void on_takePhotosFinished_camera(int);
 	void on_convertFinished_convertThread();
 
-	void mouseDoubleClickEvent(QMouseEvent *event);
-	void on_recognizeFinished_serialNumUI();
-	void do_showPreviousUI_serialNumUI();
+	void on_recheckFinished_recheckUI();
 };

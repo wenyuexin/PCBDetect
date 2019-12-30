@@ -16,15 +16,12 @@
 #include "pcbFuncLib.h"
 #include "RuntimeParams.h"
 #include "Configurator.h"
-#include "SysInitThread.h"
-#include "SerialNumberUI.h"
-//#include "ExitQueryUI.h"
 #include "FlickeringArrow.h"
 #include "FileSyncThread.h"
 
 
-//检修主界面
-class PCBRecheck : public QWidget
+//复查界面
+class RecheckUI : public QWidget
 {
 	Q_OBJECT
 
@@ -44,12 +41,10 @@ public:
 
 private:
 	Ui::RecheckUI ui;
-	SysInitThread *sysInitThread; //系统初始化线程
-	SerialNumberUI *serialNumberUI; //pcb编号设置界面
-	//ExitQueryUI *exitQueryUI; //退出询问界面
-	pcb::UserConfig userConfig; //检修系统配置信息
-	pcb::RuntimeParams runtimeParams; //运行参数
+	pcb::UserConfig *userConfig; //检修系统配置信息
+	pcb::RuntimeParams *runtimeParams; //运行参数
 	RecheckStatus recheckStatus; //复查状态
+	pcb::DetectResult *detectResult; //检测结果
 
 	QPixmap fullImage; //PCB大图
 	const QString fullImageNamePrefix = "fullImage"; //文件名前缀
@@ -70,24 +65,28 @@ private:
 
 	//pcb::FolderHierarchy OutFolderHierarchy; //输出目录下的文件夹层次
 
-	FileSyncThread fileSyncThread;//文件同步线程
+	//FileSyncThread fileSyncThread;//文件同步线程
 
 public:
-	PCBRecheck(QWidget *parent = Q_NULLPTR);
-	~PCBRecheck();
+	RecheckUI(QWidget *parent = Q_NULLPTR);
+	~RecheckUI();
+
+	void init(); //界面初始化
+	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
+	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
+	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 
 private:
-	void init();
-	void showLastFlawImage(); //显示上一张缺陷图
-	void showNextFlawImage(); //显示下一张缺陷图
-	
-	void refreshRecheckUI(); //更新复查界面
-	bool loadFullImage(); //加载PCB整图
+	void reset(); //界面重置
+	void refresh(); //更新复查界面
+
 	void showFullImage(); //显示PCB整图
 	void initFlickeringArrow(); //加载初始的闪烁箭头
 	void setFlickeringArrowPos(); //更新箭头的位置
+	void showLastFlawImage(); //显示上一张缺陷图
+	void showNextFlawImage(); //显示下一张缺陷图
 
-	void getFlawImageInfo(QString dirpath);
+	//void getFlawImageInfo(QString dirpath);
 	void showFlawImage();
 	void switchFlawIndicator();
 
@@ -95,25 +94,17 @@ private:
 	//void showExitQueryUI();
 
 	void setPushButtonsEnabled(bool enable);
-	void exitRecheckSystem();
 	//void showMessageBox(pcb::MessageBoxType type, RecheckStatus status = Default);
 
 	void logging(QString msg);
 
-private Q_SLOTS:
-	//void on_sysInitFinished_initThread(); //初始化线程返回主界面
-	//void on_userConfigError_initThread(); //初始化错误
-	//void on_outFolderHierarchyError_initThread(); //初始化错误
+Q_SIGNALS:
+	void recheckFinished_recheckUI();
 
+private Q_SLOTS:
 	void keyPressEvent(QKeyEvent *event); //敲击键盘事件
 	void on_pushButton_plus2_clicked(); //点击加号按键
 	void on_pushButton_minus2_clicked(); //点击减号按键
-	void on_pushButton_exit_clicked(); //点击退出按键
-
-	//void do_showRecheckUI_numUI(); //pcb编号设置界面返回主界面
-	//void do_exitRecheckSystem_numUI(); //退出系统
-
-	//void do_showSerialNumberUI_exitUI();
-	//void do_showRecheckUI_exitUI();
+	void on_pushButton_return_clicked(); //点击退出按键
 	void on_refreshArrow_arrow();
 };
