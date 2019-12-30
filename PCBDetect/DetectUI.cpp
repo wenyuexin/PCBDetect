@@ -741,7 +741,8 @@ void DetectUI::on_convertFinished_convertThread()
 	}
 
 	//判断是否执行检测操作
-	if (eventCounter >= 1 && runtimeParams->productID.isValid() && !detectThread->isRunning())
+	if (runtimeParams->productID.isModelTypeValid() //产品型号正确
+		&& eventCounter > 0 && !detectThread->isRunning()) //有未检测的行，检测线程没运行
 	{
 		detectSampleImages(); //检测
 	}

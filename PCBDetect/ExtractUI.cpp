@@ -667,7 +667,6 @@ void ExtractUI::on_convertFinished_convertThread()
 		//如果序号识别界面不在显示状态（即本界面显示中）则进行提示
 		ui.label_status->setText(pcb::chinese("请在模板设置界面\n设置相关参数"));
 		qApp->processEvents();
-		return;
 	}
 
 	//当前行显示结束之后
@@ -700,7 +699,9 @@ void ExtractUI::on_convertFinished_convertThread()
 	}
 
 	//判断是否执行提取操作
-	if (eventCounter > 0 && !extractThread->isRunning()) {
+	if (templSettingUI->isReadyForExtract() //模板相关参数都已正确设置
+		&& eventCounter > 0 && !extractThread->isRunning()) //有未提取的行，提取线程没运行
+	{
 		extractTemplateImages(); //提取
 	}
 }
