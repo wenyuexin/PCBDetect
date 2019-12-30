@@ -31,7 +31,7 @@ private:
 	SettingUI *settingUI; //参数设置界面
 	ExtractUI *extractUI; //模板提取界面
 	DetectUI *detectUI; //检测界面
-	//RecheckUI *recheckUI; //复查界面
+	RecheckUI *recheckUI; //复查界面
 	MotionControler *motionControler;//运动控制器
 	CameraControler *cameraControler;//相机控制器
 	pcb::AdminConfig adminConfig; //系统参数

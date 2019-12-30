@@ -382,7 +382,7 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 	case pcb::UserConfig::Index_defectTypeToBeProcessed: //需要检测的缺陷类型
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_matchingAccuracyLevel: //匹配模式
-		if (matchingAccuracyLevel < 1 || matchingAccuracyLevel>2)
+		if (matchingAccuracyLevel < 1 || matchingAccuracyLevel > 2)
 			code = Invalid_matchingAccuracyLevel;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_concaveRateThresh: //缺失率阈值

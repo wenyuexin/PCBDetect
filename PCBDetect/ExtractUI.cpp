@@ -1,4 +1,4 @@
-#include "ExtractUI.h"
+ï»¿#include "ExtractUI.h"
 
 using pcb::UserConfig;
 using pcb::RuntimeParams;
@@ -10,52 +10,72 @@ ExtractUI::ExtractUI(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	//³ÉÔ±±äÁ¿³õÊ¼»¯
 	adminConfig = Q_NULLPTR;
 	userConfig = Q_NULLPTR;
 	runtimeParams = Q_NULLPTR;
 	motionControler = Q_NULLPTR;
 	cameraControler = Q_NULLPTR;
-	serialNumberUI = Q_NULLPTR;
+	templSettingUI = Q_NULLPTR;
 	templExtractor = Q_NULLPTR;
 	extractThread = Q_NULLPTR;
 	initCounter = 0;
 }
 
+ExtractUI::~ExtractUI()
+{
+	qDebug() << "~ExtractUI";
+
+	deletePointersInItemArray(itemArray); //åˆ é™¤å›¾å…ƒçŸ©é˜µä¸­çš„æŒ‡é’ˆ
+	deletePointersInCvMatArray(cvmatSamples); //åˆ é™¤cvmatSamplesä¸­çš„æŒ‡é’ˆ
+	deletePointersInQPixmapArray(qpixmapSamples);//åˆ é™¤qpixmapSamplesä¸­çš„æŒ‡é’ˆ
+	delete extractThread; //æå–çº¿ç¨‹
+	extractThread = Q_NULLPTR;
+	delete templExtractor; //æ¨¡æ¿æå–å™¨
+	templExtractor = Q_NULLPTR;
+	delete templSettingUI; //æ¨¡æ¿è®¾ç½®ç•Œé¢
+	templSettingUI = Q_NULLPTR;
+}
+
+
+/****************** ç•Œé¢çš„åˆå§‹åŒ–ä¸é‡ç½® *******************/
+
 void ExtractUI::init()
 {
-	//¶àÆÁ×´Ì¬ÏÂÑ¡ÔñÔÚÖ÷ÆÁ»¹ÊÇ¸±ÆÁÉÏÏÔÊ¾
+	//å¤šå±çŠ¶æ€ä¸‹é€‰æ‹©åœ¨ä¸»å±è¿˜æ˜¯å‰¯å±ä¸Šæ˜¾ç¤º
 	this->setGeometry(runtimeParams->ScreenRect);
 
-	//ÉèÖÃ¼ì²â½çÃæµÄ¾Û½¹²ßÂÔ
+	//è®¾ç½®æ£€æµ‹ç•Œé¢çš„èšç„¦ç­–ç•¥
 	this->setFocusPolicy(Qt::ClickFocus);
 
-	//ÖØÖÃÌáÈ¡½çÃæ
-	this->resetExtractUI();
+	//åœ¨ç•Œé¢å³ä¸Šè§’æ˜¾ç¤ºæ—¶é—´
+	this->showCurrentTime();
 
-	//¶Ô»æÍ¼¿Ø¼şGraphicsViewµÄ³õÊ¼»¯ÉèÖÃ
+	//é‡ç½®æå–ç•Œé¢
+	this->reset();
+
+	//å¯¹ç»˜å›¾æ§ä»¶GraphicsViewçš„åˆå§‹åŒ–è®¾ç½®
 	this->initGraphicsView();
 
-	//²úÆ·ĞòºÅÊ¶±ğ½çÃæ
-	delete serialNumberUI;
-	serialNumberUI = new SerialNumberUI();
-	serialNumberUI->setAdminConfig(adminConfig);
-	serialNumberUI->setRuntimeParams(runtimeParams);
-	serialNumberUI->setCvMatArray(&cvmatSamples);
-	serialNumberUI->setQPixmapArray(&qpixmapSamples);
-	serialNumberUI->setMaskRoiWidgetsVisible(true);
-	serialNumberUI->init();
-	connect(serialNumberUI, SIGNAL(recognizeFinished_serialNumUI()), this, SLOT(on_recognizeFinished_serialNumUI()));
-	connect(serialNumberUI, SIGNAL(switchImage_serialNumUI()), this, SLOT(on_switchImage_serialNumUI()));
-	connect(serialNumberUI, SIGNAL(showPreviousUI_serialNumUI()), this, SLOT(do_showPreviousUI_serialNumUI()));
-	connect(serialNumberUI, SIGNAL(getMaskRoiFinished_serialNumUI()), this, SLOT(on_getMaskRoiFinished_serialNumUI()));
+	//æ¨¡æ¿è®¾ç½®ç•Œé¢
+	delete templSettingUI;
+	templSettingUI = new TemplSettingUI();
+	templSettingUI->setAdminConfig(adminConfig);
+	templSettingUI->setRuntimeParams(runtimeParams);
+	templSettingUI->setCvMatArray(&cvmatSamples);
+	templSettingUI->setQPixmapArray(&qpixmapSamples);
+	templSettingUI->init();
+	connect(templSettingUI, SIGNAL(maskRoiIsSet_templSettingUI()), this, SLOT(on_maskRoiIsSet_templSettingUI()));
+	connect(templSettingUI, SIGNAL(segThreshIsSet_templSettingUI()), this, SLOT(on_segThreshIsSet_templSettingUI()));
+	connect(templSettingUI, SIGNAL(modelNumIsSet_templSettingUI()), this, SLOT(on_modelNumIsSet_templSettingUI()));
+	connect(templSettingUI, SIGNAL(showExtractUI_templSettingUI()), this, SLOT(do_showExtractUI_templSettingUI()));
+	connect(templSettingUI, SIGNAL(settingFinished_templSettingUI()), this, SLOT(on_settingFinished_templSettingUI()));
 
-	//Ä£°åÌáÈ¡Æ÷
+	//æ¨¡æ¿æå–å™¨
 	delete templExtractor;
 	templExtractor = new TemplateExtractor;
 	connect(templExtractor, SIGNAL(extractState_extractor(int)), this, SLOT(update_extractState_extractor(int)));
 
-	//Ä£°åÌáÈ¡Ïß³Ì
+	//æ¨¡æ¿æå–çº¿ç¨‹
 	delete extractThread;
 	extractThread = new ExtractThread();
 	extractThread->setAdminConfig(adminConfig);
@@ -65,16 +85,16 @@ void ExtractUI::init()
 	extractThread->setTemplateExtractor(templExtractor);
 	extractThread->init();
 
-	//ÔË¶¯¿ØÖÆ
+	//è¿åŠ¨æ§åˆ¶
 	connect(motionControler, SIGNAL(moveToInitialPosFinished_motion(int)), this, SLOT(on_moveToInitialPosFinished_motion(int)), Qt::UniqueConnection);
 	connect(motionControler, SIGNAL(moveForwardFinished_motion(int)), this, SLOT(on_moveForwardFinished_motion(int)), Qt::UniqueConnection);
 	connect(motionControler, SIGNAL(motionResetFinished_motion(int)), this, SLOT(on_motionResetFinished_motion(int)), Qt::UniqueConnection);
 
-	//Ïà»ú¿ØÖÆ
+	//ç›¸æœºæ§åˆ¶
 	connect(cameraControler, SIGNAL(initCamerasFinished_camera(int)), this, SLOT(on_initCamerasFinished_camera(int)), Qt::UniqueConnection);
 	connect(cameraControler, SIGNAL(takePhotosFinished_camera(int)), this, SLOT(on_takePhotosFinished_camera(int)), Qt::UniqueConnection);
-	
-	//×ª»»Ïß³Ì
+
+	//è½¬æ¢çº¿ç¨‹
 	imgConvertThread.setCvMats(&cvmatSamples);
 	imgConvertThread.setQPixmaps(&qpixmapSamples);
 	imgConvertThread.setCurrentRow(&currentRow_show);
@@ -82,62 +102,62 @@ void ExtractUI::init()
 	connect(&imgConvertThread, SIGNAL(convertFinished_convertThread()), this, SLOT(on_convertFinished_convertThread()), Qt::UniqueConnection);
 }
 
-ExtractUI::~ExtractUI()
+//åœ¨ç•Œé¢ä¸Šæ˜¾ç¤ºæ—¶é—´
+void ExtractUI::showCurrentTime()
 {
-	qDebug() << "~ExtractUI";
-
-	deletePointersInItemArray(itemArray); //É¾³ıÍ¼Ôª¾ØÕóÖĞµÄÖ¸Õë
-	deletePointersInCvMatArray(cvmatSamples); //É¾³ıcvmatSamplesÖĞµÄÖ¸Õë
-	deletePointersInQPixmapArray(qpixmapSamples);//É¾³ıqpixmapSamplesÖĞµÄÖ¸Õë
-	delete extractThread; //ÌáÈ¡Ïß³Ì
-	extractThread = Q_NULLPTR;
-	delete templExtractor; //Ä£°åÌáÈ¡Æ÷
-	templExtractor = Q_NULLPTR;
-	delete serialNumberUI; //²úÆ·ĞòºÅÊ¶±ğ½çÃæ
-	serialNumberUI = Q_NULLPTR;
+	//å®šæ—¶å™¨
+	QTimer *timer = new QTimer(this);
+	timer->start(0);
+	//ä½¿ç”¨å®šæ—¶å™¨ä¿¡å·æ§½ï¼Œå°½å¿«æ›´æ–°æ—¶é—´çš„æ˜¾ç¤º
+	connect(timer, &QTimer::timeout, [=]() {
+		QDateTime current_time = QDateTime::currentDateTime();
+		//æ˜¾ç¤ºæ—¶é—´ï¼Œæ ¼å¼ä¸ºï¼šå¹´-æœˆ-æ—¥ æ—¶ï¼šåˆ†ï¼šç§’ å‘¨å‡ 
+		QString StrCurrentTime = current_time.toString("yyyy/MM/dd hh:mm:ss");
+		//æ—¶é—´æ˜¾ç¤ºæ ¼å¼å¯è‡ªç”±è®¾å®šï¼Œå¦‚hh:mm ddd æ˜¾ç¤º æ—¶ï¼šåˆ† å‘¨å‡  
+		//å…·ä½“æ ¼å¼è§å‡½æ•°QString QDateTime::â€‹toString(const QString & format) const
+		ui.label_currentTime->setText(StrCurrentTime);
+	});
 }
 
-
-/****************** ½çÃæµÄ³õÊ¼»¯ÓëÖØÖÃ *******************/
-
-//¶Ô»æÍ¼¿Ø¼şGraphicsViewµÄ³õÊ¼»¯ÉèÖÃ
+//å¯¹ç»˜å›¾æ§ä»¶GraphicsViewçš„åˆå§‹åŒ–è®¾ç½®
 void ExtractUI::initGraphicsView()
 {
-	initItemGrid(itemGrid);//³õÊ¼»¯Í¼ÔªÍø¸ñ
-	initPointersInItemArray(itemArray);//³õÊ¼»¯itemArray
-	initPointersInCvMatArray(cvmatSamples);//³õÊ¼»¯cvmatSamples
-	initPointersInQPixmapArray(qpixmapSamples);//³õÊ¼»¯qpixmapSamples
+	initItemGrid(itemGrid);//åˆå§‹åŒ–å›¾å…ƒç½‘æ ¼
+	initPointersInItemArray(itemArray);//åˆå§‹åŒ–itemArray
+	initPointersInCvMatArray(cvmatSamples);//åˆå§‹åŒ–cvmatSamples
+	initPointersInQPixmapArray(qpixmapSamples);//åˆå§‹åŒ–qpixmapSamples
 
-	//³õÊ¼»¯Èô¸ÉÓÃÓÚ¼àÊÓ³ÌĞòÔËĞĞ×´Ì¬µÄ±äÁ¿
-	currentRow_show = -1; //ÏÔÊ¾ĞĞºÅ
-	runtimeParams->currentRow_extract = -1; //¼ì²âĞĞºÅ
-	eventCounter = 0; //ÊÂ¼ş¼ÆÊıÆ÷
+	//åˆå§‹åŒ–è‹¥å¹²ç”¨äºç›‘è§†ç¨‹åºè¿è¡ŒçŠ¶æ€çš„å˜é‡
+	currentRow_show = -1; //æ˜¾ç¤ºè¡Œå·
+	runtimeParams->currentRow_extract = -1; //æ£€æµ‹è¡Œå·
+	eventCounter = 0; //äº‹ä»¶è®¡æ•°å™¨
 
-	//ÊÓÍ¼¿Ø¼şµÄÉèÖÃ
-	ui.graphicsView->setFocusPolicy(Qt::NoFocus); //ÉèÖÃ¾Û½¹²ßÂÔ
-	ui.graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //½ûÓÃË®Æ½¹ö¶¯Ìõ
-	ui.graphicsView->setScene(&scene); //ÔÚÊÓÍ¼ÖĞÌí¼Ó³¡¾°
-	ui.graphicsView->centerOn(sceneSize.width() / 2, 0); //ÉèÖÃ´¹Ö±»¬¶¯ÌõµÄÎ»ÖÃ
+	//è§†å›¾æ§ä»¶çš„è®¾ç½®
+	ui.graphicsView->setFocusPolicy(Qt::NoFocus); //è®¾ç½®èšç„¦ç­–ç•¥
+	ui.graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //ç¦ç”¨æ°´å¹³æ»šåŠ¨æ¡
+	ui.graphicsView->setScene(&scene); //åœ¨è§†å›¾ä¸­æ·»åŠ åœºæ™¯
+	ui.graphicsView->centerOn(sceneSize.width() / 2, 0); //è®¾ç½®å‚ç›´æ»‘åŠ¨æ¡çš„ä½ç½®
 }
 
-//ÖØÖÃÄ£°åÌáÈ¡½çÃæ
-void ExtractUI::resetExtractUI()
+//é‡ç½®æ¨¡æ¿æå–ç•Œé¢
+void ExtractUI::reset()
 {
-	serialNumberUI->reset();//ÖØÖÃĞòºÅÊ¶±ğ½çÃæ
+	templSettingUI->reset();//é‡ç½®åºå·è¯†åˆ«ç•Œé¢
 
-	ui.label_status->setText(""); //Çå¿Õ×´Ì¬À¸
-	removeItemsFromGraphicsScene(); //ÒÆ³ı³¡¾°ÖĞÒÑ¾­¼ÓÔØµÄÍ¼Ôª
-	deletePointersInItemArray(itemArray); //É¾³ıÍ¼Ôª¾ØÕóÖĞµÄÖ¸Õë
-	deletePointersInCvMatArray(cvmatSamples); //É¾³ıcvmatSamplesÖĞµÄÖ¸Õë
-	deletePointersInQPixmapArray(qpixmapSamples);//É¾³ıqpixmapSamplesÖĞµÄÖ¸Õë
-	currentRow_show = -1; //ÏÔÊ¾ĞĞºÅµÄ¸´Î»
-	runtimeParams->currentRow_extract = -1; //ÌáÈ¡ĞĞºÅµÄ¸´Î»
-	eventCounter = 0; //ÊÂ¼ş¼ÆÊıÆ÷
-	ui.graphicsView->centerOn(0, 0); //´¹Ö±»¬Ìõ¸´Î»
+	removeItemsFromGraphicsScene(); //ç§»é™¤åœºæ™¯ä¸­å·²ç»åŠ è½½çš„å›¾å…ƒ
+	deletePointersInItemArray(itemArray); //åˆ é™¤å›¾å…ƒçŸ©é˜µä¸­çš„æŒ‡é’ˆ
+	deletePointersInCvMatArray(cvmatSamples); //åˆ é™¤cvmatSamplesä¸­çš„æŒ‡é’ˆ
+	deletePointersInQPixmapArray(qpixmapSamples);//åˆ é™¤qpixmapSamplesä¸­çš„æŒ‡é’ˆ
+
+	ui.label_status->setText(""); //æ¸…ç©ºçŠ¶æ€æ 
+	currentRow_show = -1; //æ˜¾ç¤ºè¡Œå·çš„å¤ä½
+	runtimeParams->currentRow_extract = -1; //æå–è¡Œå·çš„å¤ä½
+	eventCounter = 0; //äº‹ä»¶è®¡æ•°å™¨
+	ui.graphicsView->centerOn(0, 0); //å‚ç›´æ»‘æ¡å¤ä½
 	qApp->processEvents();
 }
 
-//°´¼üÉèÖÃ
+//æŒ‰é”®è®¾ç½®
 void ExtractUI::setPushButtonsEnabled(bool enable)
 {
 	ui.pushButton_start->setEnabled(enable);
@@ -145,68 +165,68 @@ void ExtractUI::setPushButtonsEnabled(bool enable)
 }
 
 
-/********* Í¼Ôª¾ØÕóºÍÑù±¾Í¼Ïñ¾ØÕóµÄ³õÊ¼»¯ºÍÉ¾³ıµÈ²Ù×÷ ***********/
+/********* å›¾å…ƒçŸ©é˜µå’Œæ ·æœ¬å›¾åƒçŸ©é˜µçš„åˆå§‹åŒ–å’Œåˆ é™¤ç­‰æ“ä½œ ***********/
 
-//³õÊ¼»¯Í¼ÔªÍø¸ñ
-void ExtractUI::initItemGrid(pcb::ItemGrid &grid)
+//åˆå§‹åŒ–å›¾å…ƒç½‘æ ¼
+void ExtractUI::initItemGrid(pcb::ItemGrid &itemGrid)
 {
-	//»ù±¾²ÎÊı
-	int nCamera = runtimeParams->nCamera; //Ïà»ú¸öÊı
-	int nPhotographing = runtimeParams->nPhotographing; //ÅÄÉã´ÎÊı
-	QString SampleDirPath = userConfig->SampleDirPath; //sampleÎÄ¼ş¼ĞµÄÂ·¾¶ 
+	//åŸºæœ¬å‚æ•°
+	int nCamera = runtimeParams->nCamera; //ç›¸æœºä¸ªæ•°
+	int nPhotographing = runtimeParams->nPhotographing; //æ‹æ‘„æ¬¡æ•°
+	QString SampleDirPath = userConfig->SampleDirPath; //sampleæ–‡ä»¶å¤¹çš„è·¯å¾„ 
 
-	//¼ÆËã×Ü¼ä¾à
-	QSizeF totalSpacing; //×Ü¼ä¾à
-	totalSpacing.setWidth(ItemSpacing * (nCamera + 1)); //¼ä¾à×Ü¿í¶È
-	totalSpacing.setHeight(ItemSpacing * (nPhotographing + 1)); //¼ä¾à×Ü¸ß¶È
+	//è®¡ç®—æ€»é—´è·
+	QSizeF totalSpacing; //æ€»é—´è·
+	totalSpacing.setWidth(ItemSpacing * (nCamera + 1)); //é—´è·æ€»å®½åº¦
+	totalSpacing.setHeight(ItemSpacing * (nPhotographing + 1)); //é—´è·æ€»é«˜åº¦
 
-	//¼ÆËãÍ¼Ôª³ß´ç
-	QSizeF viewSize = ui.graphicsView->size(); //ÊÓÍ¼³ß´ç
-	itemSize.setWidth(1.0 * (viewSize.width() - totalSpacing.width()) / nCamera); //Í¼Ôª¿í¶È
-	qreal itemAspectRatio = adminConfig->ImageAspectRatio; //¿í¸ß±È
-	itemSize.setHeight(1.0 * itemSize.width() / itemAspectRatio); //Í¼Ôª¸ß¶È
+	//è®¡ç®—å›¾å…ƒå°ºå¯¸
+	QSizeF viewSize = ui.graphicsView->size(); //è§†å›¾å°ºå¯¸
+	itemSize.setWidth(1.0 * (viewSize.width() - totalSpacing.width()) / nCamera); //å›¾å…ƒå®½åº¦
+	qreal itemAspectRatio = adminConfig->ImageAspectRatio; //å®½é«˜æ¯”
+	itemSize.setHeight(1.0 * itemSize.width() / itemAspectRatio); //å›¾å…ƒé«˜åº¦
 
-	//¼ÆËã³¡¾°³ß´ç
+	//è®¡ç®—åœºæ™¯å°ºå¯¸
 	sceneSize = totalSpacing;
 	sceneSize += QSizeF(itemSize.width()*nCamera, itemSize.height()*nPhotographing);
 	scene.setSceneRect(1, 1, sceneSize.width() + 2, sceneSize.height() + 2);
 
-	//Éú³É»æÍ¼Íøµã
+	//ç”Ÿæˆç»˜å›¾ç½‘ç‚¹
 	QSizeF spacingBlock = QSizeF(ItemSpacing, ItemSpacing);
-	gridSize = itemSize + spacingBlock; //Ã¿¸öÍø¸ñµÄ³ß´ç
+	gridSize = itemSize + spacingBlock; //æ¯ä¸ªç½‘æ ¼çš„å°ºå¯¸
 
-	//ÅĞ¶ÏitemGridÊÇ·ñÖ´ĞĞ¹ı³õÊ¼»¯
-	if (grid.size() > 0) grid.clear();
+	//åˆ¤æ–­itemGridæ˜¯å¦æ‰§è¡Œè¿‡åˆå§‹åŒ–
+	if (itemGrid.size() > 0) itemGrid.clear();
 
-	//³õÊ¼»¯¸³Öµ
-	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { //ĞĞ
+	//åˆå§‹åŒ–èµ‹å€¼
+	for (int iPhotographing = 0; iPhotographing < nPhotographing; iPhotographing++) { //è¡Œ
 		QList<QPointF> posList;
-		for (int iCamera = 0; iCamera < nCamera; iCamera++) { //ÁĞ
+		for (int iCamera = 0; iCamera < nCamera; iCamera++) { //åˆ—
 			QPointF pos(ItemSpacing, ItemSpacing);
 			pos += QPointF(gridSize.width()*iCamera, gridSize.height()*iPhotographing); //(x,y)
 			posList.append(pos);
 		}
-		grid.append(posList);
+		itemGrid.append(posList);
 	}
 }
 
-//³õÊ¼»¯Í¼Ôª¾ØÕóÖĞµÄÖ¸Õë - ItemArray
+//åˆå§‹åŒ–å›¾å…ƒçŸ©é˜µä¸­çš„æŒ‡é’ˆ - ItemArray
 void ExtractUI::initPointersInItemArray(pcb::ItemArray &items)
 {
 	if (items.size() > 0) {
-		deletePointersInItemArray(items);//ÈôÖ´ĞĞ¹ıinitº¯Êı£¬ÔòÏÈdeleteÖ¸Õë
+		deletePointersInItemArray(items);//è‹¥æ‰§è¡Œè¿‡initå‡½æ•°ï¼Œåˆ™å…ˆdeleteæŒ‡é’ˆ
 	}
 	
-	items.resize(runtimeParams->nPhotographing); //ÉèÖÃ´óĞ¡
-	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //ĞĞ
+	items.resize(runtimeParams->nPhotographing); //è®¾ç½®å¤§å°
+	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //è¡Œ
 		items[iPhotographing].resize(runtimeParams->nCamera);
-		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) { //ÁĞ
+		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) { //åˆ—
 			items[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
 
-//É¾³ıÍ¼Ôª¾ØÕóÖĞµÄÖ¸Õë - ItemArray
+//åˆ é™¤å›¾å…ƒçŸ©é˜µä¸­çš„æŒ‡é’ˆ - ItemArray
 void ExtractUI::deletePointersInItemArray(pcb::ItemArray &items)
 {
 	for (int iPhotographing = 0; iPhotographing < items.size(); iPhotographing++) {
@@ -219,17 +239,17 @@ void ExtractUI::deletePointersInItemArray(pcb::ItemArray &items)
 }
 
 
-//³õÊ¼»¯Ñù±¾Í¼ÏñÏòÁ¿ÖĞµÄÖ¸Õë - CvMatArray
+//åˆå§‹åŒ–æ ·æœ¬å›¾åƒå‘é‡ä¸­çš„æŒ‡é’ˆ - CvMatArray
 void ExtractUI::initPointersInCvMatArray(pcb::CvMatArray &cvmats)
 {
-	//ÈôÖ´ĞĞ¹ıinitº¯Êı£¬ÔòÏÈdeleteÖ¸Õë
+	//è‹¥æ‰§è¡Œè¿‡initå‡½æ•°ï¼Œåˆ™å…ˆdeleteæŒ‡é’ˆ
 	if (cvmats.size() > 0) {
 		deletePointersInCvMatArray(cvmats);
 	}
 
-	//¸ù¾İÏà»ú¸öÊıºÍÅÄÕÕ´ÎÊı¶Ô¾ØÕó½øĞĞ³õÊ¼»¯
+	//æ ¹æ®ç›¸æœºä¸ªæ•°å’Œæ‹ç…§æ¬¡æ•°å¯¹çŸ©é˜µè¿›è¡Œåˆå§‹åŒ–
 	cvmats.resize(runtimeParams->nPhotographing);
-	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //ĞĞ
+	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //è¡Œ
 		cvmats[iPhotographing].resize(runtimeParams->nCamera);
 		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
 			cvmats[iPhotographing][iCamera] = Q_NULLPTR;
@@ -237,7 +257,7 @@ void ExtractUI::initPointersInCvMatArray(pcb::CvMatArray &cvmats)
 	}
 }
 
-//É¾³ıÑù±¾Í¼ÏñÏòÁ¿ÖĞµÄÖ¸Õë - CvMatArray
+//åˆ é™¤æ ·æœ¬å›¾åƒå‘é‡ä¸­çš„æŒ‡é’ˆ - CvMatArray
 void ExtractUI::deletePointersInCvMatArray(pcb::CvMatArray &cvmats)
 {
 	for (int iPhotographing = 0; iPhotographing < cvmats.size(); iPhotographing++) {
@@ -250,15 +270,15 @@ void ExtractUI::deletePointersInCvMatArray(pcb::CvMatArray &cvmats)
 }
 
 
-//³õÊ¼»¯Ñù±¾Í¼ÏñÏòÁ¿ÖĞµÄÖ¸Õë - QPixmapArray
+//åˆå§‹åŒ–æ ·æœ¬å›¾åƒå‘é‡ä¸­çš„æŒ‡é’ˆ - QPixmapArray
 void ExtractUI::initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 {
 	if (qpixmaps.size() > 0) {
-		deletePointersInQPixmapArray(qpixmaps);//ÈôÖ´ĞĞ¹ıinitº¯Êı£¬ÔòÏÈdeleteÖ¸Õë
+		deletePointersInQPixmapArray(qpixmaps);//è‹¥æ‰§è¡Œè¿‡initå‡½æ•°ï¼Œåˆ™å…ˆdeleteæŒ‡é’ˆ
 	}
 	
 	qpixmaps.resize(runtimeParams->nPhotographing);
-	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //ĞĞ
+	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //è¡Œ
 		qpixmaps[iPhotographing].resize(runtimeParams->nCamera);
 		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
 			qpixmaps[iPhotographing][iCamera] = Q_NULLPTR;
@@ -266,7 +286,7 @@ void ExtractUI::initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 	}
 }
 
-//É¾³ıÑù±¾Í¼ÏñÏòÁ¿ÖĞµÄÖ¸Õë - QPixmapArray
+//åˆ é™¤æ ·æœ¬å›¾åƒå‘é‡ä¸­çš„æŒ‡é’ˆ - QPixmapArray
 void ExtractUI::deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 {
 	for (int iPhotographing = 0; iPhotographing < qpixmaps.size(); iPhotographing++) {
@@ -278,7 +298,7 @@ void ExtractUI::deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
 	}
 }
 
-//ÒÆ³ı³¡¾°ÖĞÒÑ¾­¼ÓÔØµÄÍ¼Ôª
+//ç§»é™¤åœºæ™¯ä¸­å·²ç»åŠ è½½çš„å›¾å…ƒ
 void ExtractUI::removeItemsFromGraphicsScene()
 {
 	QList<QGraphicsItem *> itemList = scene.items();
@@ -288,65 +308,42 @@ void ExtractUI::removeItemsFromGraphicsScene()
 }
 
 
-/***************** °´¼üÏìÓ¦ *****************/
+/***************** æŒ‰é”®å“åº” *****************/
 
-//¿ªÊ¼ÌáÈ¡ĞÂµÄPCB°å
+//å¼€å§‹æå–æ–°çš„PCBæ¿
 void ExtractUI::on_pushButton_start_clicked()
 {
-	if (runtimeParams->currentRow_extract == -1 && !extractThread->isRunning()) {
-		ui.label_status->setText(pcb::chinese("¿ªÊ¼ÔËĞĞ"));
-		this->setPushButtonsEnabled(false); //½ûÓÃ°´¼ü
-		this->resetExtractUI(); //ÖØÖÃÄ£°åÌáÈ¡×ÓÄ£¿é
-		
-		if (runtimeParams->DeveloperMode) { //¿ª·¢ÕßÄ£Ê½
-			serialNumberUI->reset(); //ÖØÖÃ
-			serialNumberUI->showFullScreen(); //Ö±½ÓÏÔÊ¾²úÆ·ĞòºÅ½çÃæ
-			pcb::delay(10);//ÑÓ³Ù
-			this->hide(); //Òş²Ø¼ì²â½çÃæ
-		}
-		else { //±ê×¼Ä£Ê½
-			if (runtimeParams->currentRow_detect == -1 && !extractThread->isRunning()) {
-				//ÔË¶¯µ½³õÊ¼ÅÄÕÕÎ»ÖÃ
-				ui.label_status->setText(pcb::chinese("ÔË¶¯½á¹¹Ç°½øÖĞ"));
-				qApp->processEvents();
-				motionControler->setOperation(MotionControler::MoveToInitialPos);
-				motionControler->start();
-			}
-		}
+	if (runtimeParams->currentRow_extract != -1 || extractThread->isRunning()) return;
+	qDebug() << ">>>>>>>>>>>>>>>>>>>>" << pcb::chinese("å¼€å§‹è¿è¡Œ") << endl;
+	ui.label_status->setText(pcb::chinese("å¼€å§‹è¿è¡Œ"));
+	this->setPushButtonsEnabled(false); //ç¦ç”¨æŒ‰é”®
+	this->reset(); //é‡ç½®æ¨¡æ¿æå–å­æ¨¡å—
+
+	if (runtimeParams->DeveloperMode) { //å¼€å‘è€…æ¨¡å¼
+		readSampleImages(); //ç›´æ¥ä»ç¡¬ç›˜ä¸Šè¯»å›¾
+	}
+	else { //æ ‡å‡†æ¨¡å¼
+		//è¿åŠ¨åˆ°åˆå§‹æ‹ç…§ä½ç½®
+		ui.label_status->setText(pcb::chinese("è¿åŠ¨ç»“æ„å‰è¿›ä¸­"));
+		qApp->processEvents();
+		motionControler->setOperation(MotionControler::MoveToInitialPos);
+		motionControler->start();
 	}
 }
 
-//·µ»Ø
+//è¿”å›ä¸»ç•Œé¢
 void ExtractUI::on_pushButton_return_clicked()
 {
-	//ÉèÖÃ°´¼ü
-	this->setPushButtonsEnabled(false);
-	//ÖØÖÃÄ£°åÌáÈ¡½çÃæ£¬Çå¿Õ»º´æÊı¾İ
-	this->resetExtractUI(); 
-
-	//ÔË¶¯½á¹¹¸´Î»
-	//if (!runtimeParams->DeveloperMode) {
-	//	ui.label_status->setText(pcb::chinese("ÔË¶¯½á¹¹¸´Î»ÖĞ"));
-	//	qApp->processEvents();
-	//	motionControler->setOperation(MotionControler::ResetControler);
-	//	motionControler->start();
-	//	while (motionControler->isRunning()) pcb::delay(100);
-	//	if (!motionControler->isReady()) {
-	//		motionControler->showMessageBox(this);
-	//		pcb::delay(10);
-	//	}
-	//}
-
-	//ÉèÖÃ°´¼ü
-	this->setPushButtonsEnabled(true);
-	//·¢ËÍ·µ»ØĞÅºÅ
-	emit showDetectMainUI(); 
+	this->setPushButtonsEnabled(false); //è®¾ç½®æŒ‰é”®
+	this->reset(); //é‡ç½®æ¨¡æ¿æå–ç•Œé¢ï¼Œæ¸…ç©ºç¼“å­˜æ•°æ®
+	this->setPushButtonsEnabled(true); //è®¾ç½®æŒ‰é”®
+	emit showDetectMainUI(); //å‘é€è¿”å›ä¿¡å·
 }
 
 
-/***************** »ñÈ¡Íâ²¿ĞÅºÅ ******************/
+/***************** è·å–å¤–éƒ¨ä¿¡å· ******************/
 
-//ÔİÊ±Ê¹ÓÃÇÃ»÷¼üÅÌ°´¼üÄ£ÄâÍâ²¿ĞÅºÅ
+//æš‚æ—¶ä½¿ç”¨æ•²å‡»é”®ç›˜æŒ‰é”®æ¨¡æ‹Ÿå¤–éƒ¨ä¿¡å·
 void ExtractUI::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key())
@@ -373,29 +370,26 @@ void ExtractUI::keyPressEvent(QKeyEvent *event)
 }
 
 
-/***************** ¶ÁÍ¼¡¢ÏÔÊ¾ÓëÌáÈ¡ *****************/
+/***************** è¯»å›¾ã€æ˜¾ç¤ºä¸æå– *****************/
 
-//¶ÁÈ¡Ïà»ú×éÅÄÉãµÄÒ»×é·ÖÍ¼ - Ö±½Ó´ÓÓ²ÅÌÉÏ¶ÁÍ¼
+//è¯»å–ç›¸æœºç»„æ‹æ‘„çš„ä¸€ç»„åˆ†å›¾ - ç›´æ¥ä»ç¡¬ç›˜ä¸Šè¯»å›¾
 void ExtractUI::readSampleImages()
 {
 	clock_t t1 = clock();
-	qDebug() << "====================" << pcb::chinese("¶ÁÈ¡Ñù±¾")
-		<< "( currentRow_show =" << currentRow_show << ")" << endl;
+	qDebug() << "====================" << pcb::chinese("å¼€å§‹è¯»å–æ ·æœ¬å›¾")  << endl;
 
-	//¸üĞÂĞĞºÅºÍ×´Ì¬À¸
-	ui.label_status->setText(pcb::chinese("ÕıÔÚ¶ÁÈ¡µÚ") +
-		QString::number(currentRow_show + 1) +
-		pcb::chinese("ĞĞ·ÖÍ¼"));//¸üĞÂ×´Ì¬
-	qApp->processEvents();
+	//é€‰å–æ ·æœ¬å›¾åƒæ–‡ä»¶
+	QString sampleDirPath = pcb::selectDirPath(this, 
+		pcb::chinese("è¯·é€‰å–æ ·æœ¬å›¾åƒ"), userConfig->SampleDirPath);
 
-	//¶ÁÈ¡Ä¿Â¼ÏÂµÄÑù±¾Í¼Ïñ
-	QDir dir(runtimeParams->currentSampleDir);
+	//è¯»å–ç›®å½•ä¸‹çš„æ ·æœ¬å›¾åƒ
+	QDir dir(sampleDirPath);
 	dir.setSorting(QDir::Time | QDir::Name | QDir::Reversed);
 	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
 	QFileInfoList fileList = dir.entryInfoList();
 	if (fileList.isEmpty()) { emit invalidNumberOfSampleImage(); return; }
 
-	//¶ÁÈ¡²¢´¢´æÍ¼Ïñ - ´ÓÓ²ÅÌÉÏ¶ÁÍ¼ (ÓÃÓÚÁÙÊ±µ÷ÊÔ)
+	//è¯»å–å¹¶å‚¨å­˜å›¾åƒ - ä»ç¡¬ç›˜ä¸Šè¯»å›¾ (ç”¨äºä¸´æ—¶è°ƒè¯•)
 	for (int i = 0; i < fileList.size(); i++) {
 		QString baseName = fileList.at(i).baseName();
 		QStringList idxs = baseName.split("_");
@@ -403,63 +397,71 @@ void ExtractUI::readSampleImages()
 
 		int iPhotographing = idxs[0].toInt() - 1; //0 1 ... nPhotographing-1
 		int iCamera = idxs[1].toInt() - 1; //0 1 ... nCamera-1
-		if (iPhotographing != currentRow_show) continue;
+		//if (iPhotographing != currentRow_show) continue;
 		if (iPhotographing < 0 || iPhotographing >= runtimeParams->nPhotographing) continue;
 		if (iCamera < 0 || iCamera >= runtimeParams->nCamera) continue;
 
-		QString filepath = fileList.at(i).absoluteFilePath(); //Ñù±¾Í¼µÄÂ·¾¶
+		QString filepath = fileList.at(i).absoluteFilePath(); //æ ·æœ¬å›¾çš„è·¯å¾„
 		cv::Mat img = cv::imread(filepath.toStdString(), cv::IMREAD_COLOR);
-		cvmatSamples[currentRow_show][iCamera] = new cv::Mat(img);
+		cvmatSamples[iPhotographing][iCamera] = new cv::Mat(img);
 	}
 	
 	clock_t t2 = clock();
-	qDebug() << "====================" << pcb::chinese("·ÖÍ¼¶ÁÈ¡½áÊø£º")
-		<< (t2 - t1) << "ms ( currentRow_show =" << currentRow_show << ")" << endl;
+	qDebug() << "====================" << pcb::chinese("å›¾åƒè¯»å–ç»“æŸï¼š")
+		<< (t2 - t1) << "ms" << endl;
 
-	//Í¼ÏñÀàĞÍ×ª»»
+	//å›¾åƒç±»å‹è½¬æ¢
+	currentRow_show = 0;
 	imgConvertThread.start();
 }
 
 
-//ÏÔÊ¾Ïà»ú×éÅÄÉãµÄÒ»×é·ÖÍ¼£¨Í¼ÏñÏÔÊ¾Íø¸ñÖĞµÄÒ»ĞĞ£©
+//æ˜¾ç¤ºç›¸æœºç»„æ‹æ‘„çš„ä¸€ç»„åˆ†å›¾ï¼ˆå›¾åƒæ˜¾ç¤ºç½‘æ ¼ä¸­çš„ä¸€è¡Œï¼‰
 void ExtractUI::showSampleImages()
 {
-	qDebug() << "====================" << pcb::chinese("ÏÔÊ¾·ÖÍ¼")
+	qDebug() << "====================" << pcb::chinese("æ˜¾ç¤ºåˆ†å›¾")
 		<< " ( currentRow_show =" << currentRow_show << ")" << endl;
 	clock_t t1 = clock();
 
 	QSize _itemSize(itemSize.width(), itemSize.height());
-	if (ItemSpacing == 0) _itemSize += QSize(2, 2); //·ÀÖ¹³öÏÖ·ìÏ¶
+	if (ItemSpacing == 0) _itemSize += QSize(2, 2); //é˜²æ­¢å‡ºç°ç¼éš™
 	for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
 		QPixmap scaledImg = (*qpixmapSamples[currentRow_show][iCamera]).scaled(_itemSize, Qt::KeepAspectRatio);
-		QGraphicsPixmapItem* item = new QGraphicsPixmapItem(scaledImg); //¶¨ÒåÍ¼Ôª
-		item->setPos(itemGrid[currentRow_show][iCamera]); //Í¼ÔªµÄÏÔÊ¾Î»ÖÃ
-		itemArray[currentRow_show][iCamera] = item; //´æÈëÍ¼¾ØÕó
+		QGraphicsPixmapItem* item = new QGraphicsPixmapItem(scaledImg); //å®šä¹‰å›¾å…ƒ
+		item->setPos(itemGrid[currentRow_show][iCamera]); //å›¾å…ƒçš„æ˜¾ç¤ºä½ç½®
+		itemArray[currentRow_show][iCamera] = item; //å­˜å…¥å›¾çŸ©é˜µ
 	}
 
-	//¼ÓÔØÏà»ú×éĞÂÅÄÉãµÄÒ»ĞĞÍ¼Ôª
+	//åŠ è½½ç›¸æœºç»„æ–°æ‹æ‘„çš„ä¸€è¡Œå›¾å…ƒ
 	for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
 		scene.addItem(itemArray[currentRow_show][iCamera]);
 	}
 
-	//ÊÓÍ¼ÏÔÊ¾ÉèÖÃ
+	//è§†å›¾æ˜¾ç¤ºè®¾ç½®
 	int y_SliderPos = itemGrid[currentRow_show][0].y() + itemSize.height() / 2;
-	ui.graphicsView->centerOn(sceneSize.width() / 2, y_SliderPos); //ÉèÖÃ´¹Ö±¹ö¶¯ÌõµÄÎ»ÖÃ
-	ui.graphicsView->show();//ÏÔÊ¾
+	ui.graphicsView->centerOn(sceneSize.width() / 2, y_SliderPos); //è®¾ç½®å‚ç›´æ»šåŠ¨æ¡çš„ä½ç½®
+	ui.graphicsView->show();//æ˜¾ç¤º
+	qApp->processEvents();
 
 	clock_t t2 = clock();
-	qDebug() << "====================" << pcb::chinese("·ÖÍ¼ÏÔÊ¾½áÊø£º") << (t2 - t1)
+	qDebug() << "====================" << pcb::chinese("åˆ†å›¾æ˜¾ç¤ºç»“æŸï¼š") << (t2 - t1)
 		<< "ms ( currentRow_show =" << currentRow_show << ")" << endl;
 }
 
 
-/******************** ×Ö·ûÊ¶±ğ ********************/
+/******************** æ¨¡æ¿è®¾ç½®ç•Œé¢ ********************/
 
-//Í¨¹ıÊó±êË«»÷´ò¿ª×Ö·ûÊ¶±ğ½çÃæ
+//é€šè¿‡é¼ æ ‡åŒå‡»è¿›è€Œxxx
 void ExtractUI::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	if (currentRow_show == -1) return;//ÈôÃ»ÓĞÏÔÊ¾¶ÔÓ¦µÄÑù±¾Í¼ÔòÖ±½Ó·µ»Ø
-	if (event->button() == Qt::RightButton) return;//ºöÂÔÓÒ¼üµã»÷
+	return;
+}
+
+//é€šè¿‡é¼ æ ‡å•å‡»æ‰“å¼€æ¨¡æ¿è®¾ç½®ç•Œé¢
+void ExtractUI::mousePressEvent(QMouseEvent *event)
+{
+	if (currentRow_show == -1) return;//è‹¥æ²¡æœ‰æ˜¾ç¤ºå¯¹åº”çš„æ ·æœ¬å›¾åˆ™ç›´æ¥è¿”å›
+	if (event->button() == Qt::RightButton) return;//å¿½ç•¥å³é”®ç‚¹å‡»
 
 	QPoint graphicsViewPos = ui.graphicsView->pos();
 	QSize graphicsViewSize = ui.graphicsView->size();
@@ -467,157 +469,142 @@ void ExtractUI::mouseDoubleClickEvent(QMouseEvent *event)
 	QPoint mousePosition(event->x(), event->y());
 	if (!graphicsViewRect.contains(mousePosition)) return;
 
-	//ÅĞ¶ÏÊó±êµã»÷µÄÊÇÄÄ¸ö·ÖÍ¼
-	//QPoint relativePos = mousePosition - graphicsViewPos; //Ïà¶ÔÎ»ÖÃ
-	//int gridRowIdx = (int) (relativePos.y() / gridSize.height());//µã»÷Î»ÖÃÔÚµÚ¼¸ĞĞ
-	//int gridColIdx = (int) (relativePos.x() / gridSize.width());//µã»÷Î»ÖÃÔÚµÚ¼¸ÁĞ
+	QPointF posInScene = ui.graphicsView->mapToScene(event->pos());//ç‚¹å‡»ä½ç½®ç›¸å¯¹äºåœºæ™¯çš„åæ ‡
+	int gridRowIdx = (int)(posInScene.y() / gridSize.height());//è®¡ç®—ç‚¹å‡»ä½ç½®æ˜¯æ•´å›¾ä¸­çš„ç¬¬å‡ è¡Œ
+	int gridColIdx = (int)(posInScene.x() / gridSize.width());//è®¡ç®—ç‚¹å‡»ä½ç½®æ˜¯æ•´å›¾ä¸­çš„ç¬¬å‡ åˆ—
 
-	QPointF posInScene = ui.graphicsView->mapToScene(event->pos());//µã»÷Î»ÖÃÏà¶ÔÓÚ³¡¾°µÄ×ø±ê
-	int gridRowIdx = (int)(posInScene.y() / gridSize.height());//¼ÆËãµã»÷Î»ÖÃÔÚµÚ¼¸ĞĞ
-	int gridColIdx = (int)(posInScene.x() / gridSize.width());//¼ÆËãµã»÷Î»ÖÃÔÚµÚ¼¸ÁĞ
-	
 	if (gridRowIdx <= currentRow_show && qpixmapSamples[gridRowIdx][gridColIdx] != Q_NULLPTR) {
-		serialNumberUI->showSampleImage(gridRowIdx, gridColIdx);
-		pcb::delay(3);//ÑÓ³Ù
-		serialNumberUI->showFullScreen();//ÏÔÊ¾ĞòºÅÊ¶±ğ½çÃæ
-		pcb::delay(10);//ÑÓ³Ù
-		this->hide();
+		templSettingUI->showSampleImage(gridRowIdx, gridColIdx);
+		templSettingUI->showFullScreen();//æ˜¾ç¤ºåºå·è¯†åˆ«ç•Œé¢
+		pcb::delay(10);//å»¶è¿Ÿ
+		this->hide(); //éšè—æå–ç•Œé¢
 	}
 }
 
-//´ÓĞòºÅÊ¶±ğ½çÃæ»ñµÃ²úÆ·ĞòºÅÖ®ºó
-void ExtractUI::on_recognizeFinished_serialNumUI()
-{
-	//ÅĞ¶ÏÊÇÖ±½Ó´Ó±¾µØ¶ÁÍ¼£¬µ÷ÓÃÏà»ú»ñÈ¡Í¼Ïñ
-	if (runtimeParams->DeveloperMode) { //¿ª·¢ÕßÄ£Ê½
-		//Ñù±¾ÎÄ¼ş¼ĞÖĞ¶ÁÈ¡Ô­Ê¼Í¼Ïñ
-		runtimeParams->currentSampleDir = userConfig->SampleDirPath + "/"
-			+ runtimeParams->sampleModelNum + "/"
-			+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
-		if (!QFileInfo(runtimeParams->currentSampleDir).exists()) {
-			runtimeParams->showMessageBox(this, RuntimeParams::Invalid_serialNum);
-			return;
-		}
 
-		//ÏÔÊ¾ĞÂµÄÑù±¾ĞĞ
-		if (currentRow_show + 1 < runtimeParams->nPhotographing) { 
-			currentRow_show += 1; //¸üĞÂÏÔÊ¾ĞĞºÅ
-			readSampleImages(); //¶ÁÍ¼ - Ïàµ±ÓÚÏà»úÅÄÕÕ		
-		}
-	}
-	else { //±ê×¼Ä£Ê½
-		if (eventCounter >= 1 && !extractThread->isRunning())
-			extractTemplateImages(); //ÌáÈ¡
-	}
+//æ©è†œåŒºåŸŸåæ ‡è·å–ç»“æŸä¹‹å
+void ExtractUI::on_maskRoiIsSet_templSettingUI()
+{
+	on_settingFinished_templSettingUI();
 }
 
-//ÏÔÊ¾ĞòºÅÊ¶±ğ½çÃæµÄÉÏÒ»¼¶½çÃæ - Ä£°åÌáÈ¡½çÃæ
-void ExtractUI::do_showPreviousUI_serialNumUI()
+//è·å–å›¾åƒåˆ†å‰²é˜ˆå€¼ä¹‹å
+void ExtractUI::on_segThreshIsSet_templSettingUI()
 {
-	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
-		&& runtimeParams->DeveloperMode) 
-	{
-		this->setPushButtonsEnabled(true); //ÆôÓÃ°´¼ü
-	}
-
-	this->showFullScreen();
-	pcb::delay(10);//ÑÓ³Ù
-	serialNumberUI->hide();
+	on_settingFinished_templSettingUI();
 }
 
-//ÑÚÄ¤ÇøÓò»ñÈ¡½áÊø
-void ExtractUI::on_getMaskRoiFinished_serialNumUI()
+//è·å–äº§å“å‹å·ä¹‹å
+void ExtractUI::on_modelNumIsSet_templSettingUI()
 {
-	if (runtimeParams->maskRoi_tl.x() < 0 || runtimeParams->maskRoi_tl.y() < 0 ||
-		runtimeParams->maskRoi_br.x() < 0 || runtimeParams->maskRoi_br.y() < 0)
-	{
-		//ui.label_status->setText(pcb::chinese("ÇëÔÚĞòºÅÊ¶±ğ½çÃæ\n")
-		//	+ pcb::chinese("È·ÈÏÑÚÄ¤ÇøÓò"));
-		//qApp->processEvents();
-		//pcb::delay(10); //ÑÓ³Ù
+	on_settingFinished_templSettingUI();
+}
+
+
+//æ¨¡æ¿å‚æ•°éƒ½å·²è®¾ç½®æ—¶
+void ExtractUI::on_settingFinished_templSettingUI()
+{
+	//å¦‚æœå›¾åƒéƒ½å·²æ‹å®Œä½†æœªå¼€å§‹æå–
+	if (extractionHasNotStartedAndAllImagesHasBeenDisplayed()) {
+		this->setPushButtonsEnabled(true); //å¯ç”¨æŒ‰é”®
+	}
+
+	//å¦‚æœæ¨¡æ¿å‚æ•°æ— æ•ˆï¼Œåˆ™æç¤ºç”¨æˆ·è®¾ç½®
+	if (!templSettingUI->isReadyForExtract()) {
+		ui.label_status->setText(pcb::chinese("è¯·åœ¨æ¨¡æ¿è®¾ç½®ç•Œé¢\nè¾“å…¥ç›¸å…³å‚æ•°"));
+		qApp->processEvents();
+		pcb::delay(10); //å»¶è¿Ÿ
 		return;
 	}
 
-	if (eventCounter >= 1 && !extractThread->isRunning() &&
-		runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false))
-	{ 
-		extractTemplateImages(); //ÌáÈ¡
+	if (eventCounter >= 1 && !extractThread->isRunning() && runtimeParams->productID.isModelTypeValid()) {
+		extractTemplateImages(); //æå–
 	}
 }
 
-/******************** ÔË¶¯¿ØÖÆ ********************/
+//éšè—æ¨¡æ¿è®¾ç½®ç•Œé¢ï¼Œæ˜¾ç¤ºæ¨¡æ¿æå–ç•Œé¢
+void ExtractUI::do_showExtractUI_templSettingUI()
+{
+	//å¦‚æœå›¾åƒéƒ½å·²æ˜¾ç¤ºï¼ŒåŒæ—¶å›¾åƒéƒ½å·²æ‹å®Œä½†æœªå¼€å§‹æå–
+	if (extractionHasNotStartedAndAllImagesHasBeenDisplayed()) {
+		this->setPushButtonsEnabled(true); //å¯ç”¨æŒ‰é”®
+	}
 
-//µ½³õÊ¼´ïÅÄÕÕÎ»ÖÃ
+	this->showFullScreen();
+	pcb::delay(10);//å»¶è¿Ÿ
+	templSettingUI->hide();
+}
+
+
+/******************** è¿åŠ¨æ§åˆ¶ ********************/
+
+//åˆ°åˆå§‹è¾¾æ‹ç…§ä½ç½®
 void ExtractUI::on_moveToInitialPosFinished_motion(int errorcode)
 {
-	//if (motionControler->getCaller() != 1) return;
+	if (motionControler->getCaller() != 1) return;
 
-	////¼ì²éÔË¶¯½á¹¹µÄ×´Ì¬
-	//if (!motionControler->isReady()) {
-	//	motionControler->showMessageBox(this);
-	//	pcb::delay(10); return;
-	//}
+	//æ£€æŸ¥è¿åŠ¨ç»“æ„çš„çŠ¶æ€
+	if (!motionControler->isReady()) {
+		motionControler->showMessageBox(this);
+		pcb::delay(10); return;
+	}
 
-	//µ÷ÓÃÏà»ú½øĞĞÅÄÕÕ
+	//è°ƒç”¨ç›¸æœºè¿›è¡Œæ‹ç…§
 	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
-		currentRow_show += 1; //¸üĞÂÏÔÊ¾ĞĞºÅ
+		currentRow_show += 1; //æ›´æ–°æ˜¾ç¤ºè¡Œå·
 
-		ui.label_status->setText(pcb::chinese("ÕıÔÚÅÄÉãµÚ") +
+		ui.label_status->setText(pcb::chinese("æ­£åœ¨æ‹æ‘„ç¬¬") +
 			QString::number(currentRow_show + 1) +
-			pcb::chinese("ĞĞ·ÖÍ¼"));//¸üĞÂ×´Ì¬
+			pcb::chinese("è¡Œåˆ†å›¾"));//æ›´æ–°çŠ¶æ€
 		qApp->processEvents();
 
-		cameraControler->start(); //ÅÄÕÕ
+		cameraControler->start(); //æ‹ç…§
 	}
 }
 
-//ÔË¶¯½á¹¹Ç°½ø½áÊø
+//è¿åŠ¨ç»“æ„å‰è¿›ç»“æŸ
 void ExtractUI::on_moveForwardFinished_motion(int errorcode)
 {
 	if (motionControler->getCaller() != 1) return;
 
-	//¼ì²éÔË¶¯½á¹¹µÄ×´Ì¬
+	//æ£€æŸ¥è¿åŠ¨ç»“æ„çš„çŠ¶æ€
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
 		pcb::delay(10); return;
 	}
 
-	//µ÷ÓÃÏà»ú½øĞĞÅÄÕÕ
+	//è°ƒç”¨ç›¸æœºè¿›è¡Œæ‹ç…§
 	if (currentRow_show + 1 < runtimeParams->nPhotographing) {
-		currentRow_show += 1; //¸üĞÂÏÔÊ¾ĞĞºÅ
+		currentRow_show += 1; //æ›´æ–°æ˜¾ç¤ºè¡Œå·
 
-		ui.label_status->setText(pcb::chinese("ÕıÔÚÅÄÉãµÚ") +
+		ui.label_status->setText(pcb::chinese("æ­£åœ¨æ‹æ‘„ç¬¬") +
 			QString::number(currentRow_show + 1) + 
-			pcb::chinese("ĞĞ·ÖÍ¼"));//¸üĞÂ×´Ì¬
+			pcb::chinese("è¡Œåˆ†å›¾"));//æ›´æ–°çŠ¶æ€
 		qApp->processEvents();
 
-		cameraControler->start(); //ÅÄÕÕ
+		cameraControler->start(); //æ‹ç…§
 	}
 }
 
-//¸´Î»½áÊø
+//å¤ä½ç»“æŸ
 void ExtractUI::on_motionResetFinished_motion(int errorcode)
 {
 	if (motionControler->getCaller() != 1) return;
 
-	//¸´Î»Ê§°Ü
+	//å¤ä½å¤±è´¥
 	if (!motionControler->isReady()) {
 		motionControler->showMessageBox(this);
 		pcb::delay(10); return;
 	}
 
-	//ÒÑ¾­ÅÄÍêËùÓĞ·ÖÍ¼£¬µ«Î´¿ªÊ¼ÌáÈ¡
-	if (currentRow_show == runtimeParams->nPhotographing - 1
-		&& runtimeParams->currentRow_extract == -1)
-	{
-		//Èç¹ûĞòºÅÎŞĞ§£¬ÔòÈÔÈ»½øĞĞÌáÊ¾
-		if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)) {
-			ui.label_status->setText(pcb::chinese("ÇëÔÚĞòºÅÊ¶±ğ½çÃæ\n")
-				+ pcb::chinese("»ñÈ¡²úÆ·ĞòºÅ"));
+	//å·²ç»æ‹å®Œæ‰€æœ‰åˆ†å›¾ï¼Œä½†æœªå¼€å§‹æå–
+	if (extractionHasNotStartedAndAllImagesHasBeenDisplayed()) {
+		//å¦‚æœæ¨¡æ¿å‚æ•°æ— æ•ˆï¼Œåˆ™ä»ç„¶è¿›è¡Œæç¤º
+		if (!templSettingUI->isReadyForExtract()) {
+			ui.label_status->setText(pcb::chinese("è¯·åœ¨æ¨¡æ¿è®¾ç½®ç•Œé¢\nè¾“å…¥ç›¸å…³å‚æ•°"));
 			qApp->processEvents();
 		}
-
-		//ÆôÓÃ¿ªÊ¼¼üºÍ·µ»Ø¼ü
+		//å¯ç”¨å¼€å§‹é”®å’Œè¿”å›é”®
 		if (!motionControler->isRunning()) {
 			this->setPushButtonsEnabled(true);
 		}
@@ -625,171 +612,156 @@ void ExtractUI::on_motionResetFinished_motion(int errorcode)
 }
 
 
-/******************** Ïà»ú¿ØÖÆ ********************/
+/********************** ç›¸æœºæ§åˆ¶ **********************/
 
-//¸üĞÂÏà»ú¿ØÖÆÆ÷µÄ²ÎÊı
+//æ›´æ–°ç›¸æœºæ§åˆ¶å™¨çš„å‚æ•°
 void ExtractUI::refreshCameraControler()
 {
 	if (cameraControler->getCaller() != 1) return;
 
-	cameraControler->setCurrentRow(&currentRow_show);//ÉèÖÃĞĞºÅ
-	cameraControler->setCvMatSamples(&cvmatSamples);//ÉèÖÃÍ¼Ïñ
-	cameraControler->setOperation(CameraControler::TakePhotos);//ÉèÖÃÏà»ú²Ù×÷
+	cameraControler->setCurrentRow(&currentRow_show);//è®¾ç½®è¡Œå·
+	cameraControler->setCvMatSamples(&cvmatSamples);//è®¾ç½®å›¾åƒ
+	cameraControler->setOperation(CameraControler::TakePhotos);//è®¾ç½®ç›¸æœºæ“ä½œ
 }
 
-//Ïà»ú³õÊ¼»¯½áÊø
+//ç›¸æœºåˆå§‹åŒ–ç»“æŸ
 void ExtractUI::on_initCamerasFinished_camera(int)
 {
 	if (cameraControler->getCaller() != 1) return;
 }
 
-//Ïà»úÅÄÉã½áÊø
+//ç›¸æœºæ‹æ‘„ç»“æŸ
 void ExtractUI::on_takePhotosFinished_camera(int)
 {
 	if (cameraControler->getCaller() != 1) return;
 
-	//µ÷ÓÃÍ¼ÏñÀàĞÍ×ª»»Ïß³Ì
+	//è°ƒç”¨å›¾åƒç±»å‹è½¬æ¢çº¿ç¨‹
 	imgConvertThread.start();
 }
 
 
-/******************** Í¼Ïñ×ª»»Ïß³Ì ********************/
+/******************** å›¾åƒè½¬æ¢çº¿ç¨‹ ********************/
 
-//Í¼Ïñ×ª»»½áÊø£¬ÔÚ½çÃæÉÏÏÔÊ¾Í¼Ïñ£¬È»ºóÌáÈ¡Ä£°å
+//å›¾åƒè½¬æ¢ç»“æŸï¼Œåœ¨ç•Œé¢ä¸Šæ˜¾ç¤ºå›¾åƒï¼Œç„¶åæå–æ¨¡æ¿
 void ExtractUI::on_convertFinished_convertThread()
 {
-	//¸üĞÂÊÂ¼ş¼ÆÊıÆ÷
+	//æ›´æ–°äº‹ä»¶è®¡æ•°å™¨
 	eventCounter += 1;
 
-	//¸üĞÂ×´Ì¬À¸
-	if (runtimeParams->DeveloperMode) {
-		ui.label_status->setText(pcb::chinese("µÚ") +
-			QString::number(currentRow_show + 1) +
-			pcb::chinese("ĞĞ¶ÁÈ¡½áÊø"));
+	//åœ¨ç•Œé¢ä¸Šæ˜¾ç¤ºæ ·æœ¬å›¾
+	this->showSampleImages();
+
+	//æ›´æ–°çŠ¶æ€æ 
+	QString str = pcb::chinese("ç¬¬") + QString::number(currentRow_show + 1);
+	if (runtimeParams->DeveloperMode) { //å¼€å‘è€…æ¨¡å¼
+		ui.label_status->setText(str + pcb::chinese("è¡Œè¯»å–ç»“æŸ"));
 	}
-	else {
-		ui.label_status->setText(pcb::chinese("µÚ") +
-			QString::number(currentRow_show + 1) +
-			pcb::chinese("ĞĞÅÄÉã½áÊø"));
+	else { //æ ‡å‡†æ¨¡å¼
+		ui.label_status->setText(str + pcb::chinese("è¡Œæ‹æ‘„ç»“æŸ"));
 	}
 	qApp->processEvents();
-	pcb::delay(10); //ÑÓ³Ù
+	pcb::delay(10); //å»¶è¿Ÿ
 
-	//ÔÚ½çÃæÉÏÏÔÊ¾Ñù±¾Í¼
-	this->showSampleImages(); 
-
-	//ÏÔÊ¾½áÊøºóÖ®Ç°Çı¶¯»úĞµ½á¹¹ÔË¶¯
-	pcb::delay(10); //ÑÓ³Ù
-	if (!runtimeParams->DeveloperMode) {
-		if (currentRow_show + 1 < runtimeParams->nPhotographing) {
-			ui.label_status->setText(pcb::chinese("ÔË¶¯½á¹¹Ç°½øÖĞ"));
-			qApp->processEvents();
-			motionControler->setOperation(MotionControler::MoveForward);
-			motionControler->start(); //ÔË¶¯½á¹¹Ç°½ø
-		}
-		else { //µ±Ç°PCBÒÑÅÄÍê
-			ui.label_status->setText(pcb::chinese("ÔË¶¯½á¹¹¸´Î»ÖĞ"));
-			qApp->processEvents();
-			motionControler->setOperation(MotionControler::MotionReset);
-			motionControler->start(); //ÔË¶¯½á¹¹¸´Î»
-		}
-	}
-	else { //¿ª·¢ÕßÄ£Ê½
-	}
-
-	//¸üĞÂ×´Ì¬À¸
-	runtimeParams->checkValidity(RuntimeParams::Index_All_SerialNum);//¼ì²â²úÆ·ĞòºÅµÄÓĞĞ§ĞÔ
-	if (!runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false) && 
-		!runtimeParams->DeveloperMode)
-	{
-		//Èç¹ûĞòºÅÊ¶±ğ½çÃæ²»ÔÚÏÔÊ¾×´Ì¬£¨¼´±¾½çÃæÏÔÊ¾ÖĞ£©Ôò½øĞĞÌáÊ¾
-		ui.label_status->setText(pcb::chinese("ÇëÔÚĞòºÅÊ¶±ğ½çÃæ\n")
-			+ pcb::chinese("»ñÈ¡²úÆ·ĞòºÅ"));
+	//æ›´æ–°çŠ¶æ€æ 
+	if (!templSettingUI->isReadyForExtract()) {
+		//å¦‚æœåºå·è¯†åˆ«ç•Œé¢ä¸åœ¨æ˜¾ç¤ºçŠ¶æ€ï¼ˆå³æœ¬ç•Œé¢æ˜¾ç¤ºä¸­ï¼‰åˆ™è¿›è¡Œæç¤º
+		ui.label_status->setText(pcb::chinese("è¯·åœ¨æ¨¡æ¿è®¾ç½®ç•Œé¢\nè®¾ç½®ç›¸å…³å‚æ•°"));
 		qApp->processEvents();
 		return;
 	}
 
-	//ÅĞ¶ÏÊÇ·ñÖ´ĞĞÌáÈ¡²Ù×÷
-	if (runtimeParams->isValid(RuntimeParams::Index_All_SerialNum, false)
-		&& eventCounter >= 1 && !extractThread->isRunning()) 
-	{
-		//Èç¹ûÊÇ×îºóÒ»ĞĞ
-		if (runtimeParams->currentRow_extract = runtimeParams->nPhotographing - 1) {
-			//Èç¹ûÑÚÄ¤ÇøÓòÎŞĞ§£¬ÔòÌáÊ¾È·ÈÏÑÚÄ¤ÇøÓò
-			if (runtimeParams->maskRoi_tl.x() < 0 || runtimeParams->maskRoi_tl.y() < 0 ||
-				runtimeParams->maskRoi_br.x() < 0 || runtimeParams->maskRoi_br.y() < 0)
-			{
-				ui.label_status->setText(pcb::chinese("ÇëÔÚĞòºÅÊ¶±ğ½çÃæ\nÈ·ÈÏÑÚÄ¤ÇøÓò"));
-				qApp->processEvents(); return;
-			}
+	//å½“å‰è¡Œæ˜¾ç¤ºç»“æŸä¹‹å
+	pcb::delay(10); //å»¶è¿Ÿ
+	if (runtimeParams->DeveloperMode) { //å¼€å‘è€…æ¨¡å¼
+		//å¼€å§‹è½¬æ¢ä¸‹ä¸€è¡Œ
+		currentRow_show += 1;
+		if (currentRow_show < runtimeParams->nPhotographing) {
+			pcb::delay(300);
+			imgConvertThread.start();
 		}
-		extractTemplateImages(); //ÌáÈ¡
+		//å¦‚æœæ‰€æœ‰å›¾åƒæ˜¾ç¤ºå®Œï¼Œä½†æ˜¯æœªå¼€å§‹æå–
+		if (extractionHasNotStartedAndAllImagesHasBeenDisplayed()) {
+			this->setPushButtonsEnabled(true);
+		}
+	}
+	else { //æ ‡å‡†æ¨¡å¼ - æ˜¾ç¤ºç»“æŸåä¹‹å‰é©±åŠ¨æœºæ¢°ç»“æ„è¿åŠ¨
+		if (currentRow_show + 1 < runtimeParams->nPhotographing) {
+			ui.label_status->setText(pcb::chinese("è¿åŠ¨ç»“æ„å‰è¿›ä¸­"));
+			qApp->processEvents();
+			motionControler->setOperation(MotionControler::MoveForward);
+			motionControler->start(); //è¿åŠ¨ç»“æ„å‰è¿›
+		}
+		else { //å½“å‰PCBå·²æ‹å®Œ
+			ui.label_status->setText(pcb::chinese("è¿åŠ¨ç»“æ„å¤ä½ä¸­"));
+			qApp->processEvents();
+			motionControler->setOperation(MotionControler::MotionReset);
+			motionControler->start(); //è¿åŠ¨ç»“æ„å¤ä½
+		}
+	}
+
+	//åˆ¤æ–­æ˜¯å¦æ‰§è¡Œæå–æ“ä½œ
+	if (eventCounter > 0 && !extractThread->isRunning()) {
+		extractTemplateImages(); //æå–
 	}
 }
 
 
-/******************** Ä£°åÌáÈ¡Ïß³Ì ********************/
+/******************** æ¨¡æ¿æå–çº¿ç¨‹ ********************/
 
-//ÌáÈ¡µ±Ç°µÄÒ»ĞĞÑù±¾Í¼Ïñ
+//å¦‚æœæ‰€æœ‰å›¾åƒæ˜¾ç¤ºå®Œï¼Œä½†æ˜¯æœªå¼€å§‹æå–
+bool ExtractUI::extractionHasNotStartedAndAllImagesHasBeenDisplayed()
+{
+	bool flag = (runtimeParams->currentRow_extract == -1); //æœªå¼€å§‹æå–
+	flag &= (currentRow_show == runtimeParams->nPhotographing - 1); //æ‰€æœ‰å›¾åƒå·²ç»æ˜¾ç¤ºå®Œ
+	return flag;
+}
+
+//æå–å½“å‰çš„ä¸€è¡Œæ ·æœ¬å›¾åƒ
 void ExtractUI::extractTemplateImages()
 {
-	//½ûÓÃ¿ªÊ¼¼üºÍ·µ»Ø¼ü
+	//ç¦ç”¨å¼€å§‹é”®å’Œè¿”å›é”®
 	this->setPushButtonsEnabled(false);
 
-	//¸üĞÂÌáÈ¡ĞĞºÅ
+	//æ›´æ–°æå–è¡Œå·
 	runtimeParams->currentRow_extract += 1;
 
-	//¸üĞÂ×´Ì¬À¸
-	ui.label_status->setText(pcb::chinese("ÕıÔÚÌáÈ¡µÚ") +
+	//æ›´æ–°çŠ¶æ€æ 
+	ui.label_status->setText(pcb::chinese("æ­£åœ¨æå–ç¬¬") +
 		QString::number(runtimeParams->currentRow_extract + 1) + 
-		pcb::chinese("ĞĞÄ£°å"));
+		pcb::chinese("è¡Œæ¨¡æ¿"));
 	qApp->processEvents();
 
-	//¿ªÆô¼ì²âÏß³Ì
+	//å¼€å¯æ£€æµ‹çº¿ç¨‹
 	extractThread->start();
 }
 
-//ÌáÈ¡½áÊøºó¸üĞÂ×´Ì¬
+//æå–ç»“æŸåæ›´æ–°çŠ¶æ€
 void ExtractUI::update_extractState_extractor(int state)
 {
-	//µ±ÌáÈ¡ÍêÒ»ĞĞÍ¼Ïñ
+	//å½“æå–å®Œä¸€è¡Œå›¾åƒ
 	if ((TemplateExtractor::ExtractState)state == TemplateExtractor::Finished) { 
-		//¸üĞÂÊÂ¼ş¼ÆÊıÆ÷
+		//æ›´æ–°äº‹ä»¶è®¡æ•°å™¨
 		eventCounter -= 1; 
 
-		//¸üĞÂ×´Ì¬À¸
-		ui.label_status->setText(pcb::chinese("µÚ") +
+		//æ›´æ–°çŠ¶æ€æ 
+		ui.label_status->setText(pcb::chinese("ç¬¬") +
 			QString::number(runtimeParams->currentRow_extract + 1) +
-			pcb::chinese("ĞĞÌáÈ¡½áÊø"));
+			pcb::chinese("è¡Œæå–ç»“æŸ"));
 		qApp->processEvents();
+		pcb::delay(10); //å»¶è¿Ÿ
 
-		//ÏÔÊ¾ĞÂµÄÑù±¾ĞĞ
-		if (runtimeParams->DeveloperMode && currentRow_show < runtimeParams->nPhotographing - 1) {
-			currentRow_show += 1; //¸üĞÂÏÔÊ¾ĞĞºÅ
-			readSampleImages(); //¶ÁÍ¼ - Ïàµ±ÓÚÏà»úÅÄÕÕ		
-		}
-
-		//¼ì²éÊÇ·ñÓĞÎ´´¦ÀíµÄÊÂ¼ş
-		while (extractThread->isRunning()) pcb::delay(50); //µÈ´ıÌáÈ¡Ïß³Ì½áÊø
-		if (runtimeParams->currentRow_extract == runtimeParams->nPhotographing - 1) { //µ±Ç°PCBÌáÈ¡½áÊø
-			ui.label_status->setText(pcb::chinese("ÌáÈ¡½áÊø£¬ÏµÍ³¾ÍĞ÷")); //¸üĞÂ×´Ì¬À¸
+		//æ£€æŸ¥æ˜¯å¦æœ‰æœªå¤„ç†çš„äº‹ä»¶
+		while (extractThread->isRunning()) pcb::delay(50); //ç­‰å¾…æå–çº¿ç¨‹ç»“æŸ
+		if (runtimeParams->currentRow_extract == runtimeParams->nPhotographing - 1) { //å½“å‰PCBæå–ç»“æŸ
+			pcb::delay(10);
+			ui.label_status->setText(pcb::chinese("æå–ç»“æŸï¼Œç³»ç»Ÿå°±ç»ª")); //æ›´æ–°çŠ¶æ€æ 
 			qApp->processEvents();
-
 			runtimeParams->currentRow_extract += 1;
-			this->setPushButtonsEnabled(true); //ÆôÓÃ°´¼ü
+			this->setPushButtonsEnabled(true); //å¯ç”¨æŒ‰é”®
 		}
-		else { //µ±Ç°PCBÎ´ÌáÈ¡Íê
+		else { //å½“å‰PCBæœªæå–å®Œ
 			if (eventCounter <= 0) return;
-
-			if (runtimeParams->currentRow_extract + 1 == runtimeParams->nPhotographing - 1) {
-				if (runtimeParams->maskRoi_tl.x() < 0 || runtimeParams->maskRoi_tl.y() < 0 ||
-					runtimeParams->maskRoi_br.x() < 0 || runtimeParams->maskRoi_br.y() < 0)
-				{
-					ui.label_status->setText(pcb::chinese("ÇëÔÚĞòºÅÊ¶±ğ½çÃæ\nÈ·ÈÏÑÚÄ¤ÇøÓò"));
-					qApp->processEvents(); return;
-				}
-			}
-			extractTemplateImages(); //ÌáÈ¡ÏÂÒ»ĞĞ·ÖÍ¼
+			extractTemplateImages(); //æå–ä¸‹ä¸€è¡Œåˆ†å›¾
 		}
 	}
 }

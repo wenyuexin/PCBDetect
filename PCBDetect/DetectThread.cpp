@@ -15,7 +15,8 @@ DetectThread::DetectThread()
 	userConfig = Q_NULLPTR; //用户参数
 	runtimeParams = Q_NULLPTR; //运行参数
 	cvmatSamples = Q_NULLPTR; //用于提取的样本图
-	defectDetecter = Q_NULLPTR; //提取器
+	defectDetecter = Q_NULLPTR; //检测器
+	detectResult = Q_NULLPTR; //检测结果
 }
 
 DetectThread::~DetectThread()

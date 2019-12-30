@@ -3,16 +3,16 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>D:\MyLab\opencv_contrib\include;D:\MyLab\opencv_contrib\include\opencv;D:\MyLab\opencv_contrib\include\opencv2;D:\MyLab\tesseract\include;D:\MyLab\tesseract\include\leptonica;D:\MyLab\tesseract\include\tesseract;D:\MyLab\MindVision\Demo\VC++\Include;D:\MyLab\asio-1.12.2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\MyLab\opencv_contrib\x64\vc15\lib;D:\MyLab\tesseract\lib\x64\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Tools\opencv_contrib\include;D:\Tools\opencv_contrib\include\opencv;D:\Tools\opencv_contrib\include\opencv2;D:\Tools\tesseract\include;D:\Tools\tesseract\include\leptonica;D:\Tools\tesseract\include\tesseract;D:\Tools\asio-1.12.2\include;D:\Tools\OPT Camera Demo\Development\Include;D:\Tools\OPT Camera Demo\Development\Samples\Python\include\ImageConvert;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Tools\opencv_contrib\x64\vc15\lib;D:\Tools\tesseract\lib\x64\debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>opencv_world410d.lib;libtesseract-4.lib;pvt.cppan.demo.danbloomberg.leptonica-1.74.1.lib;pvt.cppan.demo.gif-5.1.4.lib;pvt.cppan.demo.jpeg-9.2.0.lib;pvt.cppan.demo.madler.zlib-1.2.11.lib;pvt.cppan.demo.mgk25.jbig.ar-2.1.0.lib;pvt.cppan.demo.mgk25.jbig.jbig-2.1.0.lib;pvt.cppan.demo.openjpeg.openjp2-2.1.2.lib;pvt.cppan.demo.png-1.6.28.lib;pvt.cppan.demo.tiff-4.0.7.lib;pvt.cppan.demo.webp-0.6.0.lib;pvt.cppan.demo.xz_utils.lzma-5.2.2.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MVSDKmd.lib;opencv_world410d.lib;libtesseract-4.lib;pvt.cppan.demo.danbloomberg.leptonica-1.74.1.lib;pvt.cppan.demo.gif-5.1.4.lib;pvt.cppan.demo.jpeg-9.2.0.lib;pvt.cppan.demo.madler.zlib-1.2.11.lib;pvt.cppan.demo.mgk25.jbig.ar-2.1.0.lib;pvt.cppan.demo.mgk25.jbig.jbig-2.1.0.lib;pvt.cppan.demo.openjpeg.openjp2-2.1.2.lib;pvt.cppan.demo.png-1.6.28.lib;pvt.cppan.demo.tiff-4.0.7.lib;pvt.cppan.demo.webp-0.6.0.lib;pvt.cppan.demo.xz_utils.lzma-5.2.2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Tools\OPT Camera Demo\Development\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\MyLab\asio-1.12.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Tools\asio-1.12.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>

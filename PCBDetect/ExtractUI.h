@@ -7,9 +7,10 @@
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
-#include "SerialNumberUI.h"
+#include "TemplSettingUI.h"
 #include <QDesktopWidget>
 #include <QKeyEvent>
+#include <QTimer>
 
 
 //模板提取界面
@@ -19,7 +20,8 @@ class ExtractUI : public QWidget
 
 private:
 	Ui::ExtractUI ui;
-	SerialNumberUI *serialNumberUI; //产品序号识别界面
+	TemplSettingUI *templSettingUI; //模板设置界面
+
 	pcb::AdminConfig *adminConfig; //系统参数
 	pcb::UserConfig *userConfig; //用户参数
 	pcb::RuntimeParams *runtimeParams; //运行参数
@@ -55,23 +57,25 @@ public:
 	inline void setCameraControler(CameraControler *ptr) { cameraControler = ptr; }
 
 	void initGraphicsView();
-	void resetExtractUI();
+	void reset();
 	void refreshCameraControler();
 	void setPushButtonsEnabled(bool enable);
 
 private:
+	void showCurrentTime();//获取并显示时间
 	void initItemGrid(pcb::ItemGrid &grid);//初始化图元网格
 	void initPointersInItemArray(pcb::ItemArray &items);//初始化itemArray
 	void deletePointersInItemArray(pcb::ItemArray &items);//删除itemArray中的指针
 	void initPointersInCvMatArray(pcb::CvMatArray &cvmats);//初始化CvMatArray
 	void deletePointersInCvMatArray(pcb::CvMatArray &cvmats);//删除CvMatArray中的指针
 	void initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//初始化QPixmapArray
-	void deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//删除QPixmapArray中的指针
+	void deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//删除QPixmapArray的中指针
 	void removeItemsFromGraphicsScene();//移除场景中的图元
 
 	void showSampleImages();
 	void readSampleImages();
 	void extractTemplateImages();
+	bool extractionHasNotStartedAndAllImagesHasBeenDisplayed();
 
 Q_SIGNALS:
 	void showDetectMainUI();
@@ -80,7 +84,9 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void on_pushButton_start_clicked();//开始键
 	void on_pushButton_return_clicked();//返回键
-	void keyPressEvent(QKeyEvent *event);
+	void keyPressEvent(QKeyEvent *event); //键盘事件
+	void mouseDoubleClickEvent(QMouseEvent *event); //鼠标双击事件
+	void mousePressEvent(QMouseEvent *event); //鼠标单击事件
 	void update_extractState_extractor(int state);
 
 	void on_moveToInitialPosFinished_motion(int);//到达初始拍照位置
@@ -91,8 +97,9 @@ private Q_SLOTS:
 	void on_takePhotosFinished_camera(int);//拍照结束
 	void on_convertFinished_convertThread();//图像转换结束
 
-	void mouseDoubleClickEvent(QMouseEvent *event);
-	void on_recognizeFinished_serialNumUI();
-	void do_showPreviousUI_serialNumUI();
-	void on_getMaskRoiFinished_serialNumUI();
+	void on_maskRoiIsSet_templSettingUI();
+	void on_segThreshIsSet_templSettingUI();
+	void on_modelNumIsSet_templSettingUI();
+	void do_showExtractUI_templSettingUI();
+	void on_settingFinished_templSettingUI();
 };

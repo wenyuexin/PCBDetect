@@ -4,15 +4,28 @@
 #include <QString>
 #include <QDesktopWidget>
 #include "Configurator.h"
+#include "ProductID.h"
 
 
 namespace pcb 
 {
 #ifndef STRUCT_DETECT_RESULT
 #define STRUCT_DETECT_RESULT
+	//缺陷信息
+	struct FlawInfo {
+		//QString filePath;
+		QString flawIndex; //缺陷编号
+		int xPos; //缺陷在整图中的x坐标
+		int yPos; //缺陷在整图中的y坐标
+		int flawType; //缺陷类型：0未知 1短路 2断路 3凸起 4缺失
+	};
+
 	//检测结果
 	struct DetectResult {
-
+		bool SampleIsQualified; //当前产品是否合格
+		cv::Mat fullImage; //标记有缺陷的整图
+		std::vector<FlawInfo> flawInfo; //缺陷信息
+		QDate detectionDate; //检测日期
 	};
 #endif //STRUCT_DETECT_RESULT
 
@@ -33,13 +46,13 @@ namespace pcb
 		QRect ScreenRect; //界面所在的屏幕区域
 
 		//系统运行所需的关键参数
-		QString serialNum; //产品序号
-		QString sampleModelNum; //型号
-		QString sampleBatchNum; //批次号
-		QString sampleNum; //样本编号
+		ProductID productID; //产品id
 
 		QPoint maskRoi_tl; //模板掩膜左上角在分图上的坐标位置
 		QPoint maskRoi_br; //模板掩膜右下角在分图上的坐标位置
+		bool UsingDefaultSegThresh; //使用默认的分割阈值
+		int segThresh; //图像分割的阈值 0-255
+
 		int currentRow_extract; //提取行号
 		int currentRow_detect; //检测行号
 
@@ -52,11 +65,7 @@ namespace pcb
 			Index_All,
 			Index_None,
 			//产品序号相关
-			Index_All_SerialNum,
-			Index_serialNum,
-			Index_sampleModelNum,
-			Index_sampleBatchNum,
-			Index_sampleNum,
+			Index_productID,
 			//行号
 			Index_currentRow_detect,
 			Index_currentRow_extract,
@@ -76,28 +85,21 @@ namespace pcb
 			ValidValue = 0x000,
 			ValidValues = 0x000,
 			Unchecked = 0x300,
-			Invalid_serialNum = 0x301,
-			Invalid_sampleModelNum = 0x302,
-			Invalid_sampleBatchNum = 0x303,
-			Invalid_sampleNum = 0x304,
-			Invalid_currentRow_detect = 0x305,
-			Invalid_currentRow_extract = 0x306,
-			Invalid_singleMotionStroke = 0x307,
-			Invalid_nCamera = 0x308,
-			Invalid_nPhotographing = 0x309,
-			Invalid_initialPhotoPos = 0x30A,
-			Invalid_AppDirPath = 0x30B,
-			Invalid_BufferDirPath = 0x30C,
+			Invalid_productID = 0x301,
+			Invalid_currentRow_detect = 0x302,
+			Invalid_currentRow_extract = 0x303,
+			Invalid_singleMotionStroke = 0x304,
+			Invalid_nCamera = 0x305,
+			Invalid_nPhotographing = 0x306,
+			Invalid_initialPhotoPos = 0x307,
+			Invalid_AppDirPath = 0x308,
+			Invalid_BufferDirPath = 0x309,
 			Default = 0x3FF
 		};
 
 	private:
 		ErrorCode errorCode;
-		ErrorCode errorCode_serialNum;
 		ErrorCode errorCode_sysInit;
-
-		double nCamera_raw; //原始的相机个数
-		double nPhotographing_raw; //原始的拍照次数
 
 		//系统状态值 0x123456789
 		//adminConfig 1， userConfig 2, RuntimeParams 3
@@ -105,14 +107,13 @@ namespace pcb
 		//SerialNumber 7, TemplateExtract 8, Detect 9
 		long systemState = 0x000000000;
 
-		//总长度=型号长度+批次号长度+编号长度
-		const int serialNumSlice[4] = { 8, 2, 2, 4 }; //产品序号组成
+		double nCamera_raw; //原始的相机个数
+		double nPhotographing_raw; //原始的拍照次数
 
 	public:
 		RuntimeParams();
 		~RuntimeParams();
 
-		void resetSerialNum();
 		void loadDefaultValue();
 		void copyTo(RuntimeParams *dst); //拷贝参数
 
@@ -123,8 +124,6 @@ namespace pcb
 		ErrorCode calcInitialPhotoPos(pcb::AdminConfig *adminConfig);
 		bool update(pcb::AdminConfig *adminConfig, pcb::UserConfig *userConfig);
 
-		ErrorCode parseSerialNum();
-		QString getDirHierarchy();
 		int getSystemResetCode(RuntimeParams &newConfig); //获取系统重置代码
 
 		ErrorCode checkValidity(ParamsIndex index = Index_All, AdminConfig *adminConfig = Q_NULLPTR);
@@ -132,7 +131,6 @@ namespace pcb
 		ErrorCode getErrorCode(ParamsIndex index = Index_All);//获取错误代码
 		void resetErrorCode(ParamsIndex index = Index_All);//重置错误代码
 		bool showMessageBox(QWidget *parent, ErrorCode code = Default); //弹窗警告
-
 	};
 #endif //STRUCT_DETECT_PARAMS
 }

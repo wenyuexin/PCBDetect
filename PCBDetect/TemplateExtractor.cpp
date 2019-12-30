@@ -214,9 +214,9 @@ void TemplateExtractor::extract()
 			//提取模板特征并保存
 			Mat src_mask;
 			cv::bitwise_and(image, mask, src_mask);
-			string file_Path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
-				+ "/bin/" + std::to_string(num_rows) + "_" + std::to_string(num_cols) + ".bin";
-			templFunc->save(file_Path, src_mask);
+			QString file_Path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType
+				+ "/bin/" + QString::number(num_rows) + "_" + QString::number(num_cols) + ".bin";
+			templFunc->save(file_Path.toStdString(), src_mask);
 		}
 
 		Mat scaledFullImage;
@@ -247,7 +247,7 @@ void TemplateExtractor::makeCurrentTemplDir(vector<QString> &subFolders)
 	if (!templateDir.exists()) templateDir.mkdir(runtimeParams->currentTemplDir);
 
 	//判断对应的型号文件夹是否存在
-	runtimeParams->currentTemplDir += "/" + runtimeParams->sampleModelNum;
+	runtimeParams->currentTemplDir += "/" + runtimeParams->productID.modelType;
 	QDir templDir(runtimeParams->currentTemplDir);
 	if (!templDir.exists()) {
 		templDir.mkdir(runtimeParams->currentTemplDir);//创建文件夹

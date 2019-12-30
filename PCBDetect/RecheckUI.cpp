@@ -5,66 +5,35 @@
 
 
 //复查界面的构造函数
-PCBRecheck::PCBRecheck(QWidget *parent)
+RecheckUI::RecheckUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//判断并选择在主屏或者是副屏上显示
-	QDesktopWidget* desktop = QApplication::desktop();
-	QRect screenRect = desktop->screenGeometry(1);//副屏区域
-	if (screenRect.width() < 1440 || screenRect.height() < 900) {
-		screenRect = desktop->screenGeometry(0);//主屏区域
-	}
-	this->setGeometry(screenRect);
+	//成员变量初始化
+	userConfig = Q_NULLPTR; //检修系统配置信息
+	runtimeParams = Q_NULLPTR; //运行参数
+	detectResult = Q_NULLPTR; //检测结果
+	IconFolder = "";
 
-	//显示复查主界面
-	//this->showFullScreen();
-
-	//系统初始化线程
-	//sysInitThread = new SysInitThread;
-	//connect(sysInitThread, SIGNAL(sysInitFinished_initThread()), this, SLOT(on_sysInitFinished_initThread()));
-	//connect(sysInitThread, SIGNAL(userConfigError_initThread()), this, SLOT(on_userConfigError_initThread()));
-	//connect(sysInitThread, SIGNAL(outFolderHierarchyError_initThread()), this, SLOT(on_outFolderHierarchyError_initThread()));
-	
-	//sysInitThread->setOutFolderHierarchy(&OutFolderHierarchy);
-	//sysInitThread->setUserConfig(&userConfig);
-	//sysInitThread->start(); //开启线程
-	//pcb::delay(10);
-
-	//编号设置界面
-	//serialNumberUI = new SerialNumberUI(Q_NULLPTR, screenRect);
-	//serialNumberUI->setUserConfig(&userConfig);
-	//serialNumberUI->setRuntimeParams(&runtimeParams);
-	//serialNumberUI->init();
-	//connect(serialNumberUI, SIGNAL(showRecheckMainUI_numUI()), this, SLOT(do_showRecheckMainUI_numUI()));
-	//connect(serialNumberUI, SIGNAL(exitRecheckSystem_numUI()), this, SLOT(do_exitRecheckSystem_numUI()));
-	
-	//退出询问界面
-	//exitQueryUI = new ExitQueryUI(Q_NULLPTR, screenRect);
-	//connect(exitQueryUI, SIGNAL(showSerialNumberUI_exitUI()), this, SLOT(do_showSerialNumberUI_exitUI()));
-	//connect(exitQueryUI, SIGNAL(showRecheckUI_exitUI()), this, SLOT(do_showRecheckMainUI_exitUI()));
-
-	//刷新整图上闪烁的箭头
-	connect(&flickeringArrow, SIGNAL(refreshArrow_arrow()), this, SLOT(on_refreshArrow_arrow()));
-
-	//检修界面初始化
-	this->init();
 }
 
 //复查界面析构函数
-PCBRecheck::~PCBRecheck()
+RecheckUI::~RecheckUI()
 {
 	qDebug() << "~PCBRecheck";
-	delete sysInitThread;
-	delete serialNumberUI;
+	//delete sysInitThread;
+	//delete serialNumberUI;
 	//delete exitQueryUI;
 }
 
-/********************* 检修界面初始化 *********************/
+/********************* 界面初始化 *********************/
 
-void PCBRecheck::init()
+void RecheckUI::init()
 {
+	//选择在主屏还是副屏上显示
+	this->setGeometry(runtimeParams->ScreenRect);
+
 	//加载图标
 	IconFolder = QDir::currentPath() + "/icons";
 	QPixmap redIcon(IconFolder + "/red.png"); //red
@@ -72,23 +41,19 @@ void PCBRecheck::init()
 	QPixmap greyIcon(IconFolder + "/grey.png"); //grey
 	lightOffIcon = greyIcon.scaled(ui.label_indicator1->size(), Qt::KeepAspectRatio);
 
-	//设置当前正在显示的缺陷小图及其缺陷类型指示灯
-	ui.label_indicator1->setPixmap(lightOffIcon); //断路
-	ui.label_indicator2->setPixmap(lightOffIcon); //缺失
-	ui.label_indicator3->setPixmap(lightOffIcon); //短路
-	ui.label_indicator4->setPixmap(lightOffIcon); //凸起
+	this->reset();
 
 	//文本框等的背景色
-	QPalette palette;
-	palette.setColor(QPalette::Background, QColor(250, 250, 250));
-	ui.label_flaw->setAutoFillBackground(true); //缺陷图
-	ui.label_flaw->setPalette(palette);
-	ui.label_xLoc->setAutoFillBackground(true); //缺陷位置x
-	ui.label_xLoc->setPalette(palette);
-	ui.label_yLoc->setAutoFillBackground(true); //缺陷位置y
-	ui.label_yLoc->setPalette(palette);
-	ui.label_serialNum->setAutoFillBackground(true); //样本编号
-	ui.label_serialNum->setPalette(palette);
+	//QPalette palette;
+	//palette.setColor(QPalette::Background, QColor(250, 250, 250));
+	//ui.label_flaw->setAutoFillBackground(true); //缺陷图
+	//ui.label_flaw->setPalette(palette);
+	//ui.label_xLoc->setAutoFillBackground(true); //缺陷位置x
+	//ui.label_xLoc->setPalette(palette);
+	//ui.label_yLoc->setAutoFillBackground(true); //缺陷位置y
+	//ui.label_yLoc->setPalette(palette);
+	//ui.label_modelType->setAutoFillBackground(true); //样本编号
+	//ui.label_modelType->setPalette(palette);
 
 	//成员变量初始化
 	originalFullImageSize = QSize(-1, -1);
@@ -100,13 +65,26 @@ void PCBRecheck::init()
 	ui.graphicsView_full->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //禁用水平滚动条
 	ui.graphicsView_full->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //禁用垂直滚动条
 
-	//启用文件同步
-	//fileSyncThread.setUserConfig(&userConfig);
-	//fileSyncThread.setRuntimeParams(&runtimeParams);
-	//fileSyncThread.init();
-	//fileSyncThread.start();
+	//刷新整图上闪烁的箭头
+	connect(&flickeringArrow, SIGNAL(refreshArrow_arrow()), this, SLOT(on_refreshArrow_arrow()));
 }
 
+void RecheckUI::reset()
+{
+	//清空静态文本框中的内容
+	ui.label_defectIndex->setText("");
+	ui.label_defectNum->setText("");
+	ui.label_xLoc->setText("");
+	ui.label_yLoc->setText("");
+	ui.label_modelType->setText("");
+	ui.label_detecttionDate->setText("");
+
+	//设置当前正在显示的缺陷小图及其缺陷类型指示灯
+	ui.label_indicator1->setPixmap(lightOffIcon); //断路
+	ui.label_indicator2->setPixmap(lightOffIcon); //缺失
+	ui.label_indicator3->setPixmap(lightOffIcon); //短路
+	ui.label_indicator4->setPixmap(lightOffIcon); //凸起
+}
 
 /******************* 初始化线程 *******************/
 
@@ -142,41 +120,7 @@ void PCBRecheck::init()
 //}
 
 
-/***************** 编号设置界面 ******************/
-
-//显示编号设置界面
-//void PCBRecheck::showSerialNumberUI()
-//{
-//	this->setPushButtonsEnabled(false);
-//	serialNumberUI->setActivated(true);
-//	serialNumberUI->showFullScreen();
-//}
-
-//由序号设置界面返回，并显示检修主界面
-//void PCBRecheck::do_showRecheckMainUI_numUI()
-//{
-//	this->setPushButtonsEnabled(true);
-//	this->refreshRecheckMainUI(); //更新界面上显示的信息
-//	
-//	if (recheckStatus == NoError) {
-//		this->showFullScreen(); //显示主界面
-//		pcb::delay(10); //延时
-//		serialNumberUI->hide(); //隐藏PCB编号设置界面
-//		serialNumberUI->setActivated(false);
-//	}
-//	else {
-//		recheckStatus = Unchecked;
-//	}
-//}
-
-//由参数设置界面返回，并退出检修系统
-//void PCBRecheck::do_exitRecheckSystem_numUI()
-//{
-//	this->exitRecheckSystem();
-//}
-
-
-/****************** 退出询问界面 *****************/
+/******************* 退出询问界面 *****************/
 
 //显示退出询问界面
 //void PCBRecheck::showExitQueryUI()
@@ -215,18 +159,18 @@ void PCBRecheck::init()
 /********* 初始显示：加载PCB大图、第1个缺陷小图等 ********/
 
 //刷新计时器与小箭头
-void PCBRecheck::on_refreshArrow_arrow()
+void RecheckUI::on_refreshArrow_arrow()
 {
 	flickeringArrow.update(-100, -100, 200, 200);
 }
 
 //更新界面上显示的信息
-void PCBRecheck::refreshRecheckUI()
+void RecheckUI::refresh()
 {
 	//logging(runtimeParams.serialNum);
 
-	//更新界面中的PCB编号
-	ui.label_serialNum->setText(runtimeParams.serialNum);
+	//更新界面中的PCB型号
+	ui.label_modelType->setText(runtimeParams->productID.modelType);
 
 	////检测结果所在的文件夹
 	//QString flawImageFolderPath = userConfig.OutputDirPath + "/"
@@ -240,7 +184,7 @@ void PCBRecheck::refreshRecheckUI()
 	//}
 
 	//加载并显示PCB大图
-	if (!loadFullImage()) return;
+	//if (!loadFullImage()) return;
 	this->showFullImage();
 
 	////获取文件夹内的图片路径
@@ -261,73 +205,73 @@ void PCBRecheck::refreshRecheckUI()
 }
 
 //加载PCB整图
-bool PCBRecheck::loadFullImage()
-{
-	QString flawImageDirPath = userConfig.OutputDirPath + "/"
-		+ runtimeParams.sampleModelNum + "/"
-		+ runtimeParams.sampleBatchNum + "/"
-		+ runtimeParams.sampleNum; //检测结果所在的文件夹
-
-	QDir dir(flawImageDirPath + "/fullImage/");
-	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-	QStringList filters("*" + userConfig.ImageFormat); //将特定格式的图片过滤出来 
-	dir.setNameFilters(filters);
-	QFileInfoList folder_list = dir.entryInfoList(); //获取文件列表
-
-	QString fullImagePath = "";
-	QStringList pcbInfoList;//整图的原图大小+缺陷总数
-	for (int i = 0; i < folder_list.size(); i++) {
-		if (folder_list.at(i).baseName().startsWith(fullImageNamePrefix)) {
-			fullImagePath = folder_list.at(i).absoluteFilePath();
-
-			//根据文件名获取PCB整图的原始尺寸和缺陷总数
-			pcbInfoList = folder_list.at(i).baseName().split("_");
-			if (pcbInfoList.size() == 4) {
-				originalFullImageSize.setWidth(pcbInfoList[1].toInt());
-				originalFullImageSize.setHeight(pcbInfoList[2].toInt());
-				defectNum = pcbInfoList[3].toInt();
-				break;
-			}
-			else {
-				//logging("InvalidFullImageName: pcbInfoList size(): " + QString::number(pcbInfoList.size()));
-				recheckStatus = InvalidFullImageName;
-				//this->showMessageBox(MessageBoxType::Warning, recheckStatus);
-				serialNumberUI->show(); //显示PCB序号询问界面
-				return false;
-			}
-		}
-	}
-
-	//判断是否找到fullImage为前缀的ImageFormat格式的图
-	if (fullImagePath == "") {
-		//logging("FullImageNotFound");
-		recheckStatus = FullImageNotFound;
-		//this->showMessageBox(MessageBoxType::Warning, recheckStatus);
-		serialNumberUI->show(); //显示PCB序号询问界面
-		return false;
-	}
-
-	//加载大图
-	QImage fullImg; //读图
-	if (!fullImg.load(fullImagePath)) {
-		//logging("LoadFullImageFailed: fullImagePath: " + fullImagePath);
-		recheckStatus = LoadFullImageFailed;
-		//this->showMessageBox(MessageBoxType::Warning, recheckStatus);
-		serialNumberUI->show(); //显示PCB序号询问界面
-		return false;
-	}
-
-	scaledFactor = qMin(qreal(ui.graphicsView_full->height() - 2) / fullImg.size().height(),
-		qreal(ui.graphicsView_full->width() - 2) / fullImg.size().width());//整图的尺寸变换因子
-	fullImg = fullImg.scaled(fullImg.size()*scaledFactor, Qt::KeepAspectRatio); //缩放
-	fullImage = QPixmap::fromImage(fullImg); //转换
-	fullImageItemSize = fullImage.size(); //PCB大图的实际显示尺寸
-	return true;
-}
+//bool RecheckUI::loadFullImage()
+//{
+//	QString flawImageDirPath = userConfig.OutputDirPath + "/"
+//		+ runtimeParams->sampleModelNum + "/"
+//		+ runtimeParams.sampleBatchNum + "/"
+//		+ runtimeParams.sampleNum; //检测结果所在的文件夹
+//
+//	QDir dir(flawImageDirPath + "/fullImage/");
+//	dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+//	QStringList filters("*" + userConfig.ImageFormat); //将特定格式的图片过滤出来 
+//	dir.setNameFilters(filters);
+//	QFileInfoList folder_list = dir.entryInfoList(); //获取文件列表
+//
+//	QString fullImagePath = "";
+//	QStringList pcbInfoList;//整图的原图大小+缺陷总数
+//	for (int i = 0; i < folder_list.size(); i++) {
+//		if (folder_list.at(i).baseName().startsWith(fullImageNamePrefix)) {
+//			fullImagePath = folder_list.at(i).absoluteFilePath();
+//
+//			//根据文件名获取PCB整图的原始尺寸和缺陷总数
+//			pcbInfoList = folder_list.at(i).baseName().split("_");
+//			if (pcbInfoList.size() == 4) {
+//				originalFullImageSize.setWidth(pcbInfoList[1].toInt());
+//				originalFullImageSize.setHeight(pcbInfoList[2].toInt());
+//				defectNum = pcbInfoList[3].toInt();
+//				break;
+//			}
+//			else {
+//				//logging("InvalidFullImageName: pcbInfoList size(): " + QString::number(pcbInfoList.size()));
+//				recheckStatus = InvalidFullImageName;
+//				//this->showMessageBox(MessageBoxType::Warning, recheckStatus);
+//				//serialNumberUI->show(); //显示PCB序号询问界面
+//				return false;
+//			}
+//		}
+//	}
+//
+//	//判断是否找到fullImage为前缀的ImageFormat格式的图
+//	if (fullImagePath == "") {
+//		//logging("FullImageNotFound");
+//		recheckStatus = FullImageNotFound;
+//		//this->showMessageBox(MessageBoxType::Warning, recheckStatus);
+//		//serialNumberUI->show(); //显示PCB序号询问界面
+//		return false;
+//	}
+//
+//	//加载大图
+//	QImage fullImg; //读图
+//	if (!fullImg.load(fullImagePath)) {
+//		//logging("LoadFullImageFailed: fullImagePath: " + fullImagePath);
+//		recheckStatus = LoadFullImageFailed;
+//		//this->showMessageBox(MessageBoxType::Warning, recheckStatus);
+//		//serialNumberUI->show(); //显示PCB序号询问界面
+//		return false;
+//	}
+//
+//	scaledFactor = qMin(qreal(ui.graphicsView_full->height() - 2) / fullImg.size().height(),
+//		qreal(ui.graphicsView_full->width() - 2) / fullImg.size().width());//整图的尺寸变换因子
+//	fullImg = fullImg.scaled(fullImg.size()*scaledFactor, Qt::KeepAspectRatio); //缩放
+//	fullImage = QPixmap::fromImage(fullImg); //转换
+//	fullImageItemSize = fullImage.size(); //PCB大图的实际显示尺寸
+//	return true;
+//}
 
 //加载并显示PCB大图
 //从对应的output文件夹的fullImage子文件夹中读取整图
-void PCBRecheck::showFullImage()
+void RecheckUI::showFullImage()
 {
 	//显示缺陷总数
 	if (defectNum >= 0) {
@@ -377,7 +321,7 @@ void PCBRecheck::showFullImage()
 //}
 
 //加载初始的闪烁箭头
-void PCBRecheck::initFlickeringArrow()
+void RecheckUI::initFlickeringArrow()
 {
 	if (defectNum <= 0) return;
 	flickeringArrow.startFlickering(500); //开始闪烁
@@ -387,7 +331,7 @@ void PCBRecheck::initFlickeringArrow()
 }
 
 //更新闪烁箭头的位置
-void PCBRecheck::setFlickeringArrowPos()
+void RecheckUI::setFlickeringArrowPos()
 {
 	//qreal xLoc = flawImageInfoVec[defectIndex].xPos.toDouble();
 	//xLoc *= (1.0*fullImageItemSize.width()/originalFullImageSize.width());
@@ -405,7 +349,7 @@ void PCBRecheck::setFlickeringArrowPos()
 /***************** 切换缺陷小图 ****************/
 
 //敲击小键盘的 + -
-void PCBRecheck::keyPressEvent(QKeyEvent *event)
+void RecheckUI::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key()) 
 	{	
@@ -428,14 +372,14 @@ void PCBRecheck::keyPressEvent(QKeyEvent *event)
 }
 
 //点击加号按键 - 切换并显示下一个缺陷
-void PCBRecheck::on_pushButton_plus2_clicked()
+void RecheckUI::on_pushButton_plus2_clicked()
 {
 	qDebug() << "Button_Plus";
 	showNextFlawImage();
 }
 
 //点击减号按键 - 切换并显示上一个缺陷
-void PCBRecheck::on_pushButton_minus2_clicked()
+void RecheckUI::on_pushButton_minus2_clicked()
 {
 	qDebug() << "Button_Minus";
 	showLastFlawImage();
@@ -443,7 +387,7 @@ void PCBRecheck::on_pushButton_minus2_clicked()
 
 
 //切换并显示上一个缺陷图
-void PCBRecheck::showLastFlawImage()
+void RecheckUI::showLastFlawImage()
 {
 	//获取 当前的 index 判断是否 到达边界
 	defectIndex -= 1;
@@ -458,7 +402,7 @@ void PCBRecheck::showLastFlawImage()
 }
 
 //切换并显示下一个缺陷图
-void PCBRecheck::showNextFlawImage()
+void RecheckUI::showNextFlawImage()
 {
 	////获取 当前的 index 判断是否 到达边界
 	//defectIndex += 1;
@@ -473,7 +417,7 @@ void PCBRecheck::showNextFlawImage()
 }
 
 //将缺陷图加载并显示到对应的lebal控件中
-void PCBRecheck::showFlawImage()
+void RecheckUI::showFlawImage()
 {
 	//if (defectNum <= 0) return;
 	//QFileInfo flawImgInfo(flawImageInfoVec[defectIndex].filePath);
@@ -500,7 +444,7 @@ void PCBRecheck::showFlawImage()
 }
 
 //更新缺陷类型的指示图标
-void PCBRecheck::switchFlawIndicator()
+void RecheckUI::switchFlawIndicator()
 {
 	//flawIndicatorStatus = pow(2, flawImageInfoVec[defectIndex].flawType.toInt() - 1);
 
@@ -514,36 +458,22 @@ void PCBRecheck::switchFlawIndicator()
 
 /**************** 退出程序 *****************/
 
-//点击退出按键
-void PCBRecheck::on_pushButton_exit_clicked()
+//点击返回按键
+void RecheckUI::on_pushButton_return_clicked()
 {
-	//询问是否需要退出系统
-	int choice = QMessageBox::question(this, pcb::chinese("询问"),
-		pcb::chinese("确定退出PCB缺陷检测系统？ \n"),
-		pcb::chinese("确定"), pcb::chinese("取消"));
-	//判断是否需要退出
-	if (choice == 0) {
-		exitRecheckSystem();
-	}
-}
-
-//退出复查系统
-void PCBRecheck::exitRecheckSystem()
-{
-	this->close();
-	pcb::delay(10);
-	qApp->exit(0);
+	this->reset(); //清空界面上的检测结果
+	emit recheckFinished_recheckUI();
 }
 
 
 /******************** 其他 *********************/
 
 //设置按键
-void PCBRecheck::setPushButtonsEnabled(bool enable)
+void RecheckUI::setPushButtonsEnabled(bool enable)
 {
 	ui.pushButton_plus2->setEnabled(enable);
 	ui.pushButton_minus2->setEnabled(enable);
-	ui.pushButton_exit->setEnabled(enable);
+	ui.pushButton_return->setEnabled(enable);
 }
 
 //弹窗报错
@@ -592,7 +522,7 @@ void PCBRecheck::setPushButtonsEnabled(bool enable)
 //}
 
 //添加日志
-void PCBRecheck::logging(QString msg)
+void RecheckUI::logging(QString msg)
 {
 	QString fileName = "./log.txt";
 	QFile file(fileName);
