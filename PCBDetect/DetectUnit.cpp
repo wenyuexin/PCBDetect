@@ -153,6 +153,49 @@ void DetectUnit::run()
 	Mat templRoiReverse = 255 - templ_roi;
 	cv::add(sampGrayReg, templGray, sampGrayReg, templRoiReverse);
 
+	//消除重叠区域重复检测的问题
+	if (curCol != runtimeParams->nCamera - 1 && curRow != runtimeParams->nPhotographing - 1) {
+		//纵向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols /*- adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W*/;
+		rect.height = templGray.rows - adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+		//横向重叠区域
+		/*cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());*/
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols - adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W;
+		rect.height = templGray.rows /*- adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H*/;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}
+	else if (curCol == runtimeParams->nCamera - 1 && curRow != runtimeParams->nPhotographing - 1) {//最后一列
+	   //纵向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols /*- adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W*/;
+		rect.height = templGray.rows - adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}
+	else if (curCol != runtimeParams->nCamera - 1 && curRow == runtimeParams->nPhotographing - 1) {//最后一行
+	   //横向重叠区域
+		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
+		Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.width = templGray.cols - adminConfig->ImageSize_W*adminConfig->ImageOverlappingRate_W;
+		rect.height = templGray.rows /*- adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H*/;
+		overlappingMask(rect).setTo(255);
+		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
+	}
+
 	//总的roi
 	Mat roi;
 	cv::bitwise_and(templ_roi, mask_roi, roi);
