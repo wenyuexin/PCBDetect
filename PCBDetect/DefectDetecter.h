@@ -53,6 +53,10 @@ private:
 	cv::Point maskRoi_bl; //掩模区域的坐标，一张PCB对应一个坐标 
 	cv::Point maskRoi_tr;
 
+	int segThresh;//全局阈值
+	bool UsingDefaultSegThresh;//阈值是否自动计算
+
+
 public:
 	DefectDetecter();
 	~DefectDetecter();

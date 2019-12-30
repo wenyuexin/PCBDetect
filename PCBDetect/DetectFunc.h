@@ -58,7 +58,7 @@ public:
 
 	cv::Scalar getMSSIM(const cv::Mat& i1, const cv::Mat& i2);
 
-	cv::Mat myThresh(int curCol, int curRow, const cv::Mat& grayImg, cv::Point point_left, cv::Point point_right);
+	cv::Mat myThresh(int curCol, int curRow, const cv::Mat& grayImg, cv::Point point_left, cv::Point point_right,int segThresh, bool threshFlag);
 	cv::Rect getRect(int curCol, int curRow, const cv::Mat& grayImg, cv::Point point_left, cv::Point point_right);
 
 	float bulge_missing_line_width(cv::Mat &templBw, std::vector<cv::Point> change_point, int angle);//计算缺失线路宽度

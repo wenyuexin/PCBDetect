@@ -155,7 +155,7 @@ void TemplateExtractor::extract()
 		Point point_tr(runtimeParams->maskRoi_br.x(), runtimeParams->maskRoi_tl.y());
 
 		string pointsPath = mask_path.toStdString() + "cornerPoints.bin";
-		vector<Point2i> cornerPoints{ point_bl,point_tr };
+		vector<Point2i> cornerPoints{ point_bl,point_tr,Point(runtimeParams->segThresh,runtimeParams->UsingDefaultSegThresh) };
 		cv::FileStorage store(pointsPath, cv::FileStorage::WRITE);
 		cv::write(store, "cornerPoints", cornerPoints);
 		store.release();

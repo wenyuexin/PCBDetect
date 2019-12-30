@@ -27,6 +27,8 @@ DetectUnit::DetectUnit(QObject *parent)
 	maskRoi_bl = Q_NULLPTR; //掩模区域左下角坐标，只读
 	maskRoi_tr = Q_NULLPTR; //掩模区域右上角坐标，只读
 
+	segThresh = INT_MIN;//全局阈值
+
 	defectNum = INT_MIN; //分图中的缺陷数
 }
 
@@ -115,7 +117,7 @@ void DetectUnit::run()
 	//sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr);
 
 	//直接二值化
-	sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr);
+	sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr,segThresh,UsingDefaultSegThresh );
 
 	Mat sampBw_direct = sampBw.clone();
 
@@ -144,7 +146,7 @@ void DetectUnit::run()
 	//templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
 
 	//直接二值化
-	templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
+	templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr,segThresh,UsingDefaultSegThresh );
 
 	Mat elementTempl = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(1, 1));
 	cv::morphologyEx(templBw, templBw, cv::MORPH_OPEN, elementTempl);
