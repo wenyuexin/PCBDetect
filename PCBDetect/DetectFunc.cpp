@@ -140,7 +140,7 @@ bool DetectFunc::alignImages_test_load(vector<KeyPoint> &keypoints_1, Mat& descr
 	return true;
 }
 
-Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Point point_left, cv::Point point_right)
+Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Point point_left, cv::Point point_right,int segThresh, bool threshFlag)
 {
 	int totalCol = runtimeParams->nCamera - 1;//´Ó0¿ªÊ¼
 	int totalRow = runtimeParams->nPhotographing - 1;
@@ -220,8 +220,12 @@ Mat DetectFunc::myThresh(int curCol, int curRow, const cv::Mat & grayImg, cv::Po
 	//cv::adaptiveThreshold(grayImg(rect), res(rect), 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, blockSize, 0);
 
 	int revise = 20;
-	int grayImgMean = mean(grayImg(rect))[0];
-	cv::threshold(grayImg(rect), res(rect), grayImgMean, 255, cv::THRESH_BINARY);
+	int threshValue;
+	if (threshFlag == true)
+		threshValue = mean(grayImg(rect))[0];
+	else
+		threshValue = segThresh;
+	cv::threshold(grayImg(rect), res(rect), threshValue, 255, cv::THRESH_BINARY);
 
 	//Mat grayImgCopy = grayImg.clone();
 	//int threshold_otsu = cv::threshold(grayImgCopy(rect), res(rect), 150, 255, cv::THRESH_BINARY|cv::THRESH_OTSU) + 10;

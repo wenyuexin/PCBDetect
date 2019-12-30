@@ -135,11 +135,14 @@ void DefectDetecter::detect()
 		vector<cv::Point2i> res;
 		cv::read(node, res);
 		if (res.size() == 0) {
-			qDebug() << pcb::chinese("DefectDetecter: 加载模板的掩模区域坐标失败");
+			qDebug() << pcb::chinese("DefectDetecter: 加载模板的掩模区域坐标和阈值失败");
 			errorCode = LoadTemplMaskRoiError; return;
 		}
 		maskRoi_bl = res[0];
 		maskRoi_tr = res[1];
+		segThresh = res[2].x;//全局阈值
+		UsingDefaultSegThresh = res[2].y;//分割标志
+
 		store_new.release();
 	}
 
@@ -170,6 +173,8 @@ void DefectDetecter::detect()
 		totalDefectNum = 0; //缺陷总数
 		for (int i = 0; i < nCamera; i++) {
 			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr);//设置掩模区域坐标
+			detectUnits[i]->setSegThresh(segThresh);//设置全局阈值
+			detectUnits[i]->setThreshFlag(UsingDefaultSegThresh);//设置自动分割标志
 			detectUnits[i]->setScalingFactor(scalingFactor); //设置缩放因子
 			detectUnits[i]->setScaledFullImageSize(&scaledFullImageSize); //设置缩放后的整图图像尺寸
 			detectUnits[i]->setScaledSubImageSize(&scaledSubImageSize); //设置缩放后的分图图像尺寸
