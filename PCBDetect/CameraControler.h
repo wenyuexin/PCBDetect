@@ -11,7 +11,7 @@
 #include <iterator>
 #include "AMC98C.h"
 #include "Windows.h"
-#include <CameraApi.h>
+//#include "CameraApi.h"
 #include "GenICam/CAPI/SDK.h"
 #include "ImageConvert.h"
 #include <stdlib.h>
@@ -77,12 +77,12 @@ private:
 	std::vector<cv::VideoCapture> cameraList; //相机列表
 	std::map<int, bool> cameraState; //相机状态 <设备号,状态值>
 
-	std::vector<CameraHandle> cameraList2;
-	tSdkCameraDevInfo sCameraList[12]; //最多不能超过12台相机
+	//std::vector<CameraHandle> cameraList2;
+	//tSdkCameraDevInfo sCameraList[12]; //最多不能超过12台相机
 	int CameraNums = 12;
 
 	double *pfExposureTime = NULL;
-	tSdkImageResolution sImageSize;
+	//tSdkImageResolution sImageSize;
 
 	ErrorCode errorCode; //控制器的错误码
 	Operation operation; //操作指令
@@ -108,7 +108,7 @@ public:
 	inline void setDeviceIndex(std::vector<int> &iv) { deviceIndex = iv; }
 	inline void setOperation(Operation op) { operation = op; }
 
-	ErrorCode resetDeviceIndex(std::vector<int> iv = {}); //设定接入的总设备数
+	//ErrorCode resetDeviceIndex(std::vector<int> iv = {}); //设定接入的总设备数
 	inline bool getCameraState(int index) { return cameraState[index]; }
 
 	inline bool isReady() { return errorCode == NoError; }
@@ -160,4 +160,5 @@ Q_SIGNALS:
 	void initCamerasFinished_camera(int);
 	void takePhotosFinished_camera(int);
 };
+
 void onGetFrame(GENICAM_Frame* pFrame);

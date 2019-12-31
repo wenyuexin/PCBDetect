@@ -262,6 +262,7 @@ __pycache__/
 
 
 # Personal documents that need to be ignored
+!/config/*/*
 buffer/
 GeneratedFiles/
 /PCBDetect.sln
@@ -274,4 +275,14 @@ GeneratedFiles/
 /PCBDetect/asio_x64.props
 /PCBDetect/.admin.config
 /PCBDetect/.user.config
-!/config/*/*
+
+/PCBDetect/XmlParser_MD_VC120_v3_0.dll
+/PCBDetect/opencv_world410d.dll
+/PCBDetect/NodeMapData_MD_VC120_v3_0.dll
+/PCBDetect/MVSDKmd.dll
+/PCBDetect/MVlog4cppmd.dll
+/PCBDetect/MathParser_MD_VC120_v3_0.dll
+/PCBDetect/Log_MD_VC120_v3_0.dll
+/PCBDetect/GenApi_MD_VC120_v3_0.dll
+/PCBDetect/GCBase_MD_VC120_v3_0.dll
+/PCBDetect/CLProtocol_MD_VC120_v3_0.dll
