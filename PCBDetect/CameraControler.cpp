@@ -21,7 +21,7 @@ CameraControler::CameraControler(QThread *parent)
 CameraControler::~CameraControler()
 {
 	qDebug() << "~CameraControler";
-	closeCameras(); //关闭相机并释放相机列表
+	closeCamerasOPT(); //关闭相机并释放相机列表
 }
 
 //启动线程
@@ -31,11 +31,11 @@ void CameraControler::run()
 	case Operation::NoOperation: //无操作
 		break;
 	case Operation::InitCameras: //初始化
-		this->initCameras3();
+		this->initCamerasOPT();
 		emit initCamerasFinished_camera(errorCode);
 		break;
 	case Operation::TakePhotos: //拍照
-		this->takePhotos3();
+		this->takePhotosOPT();
 		emit takePhotosFinished_camera(errorCode);
 		break;
 	}
@@ -179,7 +179,9 @@ bool CameraControler::initCameras2()
 int32_t CameraControler::GENICAM_disconnect(GENICAM_Camera *pGetCamera)
 {
 	int32_t isDisconnectSuccess;
-
+	if (pGetCamera == NULL) {
+		return -1;
+	}
 	isDisconnectSuccess = pGetCamera->disConnect(pGetCamera);
 	if (isDisconnectSuccess != 0)
 	{
@@ -608,13 +610,13 @@ int32_t CameraControler::executeTriggerSoftware(GENICAM_AcquisitionControl *pAcq
 }
 /******************OPT相机相关函数************************/
 //相机初始化-OPT
-bool CameraControler::initCameras3()
+bool CameraControler::initCamerasOPT()
 {
 	errorCode = CameraControler::NoError;
 
 	//关闭已经打开的相机并释放相机列表
 	//关闭失败，最初相机对象为空
-	//this->closeCameras3();
+	this->closeCamerasOPT();
 
 	//生成系统单例
 	status = GENICAM_getSystemInstance(&pSystem);
@@ -779,6 +781,25 @@ void CameraControler::closeCameras()
 	cameraState.clear();
 }
 
+// 关闭已经打开的相机OPT设备
+void CameraControler::closeCamerasOPT()
+{
+
+	//关闭相机设备 - OPT pCameraList[i]
+	for (int i = 0; i < adminConfig->MaxCameraNum; i++) {
+		status = GENICAM_disconnect(&pCameraList[i]);
+		if (status != 0)
+		{
+			printf("disconnect camera failed.\n");
+			return;
+		}
+	}
+	pCameraList = NULL;; //清空列表
+
+	//清空相机状态
+	cameraState.clear();
+}
+
 
 /******************* 相机拍照 ********************/
 
@@ -877,7 +898,7 @@ void CameraControler::takePhotos2()
 }
 
 //拍摄图像 - OPT
-void CameraControler::takePhotos3()
+void CameraControler::takePhotosOPT()
 {
 	clock_t t1 = clock();
 	//int colorMode = userConfig->colorMode; //色彩模式
