@@ -27,14 +27,15 @@ QString pcb::eraseNonDigitalCharInHeadAndTail(QString s)
 
 
 //交互式文件夹路径选择
-QString pcb::selectDirPath(QWidget *parent, QString windowTitle)
+QString pcb::selectDirPath(QWidget *parent, QString caption, QString directory)
 {
-	if (windowTitle == "") windowTitle = chinese("请选择路径");
+	if (caption == "") caption = chinese("请选择路径");
 
 	QFileDialog *fileDialog = new QFileDialog(parent);
-	fileDialog->setWindowTitle(windowTitle); //设置文件保存对话框的标题
+	fileDialog->setWindowTitle(caption); //设置文件保存对话框的标题
 	fileDialog->setFileMode(QFileDialog::Directory); //设置文件对话框弹出的时候显示文件夹
 	fileDialog->setViewMode(QFileDialog::Detail); //文件以详细的形式显示，显示文件名，大小，创建日期等信息
+	if (directory != "") fileDialog->setDirectory(directory);
 
 	QString path = "";
 	if (fileDialog->exec() == QDialog::DialogCode::Accepted) //选择路径

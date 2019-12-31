@@ -9,16 +9,12 @@ using std::vector;
 RuntimeParams::RuntimeParams()
 {
 	errorCode = Unchecked;
-	errorCode_serialNum = Unchecked;
 	errorCode_sysInit = Unchecked;
 
 	nCamera_raw = -1; //原始的相机个数
 	nPhotographing_raw = -1; //原始的拍照次数
 
-	serialNum = ""; //样本编号
-	sampleModelNum = ""; //型号
-	sampleBatchNum = ""; //批次号
-	sampleNum = ""; //样本编号
+	productID.init(); //产品id
 
 	currentRow_extract = -1; //提取行号
 	maskRoi_tl = QPoint(-1, -1); //模板掩膜左上角在分图上的坐标位置
@@ -47,27 +43,16 @@ RuntimeParams::~RuntimeParams()
 }
 
 
-//重置产品序号
-void RuntimeParams::resetSerialNum()
-{
-	serialNum = ""; //样本编号
-	sampleModelNum = ""; //型号
-	sampleBatchNum = ""; //批次号
-	sampleNum = ""; //样本编号
-	errorCode_serialNum = ErrorCode::Unchecked;
-}
-
 //加载默认的运行参数
 void RuntimeParams::loadDefaultValue()
 {
 	errorCode = Unchecked;
-	errorCode_serialNum = Unchecked;
 	errorCode_sysInit = Unchecked;
 
 	nCamera_raw = 0; //原始的相机个数
 	nPhotographing_raw = 0; //原始的拍照次数
 
-	resetSerialNum(); //重置产品序号
+	productID.reset(); //重置产品id
 	currentRow_detect = -1; //检测行号
 
 	currentRow_extract = -1; //提取行号
@@ -96,7 +81,6 @@ void RuntimeParams::loadDefaultValue()
 void RuntimeParams::copyTo(RuntimeParams *dst)
 {
 	dst->errorCode = this->errorCode;
-	dst->errorCode_serialNum = this->errorCode_serialNum;
 	dst->errorCode_sysInit = this->errorCode_sysInit;
 	dst->systemState = this->systemState;
 
@@ -108,10 +92,7 @@ void RuntimeParams::copyTo(RuntimeParams *dst)
 	dst->currentOutputDir = this->currentOutputDir; //当前的结果存储目录
 	dst->ScreenRect = this->ScreenRect; //界面所在的屏幕区域
 
-	dst->serialNum = this->serialNum; //产品序号
-	dst->sampleModelNum = this->sampleModelNum; //型号
-	dst->sampleBatchNum = this->sampleBatchNum; //批次号
-	dst->sampleNum = this->sampleNum; //样本编号
+	this->productID.copyTo(&(dst->productID)); //产品id
 
 	dst->currentRow_detect = this->currentRow_detect; //检测行号
 	dst->currentRow_extract = this->currentRow_extract; //提取行号
@@ -227,35 +208,6 @@ bool RuntimeParams::update(AdminConfig *adminConfig, UserConfig *userConfig)
 	return true;
 }
 
-
-//产品序号解析
-RuntimeParams::ErrorCode RuntimeParams::parseSerialNum()
-{
-	if (checkValidity(Index_serialNum) != ValidValue) {
-		return ErrorCode::Invalid_serialNum;
-	}
-
-	int begin = 0;
-	sampleModelNum = serialNum.mid(begin, serialNumSlice[1]); //型号
-	sampleModelNum = QString::number(sampleModelNum.toInt());//去除数字0
-
-	begin += serialNumSlice[1];
-	sampleBatchNum = serialNum.mid(begin, serialNumSlice[2]); //批次号
-	sampleBatchNum = QString::number(sampleBatchNum.toInt());
-
-	begin += serialNumSlice[2];
-	sampleNum = serialNum.mid(begin, serialNumSlice[3]); //样本编号
-	sampleNum = QString::number(sampleNum.toInt());
-
-	return ValidValue;
-}
-
-//将型号 批次号 样本编号组合为表示目录层次的字符串
-QString RuntimeParams::getDirHierarchy()
-{
-	return sampleModelNum + "/" + sampleBatchNum + "/" + sampleNum;
-}
-
 //获取系统重置代码
 int RuntimeParams::getSystemResetCode(RuntimeParams &newConfig)
 {
@@ -292,27 +244,8 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 	case pcb::RuntimeParams::Index_All:
 
 		//产品序号相关参数
-	case pcb::RuntimeParams::Index_All_SerialNum:
-	case pcb::RuntimeParams::Index_serialNum:
-		if (serialNum.size() != serialNumSlice[0] || serialNum.toDouble() == 0) {
-			code = Invalid_serialNum;
-		}
-		if (code != Unchecked || index != Index_All || index != Index_All_SerialNum) break;
-	case pcb::RuntimeParams::Index_sampleModelNum:
-		if (sampleModelNum == "" || sampleModelNum.size() > serialNumSlice[1]) {
-			code = Invalid_sampleModelNum;
-		}
-		if (code != Unchecked || index != Index_All || index != Index_All_SerialNum) break;
-	case pcb::RuntimeParams::Index_sampleBatchNum:
-		if (sampleBatchNum == "" || sampleBatchNum.size() > serialNumSlice[2]) {
-			code = Invalid_sampleBatchNum;
-		}
-		if (code != Unchecked || index != Index_All || index != Index_All_SerialNum) break;
-	case pcb::RuntimeParams::Index_sampleNum:
-		if (sampleNum == "" || sampleNum.size() > serialNumSlice[3]) {
-			code = Invalid_sampleNum;
-		}
-		if (code != Unchecked || index != Index_All) break;
+	case pcb::RuntimeParams::Index_productID:
+		if (code != Unchecked || index != Index_All || index != Index_productID) break;
 
 		//检测行号与提取行号
 	case pcb::RuntimeParams::Index_currentRow_detect:
@@ -375,10 +308,9 @@ RuntimeParams::ErrorCode RuntimeParams::checkValidity(ParamsIndex index, AdminCo
 	//		+ runtimeParams->sampleBatchNum + "/" + runtimeParams->sampleNum;
 	//}
 
-	if (index == Index_All_SerialNum ||
-		(code != ValidParams && index >= Index_serialNum && index <= Index_sampleNum))
+	if (index == Index_productID)
 	{
-		errorCode_serialNum = code;
+		//errorCode_serialNum = code;
 	}
 	return code;
 }
@@ -404,11 +336,11 @@ bool RuntimeParams::isValid(ParamsIndex index, bool doCheck, AdminConfig *adminC
 	}
 
 	//产品序号相关参数
-	if (index == Index_All_SerialNum) {
-		if (doCheck && errorCode_serialNum == RuntimeParams::Unchecked)
-			checkValidity(index);
-		return (errorCode_serialNum == ValidValues);
-	}
+	//if (index == Index_All_SerialNum) {
+	//	if (doCheck && errorCode_serialNum == RuntimeParams::Unchecked)
+	//		checkValidity(index);
+	//	return (errorCode_serialNum == ValidValues);
+	//}
 
 	return (errorCode == ValidParams);
 }
@@ -418,7 +350,7 @@ RuntimeParams::ErrorCode RuntimeParams::getErrorCode(ParamsIndex index)
 {
 	if (index == Index_All) return errorCode;
 	else if (index == Index_All_SysInit) return errorCode_sysInit;
-	else if (index == Index_All_SerialNum) return errorCode_serialNum;
+	//else if (index == Index_productID) return productID.getErrorCode();
 	return Default;
 }
 
@@ -427,7 +359,7 @@ void RuntimeParams::resetErrorCode(ParamsIndex index)
 {
 	if (index == Index_All) errorCode = Unchecked;
 	else if (index == Index_All_SysInit) errorCode_sysInit = Unchecked;
-	else if (index == Index_All_SerialNum) errorCode_serialNum = Unchecked;
+	//else if (index == Index_All_SerialNum) errorCode_serialNum = Unchecked;
 }
 
 //弹窗报错
@@ -441,11 +373,8 @@ bool RuntimeParams::showMessageBox(QWidget *parent, ErrorCode code)
 	{
 	case pcb::RuntimeParams::Unchecked:
 		valueName = pcb::chinese("\"参数未验证\""); break;
-	case pcb::RuntimeParams::Invalid_serialNum:
-	case pcb::RuntimeParams::Invalid_sampleModelNum:
-	case pcb::RuntimeParams::Invalid_sampleBatchNum:
-	case pcb::RuntimeParams::Invalid_sampleNum:
-		valueName = pcb::chinese("\"产品序号\""); break;
+	case pcb::RuntimeParams::Invalid_productID:
+		valueName = pcb::chinese("\"产品ID\""); break;
 	case pcb::RuntimeParams::Invalid_singleMotionStroke:
 		valueName = pcb::chinese("\"单步前进距离\""); break;
 	case pcb::RuntimeParams::Invalid_nCamera:

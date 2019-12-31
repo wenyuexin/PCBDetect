@@ -120,7 +120,7 @@ void SettingUI::refresh()
 
 	if (userConfig->colorMode == 0) //色彩模式
 		ui.lineEdit_colorMode_rgb_camera->setChecked(true); //RGB彩色
-	else if (userConfig->matchingAccuracyLevel == 1) {
+	else if (userConfig->colorMode == 1) {
 		ui.lineEdit_colorMode_gray_camera->setChecked(true); //黑白
 	}
 

@@ -28,6 +28,9 @@ private:
 	cv::Point *maskRoi_bl; //掩模区域左下角坐标，只读
 	cv::Point *maskRoi_tr; //掩模区域右上角坐标，只读
 
+	int segThresh;//分割阈值
+	bool UsingDefaultSegThresh;//自动分割表示
+
 	double scalingFactor; //缩放因子，只读
 	cv::Size *scaledFullImageSize; //经过缩放后的整图的尺寸，只读
 	cv::Size *scaledSubImageSize; //经过缩放后的分图的尺寸，只读
@@ -48,6 +51,8 @@ public:
 	inline void setSubImage(cv::Mat &src) { samp = src; } //设置分图
 	inline void setCurrentCol(int col) { curCol = col; } //设置分图的列号
 	inline void setMaskRoi(cv::Point *bl, cv::Point *tr) { maskRoi_bl = bl; maskRoi_tr = tr; } //设置掩模区域坐标
+	inline void setSegThresh(int value) { segThresh = value; }//设置阈值
+	inline void setThreshFlag(bool flag) { UsingDefaultSegThresh = flag; }//设置阈值
 
 	inline void setScalingFactor(double f) { scalingFactor = f; } //设置缩放因子
 	inline void setScaledFullImageSize(cv::Size *sz) { scaledFullImageSize = sz; } //设置经过缩放后的整图图像尺寸
@@ -68,7 +73,7 @@ public:
 	cv::Mat rectBlack;
 
 
-	bool alignImages_test_load(std::vector<cv::KeyPoint> &keypoints_1, cv::Mat& descriptors_1, cv::Mat &image_sample_gray, cv::Mat &imgReg, cv::Mat &H, cv::Mat &imMatches);
+	//bool alignImages_surf_load(std::vector<cv::KeyPoint> &keypoints_1, cv::Mat& descriptors_1, cv::Mat &image_sample_gray, cv::Mat &imgReg, cv::Mat &H, cv::Mat &imMatches);
 	void save(const std::string& path, cv::Mat& image_template_gray);
 	void load(const std::string& path);
 

@@ -19,7 +19,7 @@ void FileSyncThread::run()
 	if (fileList.size() == 0) return;
 
 	QString ip = userConfig->inetAddressOfRecheckPC; //复查设备的IP地址
-	QString hierarchy = runtimeParams->getDirHierarchy(); //获取目录层次字符串
+	QString hierarchy = runtimeParams->productID.getDirHierarchy(); //获取目录层次字符串
 	FileSender fileSender(ip.toStdString()); //文件发送类
 	fileSender.setHierarchy(hierarchy.toStdString()); //设置目录层次
 	fileSender.sendFiles(fileList); //将列表中的文件发送到复查设备中

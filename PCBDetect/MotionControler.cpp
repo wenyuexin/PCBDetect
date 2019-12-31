@@ -133,15 +133,15 @@ bool MotionControler::initControler()
 	//设置控制指令 - X轴
 	if (!_AMC98_AddParamPC2CNC(138, int(maxDist * 10000))) return false; //轴最大值
 	if (!_AMC98_AddParamPC2CNC(145, 0 * 10000)) return false;//轴最小值
-	if (!_AMC98_AddParamPC2CNC(139, 10 * 10000)) return false;//轴开始速度
-	if (!_AMC98_AddParamPC2CNC(140, 50 * 10000)) return false;//轴结束数度
+	if (!_AMC98_AddParamPC2CNC(139, 50 * 10000)) return false;//轴开始速度
+	if (!_AMC98_AddParamPC2CNC(140, 350 * 10000)) return false;//轴结束数度
 	if (!_AMC98_AddParamPC2CNC(141, 10 * 10000)) return false;//回原点慢速度
-	if (!_AMC98_AddParamPC2CNC(142, 30 * 10000)) return false;//回原点快速度
+	if (!_AMC98_AddParamPC2CNC(142, 70 * 10000)) return false;//回原点快速度 30
 	if (!_AMC98_AddParamPC2CNC(143, 5 * 10000)) return false;//原点位置
 	if (!_AMC98_AddParamPC2CNC(146, int(PulseNumInUnitTime * 10000))) return false;//1单位脉冲数
 	if (!_AMC98_AddParamPC2CNC(144, 2)) return false;//回原点设置 2负方向复位 1正方向复位
-	if (!_AMC98_AddParamPC2CNC(147, 200)) return false;//加速时间
-	if (!_AMC98_AddParamPC2CNC(148, 200)) return false;//减速时间
+	if (!_AMC98_AddParamPC2CNC(147, 250)) return false;//加速时间 200
+	if (!_AMC98_AddParamPC2CNC(148, 250)) return false;//减速时间 200
 	if (!_AMC98_AddParamPC2CNC(243, 1)) return false;//需要复位的电机 1要X复位 3要XY复位 0不要复位
 	if (!_AMC98_AddParamPC2CNC(60000, 3)) return false;//保存数据
 	pcb::delay(500);
@@ -207,7 +207,7 @@ bool MotionControler::moveToInitialPos()
 
 	//发送控制指令
 	int endingPos = runtimeParams->initialPhotoPos; //初始拍照位置
-	if (AMC98_start_sr_move(2, 0, endingPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
+	if (AMC98_start_sr_move(2, 0, endingPos, WeizhiType_JD, 30, 300, 200, 200, 0, 0) != 0) {
 		errorCode = ErrorCode::MoveToInitialPosFailed;
 		emit moveToInitialPosFinished_motion(errorCode);
 		return false;
@@ -229,7 +229,7 @@ bool MotionControler::moveToInitialPos()
 	//	}
 	//}
 
-	pcb::delay(8000);
+	pcb::delay(2000);
 
 	//到达初始拍照位置
 	errorCode = ErrorCode::NoError;
@@ -255,7 +255,7 @@ bool MotionControler::moveForward()
 
 	//发送控制指令
 	double dist = -runtimeParams->singleMotionStroke;
-	if (AMC98_start_sr_move(2, 0, dist, WeizhiType_XD, 10, 50, 100, 100, 0, 0) != 0) {
+	if (AMC98_start_sr_move(2, 0, dist, WeizhiType_XD, 30, 300, 100, 100, 0, 0) != 0) {
 		errorCode = ErrorCode::MoveForwardFailed;
 		emit moveForwardFinished_motion(errorCode);
 		return false;
@@ -277,7 +277,7 @@ bool MotionControler::moveForward()
 	//	}
 	//}
 
-	pcb::delay(3000);
+	pcb::delay(1200);
 
 	//前进结束
 	errorCode = ErrorCode::NoError;
@@ -405,7 +405,7 @@ bool MotionControler::motionReset()
 
 	//移动到合适的位置，此时可以放置新的PCB板
 	int resetPos = adminConfig->MaxMotionStroke;
-	if (AMC98_start_sr_move(2, 0, resetPos, WeizhiType_JD, 10, 100, 200, 200, 0, 0) != 0) {
+	if (AMC98_start_sr_move(2, 0, resetPos, WeizhiType_JD, 30, 350, 200, 200, 0, 0) != 0) {
 		errorCode = ErrorCode::MotionResetFailed;
 		emit motionResetFinished_motion(errorCode);
 		return false;
@@ -426,7 +426,7 @@ bool MotionControler::motionReset()
 	//	}
 	//}
 
-	pcb::delay(10000); //复位等待
+	pcb::delay(2500); //复位等待
 
 	//复位结束
 	errorCode = ErrorCode::NoError;

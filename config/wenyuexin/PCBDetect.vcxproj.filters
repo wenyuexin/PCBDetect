@@ -72,9 +72,6 @@
     <ClCompile Include="CameraControler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerialNumberUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AdminSettingUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -106,6 +103,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pcbFuncLib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RecheckUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlickeringArrow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TemplSettingUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProductID.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -143,9 +152,6 @@
     <QtMoc Include="CameraControler.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="SerialNumberUI.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="AdminSettingUI.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -167,6 +173,18 @@
     <QtMoc Include="FileSyncThread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="RecheckUI.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="FlickeringArrow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="TemplSettingUI.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ProductID.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="PCBDetect.ui">
@@ -178,19 +196,22 @@
     <QtUic Include="SettingUI.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="TemplateUI.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
     <QtUic Include="LaunchUI.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-    <QtUic Include="SerialNumberUI.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="AdminSettingUI.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="PassWordUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="RecheckUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ExtractUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="TemplSettingUI.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
