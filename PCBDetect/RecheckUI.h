@@ -64,6 +64,8 @@ private:
 	int defectIndex; //当前正在显示的缺陷图
 	uint16_t flawIndicatorStatus; //指示灯亮灭状态
 
+	std::vector<QPixmap> defections; //用于界面显示的缺陷小图
+
 	//pcb::FolderHierarchy OutFolderHierarchy; //输出目录下的文件夹层次
 	//FileSyncThread fileSyncThread;//文件同步线程
 
