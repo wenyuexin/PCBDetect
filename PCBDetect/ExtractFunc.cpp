@@ -12,6 +12,7 @@ using cv::Size;
 using cv::Rect;
 using cv::Ptr;
 using cv::xfeatures2d::SURF;
+using cv::xfeatures2d::SIFT;
 
 
 ExtractFunc::ExtractFunc()
@@ -213,7 +214,7 @@ void ExtractFunc::generateBigTempl()
 //}
 
 
-void ExtractFunc::save(const std::string& path, Mat& image_template_gray) {
+void ExtractFunc::save(const std::string& path, Mat& image_template_gray, bool usingSURF) {
 	//Mat temp;
 	//cv::pyrDown(image_template_gray, temp);
 	//cv::pyrDown(temp, temp);
@@ -232,9 +233,15 @@ void ExtractFunc::save(const std::string& path, Mat& image_template_gray) {
 	{
 		cv::pyrDown(temp, temp);
 	}
+	if (usingSURF) {
+		Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
+		detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
+	}
+	else {
+		Ptr<SIFT> detector = SIFT::create();
+		detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
+	}
 
-	Ptr<SURF> detector = SURF::create(100, 4, 4, true, true);
-	detector->detectAndCompute(temp, Mat(), keypoints, descriptors);
 	cv::FileStorage store(path, cv::FileStorage::WRITE);
 	cv::write(store, "keypoints", keypoints);
 	cv::write(store, "descriptors", descriptors);

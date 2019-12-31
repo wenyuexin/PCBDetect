@@ -216,7 +216,7 @@ void TemplateExtractor::extract()
 			cv::bitwise_and(image, mask, src_mask);
 			QString file_Path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType
 				+ "/bin/" + QString::number(num_rows) + "_" + QString::number(num_cols) + ".bin";
-			templFunc->save(file_Path.toStdString(), src_mask);
+			templFunc->save(file_Path.toStdString(), src_mask,false);
 		}
 
 		Mat scaledFullImage;
