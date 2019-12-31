@@ -228,10 +228,9 @@ void DefectDetecter::detect()
 
 	//如果当前检测的是最后一行图像 
 	if (currentRow_detect == nPhotographing-1) {
-		//构造存储结果信息的对象
+		//定义存储分图结果信息的vector
 		vector<pcb::FlawInfo> flawInfos(allDetailImage.size());
-		pcb::DetectResult *detectResult = new DetectResult;
-		
+	
 		Size sz(adminConfig->ImageSize_W*nCamera, adminConfig->ImageSize_H*nCamera);
 		QString fullImageDir = runtimeParams->currentOutputDir + "/" + subFolders[0] + "/";
 
@@ -255,7 +254,9 @@ void DefectDetecter::detect()
 			cv::imwrite(outPath.toStdString(), imgSeg);//将细节图存储到本地硬盘上
 
 			//将分图缺陷信息保存进FlawInfo对象
+
 			pcb::FlawInfo temp;
+			temp.flawImage = imgSeg.clone();
 			temp.flawIndex = defectNum;
 			temp.flawType = info.z;
 			temp.xPos = info.x;
@@ -268,9 +269,7 @@ void DefectDetecter::detect()
 		emit detectFinished_detectThread(qualified);
 
 		//将结果信息存入结果对象
-		detectResult->flawInfo = flawInfos;
-		detectResult->fullImage = bigTempl.clone();
-		detectResult->SampleIsQualified = qualified;
+		saveDetectResult(qualified, bigTempl, sz, flawInfos, (runtimeParams->productID).date);
 
 		//清空历史数据
 		allDetailImage.clear();
@@ -281,6 +280,15 @@ void DefectDetecter::detect()
 		qDebug() << "====================" << pcb::chinese("存储检测结果：") <<
 			(t3 - t2) << "ms  ( currentRow_detect =" << currentRow_detect << ")" << endl;
 	}
+}
+
+void DefectDetecter::saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::FlawInfo>& flawInfos, QDate detectionDate)
+{
+	detectResult->SampleIsQualified = SampleIsQualified;
+	detectResult->fullImage = fullImage.clone();
+	detectResult->fullImageSize = fullImageSize;
+	detectResult->flawInfos = flawInfos;
+	detectResult->detectionDate = detectionDate;
 }
 
 
