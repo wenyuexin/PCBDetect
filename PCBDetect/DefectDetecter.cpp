@@ -228,9 +228,14 @@ void DefectDetecter::detect()
 
 	//如果当前检测的是最后一行图像 
 	if (currentRow_detect == nPhotographing-1) {
+		//构造存储结果信息的对象
+		vector<pcb::FlawInfo> flawInfos(allDetailImage.size());
+		pcb::DetectResult *detectResult = new DetectResult;
+		
 		Size sz(adminConfig->ImageSize_W*nCamera, adminConfig->ImageSize_H*nCamera);
 		QString fullImageDir = runtimeParams->currentOutputDir + "/" + subFolders[0] + "/";
 
+		//存储整图
 		QString filePath = fullImageDir; //添加文件夹路径
 		filePath += QString("fullImage_%1_%2_%3").arg(sz.width).arg(sz.height).arg(totalDefectNum); //添加文件名
 		filePath += userConfig->ImageFormat; //添加文件后缀
@@ -240,6 +245,7 @@ void DefectDetecter::detect()
 		QChar fillChar = '0'; //当字符串长度不够时使用此字符进行填充
  		int defectNum = 0;// 缺陷序号
 		for (auto beg = allDetailImage.begin(); beg!=allDetailImage.end(); beg++) {
+
 			defectNum++;
 			cv::Point3i info = (*beg).first;
 			cv::Mat imgSeg = (*beg).second;
@@ -247,11 +253,24 @@ void DefectDetecter::detect()
 			outPath += QString("%1_%2_%3_%4").arg(defectNum, 4, 10, fillChar).arg(info.x, 5, 10, fillChar).arg(info.y, 5, 10, fillChar).arg(info.z);
 			outPath += userConfig->ImageFormat; //添加图像格式的后缀
 			cv::imwrite(outPath.toStdString(), imgSeg);//将细节图存储到本地硬盘上
+
+			//将分图缺陷信息保存进FlawInfo对象
+			pcb::FlawInfo temp;
+			temp.flawIndex = defectNum;
+			temp.flawType = info.z;
+			temp.xPos = info.x;
+			temp.yPos = info.y;
+			flawInfos[defectNum-1] = temp;
 		}
 		
 		//向检测界面发送是否合格的信息
 		bool qualified = (totalDefectNum < 1);
 		emit detectFinished_detectThread(qualified);
+
+		//将结果信息存入结果对象
+		detectResult->flawInfo = flawInfos;
+		detectResult->fullImage = bigTempl.clone();
+		detectResult->SampleIsQualified = qualified;
 
 		//清空历史数据
 		allDetailImage.clear();
