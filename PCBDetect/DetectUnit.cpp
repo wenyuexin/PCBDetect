@@ -89,7 +89,9 @@ void DetectUnit::run()
 	//未载入特征
 	/*detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);*/
 	//载入的特征
-	detectFunc->alignImages_test_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
+	//detectFunc->alignImages_surf_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
+	detectFunc->alignImages_sift_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
+
 
 	double t4 = clock();
 	qDebug() << "==========" << pcb::chinese("模板匹配：") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
@@ -290,100 +292,100 @@ void DetectUnit::load(const std::string& path) {
 	store.release();
 }
 
-bool DetectUnit::alignImages_test_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
-{
-
-	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
-	std::vector<KeyPoint> keypoints_2;
-	Mat descriptors_2;
-
-	double t1 = clock();
-	cv::Mat pyr;
-	cv::Size sz = image_sample_gray.size();
-	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
-	pyrDown(image_sample_gray, pyr);
-	pyrDown(pyr, pyr);
-	if (userConfig->matchingAccuracyLevel == 2)//低精度
-		pyrDown(pyr, pyr);
-
-	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
-
-	double t2 = clock();
-	std::cout << "获取特征点时间" << double(t2 - t1) / CLOCKS_PER_SEC << endl;
-
-	Ptr<cv::flann::IndexParams> indexParams = new cv::flann::KDTreeIndexParams(5);
-	Ptr<cv::flann::SearchParams> searchParams;
-	FlannBasedMatcher matcher(indexParams);
-	std::vector<cv::DMatch> matches;
-	std::vector<std::vector<cv::DMatch>> m_knnMatches;
-
-	/*const float minRatio = 1.f / 1.5f;*/
-	const float minRatio = 0.7;
-	matcher.knnMatch(descriptors_1, descriptors_2, m_knnMatches, 2);
-
-
-
-	////Mat outImg;
-	////drawKeypoints(image_template, keypoints_1, image_template,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-	////imwrite("outImg.jpg", image_template);
-
-	std::sort(m_knnMatches.begin(), m_knnMatches.end(), [](const std::vector<cv::DMatch> m1, const std::vector<cv::DMatch> m2) {return m1[0].distance < m2[0].distance; });
-
-	for (int i = 0; i < m_knnMatches.size(); i++)
-	{
-		const DMatch& bestMatch = m_knnMatches[i][0];
-		const DMatch& betterMatch = m_knnMatches[i][1];
-
-		if (bestMatch.distance < 0.7*betterMatch.distance)
-		{
-			matches.push_back(bestMatch);
-		}
-	}
-
-	std::vector< cv::DMatch > good_matches;
-
-	if (!matches.size())
-	{
-		std::cout << "matches is empty! " << endl;
-
-	}
-	else if (matches.size() < 4)
-	{
-		std::cout << matches.size() << " points matched is not enough " << endl;
-	}
-
-	else //单应性矩阵的计算最少得使用4个点
-	{
-
-		for (int i = 0; i < matches.size(); i++)
-		{
-			good_matches.push_back(matches[i]);
-		}
-
-		std::vector<cv::Point2f> temp_points;
-		std::vector<cv::Point2f> samp_points;
-
-		for (int i = 0; i < matches.size(); i++)
-		{
-			temp_points.push_back(keypoints_1[matches[i].queryIdx].pt);
-			samp_points.push_back(keypoints_2[matches[i].trainIdx].pt);
-		}
-
-		double t3 = clock();
-		std::cout << "匹配并获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
-
-
-		H = cv::findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
-
-		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
-		H.at<double>(0, 2) *= matrixAdj;
-		H.at<double>(1, 2) *= matrixAdj;
-		H.at<double>(2, 0) /= matrixAdj;
-		H.at<double>(2, 1) /= matrixAdj;
-
-		cv::warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
-	}
-
-	return true;
-}
+//bool DetectUnit::alignImages_surf_load(std::vector<KeyPoint> &keypoints_1, Mat& descriptors_1, Mat &image_sample_gray, Mat &imgReg, Mat &H, Mat &imMatches)
+//{
+//
+//	Ptr<SURF> detector = SURF::create(500, 4, 4, true, true);
+//	std::vector<KeyPoint> keypoints_2;
+//	Mat descriptors_2;
+//
+//	double t1 = clock();
+//	cv::Mat pyr;
+//	cv::Size sz = image_sample_gray.size();
+//	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
+//	pyrDown(image_sample_gray, pyr);
+//	pyrDown(pyr, pyr);
+//	if (userConfig->matchingAccuracyLevel == 2)//低精度
+//		pyrDown(pyr, pyr);
+//
+//	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
+//
+//	double t2 = clock();
+//	std::cout << "获取特征点时间" << double(t2 - t1) / CLOCKS_PER_SEC << endl;
+//
+//	Ptr<cv::flann::IndexParams> indexParams = new cv::flann::KDTreeIndexParams(5);
+//	Ptr<cv::flann::SearchParams> searchParams;
+//	FlannBasedMatcher matcher(indexParams);
+//	std::vector<cv::DMatch> matches;
+//	std::vector<std::vector<cv::DMatch>> m_knnMatches;
+//
+//	/*const float minRatio = 1.f / 1.5f;*/
+//	const float minRatio = 0.7;
+//	matcher.knnMatch(descriptors_1, descriptors_2, m_knnMatches, 2);
+//
+//
+//
+//	////Mat outImg;
+//	////drawKeypoints(image_template, keypoints_1, image_template,cv::Scalar::all(-1),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+//	////imwrite("outImg.jpg", image_template);
+//
+//	std::sort(m_knnMatches.begin(), m_knnMatches.end(), [](const std::vector<cv::DMatch> m1, const std::vector<cv::DMatch> m2) {return m1[0].distance < m2[0].distance; });
+//
+//	for (int i = 0; i < m_knnMatches.size(); i++)
+//	{
+//		const DMatch& bestMatch = m_knnMatches[i][0];
+//		const DMatch& betterMatch = m_knnMatches[i][1];
+//
+//		if (bestMatch.distance < 0.7*betterMatch.distance)
+//		{
+//			matches.push_back(bestMatch);
+//		}
+//	}
+//
+//	std::vector< cv::DMatch > good_matches;
+//
+//	if (!matches.size())
+//	{
+//		std::cout << "matches is empty! " << endl;
+//
+//	}
+//	else if (matches.size() < 4)
+//	{
+//		std::cout << matches.size() << " points matched is not enough " << endl;
+//	}
+//
+//	else //单应性矩阵的计算最少得使用4个点
+//	{
+//
+//		for (int i = 0; i < matches.size(); i++)
+//		{
+//			good_matches.push_back(matches[i]);
+//		}
+//
+//		std::vector<cv::Point2f> temp_points;
+//		std::vector<cv::Point2f> samp_points;
+//
+//		for (int i = 0; i < matches.size(); i++)
+//		{
+//			temp_points.push_back(keypoints_1[matches[i].queryIdx].pt);
+//			samp_points.push_back(keypoints_2[matches[i].trainIdx].pt);
+//		}
+//
+//		double t3 = clock();
+//		std::cout << "匹配并获取变换矩阵时间" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
+//
+//
+//		H = cv::findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
+//
+//		int matrixAdj = 4 * (userConfig->matchingAccuracyLevel);
+//		H.at<double>(0, 2) *= matrixAdj;
+//		H.at<double>(1, 2) *= matrixAdj;
+//		H.at<double>(2, 0) /= matrixAdj;
+//		H.at<double>(2, 1) /= matrixAdj;
+//
+//		cv::warpPerspective(image_sample_gray, imgReg, H, image_sample_gray.size());
+//	}
+//
+//	return true;
+//}
 

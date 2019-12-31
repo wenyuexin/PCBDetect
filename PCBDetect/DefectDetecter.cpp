@@ -226,7 +226,7 @@ void DefectDetecter::detect()
 	detectState = DetectState::Finished;
 	emit updateDetectState_detecter(detectState);
 
-	//如果当前检测的是最后一行图像
+	//如果当前检测的是最后一行图像 
 	if (currentRow_detect == nPhotographing-1) {
 		Size sz(adminConfig->ImageSize_W*nCamera, adminConfig->ImageSize_H*nCamera);
 		QString fullImageDir = runtimeParams->currentOutputDir + "/" + subFolders[0] + "/";
@@ -238,7 +238,7 @@ void DefectDetecter::detect()
 
 		//存储细节图
 		QChar fillChar = '0'; //当字符串长度不够时使用此字符进行填充
-		int defectNum = 0;//缺陷序号
+ 		int defectNum = 0;// 缺陷序号
 		for (auto beg = allDetailImage.begin(); beg!=allDetailImage.end(); beg++) {
 			defectNum++;
 			cv::Point3i info = (*beg).first;
