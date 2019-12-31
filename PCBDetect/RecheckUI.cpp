@@ -22,12 +22,9 @@ RecheckUI::RecheckUI(QWidget *parent)
 RecheckUI::~RecheckUI()
 {
 	qDebug() << "~PCBRecheck";
-	//delete sysInitThread;
-	//delete serialNumberUI;
-	//delete exitQueryUI;
 }
 
-/********************* 界面初始化 *********************/
+/********************* 界面初始化与刷新 *********************/
 
 void RecheckUI::init()
 {
@@ -74,11 +71,8 @@ void RecheckUI::reset()
 	ui.label_indicator4->setPixmap(lightOffIcon); //凸起
 
 	//清除数据
-
+	
 }
-
-
-/********* 初始显示：加载PCB大图、第1个缺陷小图等 ********/
 
 //刷新界面上显示的信息
 void RecheckUI::refresh()
@@ -97,7 +91,7 @@ void RecheckUI::refresh()
 	//加载闪烁的箭头
 	defectIndex = 0;
 	this->initFlickeringArrow();
-	
+
 	//设置场景和显示视图
 	ui.graphicsView_full->setScene(&fullImageScene); //设置场景
 	ui.graphicsView_full->show(); //显示图像
@@ -107,6 +101,9 @@ void RecheckUI::refresh()
 
 	recheckStatus = NoError;
 }
+
+
+/************** 加载、删除GraphicView中的图像资源 *************/
 
 //加载PCB整图
 void RecheckUI::loadFullImage()
@@ -133,12 +130,6 @@ void RecheckUI::loadFullImage()
 	fullImageScene.addPixmap(fullImage); //将图像加载进场景中
 	QRect sceneRect = QRect(QPoint(0, 0), fullImageItemSize); //场景范围
 	fullImageScene.setSceneRect(sceneRect); //设置场景范围
-}
-
-//加载缺陷
-void RecheckUI::loadFlawInfos()
-{
-
 }
 
 //加载初始的闪烁箭头
@@ -168,6 +159,22 @@ void RecheckUI::setFlickeringArrowPos()
 }
 
 
+
+/************** 加载、删除GraphicView中的图像资源 *************/
+
+//删除graphicView中
+void RecheckUI::loadFlawInfos()
+{
+
+}
+
+//加载缺陷
+void RecheckUI::loadFlawInfos()
+{
+	//转defections Qpixmap
+	//detectResult->flawInfos[0].flawImage
+
+}
 
 /***************** 切换缺陷小图 ****************/
 
