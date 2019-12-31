@@ -18,6 +18,7 @@
 #include "Configurator.h"
 #include "FlickeringArrow.h"
 #include "FileSyncThread.h"
+#include "ImageConverter.h"
 
 
 //复查界面
@@ -53,6 +54,7 @@ private:
 	qreal scaledFactor; //PCB大图的尺寸变换因子
 	QGraphicsScene fullImageScene; //显示PCB大图的场景
 	FlickeringArrow flickeringArrow; //PCB大图上闪烁的箭头
+	ImageConverter *imageConverter; //图像转换器
 
 	QString IconFolder; //图标文件夹
 	QPixmap lightOnIcon; //亮灯图标 red
@@ -60,11 +62,9 @@ private:
 
 	int defectNum; //缺陷总数
 	int defectIndex; //当前正在显示的缺陷图
-	//QVector<pcb::FlawImageInfo> flawImageInfoVec; //缺陷图的信息
 	uint16_t flawIndicatorStatus; //指示灯亮灭状态
 
 	//pcb::FolderHierarchy OutFolderHierarchy; //输出目录下的文件夹层次
-
 	//FileSyncThread fileSyncThread;//文件同步线程
 
 public:
@@ -80,7 +80,8 @@ private:
 	void reset(); //界面重置
 	void refresh(); //更新复查界面
 
-	void showFullImage(); //显示PCB整图
+	void loadFullImage(); //加载PCB整图
+	void loadFlawInfos(); //加载缺陷信息
 	void initFlickeringArrow(); //加载初始的闪烁箭头
 	void setFlickeringArrowPos(); //更新箭头的位置
 	void showLastFlawImage(); //显示上一张缺陷图
