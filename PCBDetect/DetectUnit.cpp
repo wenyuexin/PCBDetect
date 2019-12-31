@@ -236,10 +236,13 @@ void DetectUnit::run()
 	//标记缺陷
 	rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
-	
+	double t5 = clock();
 	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, sampBw, defectNum, detailImage,rectBlack);
-
-//if (curRow == 1 && curCol == 0) {
+	
+	double t6 = clock();
+	qDebug() << "==========" << pcb::chinese("缺陷分类：") << (t6 - t5) / CLOCKS_PER_SEC << "s"
+		<< " ( curCol = " << curCol << ")" << endl;
+	//if (curRow == 1 && curCol == 0) {
 	//保存用于调试的图片
 	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
 	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
@@ -256,14 +259,14 @@ void DetectUnit::run()
 	//sampBw_direct
 
 	//保存样本图片
-	double t5 = clock();
+	double t7 = clock();
 //}
 
 	QString sampPath = runtimeParams->currentSampleDir + "/" + QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + ".bmp";
 	cv::imwrite(sampPath.toStdString(), samp);
 
-	double t6 = clock();
-	qDebug() << "==========" << pcb::chinese("保存样本分图") << (t6 - t5) / CLOCKS_PER_SEC << "s" 
+	double t8 = clock();
+	qDebug() << "==========" << pcb::chinese("保存样本分图") << (t8 - t7) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")" << endl;
 }
 void DetectUnit::save(const std::string& path, Mat& image_template_gray) {

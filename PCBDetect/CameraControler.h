@@ -140,18 +140,18 @@ private:
 	//执行触发
 	int32_t executeTriggerSoftware(GENICAM_AcquisitionControl *pAcquisitionCtrl);
 
-	//ErrorCode initCameras(); //初始化 - OpenCV
-	//bool initCameras2(); //初始化 - 迈德威视
-	bool initCameras_opt();//初始化-OPT
+	ErrorCode initCameras(); //初始化 - OpenCV
+	bool initCameras2(); //初始化 - 迈德威视
+	bool initCamerasOPT();//初始化-OPT
 	QString cameraStatusMapToString(); //相机状态转字符串
 
 	bool isCamerasInitialized(); //判断相机是否已经初始化
-	//void closeCameras();//关闭已经打开的相机
-	//void closeCameras3();//关闭已经打开的相机-OPT
+	void closeCameras();//关闭已经打开的相机
+	void closeCamerasOPT();//关闭已经打开的相机-OPT
 
-	//ErrorCode takePhotos();//拍摄
-	//void takePhotos2();
-	void takePhotos_opt();//拍摄图像 - OPT
+	ErrorCode takePhotos();//拍摄
+	void takePhotos2();
+	void takePhotosOPT();//拍摄图像 - OPT
 
 protected:
 	void run();
