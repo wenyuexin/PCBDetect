@@ -21,7 +21,7 @@ CameraControler::CameraControler(QThread *parent)
 CameraControler::~CameraControler()
 {
 	qDebug() << "~CameraControler";
-	closeCamerasOPT(); //关闭相机并释放相机列表
+	closeCameras3(); //关闭相机并释放相机列表
 }
 //启动线程
 void CameraControler::run()
@@ -30,7 +30,7 @@ void CameraControler::run()
 	case Operation::NoOperation: //无操作
 		break;
 	case Operation::InitCameras: //初始化
-		this->initCamerasOPT();
+		this->initCameras3();
 		emit initCamerasFinished_camera(errorCode);
 		break;
 	case Operation::TakePhotos: //拍照
@@ -619,13 +619,13 @@ int32_t CameraControler::executeTriggerSoftware(GENICAM_AcquisitionControl *pAcq
 }
 
 //相机初始化-OPT
-bool CameraControler::initCamerasOPT()
+bool CameraControler::initCameras3()
 {
 	errorCode = CameraControler::NoError;
 
 	//关闭已经打开的相机并释放相机列表
 	//关闭失败，最初相机对象为空
-	this->closeCamerasOPT();
+	//this->closeCameras3();
 	
 	//生成系统单例
     status = GENICAM_getSystemInstance(&pSystem);
@@ -795,7 +795,7 @@ void CameraControler::closeCameras()
 }
 
 //关闭已经打开的相机设备
-void CameraControler::closeCamerasOPT()
+void CameraControler::closeCameras3()
 {
 
 	//关闭相机设备 - OPT pCameraList[i]

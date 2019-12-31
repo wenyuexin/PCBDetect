@@ -139,12 +139,12 @@ private:
 
 	ErrorCode initCameras(); //初始化 - OpenCV
 	bool initCameras2(); //初始化 - 迈德威视
-	bool initCamerasOPT();//初始化-OPT
+	bool initCameras3();//初始化-OPT
 	QString cameraStatusMapToString(); //相机状态转字符串
 
 	bool isCamerasInitialized(); //判断相机是否已经初始化
 	void closeCameras();//关闭已经打开的相机
-	void closeCamerasOPT();//关闭已经打开的相机-OPT
+	void closeCameras3();//关闭已经打开的相机-OPT
 
 	ErrorCode takePhotos();//拍摄
 	void takePhotos2();
