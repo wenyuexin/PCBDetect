@@ -392,7 +392,7 @@ void TemplSettingUI::mousePressEvent(QMouseEvent *event)
 		maskRoi_tl.setY(intervalCensored(maskRoi_tl.y(), 0, adminConfig->ImageSize_H - 1));
 		ui.lineEdit_maskRoi_tl_x->setText(QString::number((int)maskRoi_tl.x()));//更新界面
 		ui.lineEdit_maskRoi_tl_y->setText(QString::number((int)maskRoi_tl.y()));
-		this->on_pushButton_maskRoi_clicked(); //确认区域
+		//this->on_pushButton_maskRoi_clicked(); //确认区域
 		return;
 	}
 
@@ -406,7 +406,7 @@ void TemplSettingUI::mousePressEvent(QMouseEvent *event)
 		maskRoi_br.setY(intervalCensored(maskRoi_br.y(), 0, adminConfig->ImageSize_H - 1));
 		ui.lineEdit_maskRoi_br_x->setText(QString::number((int)maskRoi_br.x()));//更新界面
 		ui.lineEdit_maskRoi_br_y->setText(QString::number((int)maskRoi_br.y()));
-		this->on_pushButton_maskRoi_clicked(); //确认区域
+		//this->on_pushButton_maskRoi_clicked(); //确认区域
 		return;
 	}
 
@@ -521,6 +521,11 @@ QRect TemplSettingUI::getRect(const QPoint &beginPoint, const QPoint &endPoint)
 void TemplSettingUI::on_pushButton_confirm_clicked()
 {
 	this->setTemplSettingUIEnabled(false); //禁用按键
+
+	this->on_pushButton_maskRoi_clicked();
+	if (!runtimeParams->UsingDefaultSegThresh) this->on_pushButton_segThresh_clicked();
+	this->on_pushButton_modelType_clicked();
+
 	if (this->isReadyForExtract()) {
 		emit settingFinished_templSettingUI(); //向上一级界面发送设置结束的信号
 		on_pushButton_return_clicked(); //返回上一级界面，并执行下一步处理
