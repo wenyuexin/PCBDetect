@@ -68,11 +68,7 @@ public:
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; } //样本图
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; } //检测结果
 
-
-
 	void detect();
-
-	void saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::FlawInfo> &flawInfos, QDate detectionDate);
 
 private:
 	void initDetectFunc();
@@ -93,6 +89,7 @@ private:
 	inline void setMaskRoi_bl(cv::Point pt) { maskRoi_bl = pt; }
 	inline void setMaskRoi_tr(cv::Point pt) { maskRoi_tr = pt; }
 
+	void saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::DefectInfo> &defectInfos, QDate detectionDate);
 
 Q_SIGNALS:
 	void updateDetectState_detecter(int state);
