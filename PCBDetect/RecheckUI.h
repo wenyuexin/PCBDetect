@@ -18,7 +18,7 @@
 #include "Configurator.h"
 #include "FlickeringArrow.h"
 #include "FileSyncThread.h"
-#include "ImageConverter.h"
+#include "ImgConvertThread.h"
 
 
 //复查界面
@@ -62,9 +62,9 @@ private:
 
 	int defectNum; //缺陷总数
 	int defectIndex; //当前正在显示的缺陷图
+	ImgConvertThread imgConvertThread; //图像转换线程
+	pcb::QPixmapVector defectImages; //用于界面显示的缺陷小图
 	uint16_t flawIndicatorStatus; //指示灯亮灭状态
-
-	std::vector<QPixmap> defections; //用于界面显示的缺陷小图
 
 	//pcb::FolderHierarchy OutFolderHierarchy; //输出目录下的文件夹层次
 	//FileSyncThread fileSyncThread;//文件同步线程
@@ -73,24 +73,27 @@ public:
 	RecheckUI(QWidget *parent = Q_NULLPTR);
 	~RecheckUI();
 
-	void init(); //界面初始化
 	inline void setUserConfig(pcb::UserConfig *ptr) { userConfig = ptr; }
 	inline void setRuntimeParams(pcb::RuntimeParams *ptr) { runtimeParams = ptr; }
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; }
 
-private:
+	void init(); //界面初始化
 	void reset(); //界面重置
 	void refresh(); //更新复查界面
 
+private:
 	void loadFullImage(); //加载PCB整图
-	void loadFlawInfos(); //加载缺陷信息
 	void initFlickeringArrow(); //加载初始的闪烁箭头
 	void setFlickeringArrowPos(); //更新箭头的位置
+	void deleteItemsFromGraphicScene(); //删除GraphicScene中的图元
+
+	void loadFlawInfos(); //加载缺陷信息
 	void showLastFlawImage(); //显示上一张缺陷图
 	void showNextFlawImage(); //显示下一张缺陷图
 
 	//void getFlawImageInfo(QString dirpath);
 	void showFlawImage();
+	void deleteFlawInfos();
 	void switchFlawIndicator();
 
 	//void showSerialNumberUI();

@@ -240,60 +240,60 @@ void ExtractUI::deletePointersInItemArray(pcb::ItemArray &items)
 
 
 //初始化样本图像向量中的指针 - CvMatArray
-void ExtractUI::initPointersInCvMatArray(pcb::CvMatArray &cvmats)
+void ExtractUI::initPointersInCvMatArray(pcb::CvMatArray &cvmatArray)
 {
 	//若执行过init函数，则先delete指针
-	if (cvmats.size() > 0) {
-		deletePointersInCvMatArray(cvmats);
+	if (cvmatArray.size() > 0) {
+		deletePointersInCvMatArray(cvmatArray);
 	}
 
 	//根据相机个数和拍照次数对矩阵进行初始化
-	cvmats.resize(runtimeParams->nPhotographing);
+	cvmatArray.resize(runtimeParams->nPhotographing);
 	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
-		cvmats[iPhotographing].resize(runtimeParams->nCamera);
+		cvmatArray[iPhotographing].resize(runtimeParams->nCamera);
 		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
-			cvmats[iPhotographing][iCamera] = Q_NULLPTR;
+			cvmatArray[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
 
 //删除样本图像向量中的指针 - CvMatArray
-void ExtractUI::deletePointersInCvMatArray(pcb::CvMatArray &cvmats)
+void ExtractUI::deletePointersInCvMatArray(pcb::CvMatArray &cvmatArray)
 {
-	for (int iPhotographing = 0; iPhotographing < cvmats.size(); iPhotographing++) {
-		int vectorSize = cvmats[iPhotographing].size();
+	for (int iPhotographing = 0; iPhotographing < cvmatArray.size(); iPhotographing++) {
+		int vectorSize = cvmatArray[iPhotographing].size();
 		for (int iCamera = 0; iCamera < vectorSize; iCamera++) {
-			delete cvmats[iPhotographing][iCamera];
-			cvmats[iPhotographing][iCamera] = Q_NULLPTR;
+			delete cvmatArray[iPhotographing][iCamera];
+			cvmatArray[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
 
 
 //初始化样本图像向量中的指针 - QPixmapArray
-void ExtractUI::initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
+void ExtractUI::initPointersInQPixmapArray(pcb::QPixmapArray &qpixmapArray)
 {
-	if (qpixmaps.size() > 0) {
-		deletePointersInQPixmapArray(qpixmaps);//若执行过init函数，则先delete指针
+	if (qpixmapArray.size() > 0) {
+		deletePointersInQPixmapArray(qpixmapArray);//若执行过init函数，则先delete指针
 	}
 	
-	qpixmaps.resize(runtimeParams->nPhotographing);
+	qpixmapArray.resize(runtimeParams->nPhotographing);
 	for (int iPhotographing = 0; iPhotographing < runtimeParams->nPhotographing; iPhotographing++) { //行
-		qpixmaps[iPhotographing].resize(runtimeParams->nCamera);
+		qpixmapArray[iPhotographing].resize(runtimeParams->nCamera);
 		for (int iCamera = 0; iCamera < runtimeParams->nCamera; iCamera++) {
-			qpixmaps[iPhotographing][iCamera] = Q_NULLPTR;
+			qpixmapArray[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
 
 //删除样本图像向量中的指针 - QPixmapArray
-void ExtractUI::deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps)
+void ExtractUI::deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmapArray)
 {
-	for (int iPhotographing = 0; iPhotographing < qpixmaps.size(); iPhotographing++) {
-		int vectorSize = qpixmaps[iPhotographing].size();
+	for (int iPhotographing = 0; iPhotographing < qpixmapArray.size(); iPhotographing++) {
+		int vectorSize = qpixmapArray[iPhotographing].size();
 		for (int iCamera = 0; iCamera < vectorSize; iCamera++) {
-			delete qpixmaps[iPhotographing][iCamera];
-			qpixmaps[iPhotographing][iCamera] = Q_NULLPTR;
+			delete qpixmapArray[iPhotographing][iCamera];
+			qpixmapArray[iPhotographing][iCamera] = Q_NULLPTR;
 		}
 	}
 }
@@ -313,7 +313,10 @@ void ExtractUI::removeItemsFromGraphicsScene()
 //开始提取新的PCB板
 void ExtractUI::on_pushButton_start_clicked()
 {
-	if (runtimeParams->currentRow_extract != -1 || extractThread->isRunning()) return;
+	int row_extract = runtimeParams->currentRow_extract;
+	if (row_extract > -1 && row_extract < runtimeParams->nPhotographing) return; //已开始，但未提取完
+	if (extractThread->isRunning()) return; //提取线程仍在运行
+
 	qDebug() << ">>>>>>>>>>>>>>>>>>>>" << pcb::chinese("开始运行") << endl;
 	ui.label_status->setText(pcb::chinese("开始运行"));
 	this->setPushButtonsEnabled(false); //禁用按键
@@ -381,6 +384,7 @@ void ExtractUI::readSampleImages()
 	//选取样本图像文件
 	QString sampleDirPath = pcb::selectDirPath(this, 
 		pcb::chinese("请选取样本图像"), userConfig->SampleDirPath);
+	if (sampleDirPath == "") this->setPushButtonsEnabled(true); //若未选，则启用按键
 
 	//读取目录下的样本图像
 	QDir dir(sampleDirPath);

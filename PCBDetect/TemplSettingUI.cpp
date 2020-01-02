@@ -145,7 +145,7 @@ void TemplSettingUI::setTemplSettingUIEnabled(bool enable)
 	ui.lineEdit_modelType->setEnabled(enable); //型号输入框
 	ui.pushButton_modelType->setEnabled(enable);
 
-	ui.pushButton_confirm->setEnabled(enable); //确定并返回
+	//ui.pushButton_confirm->setEnabled(enable); //确定并返回
 	ui.pushButton_return->setEnabled(enable); //返回
 }
 
@@ -244,12 +244,17 @@ void TemplSettingUI::on_pushButton_maskRoi_clicked()
 	maskRoiFlag = (tl_x >= 0 && tl_y >= 0 && br_x >= 0 && br_y >= 0);
 	if (maskRoiFlag) { emit segThreshIsSet_templSettingUI(); }
 	//this->setTemplSettingUIEnabled(true);
+
+	if (this->isReadyForExtract()) {
+		emit settingFinished_templSettingUI(); //向上一级界面发送设置结束的信号
+		on_pushButton_return_clicked(); //返回上一级界面，并执行下一步处理
+	}
 }
 
 
 /***************** 图像分割阈值 *****************/
 
-//确认框的勾选状态发生变化时 - 施工中
+//确认框的勾选状态发生变化时
 void TemplSettingUI::on_checkBox_segThresh_clicked() 
 {
 	//被勾选后，进入交互式调整阈值的模式
@@ -282,18 +287,6 @@ void TemplSettingUI::on_horizontalSlider_segThresh_changed(int value)
 	}
 }
 
-//点击阈值确认按键
-void TemplSettingUI::on_pushButton_segThresh_clicked()
-{
-	int value = ui.lineEdit_segThresh->text().toInt();
-	if (value < 0 || value > 255) return;
-
-	runtimeParams->segThresh = value;
-	segThreshFlag = true; //图像分割阈值是否已经设置
-	runtimeParams->UsingDefaultSegThresh = false; //使用手动设置的阈值
-	this->showImageDividedByThresh(value); //显示分割结果
-}
-
 //显示阈值分割后的图像
 void TemplSettingUI::showImageDividedByThresh(int thresh)
 {
@@ -311,6 +304,23 @@ void TemplSettingUI::showImageDividedByThresh(int thresh)
 	this->showSampleImage(image);
 }
 
+//点击阈值确认按键
+void TemplSettingUI::on_pushButton_segThresh_clicked()
+{
+	int value = ui.lineEdit_segThresh->text().toInt();
+	if (value < 0 || value > 255) return;
+
+	runtimeParams->segThresh = value;
+	segThreshFlag = true; //图像分割阈值是否已经设置
+	runtimeParams->UsingDefaultSegThresh = false; //使用手动设置的阈值
+	this->showImageDividedByThresh(value); //显示分割结果
+
+	if (this->isReadyForExtract()) {
+		emit settingFinished_templSettingUI(); //向上一级界面发送设置结束的信号
+		on_pushButton_return_clicked(); //返回上一级界面，并执行下一步处理
+	}
+}
+
 
 /***************** 获取产品型号 *****************/
 
@@ -319,6 +329,11 @@ void TemplSettingUI::on_pushButton_modelType_clicked()
 	runtimeParams->productID.setModelType(ui.lineEdit_modelType->text()); //获取产品id
 	productIdFlag = runtimeParams->productID.isModelTypeValid(); //产品序号是否已经设置
 	if (productIdFlag) { emit modelTypeIsSet_templSettingUI(); }
+
+	if (this->isReadyForExtract()) {
+		emit settingFinished_templSettingUI(); //向上一级界面发送设置结束的信号
+		on_pushButton_return_clicked(); //返回上一级界面，并执行下一步处理
+	}
 }
 
 
@@ -515,23 +530,7 @@ QRect TemplSettingUI::getRect(const QPoint &beginPoint, const QPoint &endPoint)
 }
 
 
-/************** 确定与返回 ***************/
-
-//界面底部的确定按键
-void TemplSettingUI::on_pushButton_confirm_clicked()
-{
-	this->setTemplSettingUIEnabled(false); //禁用按键
-
-	this->on_pushButton_maskRoi_clicked();
-	if (!runtimeParams->UsingDefaultSegThresh) this->on_pushButton_segThresh_clicked();
-	this->on_pushButton_modelType_clicked();
-
-	if (this->isReadyForExtract()) {
-		emit settingFinished_templSettingUI(); //向上一级界面发送设置结束的信号
-		on_pushButton_return_clicked(); //返回上一级界面，并执行下一步处理
-	}
-	this->setTemplSettingUIEnabled(true); //开启按键
-}
+/**************** 返回提取界面 ****************/
 
 //界面底部的返回按键
 void TemplSettingUI::on_pushButton_return_clicked()
