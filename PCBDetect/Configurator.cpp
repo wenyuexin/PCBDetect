@@ -32,9 +32,9 @@ void AdminConfig::loadDefaultValue()
 {
 	this->errorCode = Unchecked; //错误代码
 	this->MaxMotionStroke = 120 * 5; //机械结构的最大运动行程
-	this->PulseNumInUnitTime = 126; //单位时间内的脉冲数
+	this->PulseNumInUnitTime = 90; //单位时间内的脉冲数
 	this->MaxCameraNum = 3; //可用相机的总数
-	this->PixelsNumPerUnitLength = 30.30; //单位长度内的像素个数
+	this->PixelsNumPerUnitLength = 30.3; //单位长度内的像素个数
 	this->ImageOverlappingRate_W = 316.5 / 5472.0; //分图重叠率(宽)
 	this->ImageOverlappingRate_H = 110.7/3648; //分图重叠率(高)
 	this->ImageSize_W = 5472; //宽高比中的宽
@@ -306,7 +306,7 @@ void UserConfig::loadDefaultValue()
 	clusterComPort = "COM1"; //COM口
 	
 	//相机
-	exposureTime = 200; //曝光时间 ms （范围大概50-500）
+	exposureTime = 10; //曝光时间 ms （范围大概10-500）
 	colorMode = 0; //色彩模式：0彩色 1黑白
 
 	//算法
@@ -370,7 +370,7 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 
 	//相机
 	case pcb::UserConfig::Index_exposureTime: //曝光时间 ms
-		if (exposureTime < 10 || exposureTime > 500)
+		if (exposureTime < 5 || exposureTime > 500)
 			code = Invalid_exposureTime;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_colorMode: //色彩模式：0彩色 1黑白
@@ -382,7 +382,7 @@ UserConfig::ErrorCode UserConfig::checkValidity(ConfigIndex index, AdminConfig *
 	case pcb::UserConfig::Index_defectTypeToBeProcessed: //需要检测的缺陷类型
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_matchingAccuracyLevel: //匹配模式
-		if (matchingAccuracyLevel < 1 || matchingAccuracyLevel>2)
+		if (matchingAccuracyLevel < 1 || matchingAccuracyLevel > 2)
 			code = Invalid_matchingAccuracyLevel;
 		if (code != Unchecked || index != Index_All) break;
 	case pcb::UserConfig::Index_concaveRateThresh: //缺失率阈值

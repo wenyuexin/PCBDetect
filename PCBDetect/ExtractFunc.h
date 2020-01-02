@@ -41,7 +41,7 @@ public:
 
 
 
-	void save(const std::string& path, cv::Mat& image_template_gray);
+	void save(const std::string& path, cv::Mat& image_template_gray, bool usingSURF);
 	void load(const std::string& path);
 
 	//str2int(字符串转整数)；corner_lf，corner_br（找左下角，右上角的L型的坐标），cutting(提取掩模)

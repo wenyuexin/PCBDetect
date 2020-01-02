@@ -53,6 +53,10 @@ private:
 	cv::Point maskRoi_bl; //掩模区域的坐标，一张PCB对应一个坐标 
 	cv::Point maskRoi_tr;
 
+	int segThresh;//全局阈值
+	bool UsingDefaultSegThresh;//阈值是否自动计算
+
+
 public:
 	DefectDetecter();
 	~DefectDetecter();
@@ -64,7 +68,11 @@ public:
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; } //样本图
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; } //检测结果
 
+
+
 	void detect();
+
+	void saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::FlawInfo> &flawInfos, QDate detectionDate);
 
 private:
 	void initDetectFunc();

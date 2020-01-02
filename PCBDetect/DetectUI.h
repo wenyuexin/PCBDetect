@@ -1,11 +1,5 @@
 #pragma once
 
-#ifndef WIN32
-
-#define WIN32
-
-#endif
-
 #include "AMC98C.h"
 #include <QWidget>
 #include "ui_DetectUI.h"
@@ -16,57 +10,58 @@
 #include "ImgConvertThread.h"
 #include "MotionControler.h"
 #include "CameraControler.h"
-#include "SerialNumberUI.h"
 #include "FileSyncThread.h"
-#include <vector>
+#include "RecheckUI.h"
+#include <QTimer>
 #include <QRect>
 #include <QList>
 #include <QGraphicsItem>
 #include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QDebug>
+#include <vector>
 
 
-//¼ì²â½çÃæ
+//æ£€æµ‹ç•Œé¢
 class DetectUI : public QWidget
 {
 	Q_OBJECT
 
 private:
 	Ui::DetectUI ui;
-	QString IconFolder; //Í¼±êÎÄ¼ş¼Ğ
-	QPixmap lightOnIcon; //ÁÁµÆÍ¼±ê red
-	QPixmap lightOffIcon; //ÃğµÆÍ¼±ê grey
-	QPixmap defaultIcon; //Ä¬ÈÏÍ¼±ê
-	SerialNumberUI *serialNumberUI; //²úÆ·ĞòºÅÊ¶±ğ½çÃæ
-	int initCounter; //³õÊ¼»¯´ÎÊıµÄ¼ÆÊıÆ÷
+	QString IconFolder; //å›¾æ ‡æ–‡ä»¶å¤¹
+	QPixmap lightOnIcon; //äº®ç¯å›¾æ ‡ red
+	QPixmap lightOffIcon; //ç­ç¯å›¾æ ‡ grey
+	QPixmap defaultIcon; //é»˜è®¤å›¾æ ‡
+	int initCounter; //åˆå§‹åŒ–æ¬¡æ•°çš„è®¡æ•°å™¨
 
-	pcb::AdminConfig *adminConfig; //ÏµÍ³²ÎÊı
-	pcb::UserConfig *userConfig; //ÓÃ»§²ÎÊı
-	pcb::RuntimeParams *runtimeParams; //ÔËĞĞ²ÎÊı
-	MotionControler *motionControler; //ÔË¶¯¿ØÖÆÆ÷
-	CameraControler *cameraControler; //Ïà»ú¿ØÖÆÆ÷
+	pcb::AdminConfig *adminConfig; //ç³»ç»Ÿå‚æ•°
+	pcb::UserConfig *userConfig; //ç”¨æˆ·å‚æ•°
+	pcb::RuntimeParams *runtimeParams; //è¿è¡Œå‚æ•°
+	MotionControler *motionControler; //è¿åŠ¨æ§åˆ¶å™¨
+	CameraControler *cameraControler; //ç›¸æœºæ§åˆ¶å™¨
 
-	const qreal ItemSpacing = 0; //Í¼Ôª¼ä¾à
-	QSizeF itemSize; //Í¼Ôª³ß´ç
-	QSizeF gridSize; //Íø¸ñ³ß´ç
-	QGraphicsScene scene; //»æÍ¼³¡¾°
-	QSizeF sceneSize; //³¡¾°³ß´ç
-	pcb::ItemGrid itemGrid; //»æÍ¼Íøµã
-	pcb::ItemArray itemArray; //³¡¾°ÖĞµÄÍ¼ÔªÕóÁĞ
+	const qreal ItemSpacing = 0; //å›¾å…ƒé—´è·
+	QSizeF itemSize; //å›¾å…ƒå°ºå¯¸
+	QSizeF gridSize; //ç½‘æ ¼å°ºå¯¸
+	QGraphicsScene scene; //ç»˜å›¾åœºæ™¯
+	QSizeF sceneSize; //åœºæ™¯å°ºå¯¸
+	pcb::ItemGrid itemGrid; //ç»˜å›¾ç½‘ç‚¹
+	pcb::ItemArray itemArray; //åœºæ™¯ä¸­çš„å›¾å…ƒé˜µåˆ—
 
-	int currentRow_show; //ÕıÔÚÏÔÊ¾µÄÄ³ĞĞÍ¼ÏñµÄĞĞºÅ
-	int eventCounter; //ÊÂ¼ş¼ÆÊıÆ÷
-	pcb::CvMatArray cvmatSamples; //ÓÃÓÚ¼ì²âµÄÑù±¾Í¼
-	pcb::QPixmapArray qpixmapSamples;//ÓÃÓÚÏÔÊ¾µÄÑù±¾Í¼
-	ImgConvertThread imgConvertThread;//Í¼Ïñ¸ñÊ½×ª»»Ïß³Ì
+	int currentRow_show; //æ­£åœ¨æ˜¾ç¤ºçš„æŸè¡Œå›¾åƒçš„è¡Œå·
+	int eventCounter; //äº‹ä»¶è®¡æ•°å™¨
+	pcb::CvMatArray cvmatSamples; //ç”¨äºæ£€æµ‹çš„æ ·æœ¬å›¾
+	pcb::QPixmapArray qpixmapSamples;//ç”¨äºæ˜¾ç¤ºçš„æ ·æœ¬å›¾
+	ImgConvertThread imgConvertThread;//å›¾åƒæ ¼å¼è½¬æ¢çº¿ç¨‹
 
-	DetectThread *detectThread; //¼ì²âÏß³Ì
-	DefectDetecter *defectDetecter; //¼ì²âºËĞÄÀà
-	pcb::DetectResult detectResult; //¼ì²â½á¹û
-	int detectState; //¼ì²â×´Ì¬
+	DetectThread *detectThread; //æ£€æµ‹çº¿ç¨‹
+	DefectDetecter *defectDetecter; //æ£€æµ‹æ ¸å¿ƒç±»
+	pcb::DetectResult detectResult; //æ£€æµ‹ç»“æœ
+	int detectState; //æ£€æµ‹çŠ¶æ€
 
-	FileSyncThread *fileSyncThread; //ÎÄ¼ş·¢ËÍ
+	FileSyncThread *fileSyncThread; //æ–‡ä»¶å‘é€
+	RecheckUI *recheckUI; //å¤æŸ¥ç•Œé¢
 
 public:
 	DetectUI(QWidget *parent = Q_NULLPTR);
@@ -85,24 +80,28 @@ public:
 	void refreshCameraControler();
 
 private:
-	void initItemGrid(pcb::ItemGrid &grid);//³õÊ¼»¯Í¼ÔªÍø¸ñ
-	void initPointersInItemArray(pcb::ItemArray &items);//³õÊ¼»¯itemArray
-	void deletePointersInItemArray(pcb::ItemArray &items);//É¾³ıitemArrayÖĞµÄÖ¸Õë
-	void initPointersInCvMatArray(pcb::CvMatArray &cvmats);//³õÊ¼»¯CvMatArray
-	void deletePointersInCvMatArray(pcb::CvMatArray &cvmats);//É¾³ıCvMatArrayÖĞµÄÖ¸Õë
-	void initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//³õÊ¼»¯QPixmapArray
-	void deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//É¾³ıQPixmapArrayÖĞµÄÖ¸Õë
-	void removeItemsFromGraphicsScene();//ÒÆ³ı³¡¾°ÖĞµÄÍ¼Ôª
+	void showCurrentTime();//è·å–å¹¶æ˜¾ç¤ºæ—¶é—´
+	void initItemGrid(pcb::ItemGrid &grid);//åˆå§‹åŒ–å›¾å…ƒç½‘æ ¼
+	void initPointersInItemArray(pcb::ItemArray &items);//åˆå§‹åŒ–itemArray
+	void deletePointersInItemArray(pcb::ItemArray &items);//åˆ é™¤itemArrayä¸­çš„æŒ‡é’ˆ
+	void initPointersInCvMatArray(pcb::CvMatArray &cvmats);//åˆå§‹åŒ–CvMatArray
+	void deletePointersInCvMatArray(pcb::CvMatArray &cvmats);//åˆ é™¤CvMatArrayä¸­çš„æŒ‡é’ˆ
+	void initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//åˆå§‹åŒ–QPixmapArray
+	void deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//åˆ é™¤QPixmapArrayä¸­çš„æŒ‡é’ˆ
+	void removeItemsFromGraphicsScene();//ç§»é™¤åœºæ™¯ä¸­çš„å›¾å…ƒ
 
 	void showSampleImages();
 	void readSampleImages();
-	void detectSampleImages(); //¼ì²â
+	void detectSampleImages(); //æ£€æµ‹
+	bool detectionHasNotStartedAndAllImagesHasBeenDisplayed();
+	void switchToRecheckUI();
 
 Q_SIGNALS:
 	void showDetectMainUI();
 	void invalidNumberOfSampleImage();
 
 private Q_SLOTS:
+	void on_pushButton_modelType_clicked();
 	void on_pushButton_start_clicked();
 	void on_pushButton_return_clicked();
 
@@ -118,7 +117,5 @@ private Q_SLOTS:
 	void on_takePhotosFinished_camera(int);
 	void on_convertFinished_convertThread();
 
-	void mouseDoubleClickEvent(QMouseEvent *event);
-	void on_recognizeFinished_serialNumUI();
-	void do_showPreviousUI_serialNumUI();
+	void on_recheckFinished_recheckUI();
 };

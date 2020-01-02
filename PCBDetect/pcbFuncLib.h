@@ -23,7 +23,7 @@ namespace pcb
 #define PCB_FUNCTIONS
 	void delay(unsigned long msec);//非阻塞延迟
 
-	QString selectDirPath(QWidget *parent, QString windowTitle = "");//交互式文件夹路径选择
+	QString selectDirPath(QWidget *parent, QString caption = "", QString directory = "");//选择文件夹
 	void clearFiles(const QString &folderFullPath);
 	void clearFolder(const QString &folderFullPath, bool included = false);
 	void getFilePathList(const QString &folderFullPath, std::vector<std::string> &list);

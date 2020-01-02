@@ -117,9 +117,16 @@ void TemplateExtractor::extract()
 		//cv::imwrite(filePath.toStdString(), mask);
 
 		//保存二值化图片
-		Mat srcGray, templbw;
+		int temp_mean;
+		Mat  templbw;
+		temp_mean = mean(src)[0];
+		cv::threshold(src, templbw, temp_mean, 255, cv::THRESH_BINARY);
+		/*cv::adaptiveThreshold(src, templbw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);*/
+
+		/*Mat srcGray, templbw;
 		cv::cvtColor(src, srcGray, cv::COLOR_RGB2GRAY);
-		cv::adaptiveThreshold(srcGray, templbw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
+		cv::adaptiveThreshold(srcGray, templbw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);*/
+
 		Mat element_b = cv::getStructuringElement(cv::MORPH_ELLIPSE, Size(3, 3));
 		cv::morphologyEx(templbw, templbw, cv::MORPH_OPEN, element_b);
 		cv::morphologyEx(templbw, templbw, cv::MORPH_CLOSE, element_b);
@@ -148,7 +155,7 @@ void TemplateExtractor::extract()
 		Point point_tr(runtimeParams->maskRoi_br.x(), runtimeParams->maskRoi_tl.y());
 
 		string pointsPath = mask_path.toStdString() + "cornerPoints.bin";
-		vector<Point2i> cornerPoints{ point_bl,point_tr };
+		vector<Point2i> cornerPoints{ point_bl,point_tr,Point(runtimeParams->segThresh,runtimeParams->UsingDefaultSegThresh) };
 		cv::FileStorage store(pointsPath, cv::FileStorage::WRITE);
 		cv::write(store, "cornerPoints", cornerPoints);
 		store.release();
@@ -207,9 +214,9 @@ void TemplateExtractor::extract()
 			//提取模板特征并保存
 			Mat src_mask;
 			cv::bitwise_and(image, mask, src_mask);
-			string file_Path = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString()
-				+ "/bin/" + std::to_string(num_rows) + "_" + std::to_string(num_cols) + ".bin";
-			templFunc->save(file_Path, src_mask);
+			QString file_Path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType
+				+ "/bin/" + QString::number(num_rows) + "_" + QString::number(num_cols) + ".bin";
+			templFunc->save(file_Path.toStdString(), src_mask,false);
 		}
 
 		Mat scaledFullImage;
@@ -240,7 +247,7 @@ void TemplateExtractor::makeCurrentTemplDir(vector<QString> &subFolders)
 	if (!templateDir.exists()) templateDir.mkdir(runtimeParams->currentTemplDir);
 
 	//判断对应的型号文件夹是否存在
-	runtimeParams->currentTemplDir += "/" + runtimeParams->sampleModelNum;
+	runtimeParams->currentTemplDir += "/" + runtimeParams->productID.modelType;
 	QDir templDir(runtimeParams->currentTemplDir);
 	if (!templDir.exists()) {
 		templDir.mkdir(runtimeParams->currentTemplDir);//创建文件夹
