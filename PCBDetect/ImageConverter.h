@@ -2,10 +2,13 @@
 
 #include "opencv2/opencv.hpp"
 #include <QThread>
+#include <QRunnable>
 #include <QImage>
 #include <QPixmap>
 #include <QDebug>
 #include <qthread.h>
+#include <QSemaphore>
+//#include <Exception>
 
 
 //图像格式转换线程
@@ -34,7 +37,8 @@ private:
 	QImage *qimage;
 	QPixmap *qpixmap;
 	cv::Mat *cvmat;
-	CvtCode code;
+	CvtCode code; //用于确定从哪个类型转换到哪个类型
+	QSemaphore *semaphore; //控制转换数量的信号量
 
 public:
 	ImageConverter(QObject *parent = Q_NULLPTR);
@@ -43,6 +47,7 @@ public:
 	void set(QPixmap *src, cv::Mat *dst, CvtCode code);
 	void set(cv::Mat *src, QImage *dst, CvtCode code);
 	void set(cv::Mat *src, QPixmap *dst, CvtCode code);
+	inline void setSemaphore(QSemaphore *sem) { semaphore = sem; }
 
 protected:
 	void run();

@@ -35,7 +35,7 @@
   <widget class="QLabel" name="label_logo">
    <property name="geometry">
     <rect>
-     <x>1249</x>
+     <x>1259</x>
      <y>89</y>
      <width>151</width>
      <height>111</height>
@@ -224,7 +224,7 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>1270</x>
+     <x>1280</x>
      <y>220</y>
      <width>111</width>
      <height>31</height>
@@ -255,7 +255,7 @@
      <x>1270</x>
      <y>710</y>
      <width>122</width>
-     <height>61</height>
+     <height>51</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -339,7 +339,7 @@
   <widget class="QPushButton" name="pushButton_modelType">
    <property name="geometry">
     <rect>
-     <x>1390</x>
+     <x>1380</x>
      <y>380</y>
      <width>49</width>
      <height>37</height>
@@ -366,7 +366,7 @@
   <widget class="QLabel" name="label_modelType_title">
    <property name="geometry">
     <rect>
-     <x>1280</x>
+     <x>1290</x>
      <y>340</y>
      <width>91</width>
      <height>31</height>
@@ -388,9 +388,9 @@
   <widget class="QLabel" name="label_modelType">
    <property name="geometry">
     <rect>
-     <x>1230</x>
+     <x>1240</x>
      <y>380</y>
-     <width>151</width>
+     <width>131</width>
      <height>37</height>
     </rect>
    </property>

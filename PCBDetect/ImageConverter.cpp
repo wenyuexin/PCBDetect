@@ -7,6 +7,10 @@ using cv::Mat;
 ImageConverter::ImageConverter(QObject *parent)
 	: QThread(parent)
 {
+	qimage = Q_NULLPTR;
+	qpixmap = Q_NULLPTR;
+	cvmat = Q_NULLPTR;
+	semaphore = Q_NULLPTR;
 }
 
 ImageConverter::~ImageConverter()
@@ -54,19 +58,26 @@ void ImageConverter::set(cv::Mat *src, QPixmap *dst, CvtCode code)
 
 void ImageConverter::run()
 {
-	switch (code)
-	{
-	case CvtCode::QImage2CvMat:
-		*cvmat = QImageToCvMat(*qimage, true); break;
-	case CvtCode::QPixmap2CvMat:
-		*cvmat = QPixmapToCvMat(*qpixmap, true); break;
-	case CvtCode::CvMat2QImage:
-		*qimage = CvMatToQImage(*cvmat); break;
-	case CvtCode::CvMat2QPixmap:
-		*qpixmap = CvMatToQPixmap(*cvmat); break;
-	default:
-		break;
+	try {
+		switch (code)
+		{
+		case CvtCode::QImage2CvMat:
+			*cvmat = QImageToCvMat(*qimage, true); break;
+		case CvtCode::QPixmap2CvMat:
+			*cvmat = QPixmapToCvMat(*qpixmap, true); break;
+		case CvtCode::CvMat2QImage:
+			*qimage = CvMatToQImage(*cvmat); break;
+		case CvtCode::CvMat2QPixmap:
+			*qpixmap = CvMatToQPixmap(*cvmat); break;
+		default:
+			break;
+		}
 	}
+	catch (std::exception) {
+		//pass	
+	};
+	
+	if (semaphore != Q_NULLPTR) semaphore->release(); //任务结束后释放信号量
 }
 
 

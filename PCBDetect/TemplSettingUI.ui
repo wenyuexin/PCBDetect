@@ -103,7 +103,7 @@
   <widget class="QPushButton" name="pushButton_return">
    <property name="geometry">
     <rect>
-     <x>1300</x>
+     <x>1240</x>
      <y>780</y>
      <width>100</width>
      <height>37</height>
@@ -613,24 +613,6 @@
     <string>确定</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_confirm">
-   <property name="geometry">
-    <rect>
-     <x>1180</x>
-     <y>780</y>
-     <width>100</width>
-     <height>37</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>18</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>确定</string>
-   </property>
-  </widget>
   <zorder>label_10</zorder>
   <zorder>graphicsView</zorder>
   <zorder>label_segThresh_title</zorder>
@@ -664,7 +646,6 @@
   <zorder>label_maskRoi_br_2</zorder>
   <zorder>lineEdit_segThresh</zorder>
   <zorder>pushButton_segThresh</zorder>
-  <zorder>pushButton_confirm</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -121,7 +121,7 @@ private Q_SLOTS:
 
 	void on_pushButton_modelType_clicked(); //确认型号
 
-	void on_pushButton_confirm_clicked(); //确认并返回
+	//void on_pushButton_confirm_clicked(); //确认并返回
 	void on_pushButton_return_clicked(); //返回
 
 	void mousePressEvent(QMouseEvent *event); //鼠标事件

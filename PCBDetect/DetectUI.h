@@ -84,10 +84,10 @@ private:
 	void initItemGrid(pcb::ItemGrid &grid);//初始化图元网格
 	void initPointersInItemArray(pcb::ItemArray &items);//初始化itemArray
 	void deletePointersInItemArray(pcb::ItemArray &items);//删除itemArray中的指针
-	void initPointersInCvMatArray(pcb::CvMatArray &cvmats);//初始化CvMatArray
-	void deletePointersInCvMatArray(pcb::CvMatArray &cvmats);//删除CvMatArray中的指针
-	void initPointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//初始化QPixmapArray
-	void deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmaps);//删除QPixmapArray中的指针
+	void initPointersInCvMatArray(pcb::CvMatArray &cvmatArray);//初始化CvMatArray
+	void deletePointersInCvMatArray(pcb::CvMatArray &cvmatArray);//删除CvMatArray中的指针
+	void initPointersInQPixmapArray(pcb::QPixmapArray &qpixmapArray);//初始化QPixmapArray
+	void deletePointersInQPixmapArray(pcb::QPixmapArray &qpixmapArray);//删除QPixmapArray中的指针
 	void removeItemsFromGraphicsScene();//移除场景中的图元
 
 	void showSampleImages();
@@ -107,7 +107,7 @@ private Q_SLOTS:
 
 	void keyPressEvent(QKeyEvent *event);
 	void do_updateDetectState_detecter(int state);
-	void on_detectFinished_detectThread(bool qualified);
+	void on_detectFinished_detectThread();
 
 	void on_motionResetFinished_motion(int);
 	void on_moveToInitialPosFinished_motion(int);

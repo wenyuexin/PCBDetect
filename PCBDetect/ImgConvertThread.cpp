@@ -11,11 +11,12 @@ ImgConvertThread::ImgConvertThread(QObject *parent)
 
 	//成员变量初始化
 	errorCode = ImageConverter::ErrorCode::Default;
-	cvmats = Q_NULLPTR;
-	qpixmaps = Q_NULLPTR;
-	qimages = Q_NULLPTR;
+	cvmatArray = Q_NULLPTR;
+	qpixmapArray = Q_NULLPTR;
+	qimageArray = Q_NULLPTR;
 	cvtCode = ImageConverter::CvtCode::Null; //转换代码
 	currentRow = Q_NULLPTR; //当前行号
+	semaphore = Q_NULLPTR;
 
 	//初始化图像转换器
 	initImageConverters();
@@ -24,6 +25,8 @@ ImgConvertThread::ImgConvertThread(QObject *parent)
 ImgConvertThread::~ImgConvertThread()
 {
 	qDebug() << "~ImgConvertThread";
+	delete semaphore; //删除信号量
+	semaphore = Q_NULLPTR;
 	deleteImageConverters();
 }
 
@@ -36,32 +39,45 @@ void ImgConvertThread::run()
 	clock_t t1 = clock();
 	errorCode = ImageConverter::Unchecked;
 
-	if (*currentRow < 0) { 
-		qDebug() << "Warning: ImgConvertThread: currentRow < 0"; return; 
-	}
-	if (cvmats->size() < 1 || (cvmats->at(*currentRow)).size() < 1) { 
-		qDebug() << "warning: invalid size of cvmats"; 
-		errorCode = ImageConverter::ErrorCode::Invalid_ImageNum;
-		return; 
-	}
-	if ((cvmats->at(*currentRow))[0] == Q_NULLPTR || 
-		(cvmats->at(*currentRow))[0]->size().width < 1) 
-	{
-		qDebug() << "warning: invalid imageSize"; 
-		errorCode = ImageConverter::ErrorCode::Invalid_ImageSize;
-		return;
+	//有效性检验
+	if (currentRow != Q_NULLPTR) {
+		if (*currentRow < 0) {
+			qDebug() << "ImgConvertThread: Warning: ImgConvertThread: currentRow < 0"; 
+			return;
+		}
+		if (cvmatArray->size() < 1 || (cvmatArray->at(*currentRow)).size() < 1) {
+			qDebug() << "ImgConvertThread: warning: invalid size of cvmatArray";
+			errorCode = ImageConverter::ErrorCode::Invalid_ImageNum;
+			return;
+		}
+		if ((cvmatArray->at(*currentRow))[0] == Q_NULLPTR ||
+			(cvmatArray->at(*currentRow))[0]->size().width < 1)
+		{
+			qDebug() << "ImgConvertThread: warning: invalid imageSize";
+			errorCode = ImageConverter::ErrorCode::Invalid_ImageSize;
+			return;
+		}
 	}
 
+	//开始转换
 	switch (cvtCode)
 	{
 	case ImageConverter::QImage2CvMat:
-		convertQImageToCvMat(qimages->at(*currentRow), cvmats->at(*currentRow)); break;
+		if (currentRow == Q_NULLPTR) convertQImagesToCvMats(*qimageVector, *cvmatVector);
+		else convertQImagesToCvMats(qimageArray->at(*currentRow), cvmatArray->at(*currentRow)); 
+		break;
 	case ImageConverter::QPixmap2CvMat:
-		convertQPixmapToCvMat(qpixmaps->at(*currentRow), cvmats->at(*currentRow)); break;
+		if (currentRow == Q_NULLPTR) convertQPixmapsToCvMats(*qpixmapVector, *cvmatVector);
+		else convertQPixmapsToCvMats(qpixmapArray->at(*currentRow), cvmatArray->at(*currentRow)); 	
+		break;
 	case ImageConverter::CvMat2QImage:
-		convertCvMatToQImage(cvmats->at(*currentRow), qimages->at(*currentRow)); break;
+		if (currentRow == Q_NULLPTR) convertCvMatsToQImages(*cvmatVector, *qimageVector);
+		else convertCvMatsToQImages(cvmatArray->at(*currentRow), qimageArray->at(*currentRow));
+		break;
 	case ImageConverter::CvMat2QPixmap:
-		convertCvMatToQPixmap(cvmats->at(*currentRow), qpixmaps->at(*currentRow)); break;
+		if (currentRow == Q_NULLPTR) convertCvMatsToQPixmaps(*cvmatVector, *qpixmapVector);
+		else convertCvMatsToQPixmaps(cvmatArray->at(*currentRow), qpixmapArray->at(*currentRow));
+		break;
 	default:
 		break;
 	}
@@ -78,9 +94,12 @@ void ImgConvertThread::run()
 
 void ImgConvertThread::initImageConverters()
 {
+	semaphore = new QSemaphore(ConvertersNum);
+
 	converters.resize(ConvertersNum);
 	for (int i = 0; i < ConvertersNum; i++) {
 		converters[i] = new ImageConverter();
+		converters[i]->setSemaphore(semaphore);
 	}
 }
 
@@ -96,7 +115,7 @@ void ImgConvertThread::deleteImageConverters()
 /**************** 图像格式转换 *****************/
 
 //QImage转cv::Mat
-void ImgConvertThread::convertQImageToCvMat(const QImageVector &src, CvMatVector &dst)
+void ImgConvertThread::convertQImagesToCvMats(const QImageVector &src, CvMatVector &dst)
 {
 	//开启转换线程
 	size_t srcSize = src.size();
@@ -113,7 +132,7 @@ void ImgConvertThread::convertQImageToCvMat(const QImageVector &src, CvMatVector
 }
 
 //QPixmap转cv::Mat
-void ImgConvertThread::convertQPixmapToCvMat(const QPixmapVector &src, CvMatVector &dst)
+void ImgConvertThread::convertQPixmapsToCvMats(const QPixmapVector &src, CvMatVector &dst)
 {
 	//开启转换线程
 	size_t srcSize = src.size();
@@ -130,7 +149,7 @@ void ImgConvertThread::convertQPixmapToCvMat(const QPixmapVector &src, CvMatVect
 }
 
 //cv::Mat转QImage
-void ImgConvertThread::convertCvMatToQImage(const CvMatVector &src, QImageVector &dst)
+void ImgConvertThread::convertCvMatsToQImages(const CvMatVector &src, QImageVector &dst)
 {
 	//开启转换线程
 	size_t srcSize = src.size();
@@ -147,18 +166,26 @@ void ImgConvertThread::convertCvMatToQImage(const CvMatVector &src, QImageVector
 }
 
 //cv::Mat转QPixmap
-void ImgConvertThread::convertCvMatToQPixmap(const CvMatVector &src, QPixmapVector &dst)
+void ImgConvertThread::convertCvMatsToQPixmaps(const CvMatVector &src, QPixmapVector &dst)
 {
 	//开启转换线程
-	size_t srcSize = src.size();
-	dst.resize(srcSize);
-	for (int i = 0; i < srcSize; i++) {
+	dst.resize(src.size());
+	for (int i = 0; i < src.size(); i++) {
+		semaphore->acquire();
 		dst[i] = new QPixmap; //分配内存
-		converters[i]->set(src[i], dst[i], ImageConverter::CvMat2QPixmap);//配置转换器
-		converters[i]->start(); //开始转换
+		for (int j = 0; j < ConvertersNum; j++) {
+			if (converters[j]->isRunning()) continue;
+			converters[j]->set(src[i], dst[i], ImageConverter::CvMat2QPixmap);//配置转换器
+			converters[j]->start(); //开始转换
+			break;
+		}
 	}
+
 	//线程等待
-	for (int i = 0; i < srcSize; i++) {
+	for (int i = 0; i < ConvertersNum; i++) {
 		converters[i]->wait();
 	}
+
+	semaphore->acquire(ConvertersNum);
+	semaphore->release(ConvertersNum);
 }

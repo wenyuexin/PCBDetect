@@ -12,12 +12,12 @@ namespace pcb
 #ifndef STRUCT_DETECT_RESULT
 #define STRUCT_DETECT_RESULT
 	//缺陷信息
-	struct FlawInfo {
-		cv::Mat flawImage; //缺陷图
-		QString flawIndex; //缺陷编号
+	struct DefectInfo {
+		cv::Mat defectImage; //缺陷图
+		QString defectIndex; //缺陷编号
 		int xPos; //缺陷在整图中的x坐标
 		int yPos; //缺陷在整图中的y坐标
-		int flawType; //缺陷类型：0未知 1短路 2断路 3凸起 4缺失
+		int defectType; //缺陷类型：0未知 1短路 2断路 3凸起 4缺失
 	};
 
 	//检测结果
@@ -25,8 +25,8 @@ namespace pcb
 		bool SampleIsQualified; //当前产品是否合格
 		cv::Mat fullImage; //标记有缺陷的整图
 		cv::Size fullImageSize; //缩放前的整图大小
-		std::vector<FlawInfo> flawInfos; //缺陷信息
-		QDate detectionDate; //检测日期
+		std::vector<DefectInfo> defectInfos; //缺陷信息
+		QDate detectDate; //检测日期
 	};
 #endif //STRUCT_DETECT_RESULT
 

@@ -1,4 +1,5 @@
 #include "RecheckUI.h"
+#include "ImgConvertThread.h"
 
 //using pcb::MessageBoxType;
 //using pcb::FlawImageInfo;
@@ -54,49 +55,38 @@ void RecheckUI::init()
 	connect(&flickeringArrow, SIGNAL(refreshArrow_arrow()), this, SLOT(on_refreshArrow_arrow()));
 }
 
+//清除数据 重置界面
 void RecheckUI::reset()
 {
-	//清空静态文本框中的内容
-	ui.label_defectIndex->setText("");
+	ui.label_detectDate->setText("");
 	ui.label_defectNum->setText("");
-	ui.label_xLoc->setText("");
-	ui.label_yLoc->setText("");
-	ui.label_modelType->setText("");
-	ui.label_detecttionDate->setText("");
 
-	//设置当前正在显示的缺陷小图及其缺陷类型指示灯
-	ui.label_indicator1->setPixmap(lightOffIcon); //断路
-	ui.label_indicator2->setPixmap(lightOffIcon); //缺失
-	ui.label_indicator3->setPixmap(lightOffIcon); //短路
-	ui.label_indicator4->setPixmap(lightOffIcon); //凸起
-
-	//清除数据
-	
+	this->deleteItemsFromGraphicScene(); //删除场景中之前加载的元素
+	this->deleteFlawInfos(); //删除缺陷信息
 }
 
 //刷新界面上显示的信息
 void RecheckUI::refresh()
 {
-	//logging(runtimeParams.serialNum);
-
-	//更新界面中的PCB型号
-	ui.label_modelType->setText(runtimeParams->productID.modelType);
-
-	//加载并显示PCB大图
-	this->loadFullImage();
-
-	//加载缺陷图及其相关信息
+	//加载缺陷小图
 	this->loadFlawInfos();
 
-	//加载闪烁的箭头
-	defectIndex = 0;
-	this->initFlickeringArrow();
+	//刷新静态文本框
+	ui.label_modelType->setText(runtimeParams->productID.modelType); //型号
+	ui.label_detectDate->setText(detectResult->detectDate.toString("yyyy.MM.dd")); //检测日期
+	if (defectNum >= 0) ui.label_defectNum->setText(QString::number(defectNum)); //缺陷总数
 
-	//设置场景和显示视图
+
+	//刷新GraphicView
+	defectIndex = 0;
+	this->deleteItemsFromGraphicScene(); //删除场景中之前加载的元素
+	this->loadFullImage(); //加载并显示PCB大图
+	this->initFlickeringArrow(); //加载闪烁的箭头
 	ui.graphicsView_full->setScene(&fullImageScene); //设置场景
 	ui.graphicsView_full->show(); //显示图像
 
-	//加载并显示第1个缺陷小图
+	//显示缺陷图
+	while (imgConvertThread.isRunning()) { pcb::delay(2); } //等待转换结束
 	this->showFlawImage(); //显示缺陷图
 
 	recheckStatus = NoError;
@@ -105,7 +95,7 @@ void RecheckUI::refresh()
 
 /************** 加载、删除GraphicView中的图像资源 *************/
 
-//加载PCB整图
+//读取PCB整图，并加载到场景中
 void RecheckUI::loadFullImage()
 {
 	ImageConverter imageConverter; //图像转换器
@@ -113,20 +103,8 @@ void RecheckUI::loadFullImage()
 	imageConverter.set(&detectResult->fullImage, &fullImage, ImageConverter::CvMat2QPixmap);
 	imageConverter.start();
 
-	//显示缺陷总数
-	defectNum = detectResult->flawInfos.size();
-	if (defectNum >= 0) {
-		ui.label_defectNum->setText(QString::number(defectNum));
-	}
-
-	//删除场景中之前加载的元素
-	QList<QGraphicsItem *> itemList = fullImageScene.items();
-	for (int i = 0; i < itemList.size(); i++) {
-		fullImageScene.removeItem(itemList[i]);  //从scene中移除
-	}
-
-	//将PCB大图加载到场景中
-	while (imageConverter.isRunning()) { pcb::delay(1); }
+	//将PCB整图加载到场景中
+	while (imageConverter.isRunning()) { pcb::delay(2); }
 	fullImageScene.addPixmap(fullImage); //将图像加载进场景中
 	QRect sceneRect = QRect(QPoint(0, 0), fullImageItemSize); //场景范围
 	fullImageScene.setSceneRect(sceneRect); //设置场景范围
@@ -151,29 +129,72 @@ void RecheckUI::on_refreshArrow_arrow()
 //更新闪烁箭头的位置
 void RecheckUI::setFlickeringArrowPos()
 {
-	qreal xLoc = (detectResult->flawInfos)[defectIndex].xPos;
+	qreal xLoc = (detectResult->defectInfos)[defectIndex].xPos;
 	xLoc *= (1.0*fullImageItemSize.width()/originalFullImageSize.width());
-	qreal yLoc = (detectResult->flawInfos)[defectIndex].yPos;
+	qreal yLoc = (detectResult->defectInfos)[defectIndex].yPos;
 	yLoc *= (1.0*fullImageItemSize.height()/originalFullImageSize.height());
 	flickeringArrow.setPos(xLoc, yLoc); //设置箭头的位置
 }
 
-
-
-/************** 加载、删除GraphicView中的图像资源 *************/
-
-//删除graphicView中
-void RecheckUI::loadFlawInfos()
+//删除GraphicScene中的图元
+void RecheckUI::deleteItemsFromGraphicScene()
 {
-
+	QList<QGraphicsItem *> itemList = fullImageScene.items();
+	for (int i = 0; i < itemList.size(); i++) {
+		fullImageScene.removeItem(itemList[i]);  //从scene中移除
+	}
 }
+
+
+/************** 加载、删除缺陷小图 *************/
 
 //加载缺陷
 void RecheckUI::loadFlawInfos()
 {
-	//转defections Qpixmap
-	//detectResult->flawInfos[0].flawImage
+	defectNum = detectResult->defectInfos.size();
 
+	pcb::CvMatVector cvmatImages;
+	cvmatImages.resize(defectNum);
+	for (int i = 0; i < defectNum; i++) {
+		cv::Mat img = detectResult->defectInfos[i].defectImage;
+		cvmatImages[i] = &img;
+	}
+
+	//defectImages.resize(defectNum);
+	//for (int i = 0; i < defectNum; i++) {
+	//	QPixmap *img = new QPixmap();
+	//	defectImages[i] = img;
+	//}
+
+	imgConvertThread.setCvMats(&cvmatImages);
+	imgConvertThread.setQPixmaps(&defectImages);
+	imgConvertThread.setCvtCode(ImageConverter::CvMat2QPixmap);
+	imgConvertThread.start();
+}
+
+//删除缺陷图
+void RecheckUI::deleteFlawInfos() 
+{
+	//清空静态文本框中的内容
+	ui.label_defectIndex->setText("");
+	ui.label_xLoc->setText("");
+	ui.label_yLoc->setText("");
+	ui.label_modelType->setText("");
+
+	//设置当前正在显示的缺陷小图及其缺陷类型指示灯
+	ui.label_indicator1->setPixmap(lightOffIcon); //断路
+	ui.label_indicator2->setPixmap(lightOffIcon); //缺失
+	ui.label_indicator3->setPixmap(lightOffIcon); //短路
+	ui.label_indicator4->setPixmap(lightOffIcon); //凸起
+
+	//清空正在显示的缺陷图
+	ui.label_flaw->clear(); 
+	
+	//删除用于显示的缺陷小图
+	for (int i = 0; i < defectImages.size(); i++) {
+		delete defectImages[i];
+		defectImages[i] = Q_NULLPTR;
+	}
 }
 
 /***************** 切换缺陷小图 ****************/
@@ -183,18 +204,16 @@ void RecheckUI::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key()) 
 	{	
-	case Qt::Key_Plus: //切换并显示下一个缺陷
-		qDebug() << "Key_Plus";
-		showNextFlawImage(); 
+	case Qt::Key_Space:
+	case Qt::Key_Plus: 
+	case Qt::Key_Up:
+		qDebug() << "========== Key_Plus";
+		showNextFlawImage(); //切换并显示下一个缺陷
 		break;
-	case Qt::Key_Minus: //切换并显示上一个缺陷
-		qDebug() << "Key_Minus";
-		showLastFlawImage(); 
-		break;
-	case Qt::Key_Asterisk: //直接显示退出询问界面
-		qDebug() << "Key_Asterisk";
-		flickeringArrow.stopFlickering();
-		//showExitQueryUI();
+	case Qt::Key_Minus: 
+	case Qt::Key_Down:
+		qDebug() << "========== Key_Minus";
+		showLastFlawImage(); //切换并显示上一个缺陷
 		break;
 	default:
 		break;
@@ -224,7 +243,6 @@ void RecheckUI::showLastFlawImage()
 	if (defectIndex < 0) {  //边界
 		defectIndex += 1;
 		qDebug() << "this is the first one";
-		//showExitQueryUI(); //显示退出询问框
 	}
 	else {
 		showFlawImage();
@@ -234,59 +252,58 @@ void RecheckUI::showLastFlawImage()
 //切换并显示下一个缺陷图
 void RecheckUI::showNextFlawImage()
 {
-	////获取 当前的 index 判断是否 到达边界
-	//defectIndex += 1;
-	//if (defectIndex > flawImageInfoVec.size() - 1) {  //边界
-	//	defectIndex -= 1;
-	//	qDebug() << "this is the last one";
-	//	showExitQueryUI(); //显示退出询问框
-	//}
-	//else {
-	//	showFlawImage();
-	//}
+	//获取 当前的 index 判断是否 到达边界
+	defectIndex += 1;
+	if (defectIndex > defectNum - 1) {  //边界
+		defectIndex -= 1;
+		qDebug() << "this is the last one";
+	}
+	else {
+		showFlawImage();
+	}
 }
 
 //将缺陷图加载并显示到对应的lebal控件中
 void RecheckUI::showFlawImage()
 {
-	//if (defectNum <= 0) return;
-	//QFileInfo flawImgInfo(flawImageInfoVec[defectIndex].filePath);
-	//if (!flawImgInfo.isFile()) {
-	//	recheckStatus = FlawImageNotFound;
-	//	this->showMessageBox(MessageBoxType::Warning, recheckStatus);
-	//	return;
-	//}
+	if (defectNum <= 0) return;
+	pcb::DefectInfo flawInfo = detectResult->defectInfos[defectIndex];
 
-	//QImage flawImg(flawImageInfoVec[defectIndex].filePath); //读图
-	//flawImg = flawImg.scaled(ui.label_flaw->size(), Qt::KeepAspectRatio); //缩放
-	//QPixmap flawImage(QPixmap::fromImage(flawImg)); //转换
-	//ui.label_flaw->clear(); //清空
-	//ui.label_flaw->setPixmap(flawImage); //显示图像
+	QPixmap *defectImage = defectImages[defectIndex]; 
+	if (defectImage->size() != ui.label_flaw->size()) {
+		defectImage->scaled(ui.label_flaw->size(), Qt::KeepAspectRatio); //缩放
+	}
+	ui.label_flaw->clear(); //清空正在显示的缺陷图
+	ui.label_flaw->setPixmap(*defectImage); //显示新的缺陷图
 
-	////更新其他缺陷信息
-	//ui.label_xLoc->setText(flawImageInfoVec[defectIndex].xPos); //更新缺陷的x坐标
-	//ui.label_yLoc->setText(flawImageInfoVec[defectIndex].yPos); //更新缺陷的y坐标
+	//更新其他缺陷信息
+	ui.label_xLoc->setText(QString::number(flawInfo.xPos)); //更新缺陷的x坐标
+	ui.label_yLoc->setText(QString::number(flawInfo.yPos)); //更新缺陷的y坐标
 	ui.label_defectIndex->setText(QString::number(defectIndex + 1)); //显示缺陷编号
 	this->switchFlawIndicator(); //更新缺陷类型图标(修改指示灯亮灭状态)
-
-	//更新PCB大图上的小箭头的位置
-	this->setFlickeringArrowPos();
+	this->setFlickeringArrowPos(); //更新PCB大图上的小箭头的位置
 }
 
 //更新缺陷类型的指示图标
 void RecheckUI::switchFlawIndicator()
 {
-	//flawIndicatorStatus = pow(2, flawImageInfoVec[defectIndex].flawType.toInt() - 1);
-
-	flawIndicatorStatus = 1;
-	ui.label_indicator1->setPixmap(bool((flawIndicatorStatus & 0x1) >> 0) ? lightOnIcon : lightOffIcon); //A
-	ui.label_indicator2->setPixmap(bool((flawIndicatorStatus & 0x2) >> 1) ? lightOnIcon : lightOffIcon); //B
-	ui.label_indicator3->setPixmap(bool((flawIndicatorStatus & 0x4) >> 2) ? lightOnIcon : lightOffIcon); //C
-	ui.label_indicator4->setPixmap(bool((flawIndicatorStatus & 0x8) >> 3) ? lightOnIcon : lightOffIcon); //D
+	switch (detectResult->defectInfos[defectIndex].defectType)
+	{
+	case 1:
+		ui.label_indicator1->setPixmap(lightOnIcon); break; //短路
+	case 2:
+		ui.label_indicator2->setPixmap(lightOnIcon); break; //断路
+	case 3:
+		ui.label_indicator3->setPixmap(lightOnIcon); break; //凸起
+	case 4:
+		ui.label_indicator4->setPixmap(lightOnIcon); break; //缺失
+	default:
+		break;
+	}
 }
 
 
-/**************** 退出程序 *****************/
+/****************** 返回 *******************/
 
 //点击返回按键
 void RecheckUI::on_pushButton_return_clicked()
@@ -296,7 +313,7 @@ void RecheckUI::on_pushButton_return_clicked()
 }
 
 
-/******************** 其他 *********************/
+/****************** 其他 *******************/
 
 //设置按键
 void RecheckUI::setPushButtonsEnabled(bool enable)

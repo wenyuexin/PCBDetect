@@ -199,7 +199,6 @@ void DefectDetecter::detect()
 	}
 
 	//检测结束，整合当前行的检测结果
-	
 	for (int i = 0; i < nCamera; i++) {
 		//统计缺陷总数
 		int defectNum = detectUnits[i]->getDefectNum();
@@ -229,7 +228,7 @@ void DefectDetecter::detect()
 	//如果当前检测的是最后一行图像 
 	if (currentRow_detect == nPhotographing-1) {
 		//构造存储结果信息的对象
-		vector<pcb::FlawInfo> flawInfos(allDetailImage.size());
+		vector<pcb::DefectInfo> defectInfos(allDetailImage.size());
 		pcb::DetectResult *detectResult = new DetectResult;
 		
 		Size sz(adminConfig->ImageSize_W*nCamera, adminConfig->ImageSize_H*nCamera);
@@ -254,21 +253,21 @@ void DefectDetecter::detect()
 			outPath += userConfig->ImageFormat; //添加图像格式的后缀
 			cv::imwrite(outPath.toStdString(), imgSeg);//将细节图存储到本地硬盘上
 
-			//将分图缺陷信息保存进FlawInfo对象
-			pcb::FlawInfo temp;
-			temp.flawIndex = defectNum;
-			temp.flawType = info.z;
+			//将分图缺陷信息保存进DefectInfo对象
+			pcb::DefectInfo temp;
+			temp.defectIndex = defectNum;
+			temp.defectType = info.z;
 			temp.xPos = info.x;
 			temp.yPos = info.y;
-			flawInfos[defectNum-1] = temp;
+			defectInfos[defectNum-1] = temp;
 		}
 		
 		//向检测界面发送是否合格的信息
 		bool qualified = (totalDefectNum < 1);
-		emit detectFinished_detectThread(qualified);
+		emit detectFinished_detectThread();
 
 		//将结果信息存入结果对象
-		detectResult->flawInfo = flawInfos;
+		detectResult->defectInfos = defectInfos;
 		detectResult->fullImage = bigTempl.clone();
 		detectResult->SampleIsQualified = qualified;
 
