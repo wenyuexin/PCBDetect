@@ -5,34 +5,34 @@
 //using pcb::FlawImageInfo;
 
 
-//¸´²é½çÃæµÄ¹¹Ôìº¯Êı
+//å¤æŸ¥ç•Œé¢çš„æ„é€ å‡½æ•°
 RecheckUI::RecheckUI(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
 
-	//³ÉÔ±±äÁ¿³õÊ¼»¯
-	userConfig = Q_NULLPTR; //¼ìĞŞÏµÍ³ÅäÖÃĞÅÏ¢
-	runtimeParams = Q_NULLPTR; //ÔËĞĞ²ÎÊı
-	detectResult = Q_NULLPTR; //¼ì²â½á¹û
+	//æˆå‘˜å˜é‡åˆå§‹åŒ–
+	userConfig = Q_NULLPTR; //æ£€ä¿®ç³»ç»Ÿé…ç½®ä¿¡æ¯
+	runtimeParams = Q_NULLPTR; //è¿è¡Œå‚æ•°
+	detectResult = Q_NULLPTR; //æ£€æµ‹ç»“æœ
 	IconFolder = "";
 
 }
 
-//¸´²é½çÃæÎö¹¹º¯Êı
+//å¤æŸ¥ç•Œé¢ææ„å‡½æ•°
 RecheckUI::~RecheckUI()
 {
 	qDebug() << "~PCBRecheck";
 }
 
-/********************* ½çÃæ³õÊ¼»¯ÓëË¢ĞÂ *********************/
+/********************* ç•Œé¢åˆå§‹åŒ–ä¸åˆ·æ–° *********************/
 
 void RecheckUI::init()
 {
-	//Ñ¡ÔñÔÚÖ÷ÆÁ»¹ÊÇ¸±ÆÁÉÏÏÔÊ¾
+	//é€‰æ‹©åœ¨ä¸»å±è¿˜æ˜¯å‰¯å±ä¸Šæ˜¾ç¤º
 	this->setGeometry(runtimeParams->ScreenRect);
 
-	//¼ÓÔØÍ¼±ê
+	//åŠ è½½å›¾æ ‡
 	IconFolder = QDir::currentPath() + "/icons";
 	QPixmap redIcon(IconFolder + "/red.png"); //red
 	lightOnIcon = redIcon.scaled(ui.label_indicator1->size(), Qt::KeepAspectRatio);
@@ -41,114 +41,114 @@ void RecheckUI::init()
 
 	this->reset();
 
-	//³ÉÔ±±äÁ¿³õÊ¼»¯
+	//æˆå‘˜å˜é‡åˆå§‹åŒ–
 	originalFullImageSize = QSize(-1, -1);
 	defectNum = -1;
 	defectIndex = -1; 
 
-	//graphicsViewµÄÉèÖÃÓëÍ¼ÏñÏÔÊ¾
+	//graphicsViewçš„è®¾ç½®ä¸å›¾åƒæ˜¾ç¤º
 	ui.graphicsView_full->setFocusPolicy(Qt::NoFocus);
-	ui.graphicsView_full->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //½ûÓÃË®Æ½¹ö¶¯Ìõ
-	ui.graphicsView_full->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //½ûÓÃ´¹Ö±¹ö¶¯Ìõ
+	ui.graphicsView_full->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //ç¦ç”¨æ°´å¹³æ»šåŠ¨æ¡
+	ui.graphicsView_full->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff); //ç¦ç”¨å‚ç›´æ»šåŠ¨æ¡
 
-	//Ë¢ĞÂÕûÍ¼ÉÏÉÁË¸µÄ¼ıÍ·
+	//åˆ·æ–°æ•´å›¾ä¸Šé—ªçƒçš„ç®­å¤´
 	connect(&flickeringArrow, SIGNAL(refreshArrow_arrow()), this, SLOT(on_refreshArrow_arrow()));
 }
 
-//Çå³ıÊı¾İ ÖØÖÃ½çÃæ
+//æ¸…é™¤æ•°æ® é‡ç½®ç•Œé¢
 void RecheckUI::reset()
 {
 	ui.label_detectDate->setText("");
 	ui.label_defectNum->setText("");
 
-	this->deleteItemsFromGraphicScene(); //É¾³ı³¡¾°ÖĞÖ®Ç°¼ÓÔØµÄÔªËØ
-	this->deleteFlawInfos(); //É¾³ıÈ±ÏİĞÅÏ¢
+	this->deleteItemsFromGraphicScene(); //åˆ é™¤åœºæ™¯ä¸­ä¹‹å‰åŠ è½½çš„å…ƒç´ 
+	this->deleteFlawInfos(); //åˆ é™¤ç¼ºé™·ä¿¡æ¯
 }
 
-//Ë¢ĞÂ½çÃæÉÏÏÔÊ¾µÄĞÅÏ¢
+//åˆ·æ–°ç•Œé¢ä¸Šæ˜¾ç¤ºçš„ä¿¡æ¯
 void RecheckUI::refresh()
 {
-	//¼ÓÔØÈ±ÏİĞ¡Í¼
+	//åŠ è½½ç¼ºé™·å°å›¾
 	this->loadFlawInfos();
 
-	//Ë¢ĞÂ¾²Ì¬ÎÄ±¾¿ò
-	ui.label_modelType->setText(runtimeParams->productID.modelType); //ĞÍºÅ
-	ui.label_detectDate->setText(detectResult->detectDate.toString("yyyy.MM.dd")); //¼ì²âÈÕÆÚ
-	if (defectNum >= 0) ui.label_defectNum->setText(QString::number(defectNum)); //È±Ïİ×ÜÊı
+	//åˆ·æ–°é™æ€æ–‡æœ¬æ¡†
+	ui.label_modelType->setText(runtimeParams->productID.modelType); //å‹å·
+	ui.label_detectDate->setText(detectResult->detectDate.toString("yyyy.MM.dd")); //æ£€æµ‹æ—¥æœŸ
+	if (defectNum >= 0) ui.label_defectNum->setText(QString::number(defectNum)); //ç¼ºé™·æ€»æ•°
 
 
-	//Ë¢ĞÂGraphicView
+	//åˆ·æ–°GraphicView
 	defectIndex = 0;
-	this->deleteItemsFromGraphicScene(); //É¾³ı³¡¾°ÖĞÖ®Ç°¼ÓÔØµÄÔªËØ
-	this->loadFullImage(); //¼ÓÔØ²¢ÏÔÊ¾PCB´óÍ¼
-	this->initFlickeringArrow(); //¼ÓÔØÉÁË¸µÄ¼ıÍ·
-	ui.graphicsView_full->setScene(&fullImageScene); //ÉèÖÃ³¡¾°
-	ui.graphicsView_full->show(); //ÏÔÊ¾Í¼Ïñ
+	this->deleteItemsFromGraphicScene(); //åˆ é™¤åœºæ™¯ä¸­ä¹‹å‰åŠ è½½çš„å…ƒç´ 
+	this->loadFullImage(); //åŠ è½½å¹¶æ˜¾ç¤ºPCBå¤§å›¾
+	this->initFlickeringArrow(); //åŠ è½½é—ªçƒçš„ç®­å¤´
+	ui.graphicsView_full->setScene(&fullImageScene); //è®¾ç½®åœºæ™¯
+	ui.graphicsView_full->show(); //æ˜¾ç¤ºå›¾åƒ
 
-	//ÏÔÊ¾È±ÏİÍ¼
-	while (imgConvertThread.isRunning()) { pcb::delay(2); } //µÈ´ı×ª»»½áÊø
-	this->showFlawImage(); //ÏÔÊ¾È±ÏİÍ¼
+	//æ˜¾ç¤ºç¼ºé™·å›¾
+	while (imgConvertThread.isRunning()) { pcb::delay(2); } //ç­‰å¾…è½¬æ¢ç»“æŸ
+	this->showFlawImage(); //æ˜¾ç¤ºç¼ºé™·å›¾
 
 	recheckStatus = NoError;
 }
 
 
-/************** ¼ÓÔØ¡¢É¾³ıGraphicViewÖĞµÄÍ¼Ïñ×ÊÔ´ *************/
+/************** åŠ è½½ã€åˆ é™¤GraphicViewä¸­çš„å›¾åƒèµ„æº *************/
 
-//¶ÁÈ¡PCBÕûÍ¼£¬²¢¼ÓÔØµ½³¡¾°ÖĞ
+//è¯»å–PCBæ•´å›¾ï¼Œå¹¶åŠ è½½åˆ°åœºæ™¯ä¸­
 void RecheckUI::loadFullImage()
 {
-	ImageConverter imageConverter; //Í¼Ïñ×ª»»Æ÷
+	ImageConverter imageConverter; //å›¾åƒè½¬æ¢å™¨
 	QPixmap fullImage;
 	imageConverter.set(&detectResult->fullImage, &fullImage, ImageConverter::CvMat2QPixmap);
 	imageConverter.start();
 
-	//½«PCBÕûÍ¼¼ÓÔØµ½³¡¾°ÖĞ
+	//å°†PCBæ•´å›¾åŠ è½½åˆ°åœºæ™¯ä¸­
 	while (imageConverter.isRunning()) { pcb::delay(2); }
-	fullImageScene.addPixmap(fullImage); //½«Í¼Ïñ¼ÓÔØ½ø³¡¾°ÖĞ
-	QRect sceneRect = QRect(QPoint(0, 0), fullImageItemSize); //³¡¾°·¶Î§
-	fullImageScene.setSceneRect(sceneRect); //ÉèÖÃ³¡¾°·¶Î§
+	fullImageScene.addPixmap(fullImage); //å°†å›¾åƒåŠ è½½è¿›åœºæ™¯ä¸­
+	QRect sceneRect = QRect(QPoint(0, 0), fullImageItemSize); //åœºæ™¯èŒƒå›´
+	fullImageScene.setSceneRect(sceneRect); //è®¾ç½®åœºæ™¯èŒƒå›´
 }
 
-//¼ÓÔØ³õÊ¼µÄÉÁË¸¼ıÍ·
+//åŠ è½½åˆå§‹çš„é—ªçƒç®­å¤´
 void RecheckUI::initFlickeringArrow()
 {
 	if (defectNum <= 0) return;
-	flickeringArrow.startFlickering(500); //¿ªÊ¼ÉÁË¸
-	setFlickeringArrowPos(); //¸üĞÂÉÁË¸¼ıÍ·µÄÎ»ÖÃ
+	flickeringArrow.startFlickering(500); //å¼€å§‹é—ªçƒ
+	setFlickeringArrowPos(); //æ›´æ–°é—ªçƒç®­å¤´çš„ä½ç½®
 	flickeringArrow.setFullImageSize(&fullImageItemSize);
-	fullImageScene.addItem(&flickeringArrow); //½«¼ıÍ·¼ÓÔØ½ø³¡¾°ÖĞ
+	fullImageScene.addItem(&flickeringArrow); //å°†ç®­å¤´åŠ è½½è¿›åœºæ™¯ä¸­
 }
 
-//Ë¢ĞÂ¼ÆÊ±Æ÷ÓëĞ¡¼ıÍ·
+//åˆ·æ–°è®¡æ—¶å™¨ä¸å°ç®­å¤´
 void RecheckUI::on_refreshArrow_arrow()
 {
 	flickeringArrow.update(-100, -100, 200, 200);
 }
 
-//¸üĞÂÉÁË¸¼ıÍ·µÄÎ»ÖÃ
+//æ›´æ–°é—ªçƒç®­å¤´çš„ä½ç½®
 void RecheckUI::setFlickeringArrowPos()
 {
 	qreal xLoc = (detectResult->defectInfos)[defectIndex].xPos;
 	xLoc *= (1.0*fullImageItemSize.width()/originalFullImageSize.width());
 	qreal yLoc = (detectResult->defectInfos)[defectIndex].yPos;
 	yLoc *= (1.0*fullImageItemSize.height()/originalFullImageSize.height());
-	flickeringArrow.setPos(xLoc, yLoc); //ÉèÖÃ¼ıÍ·µÄÎ»ÖÃ
+	flickeringArrow.setPos(xLoc, yLoc); //è®¾ç½®ç®­å¤´çš„ä½ç½®
 }
 
-//É¾³ıGraphicSceneÖĞµÄÍ¼Ôª
+//åˆ é™¤GraphicSceneä¸­çš„å›¾å…ƒ
 void RecheckUI::deleteItemsFromGraphicScene()
 {
 	QList<QGraphicsItem *> itemList = fullImageScene.items();
 	for (int i = 0; i < itemList.size(); i++) {
-		fullImageScene.removeItem(itemList[i]);  //´ÓsceneÖĞÒÆ³ı
+		fullImageScene.removeItem(itemList[i]);  //ä»sceneä¸­ç§»é™¤
 	}
 }
 
 
-/************** ¼ÓÔØ¡¢É¾³ıÈ±ÏİĞ¡Í¼ *************/
+/************** åŠ è½½ã€åˆ é™¤ç¼ºé™·å°å›¾ *************/
 
-//¼ÓÔØÈ±Ïİ
+//åŠ è½½ç¼ºé™·
 void RecheckUI::loadFlawInfos()
 {
 	defectNum = detectResult->defectInfos.size();
@@ -172,34 +172,35 @@ void RecheckUI::loadFlawInfos()
 	imgConvertThread.start();
 }
 
-//É¾³ıÈ±ÏİÍ¼
+
+//åˆ é™¤ç¼ºé™·å›¾
 void RecheckUI::deleteFlawInfos() 
 {
-	//Çå¿Õ¾²Ì¬ÎÄ±¾¿òÖĞµÄÄÚÈİ
+	//æ¸…ç©ºé™æ€æ–‡æœ¬æ¡†ä¸­çš„å†…å®¹
 	ui.label_defectIndex->setText("");
 	ui.label_xLoc->setText("");
 	ui.label_yLoc->setText("");
 	ui.label_modelType->setText("");
 
-	//ÉèÖÃµ±Ç°ÕıÔÚÏÔÊ¾µÄÈ±ÏİĞ¡Í¼¼°ÆäÈ±ÏİÀàĞÍÖ¸Ê¾µÆ
-	ui.label_indicator1->setPixmap(lightOffIcon); //¶ÏÂ·
-	ui.label_indicator2->setPixmap(lightOffIcon); //È±Ê§
-	ui.label_indicator3->setPixmap(lightOffIcon); //¶ÌÂ·
-	ui.label_indicator4->setPixmap(lightOffIcon); //Í¹Æğ
+	//è®¾ç½®å½“å‰æ­£åœ¨æ˜¾ç¤ºçš„ç¼ºé™·å°å›¾åŠå…¶ç¼ºé™·ç±»å‹æŒ‡ç¤ºç¯
+	ui.label_indicator1->setPixmap(lightOffIcon); //æ–­è·¯
+	ui.label_indicator2->setPixmap(lightOffIcon); //ç¼ºå¤±
+	ui.label_indicator3->setPixmap(lightOffIcon); //çŸ­è·¯
+	ui.label_indicator4->setPixmap(lightOffIcon); //å‡¸èµ·
 
-	//Çå¿ÕÕıÔÚÏÔÊ¾µÄÈ±ÏİÍ¼
+	//æ¸…ç©ºæ­£åœ¨æ˜¾ç¤ºçš„ç¼ºé™·å›¾
 	ui.label_flaw->clear(); 
 	
-	//É¾³ıÓÃÓÚÏÔÊ¾µÄÈ±ÏİĞ¡Í¼
+	//åˆ é™¤ç”¨äºæ˜¾ç¤ºçš„ç¼ºé™·å°å›¾
 	for (int i = 0; i < defectImages.size(); i++) {
 		delete defectImages[i];
 		defectImages[i] = Q_NULLPTR;
 	}
 }
 
-/***************** ÇĞ»»È±ÏİĞ¡Í¼ ****************/
+/***************** åˆ‡æ¢ç¼ºé™·å°å›¾ ****************/
 
-//ÇÃ»÷Ğ¡¼üÅÌµÄ + -
+//æ•²å‡»å°é”®ç›˜çš„ + -
 void RecheckUI::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key()) 
@@ -208,26 +209,26 @@ void RecheckUI::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Plus: 
 	case Qt::Key_Up:
 		qDebug() << "========== Key_Plus";
-		showNextFlawImage(); //ÇĞ»»²¢ÏÔÊ¾ÏÂÒ»¸öÈ±Ïİ
+		showNextFlawImage(); //åˆ‡æ¢å¹¶æ˜¾ç¤ºä¸‹ä¸€ä¸ªç¼ºé™·
 		break;
 	case Qt::Key_Minus: 
 	case Qt::Key_Down:
 		qDebug() << "========== Key_Minus";
-		showLastFlawImage(); //ÇĞ»»²¢ÏÔÊ¾ÉÏÒ»¸öÈ±Ïİ
+		showLastFlawImage(); //åˆ‡æ¢å¹¶æ˜¾ç¤ºä¸Šä¸€ä¸ªç¼ºé™·
 		break;
 	default:
 		break;
 	}
 }
 
-//µã»÷¼ÓºÅ°´¼ü - ÇĞ»»²¢ÏÔÊ¾ÏÂÒ»¸öÈ±Ïİ
+//ç‚¹å‡»åŠ å·æŒ‰é”® - åˆ‡æ¢å¹¶æ˜¾ç¤ºä¸‹ä¸€ä¸ªç¼ºé™·
 void RecheckUI::on_pushButton_plus2_clicked()
 {
 	qDebug() << "Button_Plus";
 	showNextFlawImage();
 }
 
-//µã»÷¼õºÅ°´¼ü - ÇĞ»»²¢ÏÔÊ¾ÉÏÒ»¸öÈ±Ïİ
+//ç‚¹å‡»å‡å·æŒ‰é”® - åˆ‡æ¢å¹¶æ˜¾ç¤ºä¸Šä¸€ä¸ªç¼ºé™·
 void RecheckUI::on_pushButton_minus2_clicked()
 {
 	qDebug() << "Button_Minus";
@@ -235,12 +236,12 @@ void RecheckUI::on_pushButton_minus2_clicked()
 }
 
 
-//ÇĞ»»²¢ÏÔÊ¾ÉÏÒ»¸öÈ±ÏİÍ¼
+//åˆ‡æ¢å¹¶æ˜¾ç¤ºä¸Šä¸€ä¸ªç¼ºé™·å›¾
 void RecheckUI::showLastFlawImage()
 {
-	//»ñÈ¡ µ±Ç°µÄ index ÅĞ¶ÏÊÇ·ñ µ½´ï±ß½ç
+	//è·å– å½“å‰çš„ index åˆ¤æ–­æ˜¯å¦ åˆ°è¾¾è¾¹ç•Œ
 	defectIndex -= 1;
-	if (defectIndex < 0) {  //±ß½ç
+	if (defectIndex < 0) {  //è¾¹ç•Œ
 		defectIndex += 1;
 		qDebug() << "this is the first one";
 	}
@@ -249,12 +250,12 @@ void RecheckUI::showLastFlawImage()
 	}
 }
 
-//ÇĞ»»²¢ÏÔÊ¾ÏÂÒ»¸öÈ±ÏİÍ¼
+//åˆ‡æ¢å¹¶æ˜¾ç¤ºä¸‹ä¸€ä¸ªç¼ºé™·å›¾
 void RecheckUI::showNextFlawImage()
 {
-	//»ñÈ¡ µ±Ç°µÄ index ÅĞ¶ÏÊÇ·ñ µ½´ï±ß½ç
+	//è·å– å½“å‰çš„ index åˆ¤æ–­æ˜¯å¦ åˆ°è¾¾è¾¹ç•Œ
 	defectIndex += 1;
-	if (defectIndex > defectNum - 1) {  //±ß½ç
+	if (defectIndex > defectNum - 1) {  //è¾¹ç•Œ
 		defectIndex -= 1;
 		qDebug() << "this is the last one";
 	}
@@ -263,7 +264,7 @@ void RecheckUI::showNextFlawImage()
 	}
 }
 
-//½«È±ÏİÍ¼¼ÓÔØ²¢ÏÔÊ¾µ½¶ÔÓ¦µÄlebal¿Ø¼şÖĞ
+//å°†ç¼ºé™·å›¾åŠ è½½å¹¶æ˜¾ç¤ºåˆ°å¯¹åº”çš„lebalæ§ä»¶ä¸­
 void RecheckUI::showFlawImage()
 {
 	if (defectNum <= 0) return;
@@ -271,51 +272,51 @@ void RecheckUI::showFlawImage()
 
 	QPixmap *defectImage = defectImages[defectIndex]; 
 	if (defectImage->size() != ui.label_flaw->size()) {
-		defectImage->scaled(ui.label_flaw->size(), Qt::KeepAspectRatio); //Ëõ·Å
+		defectImage->scaled(ui.label_flaw->size(), Qt::KeepAspectRatio); //ç¼©æ”¾
 	}
-	ui.label_flaw->clear(); //Çå¿ÕÕıÔÚÏÔÊ¾µÄÈ±ÏİÍ¼
-	ui.label_flaw->setPixmap(*defectImage); //ÏÔÊ¾ĞÂµÄÈ±ÏİÍ¼
+	ui.label_flaw->clear(); //æ¸…ç©ºæ­£åœ¨æ˜¾ç¤ºçš„ç¼ºé™·å›¾
+	ui.label_flaw->setPixmap(*defectImage); //æ˜¾ç¤ºæ–°çš„ç¼ºé™·å›¾
 
-	//¸üĞÂÆäËûÈ±ÏİĞÅÏ¢
-	ui.label_xLoc->setText(QString::number(flawInfo.xPos)); //¸üĞÂÈ±ÏİµÄx×ø±ê
-	ui.label_yLoc->setText(QString::number(flawInfo.yPos)); //¸üĞÂÈ±ÏİµÄy×ø±ê
-	ui.label_defectIndex->setText(QString::number(defectIndex + 1)); //ÏÔÊ¾È±Ïİ±àºÅ
-	this->switchFlawIndicator(); //¸üĞÂÈ±ÏİÀàĞÍÍ¼±ê(ĞŞ¸ÄÖ¸Ê¾µÆÁÁÃğ×´Ì¬)
-	this->setFlickeringArrowPos(); //¸üĞÂPCB´óÍ¼ÉÏµÄĞ¡¼ıÍ·µÄÎ»ÖÃ
+	//æ›´æ–°å…¶ä»–ç¼ºé™·ä¿¡æ¯
+	ui.label_xLoc->setText(QString::number(flawInfo.xPos)); //æ›´æ–°ç¼ºé™·çš„xåæ ‡
+	ui.label_yLoc->setText(QString::number(flawInfo.yPos)); //æ›´æ–°ç¼ºé™·çš„yåæ ‡
+	ui.label_defectIndex->setText(QString::number(defectIndex + 1)); //æ˜¾ç¤ºç¼ºé™·ç¼–å·
+	this->switchFlawIndicator(); //æ›´æ–°ç¼ºé™·ç±»å‹å›¾æ ‡(ä¿®æ”¹æŒ‡ç¤ºç¯äº®ç­çŠ¶æ€)
+	this->setFlickeringArrowPos(); //æ›´æ–°PCBå¤§å›¾ä¸Šçš„å°ç®­å¤´çš„ä½ç½®
 }
 
-//¸üĞÂÈ±ÏİÀàĞÍµÄÖ¸Ê¾Í¼±ê
+//æ›´æ–°ç¼ºé™·ç±»å‹çš„æŒ‡ç¤ºå›¾æ ‡
 void RecheckUI::switchFlawIndicator()
 {
 	switch (detectResult->defectInfos[defectIndex].defectType)
 	{
 	case 1:
-		ui.label_indicator1->setPixmap(lightOnIcon); break; //¶ÌÂ·
+		ui.label_indicator1->setPixmap(lightOnIcon); break; //çŸ­è·¯
 	case 2:
-		ui.label_indicator2->setPixmap(lightOnIcon); break; //¶ÏÂ·
+		ui.label_indicator2->setPixmap(lightOnIcon); break; //æ–­è·¯
 	case 3:
-		ui.label_indicator3->setPixmap(lightOnIcon); break; //Í¹Æğ
+		ui.label_indicator3->setPixmap(lightOnIcon); break; //å‡¸èµ·
 	case 4:
-		ui.label_indicator4->setPixmap(lightOnIcon); break; //È±Ê§
+		ui.label_indicator4->setPixmap(lightOnIcon); break; //ç¼ºå¤±
 	default:
 		break;
 	}
 }
 
 
-/****************** ·µ»Ø *******************/
+/****************** è¿”å› *******************/
 
-//µã»÷·µ»Ø°´¼ü
+//ç‚¹å‡»è¿”å›æŒ‰é”®
 void RecheckUI::on_pushButton_return_clicked()
 {
-	this->reset(); //Çå¿Õ½çÃæÉÏµÄ¼ì²â½á¹û
+	this->reset(); //æ¸…ç©ºç•Œé¢ä¸Šçš„æ£€æµ‹ç»“æœ
 	emit recheckFinished_recheckUI();
 }
 
 
-/****************** ÆäËû *******************/
+/****************** å…¶ä»– *******************/
 
-//ÉèÖÃ°´¼ü
+//è®¾ç½®æŒ‰é”®
 void RecheckUI::setPushButtonsEnabled(bool enable)
 {
 	ui.pushButton_plus2->setEnabled(enable);
@@ -323,7 +324,7 @@ void RecheckUI::setPushButtonsEnabled(bool enable)
 	ui.pushButton_return->setEnabled(enable);
 }
 
-//µ¯´°±¨´í
+//å¼¹çª—æŠ¥é”™
 //void PCBRecheck::showMessageBox(MessageBoxType boxType, RecheckStatus status)
 //{
 //	RecheckStatus tempStatus = (status == Default) ? recheckStatus : status;
@@ -333,42 +334,42 @@ void RecheckUI::setPushButtonsEnabled(bool enable)
 //	switch (status)
 //	{
 //	case PCBRecheck::Unchecked:
-//		message = pcb::chinese("ÏµÍ³×´Ì¬Î´Öª!  \n"); 
+//		message = pcb::chinese("ç³»ç»ŸçŠ¶æ€æœªçŸ¥!  \n"); 
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::CurrentBatchRechecked:
-//		message = pcb::chinese("¸ÃÅú´ÎµÄËùÓĞÑù±¾ÒÑ¾­¸´²éÍê³É!  \n"); 
+//		message = pcb::chinese("è¯¥æ‰¹æ¬¡çš„æ‰€æœ‰æ ·æœ¬å·²ç»å¤æŸ¥å®Œæˆ!  \n"); 
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::InvalidFullImageName:
-//		message = pcb::chinese("PCBÕûÍ¼ÎÄ¼şµÄÎÄ¼şÃûÎŞĞ§!  \n"); 
+//		message = pcb::chinese("PCBæ•´å›¾æ–‡ä»¶çš„æ–‡ä»¶åæ— æ•ˆ!  \n"); 
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::FullImageNotFound:
-//		message = pcb::chinese("Ã»ÓĞÕÒµ½PCBÕûÍ¼!  \n");
+//		message = pcb::chinese("æ²¡æœ‰æ‰¾åˆ°PCBæ•´å›¾!  \n");
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::LoadFullImageFailed:
-//		message = pcb::chinese("ÎŞ·¨´ò¿ªPCBÕûÍ¼!  \n"); 
+//		message = pcb::chinese("æ— æ³•æ‰“å¼€PCBæ•´å›¾!  \n"); 
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::FlawImageNotFound:
-//		message = pcb::chinese("Ã»ÓĞÕÒµ½PCBÈ±ÏİÍ¼!  \n");
+//		message = pcb::chinese("æ²¡æœ‰æ‰¾åˆ°PCBç¼ºé™·å›¾!  \n");
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::LoadFlawImageFailed:
-//		message = pcb::chinese("ÎŞ·¨´ò¿ªÏàÓ¦µÄÈ±ÏİÍ¼!  \n"); 
+//		message = pcb::chinese("æ— æ³•æ‰“å¼€ç›¸åº”çš„ç¼ºé™·å›¾!  \n"); 
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::OpenFlawImageFolderFailed:
-//		message = pcb::chinese("Â·¾¶¶¨Î»Ê§°Ü£¬ÎŞ·¨»ñÈ¡ÏàÓ¦µÄ¼ì²â½á¹û!\n"); 
+//		message = pcb::chinese("è·¯å¾„å®šä½å¤±è´¥ï¼Œæ— æ³•è·å–ç›¸åº”çš„æ£€æµ‹ç»“æœ!\n"); 
 //		//message += QString("path: ./output" + runtimeParams.getRelativeFolderPath()) + "\n"; 
 //		message += "Recheck: Main: ErrorCode: " + QString::number(tempStatus); break;
 //	case PCBRecheck::Default:
 //		break;
 //	}
 //
-//	//ÏÔÊ¾´°¿Ú
+//	//æ˜¾ç¤ºçª—å£
 //	//MyMessageBox messageBox;
 //	//messageBox.set(boxType, message);
 //	//messageBox.doShow();
-//	//pcb::delay(10);//ÑÓÊ±
+//	//pcb::delay(10);//å»¶æ—¶
 //}
 
-//Ìí¼ÓÈÕÖ¾
+//æ·»åŠ æ—¥å¿—
 void RecheckUI::logging(QString msg)
 {
 	QString fileName = "./log.txt";

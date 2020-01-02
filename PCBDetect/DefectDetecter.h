@@ -68,7 +68,11 @@ public:
 	inline void setSampleImages(pcb::CvMatArray *ptr) { cvmatSamples = ptr; } //样本图
 	inline void setDetectResult(pcb::DetectResult *ptr) { detectResult = ptr; } //检测结果
 
+
+
 	void detect();
+
+	void saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::FlawInfo> &flawInfos, QDate detectionDate);
 
 private:
 	void initDetectFunc();

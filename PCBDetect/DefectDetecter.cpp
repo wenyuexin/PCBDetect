@@ -20,14 +20,14 @@ using std::to_string;
 
 DefectDetecter::DefectDetecter() 
 {
-	adminConfig = Q_NULLPTR; //ÏµÍ³²ÎÊı
-	userConfig = Q_NULLPTR; //ÓÃ»§²ÎÊı
-	runtimeParams = Q_NULLPTR; //ÔËĞĞ²ÎÊı
-	detectResult = Q_NULLPTR; //¼ì²â½á¹û
-	cvmatSamples = Q_NULLPTR; //ÕıÔÚ¼ì²âµÄÒ»ĞĞÑù±¾
-	detectFunc = Q_NULLPTR; //¼ì²â¸¨ÖúÀà
-	detectState = Default; //¼ì²â×´Ì¬£¨ÓÃÓÚ½çÃæÏÔÊ¾ºÍ³ÌĞòµ÷ÊÔ£©
-	totalDefectNum = INT_MIN; //È±Ïİ×ÜÊı
+	adminConfig = Q_NULLPTR; //ç³»ç»Ÿå‚æ•°
+	userConfig = Q_NULLPTR; //ç”¨æˆ·å‚æ•°
+	runtimeParams = Q_NULLPTR; //è¿è¡Œå‚æ•°
+	detectResult = Q_NULLPTR; //æ£€æµ‹ç»“æœ
+	cvmatSamples = Q_NULLPTR; //æ­£åœ¨æ£€æµ‹çš„ä¸€è¡Œæ ·æœ¬
+	detectFunc = Q_NULLPTR; //æ£€æµ‹è¾…åŠ©ç±»
+	detectState = Default; //æ£€æµ‹çŠ¶æ€ï¼ˆç”¨äºç•Œé¢æ˜¾ç¤ºå’Œç¨‹åºè°ƒè¯•ï¼‰
+	totalDefectNum = INT_MIN; //ç¼ºé™·æ€»æ•°
 }
 
 DefectDetecter::~DefectDetecter() 
@@ -41,12 +41,12 @@ DefectDetecter::~DefectDetecter()
 
 void DefectDetecter::init()
 {
-	generateBigTempl(); //Éú³É´óÄ£°å
-	initDetectFunc(); //³õÊ¼»¯¼ì²âº¯ÊıÀà
-	initDetectUnits(); //¶ÔÈô¸É¼ì²âµ¥Ôª½øĞĞ³õÊ¼»¯
+	generateBigTempl(); //ç”Ÿæˆå¤§æ¨¡æ¿
+	initDetectFunc(); //åˆå§‹åŒ–æ£€æµ‹å‡½æ•°ç±»
+	initDetectUnits(); //å¯¹è‹¥å¹²æ£€æµ‹å•å…ƒè¿›è¡Œåˆå§‹åŒ–
 }
 
-//³õÊ¼»¯templFunc
+//åˆå§‹åŒ–templFunc
 void DefectDetecter::initDetectFunc()
 {
 	delete detectFunc;
@@ -58,41 +58,41 @@ void DefectDetecter::initDetectFunc()
 	//detectFunc->setDetectResult(detectResult);
 }
 
-//Éú³ÉÍêÕû³ß´çµÄÈ±Ïİ¼ì²âÍ¼Ïñ
+//ç”Ÿæˆå®Œæ•´å°ºå¯¸çš„ç¼ºé™·æ£€æµ‹å›¾åƒ
 void DefectDetecter::generateBigTempl()
 {
 	Size originalfullImgSize = Size(adminConfig->ImageSize_W * runtimeParams->nCamera,
-		adminConfig->ImageSize_H * runtimeParams->nPhotographing); //ÕûÍ¼µÄÔ­Ê¼³ß´ç
+		adminConfig->ImageSize_H * runtimeParams->nPhotographing); //æ•´å›¾çš„åŸå§‹å°ºå¯¸
 
 	double factorW = 2.0 * runtimeParams->ScreenRect.width() / originalfullImgSize.width;
 	double factorH = 2.0 * runtimeParams->ScreenRect.height() / originalfullImgSize.height;
-	scalingFactor = qMin(factorW, factorH); //Ëõ·ÅÒò×Ó
+	scalingFactor = qMin(factorW, factorH); //ç¼©æ”¾å› å­
 
 	//scalingFactor = 1; 1
 
 	scaledSubImageSize = Size(scalingFactor * adminConfig->ImageSize_W,
-		scalingFactor * adminConfig->ImageSize_H); //·ÖÍ¼¾­¹ıËõ·ÅºóµÄ³ß´ç
+		scalingFactor * adminConfig->ImageSize_H); //åˆ†å›¾ç»è¿‡ç¼©æ”¾åçš„å°ºå¯¸
 
 	scaledFullImageSize = Size(scaledSubImageSize.width * runtimeParams->nCamera,
-		scaledSubImageSize.height * runtimeParams->nPhotographing); //ÕûÍ¼¾­¹ıËõ·ÅºóµÄ³ß´ç
+		scaledSubImageSize.height * runtimeParams->nPhotographing); //æ•´å›¾ç»è¿‡ç¼©æ”¾åçš„å°ºå¯¸
 
-	bigTempl = Mat(scaledFullImageSize, CV_8UC3); //Éú³ÉÓÃÓÚ¼ÇÂ¼È±ÏİµÄÕûÍ¼
+	bigTempl = Mat(scaledFullImageSize, CV_8UC3); //ç”Ÿæˆç”¨äºè®°å½•ç¼ºé™·çš„æ•´å›¾
 }
 
 
-/********* ¼ì²âµ¥ÔªµÄ³õÊ¼»¯ºÍdelete ***********/
+/********* æ£€æµ‹å•å…ƒçš„åˆå§‹åŒ–å’Œdelete ***********/
 
 void DefectDetecter::initDetectUnits()
 {
-	deleteDetectUnits(); //Çå³ıÀúÊ·Êı¾İ
+	deleteDetectUnits(); //æ¸…é™¤å†å²æ•°æ®
 	detectUnits.resize(MAX_DETECT_UNITS_NUM);
 	for (int i = 0; i < MAX_DETECT_UNITS_NUM; i++) {
 		detectUnits[i] = new DetectUnit();
-		detectUnits[i]->setCurrentCol(i);//ÉèÖÃÁĞºÅ
-		detectUnits[i]->setDetectFunc(detectFunc);//ËùÓĞµ¥Ôª¹²ÓÃÒ»¸ödetectFunc
-		detectUnits[i]->setAdminConfig(adminConfig); //ÉèÖÃÏµÍ³²ÎÊı
-		detectUnits[i]->setUserConfig(userConfig); //ÉèÖÃÓÃ»§²ÎÊı
-		detectUnits[i]->setRuntimeParams(runtimeParams); //ÉèÖÃÔËĞĞ²ÎÊı
+		detectUnits[i]->setCurrentCol(i);//è®¾ç½®åˆ—å·
+		detectUnits[i]->setDetectFunc(detectFunc);//æ‰€æœ‰å•å…ƒå…±ç”¨ä¸€ä¸ªdetectFunc
+		detectUnits[i]->setAdminConfig(adminConfig); //è®¾ç½®ç³»ç»Ÿå‚æ•°
+		detectUnits[i]->setUserConfig(userConfig); //è®¾ç½®ç”¨æˆ·å‚æ•°
+		detectUnits[i]->setRuntimeParams(runtimeParams); //è®¾ç½®è¿è¡Œå‚æ•°
 	}
 }
 
@@ -106,28 +106,28 @@ void DefectDetecter::deleteDetectUnits()
 }
 
 
-/**************** ¼ì²âµ±Ç°Ñù±¾ĞĞ ****************/
+/**************** æ£€æµ‹å½“å‰æ ·æœ¬è¡Œ ****************/
 
 void DefectDetecter::detect()
 {
 	detectState = DetectState::Start;
 	emit updateDetectState_detecter(detectState);
 	double t1 = clock();
-	qDebug() << "====================" << pcb::chinese("¿ªÊ¼¼ì²â") <<
+	qDebug() << "====================" << pcb::chinese("å¼€å§‹æ£€æµ‹") <<
 		"( currentRow_detect =" << runtimeParams->currentRow_detect << ")" << endl;
 
 	int currentRow_detect = runtimeParams->currentRow_detect;
 	int nCamera = runtimeParams->nCamera;
 	int nPhotographing = runtimeParams->nPhotographing;
 
-	//¼ì²â¶ÔÓ¦µÄÑù±¾Ä¿Â¼ÊÇ·ñ´æÔÚ£¬²»´æÔÚÔò´´½¨
+	//æ£€æµ‹å¯¹åº”çš„æ ·æœ¬ç›®å½•æ˜¯å¦å­˜åœ¨ï¼Œä¸å­˜åœ¨åˆ™åˆ›å»º
 	if (currentRow_detect == 0) makeCurrentSampleDir();
 
-	//¼ì²â¶ÔÓ¦µÄÊä³öÄ¿Â¼ÊÇ·ñ´æÔÚ£¬²»´æÔÚÔò´´½¨
+	//æ£€æµ‹å¯¹åº”çš„è¾“å‡ºç›®å½•æ˜¯å¦å­˜åœ¨ï¼Œä¸å­˜åœ¨åˆ™åˆ›å»º
 	vector<QString> subFolders { "fullImage" };
 	if (currentRow_detect == 0) makeCurrentOutputDir(subFolders);
 
-	//¶ÁÈ¡ÑÚÄ¤ÇøÓò×ø±êÖµ
+	//è¯»å–æ©è†œåŒºåŸŸåæ ‡å€¼
 	if (currentRow_detect == 0) {
 		QString cornerPointsPath = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/mask/cornerPoints.bin";
 		cv::FileStorage store_new(cornerPointsPath.toStdString(), cv::FileStorage::READ);
@@ -135,13 +135,13 @@ void DefectDetecter::detect()
 		vector<cv::Point2i> res;
 		cv::read(node, res);
 		if (res.size() == 0) {
-			qDebug() << pcb::chinese("DefectDetecter: ¼ÓÔØÄ£°åµÄÑÚÄ£ÇøÓò×ø±êºÍãĞÖµÊ§°Ü");
+			qDebug() << pcb::chinese("DefectDetecter: åŠ è½½æ¨¡æ¿çš„æ©æ¨¡åŒºåŸŸåæ ‡å’Œé˜ˆå€¼å¤±è´¥");
 			errorCode = LoadTemplMaskRoiError; return;
 		}
 		maskRoi_bl = res[0];
 		maskRoi_tr = res[1];
-		segThresh = res[2].x;//È«¾ÖãĞÖµ
-		UsingDefaultSegThresh = res[2].y;//·Ö¸î±êÖ¾
+		segThresh = res[2].x;//å…¨å±€é˜ˆå€¼
+		UsingDefaultSegThresh = res[2].y;//åˆ†å‰²æ ‡å¿—
 
 		store_new.release();
 	}
@@ -168,186 +168,195 @@ void DefectDetecter::detect()
 		templateFlag = (runtimeParams->productID.modelType).toInt();
 	}
 
-	//Ïò¼ì²âµ¥Ôª´«ÈëÊÊÓÃÓÚÕû¸öPCB°åµÄ²ÎÊı
+	//å‘æ£€æµ‹å•å…ƒä¼ å…¥é€‚ç”¨äºæ•´ä¸ªPCBæ¿çš„å‚æ•°
 	if (currentRow_detect == 0) {
-		totalDefectNum = 0; //È±Ïİ×ÜÊı
+		totalDefectNum = 0; //ç¼ºé™·æ€»æ•°
 		for (int i = 0; i < nCamera; i++) {
-			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr);//ÉèÖÃÑÚÄ£ÇøÓò×ø±ê
-			detectUnits[i]->setSegThresh(segThresh);//ÉèÖÃÈ«¾ÖãĞÖµ
-			detectUnits[i]->setThreshFlag(UsingDefaultSegThresh);//ÉèÖÃ×Ô¶¯·Ö¸î±êÖ¾
-			detectUnits[i]->setScalingFactor(scalingFactor); //ÉèÖÃËõ·ÅÒò×Ó
-			detectUnits[i]->setScaledFullImageSize(&scaledFullImageSize); //ÉèÖÃËõ·ÅºóµÄÕûÍ¼Í¼Ïñ³ß´ç
-			detectUnits[i]->setScaledSubImageSize(&scaledSubImageSize); //ÉèÖÃËõ·ÅºóµÄ·ÖÍ¼Í¼Ïñ³ß´ç
+			detectUnits[i]->setMaskRoi(&maskRoi_bl, &maskRoi_tr);//è®¾ç½®æ©æ¨¡åŒºåŸŸåæ ‡
+			detectUnits[i]->setSegThresh(segThresh);//è®¾ç½®å…¨å±€é˜ˆå€¼
+			detectUnits[i]->setThreshFlag(UsingDefaultSegThresh);//è®¾ç½®è‡ªåŠ¨åˆ†å‰²æ ‡å¿—
+			detectUnits[i]->setScalingFactor(scalingFactor); //è®¾ç½®ç¼©æ”¾å› å­
+			detectUnits[i]->setScaledFullImageSize(&scaledFullImageSize); //è®¾ç½®ç¼©æ”¾åçš„æ•´å›¾å›¾åƒå°ºå¯¸
+			detectUnits[i]->setScaledSubImageSize(&scaledSubImageSize); //è®¾ç½®ç¼©æ”¾åçš„åˆ†å›¾å›¾åƒå°ºå¯¸
 		}
 	}
 
 	//nPhotographing
-	//Ïò¼ì²âµ¥Ôª´«ÈëÊÊÓÃÓÚµ±Ç°ĞĞµÄ²ÎÊı
+	//å‘æ£€æµ‹å•å…ƒä¼ å…¥é€‚ç”¨äºå½“å‰è¡Œçš„å‚æ•°
 	CvMatVector subImages = (*cvmatSamples)[currentRow_detect];
 	for (int i = 0; i < nCamera; i++) {
-		detectUnits[i]->setSubImage(*subImages[i]);//ÉèÖÃĞèÒª¼ì²âµÄ·ÖÍ¼
+		detectUnits[i]->setSubImage(*subImages[i]);//è®¾ç½®éœ€è¦æ£€æµ‹çš„åˆ†å›¾
 	}
 
-	//¿ªÆôÈô¸É¼ì²âÏß³Ì£¬¼ì²âµ±Ç°µÄÒ»ĞĞ·ÖÍ¼
+	//å¼€å¯è‹¥å¹²æ£€æµ‹çº¿ç¨‹ï¼Œæ£€æµ‹å½“å‰çš„ä¸€è¡Œåˆ†å›¾
 	for (int i = 0; i < nCamera; i++) {
-		detectUnits[i]->start(); //¿ªÊ¼×ª»»
+		detectUnits[i]->start(); //å¼€å§‹è½¬æ¢
 	}
 
-	//µÈ´ıËùÓĞ¼ì²âµ¥ÔªÔËĞĞ½áÊø
+	//ç­‰å¾…æ‰€æœ‰æ£€æµ‹å•å…ƒè¿è¡Œç»“æŸ
 	for (int i = 0; i < nCamera; i++) {
 		detectUnits[i]->wait();
 	}
 
-	//¼ì²â½áÊø£¬ÕûºÏµ±Ç°ĞĞµÄ¼ì²â½á¹û
+	//æ£€æµ‹ç»“æŸï¼Œæ•´åˆå½“å‰è¡Œçš„æ£€æµ‹ç»“æœ
+	
 	for (int i = 0; i < nCamera; i++) {
-		//Í³¼ÆÈ±Ïİ×ÜÊı
+		//ç»Ÿè®¡ç¼ºé™·æ€»æ•°
 		int defectNum = detectUnits[i]->getDefectNum();
 		totalDefectNum += defectNum;
 
-		//½«±ê¼ÇÁËÈ±ÏİµÄ·ÖÍ¼¸´ÖÆµ½´óÍ¼
+		//å°†æ ‡è®°äº†ç¼ºé™·çš„åˆ†å›¾å¤åˆ¶åˆ°å¤§å›¾
 		Mat markedSubImage = detectUnits[i]->getMarkedSubImage();
 		int curCol = detectUnits[i]->getcurCol();
 		int curRow = detectUnits[i]->getcurRow();
 		Rect rect(Point(curCol*markedSubImage.cols, curRow*markedSubImage.rows), markedSubImage.size());
 		markedSubImage.copyTo(bigTempl(rect));
 
-		//½«È±ÏİÏ¸½ÚÍ¼¼°ÆäÏà¹ØĞÅÏ¢ºÏ²¢ÔÚÒ»Æğ
+		//å°†ç¼ºé™·ç»†èŠ‚å›¾åŠå…¶ç›¸å…³ä¿¡æ¯åˆå¹¶åœ¨ä¸€èµ·
 		std::map<cv::Point3i, cv::Mat, cmp_point3i> detailImage = detectUnits[i]->getDetailImage();
 		allDetailImage.insert(detailImage.begin(), detailImage.end());
 		detectUnits[i]->clearDetailImage();
 	}
 
-	//¼ì²â½áÊø
+	//æ£€æµ‹ç»“æŸ
 	double t2 = clock();
-	qDebug() << "====================" << pcb::chinese("µ±Ç°ĞĞ¼ì²â½áÊø£º") <<
+	qDebug() << "====================" << pcb::chinese("å½“å‰è¡Œæ£€æµ‹ç»“æŸï¼š") <<
 		(t2 - t1) << "ms  ( currentRow_detect =" << currentRow_detect << ")" << endl;
 
 	detectState = DetectState::Finished;
 	emit updateDetectState_detecter(detectState);
 
-	//Èç¹ûµ±Ç°¼ì²âµÄÊÇ×îºóÒ»ĞĞÍ¼Ïñ 
+	//å¦‚æœå½“å‰æ£€æµ‹çš„æ˜¯æœ€åä¸€è¡Œå›¾åƒ 
 	if (currentRow_detect == nPhotographing-1) {
-		//¹¹Ôì´æ´¢½á¹ûĞÅÏ¢µÄ¶ÔÏó
-		vector<pcb::DefectInfo> defectInfos(allDetailImage.size());
-		pcb::DetectResult *detectResult = new DetectResult;
-		
+		//å®šä¹‰å­˜å‚¨åˆ†å›¾ç»“æœä¿¡æ¯çš„vector
+		vector<pcb::FlawInfo> flawInfos(allDetailImage.size());
+	
 		Size sz(adminConfig->ImageSize_W*nCamera, adminConfig->ImageSize_H*nCamera);
 		QString fullImageDir = runtimeParams->currentOutputDir + "/" + subFolders[0] + "/";
 
-		//´æ´¢ÕûÍ¼
-		QString filePath = fullImageDir; //Ìí¼ÓÎÄ¼ş¼ĞÂ·¾¶
-		filePath += QString("fullImage_%1_%2_%3").arg(sz.width).arg(sz.height).arg(totalDefectNum); //Ìí¼ÓÎÄ¼şÃû
-		filePath += userConfig->ImageFormat; //Ìí¼ÓÎÄ¼şºó×º
-		cv::imwrite(filePath.toStdString(), bigTempl); //´æ´óÍ¼
+		//å­˜å‚¨æ•´å›¾
+		QString filePath = fullImageDir; //æ·»åŠ æ–‡ä»¶å¤¹è·¯å¾„
+		filePath += QString("fullImage_%1_%2_%3").arg(sz.width).arg(sz.height).arg(totalDefectNum); //æ·»åŠ æ–‡ä»¶å
+		filePath += userConfig->ImageFormat; //æ·»åŠ æ–‡ä»¶åç¼€
+		cv::imwrite(filePath.toStdString(), bigTempl); //å­˜å¤§å›¾
 
-		//´æ´¢Ï¸½ÚÍ¼
-		QChar fillChar = '0'; //µ±×Ö·û´®³¤¶È²»¹»Ê±Ê¹ÓÃ´Ë×Ö·û½øĞĞÌî³ä
- 		int defectNum = 0;// È±ÏİĞòºÅ
+		//å­˜å‚¨ç»†èŠ‚å›¾
+		QChar fillChar = '0'; //å½“å­—ç¬¦ä¸²é•¿åº¦ä¸å¤Ÿæ—¶ä½¿ç”¨æ­¤å­—ç¬¦è¿›è¡Œå¡«å……
+ 		int defectNum = 0;// ç¼ºé™·åºå·
 		for (auto beg = allDetailImage.begin(); beg!=allDetailImage.end(); beg++) {
 
 			defectNum++;
 			cv::Point3i info = (*beg).first;
 			cv::Mat imgSeg = (*beg).second;
-			QString outPath = runtimeParams->currentOutputDir + "/"; //µ±Ç°ĞòºÅ¶ÔÓ¦µÄÊä³öÄ¿Â¼
+			QString outPath = runtimeParams->currentOutputDir + "/"; //å½“å‰åºå·å¯¹åº”çš„è¾“å‡ºç›®å½•
 			outPath += QString("%1_%2_%3_%4").arg(defectNum, 4, 10, fillChar).arg(info.x, 5, 10, fillChar).arg(info.y, 5, 10, fillChar).arg(info.z);
-			outPath += userConfig->ImageFormat; //Ìí¼ÓÍ¼Ïñ¸ñÊ½µÄºó×º
-			cv::imwrite(outPath.toStdString(), imgSeg);//½«Ï¸½ÚÍ¼´æ´¢µ½±¾µØÓ²ÅÌÉÏ
+			outPath += userConfig->ImageFormat; //æ·»åŠ å›¾åƒæ ¼å¼çš„åç¼€
+			cv::imwrite(outPath.toStdString(), imgSeg);//å°†ç»†èŠ‚å›¾å­˜å‚¨åˆ°æœ¬åœ°ç¡¬ç›˜ä¸Š
 
-			//½«·ÖÍ¼È±ÏİĞÅÏ¢±£´æ½øDefectInfo¶ÔÏó
-			pcb::DefectInfo temp;
-			temp.defectIndex = defectNum;
-			temp.defectType = info.z;
+			//å°†åˆ†å›¾ç¼ºé™·ä¿¡æ¯ä¿å­˜è¿›FlawInfoå¯¹è±¡
+			pcb::FlawInfo temp;
+			temp.flawImage = imgSeg.clone();
+
+			temp.flawIndex = defectNum;
+			temp.flawType = info.z;
 			temp.xPos = info.x;
 			temp.yPos = info.y;
-			defectInfos[defectNum-1] = temp;
+			flawInfos[defectNum-1] = temp;
 		}
 		
-		//Ïò¼ì²â½çÃæ·¢ËÍÊÇ·ñºÏ¸ñµÄĞÅÏ¢
+		//å‘æ£€æµ‹ç•Œé¢å‘é€æ˜¯å¦åˆæ ¼çš„ä¿¡æ¯
 		bool qualified = (totalDefectNum < 1);
-		emit detectFinished_detectThread();
+		emit detectFinished_detectThread(qualified);
 
-		//½«½á¹ûĞÅÏ¢´æÈë½á¹û¶ÔÏó
-		detectResult->defectInfos = defectInfos;
-		detectResult->fullImage = bigTempl.clone();
-		detectResult->SampleIsQualified = qualified;
+		//å°†ç»“æœä¿¡æ¯å­˜å…¥ç»“æœå¯¹è±¡
+		saveDetectResult(qualified, bigTempl, sz, flawInfos, (runtimeParams->productID).date);
 
-		//Çå¿ÕÀúÊ·Êı¾İ
+		//æ¸…ç©ºå†å²æ•°æ®
 		allDetailImage.clear();
-		generateBigTempl(); //ÖØĞÂÉú³É´óÍ¼
-		totalDefectNum = -1;//½«È±Ïİ×ÜÊıÖÃÎ»
+		generateBigTempl(); //é‡æ–°ç”Ÿæˆå¤§å›¾
+		totalDefectNum = -1;//å°†ç¼ºé™·æ€»æ•°ç½®ä½
 
 		double t3 = clock();
-		qDebug() << "====================" << pcb::chinese("´æ´¢¼ì²â½á¹û£º") <<
+		qDebug() << "====================" << pcb::chinese("å­˜å‚¨æ£€æµ‹ç»“æœï¼š") <<
 			(t3 - t2) << "ms  ( currentRow_detect =" << currentRow_detect << ")" << endl;
 	}
 }
 
+void DefectDetecter::saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::FlawInfo>& flawInfos, QDate detectionDate)
+{
+	detectResult->SampleIsQualified = SampleIsQualified;
+	detectResult->fullImage = fullImage.clone();
+	detectResult->fullImageSize = fullImageSize;
+	detectResult->flawInfos = flawInfos;
+	detectResult->detectionDate = detectionDate;
+}
 
-/*********** Éú³ÉÏàÓ¦µÄÑù±¾ÎÄ¼ş¼Ğ¡¢Êä³öÎÄ¼ş¼Ğ ************/
 
-//ÅĞ¶ÏÓë²úÆ·ĞòºÅ¶ÔÓ¦µÄÑù±¾ÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ£¬Èô²»´æÔÚÔò´´½¨
+/*********** ç”Ÿæˆç›¸åº”çš„æ ·æœ¬æ–‡ä»¶å¤¹ã€è¾“å‡ºæ–‡ä»¶å¤¹ ************/
+
+//åˆ¤æ–­ä¸äº§å“åºå·å¯¹åº”çš„æ ·æœ¬æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨ï¼Œè‹¥ä¸å­˜åœ¨åˆ™åˆ›å»º
 void DefectDetecter::makeCurrentSampleDir(std::vector<QString> &subFolders)
 {
-	//ÅĞ¶Ï¶¥²ãµÄsampleÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­é¡¶å±‚çš„sampleæ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentSampleDir = userConfig->SampleDirPath;
 	QDir outputDir(runtimeParams->currentSampleDir);
 	if (!outputDir.exists()) outputDir.mkdir(runtimeParams->currentSampleDir);
 
-	//ÅĞ¶Ï¶ÔÓ¦µÄĞÍºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­å¯¹åº”çš„å‹å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentSampleDir += "/" + runtimeParams->productID.modelType;
 	QDir modelDir(runtimeParams->currentSampleDir);
 	if (!modelDir.exists()) modelDir.mkdir(runtimeParams->currentSampleDir);
 
-	//ÅĞ¶Ï¶ÔÓ¦µÄÅú´ÎºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­å¯¹åº”çš„æ‰¹æ¬¡å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentSampleDir += "/" + runtimeParams->productID.getDateString();
 	QDir batchDir(runtimeParams->currentSampleDir);
 	if (!batchDir.exists()) batchDir.mkdir(runtimeParams->currentSampleDir);
 
-	//ÅĞ¶Ï¶ÔÓ¦µÄÑù±¾±àºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­å¯¹åº”çš„æ ·æœ¬ç¼–å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentSampleDir += "/" + QString::number(runtimeParams->productID.serialNum);
 	QDir resultDir(runtimeParams->currentSampleDir);
 	if (!resultDir.exists()) {
-		resultDir.mkdir(runtimeParams->currentSampleDir);//´´½¨ÎÄ¼ş¼Ğ
+		resultDir.mkdir(runtimeParams->currentSampleDir);//åˆ›å»ºæ–‡ä»¶å¤¹
 	}
-	else if (!runtimeParams->DeveloperMode) { //ÎÄ¼ş¼Ğ´æÔÚÇÒ¿ª·¢ÕßÄ£Ê½Î´¿ªÆô
-		pcb::clearFolder(runtimeParams->currentSampleDir, false);//Çå¿ÕÎÄ¼ş¼Ğ
+	else if (!runtimeParams->DeveloperMode) { //æ–‡ä»¶å¤¹å­˜åœ¨ä¸”å¼€å‘è€…æ¨¡å¼æœªå¼€å¯
+		pcb::clearFolder(runtimeParams->currentSampleDir, false);//æ¸…ç©ºæ–‡ä»¶å¤¹
 	}
 
-	//Ìí¼Ó×ÓÎÄ¼ş¼Ğ
+	//æ·»åŠ å­æ–‡ä»¶å¤¹
 	for (int i = 0; i < subFolders.size(); i++) {
 		resultDir.mkdir(subFolders[i]);
 	}
 }
 
-//ÅĞ¶ÏÓë²úÆ·ĞòºÅ¶ÔÓ¦µÄÊä³öÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ£¬Èô²»´æÔÚÔò´´½¨
+//åˆ¤æ–­ä¸äº§å“åºå·å¯¹åº”çš„è¾“å‡ºæ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨ï¼Œè‹¥ä¸å­˜åœ¨åˆ™åˆ›å»º
 void DefectDetecter::makeCurrentOutputDir(vector<QString> &subFolders)
 {
-	//ÅĞ¶Ï¶¥²ãµÄoutputÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­é¡¶å±‚çš„outputæ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentOutputDir = userConfig->OutputDirPath; 
 	QDir outputDir(runtimeParams->currentOutputDir);
 	if (!outputDir.exists()) outputDir.mkdir(runtimeParams->currentOutputDir);
 
-	//ÅĞ¶Ï¶ÔÓ¦µÄĞÍºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­å¯¹åº”çš„å‹å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentOutputDir += "/" + runtimeParams->productID.modelType;
 	QDir modelDir(runtimeParams->currentOutputDir);
 	if (!modelDir.exists()) modelDir.mkdir(runtimeParams->currentOutputDir);
 
-	//ÅĞ¶Ï¶ÔÓ¦µÄÅú´ÎºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­å¯¹åº”çš„æ‰¹æ¬¡å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentOutputDir += "/" + runtimeParams->productID.getDateString();
 	QDir batchDir(runtimeParams->currentOutputDir);
 	if (!batchDir.exists()) batchDir.mkdir(runtimeParams->currentOutputDir);
 
-	//ÅĞ¶Ï¶ÔÓ¦µÄÑù±¾±àºÅÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ
+	//åˆ¤æ–­å¯¹åº”çš„æ ·æœ¬ç¼–å·æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
 	runtimeParams->currentOutputDir += "/" + QString::number(runtimeParams->productID.serialNum);
 	QDir resultDir(runtimeParams->currentOutputDir);
 	if (!resultDir.exists()) {
-		resultDir.mkdir(runtimeParams->currentOutputDir);//´´½¨ÎÄ¼ş¼Ğ
+		resultDir.mkdir(runtimeParams->currentOutputDir);//åˆ›å»ºæ–‡ä»¶å¤¹
 	}
 	else {
-		pcb::clearFolder(runtimeParams->currentOutputDir, false);//Çå¿ÕÎÄ¼ş¼Ğ
+		pcb::clearFolder(runtimeParams->currentOutputDir, false);//æ¸…ç©ºæ–‡ä»¶å¤¹
 	}
 
-	//Ìí¼Ó×ÓÎÄ¼ş¼Ğ
+	//æ·»åŠ å­æ–‡ä»¶å¤¹
 	for (int i = 0; i < subFolders.size(); i++) {
 		resultDir.mkdir(subFolders[i]);
 	}
