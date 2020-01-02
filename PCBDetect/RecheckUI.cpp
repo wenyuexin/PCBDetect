@@ -162,11 +162,11 @@ void RecheckUI::setFlickeringArrowPos()
 
 /************** 加载、删除GraphicView中的图像资源 *************/
 
-//删除graphicView中
-void RecheckUI::loadFlawInfos()
-{
-
-}
+////删除graphicView中
+//void RecheckUI::loadFlawInfos()
+//{
+//
+//}
 
 //加载缺陷
 void RecheckUI::loadFlawInfos()
