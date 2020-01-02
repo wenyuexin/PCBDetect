@@ -19,17 +19,17 @@ using cv::xfeatures2d::SURF;
 DetectUnit::DetectUnit(QObject *parent)
 	: QThread(parent)
 {
-	adminConfig = Q_NULLPTR; //ç³»ç»Ÿå‚æ•°
-	userConfig = Q_NULLPTR; //ç”¨æˆ·å‚æ•°
-	runtimeParams = Q_NULLPTR; //è¿è¡Œå‚æ•°
-	detectFunc = Q_NULLPTR; //æ£€æµ‹å‡½æ•°ç±»
+	adminConfig = Q_NULLPTR; //ÏµÍ³²ÎÊý
+	userConfig = Q_NULLPTR; //ÓÃ»§²ÎÊý
+	runtimeParams = Q_NULLPTR; //ÔËÐÐ²ÎÊý
+	detectFunc = Q_NULLPTR; //¼ì²âº¯ÊýÀà
 
-	maskRoi_bl = Q_NULLPTR; //æŽ©æ¨¡åŒºåŸŸå·¦ä¸‹è§’åæ ‡ï¼Œåªè¯»
-	maskRoi_tr = Q_NULLPTR; //æŽ©æ¨¡åŒºåŸŸå³ä¸Šè§’åæ ‡ï¼Œåªè¯»
+	maskRoi_bl = Q_NULLPTR; //ÑÚÄ£ÇøÓò×óÏÂ½Ç×ø±ê£¬Ö»¶Á
+	maskRoi_tr = Q_NULLPTR; //ÑÚÄ£ÇøÓòÓÒÉÏ½Ç×ø±ê£¬Ö»¶Á
 
-	segThresh = INT_MIN;//å…¨å±€é˜ˆå€¼
+	segThresh = INT_MIN;//È«¾ÖãÐÖµ
 
-	defectNum = INT_MIN; //åˆ†å›¾ä¸­çš„ç¼ºé™·æ•°
+	defectNum = INT_MIN; //·ÖÍ¼ÖÐµÄÈ±ÏÝÊý
 }
 
 DetectUnit::~DetectUnit()
@@ -38,19 +38,19 @@ DetectUnit::~DetectUnit()
 }
 
 
-//å¼€å¯çº¿ç¨‹ï¼Œæ£€æµ‹å•ä¸ªåˆ†å›¾
+//¿ªÆôÏß³Ì£¬¼ì²âµ¥¸ö·ÖÍ¼
 void DetectUnit::run()
 {
 	double t1 = clock();
-	defectNum = 0; //åˆ†å›¾çš„ç¼ºé™·æ•°æ¸…é›¶
-	curRow = runtimeParams->currentRow_detect; //å½“å‰æ­£åœ¨æ£€æµ‹çš„è¡Œ
+	defectNum = 0; //·ÖÍ¼µÄÈ±ÏÝÊýÇåÁã
+	curRow = runtimeParams->currentRow_detect; //µ±Ç°ÕýÔÚ¼ì²âµÄÐÐ
 
-	//è¯»å–æ¨¡æ¿æŽ©è†œ
+	//¶ÁÈ¡Ä£°åÑÚÄ¤
 	QString mask_path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/mask/"
 		+ QString("%1_%2_mask").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
 	//Mat mask_roi = cv::imread(mask_path.toStdString(), 0);
 
-	//è¯»å–æ¨¡æ¿å›¾ç‰‡
+	//¶ÁÈ¡Ä£°åÍ¼Æ¬
 	QString templPath = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType + "/subtempl/"
 		+ QString("%1_%2").arg(curRow + 1).arg(curCol + 1) + userConfig->ImageFormat;
 	//Mat templGray = cv::imread(templPath.toStdString(), 0);
@@ -59,54 +59,54 @@ void DetectUnit::run()
 	Mat templGray = detectFunc->templateVec[curRow][curCol];
 
 	double t2 = clock();
-	qDebug() << "==========" << pcb::chinese("è¯»å–æ¨¡æ¿æ–‡ä»¶") << (t2 - t1) / CLOCKS_PER_SEC << "s" 
+	qDebug() << "==========" << pcb::chinese("¶ÁÈ¡Ä£°åÎÄ¼þ") << (t2 - t1) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")" << endl;
 
-	//æ ·æœ¬å›¾ç‰‡è½¬ä¸ºç°åº¦å›¾
+	//Ñù±¾Í¼Æ¬×ªÎª»Ò¶ÈÍ¼
 	Mat sampGray;
 	if (userConfig->colorMode == 0)
 		cv::cvtColor(samp, sampGray, cv::COLOR_BGR2GRAY);
 	else
 		sampGray = samp;
 	double t3 = clock();
-	qDebug() << "==========" << pcb::chinese("æ¨¡æ¿å½¢æ€å­¦å¤„ç†") << (t3 - t2) / CLOCKS_PER_SEC << "s" 
+	qDebug() << "==========" << pcb::chinese("Ä£°åÐÎÌ¬Ñ§´¦Àí") << (t3 - t2) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")" << endl;
 
 
-	//æ ·æœ¬ä¸Žæ¨¡æ¿é…å‡†
+	//Ñù±¾ÓëÄ£°åÅä×¼
 	Mat sampGrayReg, h;
 	Mat imMatches;
-	//è½½å…¥ç‰¹å¾çš„æ–¹æ³•
+	//ÔØÈëÌØÕ÷µÄ·½·¨
 	QString bin_path = userConfig->TemplDirPath + "/" + runtimeParams->productID.modelType
 		+ "/bin/" + QString::number(curRow + 1) + "_" + QString::number(curCol+1) + ".bin";
 	load(bin_path.toStdString());
 
-	//æ¯æ¬¡è®¡ç®—çš„æ–¹æ³•
+	//Ã¿´Î¼ÆËãµÄ·½·¨
 	Mat templGrayRoi, sampGrayRoi;
 	cv::bitwise_and(mask_roi, templGray, templGrayRoi);
-	//ECCé…å‡†æ–¹æ³•
+	//ECCÅä×¼·½·¨
 	/*detectFunc->alignImagesECC(templGrayRoi, sampGray, sampGrayReg, h);*/
-	//æœªè½½å…¥ç‰¹å¾
+	//Î´ÔØÈëÌØÕ÷
 	/*detectFunc->alignImages_test(templGrayRoi, sampGray, sampGrayReg, h, imMatches);*/
-	//è½½å…¥çš„ç‰¹å¾
+	//ÔØÈëµÄÌØÕ÷
 	//detectFunc->alignImages_surf_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
 	detectFunc->alignImages_sift_load(keypoints, descriptors, sampGray, sampGrayReg, h, imMatches);
 
 
 	double t4 = clock();
-	qDebug() << "==========" << pcb::chinese("æ¨¡æ¿åŒ¹é…ï¼š") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
+	qDebug() << "==========" << pcb::chinese("Ä£°åÆ¥Åä£º") << (t4 - t3) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")"  << endl;
 
 
 	
-	//æ ·æœ¬äºŒå€¼åŒ–
+	//Ñù±¾¶þÖµ»¯
 	Mat sampBw = Mat::zeros(sampGray.size(), CV_8UC1);
-	//è‡ªé€‚åº”äºŒå€¼åŒ–
+	//×ÔÊÊÓ¦¶þÖµ»¯
 	//cv::adaptiveThreshold(samp_gray, sampBw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
-	//å‡å€¼äºŒå€¼åŒ–
+	//¾ùÖµ¶þÖµ»¯
 	//int meanSampGray = mean(samp_gray,mask_roi)[0];
 	//cv::threshold(samp_gray, sampBw, meanSampGray, 255, cv::THRESH_BINARY_INV);
-	//åˆ†å—äºŒå€¼åŒ–
+	//·Ö¿é¶þÖµ»¯
 	//double ratio = 0.67;
 	//Size roiSize = sampGray.size();
 	//Rect upRect = Rect(0, 0, roiSize.width, int(ratio*roiSize.height));
@@ -115,10 +115,10 @@ void DetectUnit::run()
 	//cv::threshold(samp_gray(upRect), sampBw(upRect), meanSampGrayUp, 255, cv::THRESH_BINARY_INV);
 	//int meanSampGrayDown = mean(samp_gray(downRect), mask_roi(downRect))[0];
 	//cv::threshold(samp_gray(downRect), sampBw(downRect), meanSampGrayDown, 255, cv::THRESH_BINARY_INV);
-	//å±€éƒ¨è‡ªé€‚åº”äºŒå€¼åŒ–
+	//¾Ö²¿×ÔÊÊÓ¦¶þÖµ»¯
 	//sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr);
 
-	//ç›´æŽ¥äºŒå€¼åŒ–
+	//Ö±½Ó¶þÖµ»¯
 	sampBw = detectFunc->myThresh(curCol, curRow, sampGray, *maskRoi_bl, *maskRoi_tr,segThresh,UsingDefaultSegThresh );
 
 	Mat sampBw_direct = sampBw.clone();
@@ -127,34 +127,34 @@ void DetectUnit::run()
 	//cv::morphologyEx(sampBw, sampBw, cv::MORPH_OPEN, element_a);
 	//cv::morphologyEx(sampBw, sampBw, cv::MORPH_CLOSE, element_a);
 
-	//ç›´æŽ¥è½½å…¥äºŒå€¼åŒ–æ¨¡æ¿
+	//Ö±½ÓÔØÈë¶þÖµ»¯Ä£°å
 	//std::string templBwPath = userConfig->TemplDirPath.toStdString() + "/" + runtimeParams->sampleModelNum.toStdString() + "/bw/"
 	//	+ to_string(runtimeParams->currentRow_detect + 1) + "_" + std::to_string(i + 1) + "_bw" + userConfig->ImageFormat.toStdString();
 	//Mat templBw = cv::imread(templBwPath, 0);
 
-	//æ¯æ¬¡ç”Ÿæˆæ¨¡æ¿çš„äºŒå€¼åŒ–
+	//Ã¿´ÎÉú³ÉÄ£°åµÄ¶þÖµ»¯
 	Mat templBw = Mat::zeros(sampGray.size(), CV_8UC1);
-	//è‡ªé€‚åº”äºŒå€¼åŒ–
+	//×ÔÊÊÓ¦¶þÖµ»¯
 	//cv::adaptiveThreshold(templ_gray, templBw, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 2001, 0);
-	//å‡å€¼äºŒå€¼åŒ–
+	//¾ùÖµ¶þÖµ»¯
 	//int meanTemplGray = mean(templ_gray, mask_roi)[0];
 	//cv::threshold(templ_gray, templBw, meanTemplGray, 255, cv::THRESH_BINARY_INV);
-	//åˆ†å—äºŒå€¼åŒ–
+	//·Ö¿é¶þÖµ»¯
 	//int meanTemplGrayUp = mean(templ_gray(upRect), mask_roi(upRect))[0];
 	//cv::threshold(templ_gray(upRect), templBw(upRect), meanTemplGrayUp, 255, cv::THRESH_BINARY_INV);
 	//int meanTemplGrayDown = mean(templ_gray(downRect), mask_roi(downRect))[0];
 	//cv::threshold(templ_gray(downRect), templBw(downRect), meanTemplGrayDown, 255, cv::THRESH_BINARY_INV);
-	//å±€éƒ¨è‡ªé€‚åº”äºŒå€¼åŒ–.0
+	//¾Ö²¿×ÔÊÊÓ¦¶þÖµ»¯.0
 	//templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr);
 
-	//ç›´æŽ¥äºŒå€¼åŒ–
+	//Ö±½Ó¶þÖµ»¯
 	templBw = detectFunc->myThresh(curCol, curRow, templGray, *maskRoi_bl, *maskRoi_tr,segThresh,UsingDefaultSegThresh );
 
 	Mat elementTempl = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(1, 1));
 	cv::morphologyEx(templBw, templBw, cv::MORPH_OPEN, elementTempl);
 	cv::morphologyEx(templBw, templBw, cv::MORPH_CLOSE, elementTempl);
 
-	//é€å°„å˜æ¢åŽæœ‰ä¸€ä¸ªroi
+	//Í¸Éä±ä»»ºóÓÐÒ»¸öroi
 	Mat templ_roi = Mat::ones(templGray.size(), templGray.type()) * 255;
 	cv::warpPerspective(templ_roi, templ_roi, h, templ_roi.size());
 	threshold(templ_roi, templ_roi, 254, 255, cv::THRESH_BINARY);
@@ -164,9 +164,9 @@ void DetectUnit::run()
 	Mat templRoiReverse = 255 - templ_roi;
 	cv::add(sampGrayReg, templGray, sampGrayReg, templRoiReverse);
 
-	//æ¶ˆé™¤é‡å åŒºåŸŸé‡å¤æ£€æµ‹çš„é—®é¢˜
+	//Ïû³ýÖØµþÇøÓòÖØ¸´¼ì²âµÄÎÊÌâ
 	if (curCol != runtimeParams->nCamera - 1 && curRow != runtimeParams->nPhotographing - 1) {
-		//çºµå‘é‡å åŒºåŸŸ
+		//×ÝÏòÖØµþÇøÓò
 		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
 		Rect rect;
 		rect.x = 0;
@@ -175,7 +175,7 @@ void DetectUnit::run()
 		rect.height = templGray.rows - adminConfig->ImageSize_H*adminConfig->ImageOverlappingRate_H;
 		overlappingMask(rect).setTo(255);
 		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
-		//æ¨ªå‘é‡å åŒºåŸŸ
+		//ºáÏòÖØµþÇøÓò
 		/*cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());*/
 		rect.x = 0;
 		rect.y = 0;
@@ -184,8 +184,8 @@ void DetectUnit::run()
 		overlappingMask(rect).setTo(255);
 		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
 	}
-	else if (curCol == runtimeParams->nCamera - 1 && curRow != runtimeParams->nPhotographing - 1) {//æœ€åŽä¸€åˆ—
-	   //çºµå‘é‡å åŒºåŸŸ
+	else if (curCol == runtimeParams->nCamera - 1 && curRow != runtimeParams->nPhotographing - 1) {//×îºóÒ»ÁÐ
+	   //×ÝÏòÖØµþÇøÓò
 		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
 		Rect rect;
 		rect.x = 0;
@@ -195,8 +195,8 @@ void DetectUnit::run()
 		overlappingMask(rect).setTo(255);
 		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
 	}
-	else if (curCol != runtimeParams->nCamera - 1 && curRow == runtimeParams->nPhotographing - 1) { //æœ€åŽä¸€è¡Œ
-	   //æ¨ªå‘é‡å åŒºåŸŸ
+	else if (curCol != runtimeParams->nCamera - 1 && curRow == runtimeParams->nPhotographing - 1) { //×îºóÒ»ÐÐ
+	   //ºáÏòÖØµþÇøÓò
 		cv::Mat overlappingMask = cv::Mat::zeros(templGray.size(), templGray.type());
 		Rect rect;
 		rect.x = 0;
@@ -207,45 +207,45 @@ void DetectUnit::run()
 		cv::bitwise_and(templ_roi, overlappingMask, templ_roi);
 	}
 
-	//æ€»çš„roi  ImageOverlappingRate_W
+	//×ÜµÄroi  ImageOverlappingRate_W
 	Mat roi;
 	cv::bitwise_and(templ_roi, mask_roi, roi);
 
-	//ç›´æŽ¥å¯¹roiæŽ©è†œåšæŠ•å°„å˜æ¢
+	//Ö±½Ó¶ÔroiÑÚÄ¤×öÍ¶Éä±ä»»
 	cv::warpPerspective(mask_roi, roi, h, templ_roi.size());
 	threshold(roi, roi, 254, 255, cv::THRESH_BINARY);
 	//ECC
 	/*warpAffine(mask_roi, roi, h, templ_roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
 	cv::bitwise_and(roi, mask_roi, roi);
 
-	//åšå·®
-	cv::warpPerspective(sampBw, sampBw, h, roi.size());//æ ·æœ¬äºŒå€¼å›¾åšç›¸åº”çš„å˜æ¢ï¼Œä»¥å’Œæ¨¡æ¿å¯¹é½
+	//×ö²î
+	cv::warpPerspective(sampBw, sampBw, h, roi.size());//Ñù±¾¶þÖµÍ¼×öÏàÓ¦µÄ±ä»»£¬ÒÔºÍÄ£°å¶ÔÆë
 	threshold(sampBw, sampBw, 254, 255, cv::THRESH_BINARY);
 	//ECC
 	/*warpAffine(sampBw, sampBw, h, roi.size(), cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);*/
 	Mat directFlaw, MorphFlaw,cannyFlaw;
 	Mat diff = detectFunc->sub_process_new(templBw, sampBw, roi,directFlaw,MorphFlaw,cannyFlaw);
 	//Mat diff = detectFunc->sub_process_direct(templBw, sampBw, templGray, sampGrayReg, roi);
-	//è°ƒè¯•æ—¶å€™çš„è¾¹ç¼˜å¤„ç†
+	//µ÷ÊÔÊ±ºòµÄ±ßÔµ´¦Àí
 	Size szDiff = diff.size();
 	Mat diff_roi = Mat::zeros(szDiff, diff.type());
-	int zoom = 5;//å¿½ç•¥çš„è¾¹ç¼˜å®½åº¦
+	int zoom = 5;//ºöÂÔµÄ±ßÔµ¿í¶È
 	diff_roi(cv::Rect(zoom, zoom, szDiff.width - 2 * zoom, szDiff.height - 2 * zoom)) = 255;
 	bitwise_and(diff_roi, diff, diff);
 
 
 
-	//æ ‡è®°ç¼ºé™·
+	//±ê¼ÇÈ±ÏÝ
 	rectBlack = cv::Mat(templGray.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
 	double t5 = clock();
 	markedSubImage = detectFunc->markDefect_test(curCol, diff, sampGrayReg, scalingFactor, templBw, templGray, sampBw, defectNum, detailImage,rectBlack);
 	
 	double t6 = clock();
-	qDebug() << "==========" << pcb::chinese("ç¼ºé™·åˆ†ç±»ï¼š") << (t6 - t5) / CLOCKS_PER_SEC << "s"
+	qDebug() << "==========" << pcb::chinese("È±ÏÝ·ÖÀà£º") << (t6 - t5) / CLOCKS_PER_SEC << "s"
 		<< " ( curCol = " << curCol << ")" << endl;
 	//if (curRow == 1 && curCol == 0) {
-	//ä¿å­˜ç”¨äºŽè°ƒè¯•çš„å›¾ç‰‡
+	//±£´æÓÃÓÚµ÷ÊÔµÄÍ¼Æ¬
 	std::string debug_path = "D:\\PCBData\\debugImg\\" + std::to_string(curRow + 1) + "_" + std::to_string(curCol + 1) + "_";
 	cv::imwrite(debug_path + std::to_string(1) + ".bmp", templGray);
 	cv::imwrite(debug_path + std::to_string(2) + ".bmp", templBw);
@@ -260,7 +260,7 @@ void DetectUnit::run()
 	cv::imwrite(debug_path + std::to_string(11) + ".bmp", cannyFlaw);
 	//sampBw_direct
 
-	//ä¿å­˜æ ·æœ¬å›¾ç‰‡
+	//±£´æÑù±¾Í¼Æ¬
 	double t7 = clock();
 //}
 
@@ -268,13 +268,13 @@ void DetectUnit::run()
 	cv::imwrite(sampPath.toStdString(), samp);
 
 	double t8 = clock();
-	qDebug() << "==========" << pcb::chinese("ä¿å­˜æ ·æœ¬åˆ†å›¾") << (t8 - t7) / CLOCKS_PER_SEC << "s" 
+	qDebug() << "==========" << pcb::chinese("±£´æÑù±¾·ÖÍ¼") << (t8 - t7) / CLOCKS_PER_SEC << "s" 
 		<< " ( curCol = " << curCol << ")" << endl;
 }
 void DetectUnit::save(const std::string& path, Mat& image_template_gray) {
 	Mat temp;
 	cv::pyrDown(image_template_gray, temp);
-	if (userConfig->matchingAccuracyLevel == 2)//ä½Žç²¾åº¦
+	if (userConfig->matchingAccuracyLevel == 2)//µÍ¾«¶È
 	{
 		cv::pyrDown(temp, temp);
 		cv::pyrDown(temp, temp);
@@ -310,13 +310,13 @@ void DetectUnit::load(const std::string& path) {
 //	//pyrDown(image_sample_gray, pyr, cv::Size(int(sz.width*0.125), int(sz.height*0.125)));
 //	pyrDown(image_sample_gray, pyr);
 //	pyrDown(pyr, pyr);
-//	if (userConfig->matchingAccuracyLevel == 2)//ä½Žç²¾åº¦
+//	if (userConfig->matchingAccuracyLevel == 2)//µÍ¾«¶È
 //		pyrDown(pyr, pyr);
 //
 //	detector->detectAndCompute(pyr, Mat(), keypoints_2, descriptors_2);
 //
 //	double t2 = clock();
-//	std::cout << "èŽ·å–ç‰¹å¾ç‚¹æ—¶é—´" << double(t2 - t1) / CLOCKS_PER_SEC << endl;
+//	std::cout << "»ñÈ¡ÌØÕ÷µãÊ±¼ä" << double(t2 - t1) / CLOCKS_PER_SEC << endl;
 //
 //	Ptr<cv::flann::IndexParams> indexParams = new cv::flann::KDTreeIndexParams(5);
 //	Ptr<cv::flann::SearchParams> searchParams;
@@ -359,7 +359,7 @@ void DetectUnit::load(const std::string& path) {
 //		std::cout << matches.size() << " points matched is not enough " << endl;
 //	}
 //
-//	else //å•åº”æ€§çŸ©é˜µçš„è®¡ç®—æœ€å°‘å¾—ä½¿ç”¨4ä¸ªç‚¹
+//	else //µ¥Ó¦ÐÔ¾ØÕóµÄ¼ÆËã×îÉÙµÃÊ¹ÓÃ4¸öµã
 //	{
 //
 //		for (int i = 0; i < matches.size(); i++)
@@ -377,7 +377,7 @@ void DetectUnit::load(const std::string& path) {
 //		}
 //
 //		double t3 = clock();
-//		std::cout << "åŒ¹é…å¹¶èŽ·å–å˜æ¢çŸ©é˜µæ—¶é—´" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
+//		std::cout << "Æ¥Åä²¢»ñÈ¡±ä»»¾ØÕóÊ±¼ä" << double(t3 - t2) / CLOCKS_PER_SEC << endl;
 //
 //
 //		H = cv::findHomography(samp_points, temp_points, cv::RANSAC, 5.0);
