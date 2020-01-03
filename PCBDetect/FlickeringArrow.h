@@ -17,7 +17,7 @@ private:
 	QColor brushColor;
 	QTimer *timer;
 	bool Flash = false;
-	QSize *fullImageSize;
+	QSize *originalFullImageSize;
 
 	//定义箭头的大小与形状
 	qreal sizeFactor; //箭头尺寸因子，控制箭头大小
@@ -32,7 +32,7 @@ public:
 	QRectF boundingRect() const;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 	inline void setColor(const QColor &color) { brushColor = color; }
-	inline void setFullImageSize(QSize *ptr) { fullImageSize = ptr; }
+	inline void setFullImageSize(QSize *ptr) { originalFullImageSize = ptr; }
 
 	void startFlickering(int msec = 500);//开始闪烁
 	void stopFlickering();//停止闪烁

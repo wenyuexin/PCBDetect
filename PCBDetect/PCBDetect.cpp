@@ -469,6 +469,8 @@ void PCBDetect::setPushButtonsEnabled(bool enable, bool all)
 //测试后门 - 切换主界面按键的可点击状态
 void PCBDetect::keyPressEvent(QKeyEvent *event)
 {
+	qDebug() << (Qt::Key) event->key();
+
 	//bool buttonsEnabled = false;
 	switch (event->key())
 	{

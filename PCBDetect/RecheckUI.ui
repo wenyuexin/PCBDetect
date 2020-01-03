@@ -22,8 +22,8 @@
   <widget class="QWidget" name="layoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>740</x>
-     <y>640</y>
+     <x>760</x>
+     <y>660</y>
      <width>77</width>
      <height>161</height>
     </rect>
@@ -116,7 +116,7 @@
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>-3</x>
+     <x>0</x>
      <y>30</y>
      <width>1441</width>
      <height>20</height>
@@ -134,7 +134,7 @@
     <rect>
      <x>0</x>
      <y>40</y>
-     <width>720</width>
+     <width>741</width>
      <height>860</height>
     </rect>
    </property>
@@ -172,9 +172,9 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>880</x>
-     <y>500</y>
-     <width>486</width>
+     <x>900</x>
+     <y>530</y>
+     <width>465</width>
      <height>343</height>
     </rect>
    </property>
@@ -1386,13 +1386,13 @@
     </item>
    </layout>
   </widget>
-  <widget class="QLabel" name="label_flaw">
+  <widget class="QLabel" name="label_defect">
    <property name="geometry">
     <rect>
-     <x>920</x>
+     <x>900</x>
      <y>70</y>
-     <width>401</width>
-     <height>401</height>
+     <width>450</width>
+     <height>450</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -1471,7 +1471,7 @@
   <zorder>line</zorder>
   <zorder>graphicsView_full</zorder>
   <zorder>layoutWidget</zorder>
-  <zorder>label_flaw</zorder>
+  <zorder>label_defect</zorder>
   <zorder>label_5</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

@@ -89,7 +89,7 @@ private:
 	inline void setMaskRoi_bl(cv::Point pt) { maskRoi_bl = pt; }
 	inline void setMaskRoi_tr(cv::Point pt) { maskRoi_tr = pt; }
 
-	void saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::DefectInfo> &defectInfos, QDate detectionDate);
+	void saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size originalFullImageSize, std::vector<pcb::DefectInfo> &defectInfos, QDate detectionDate);
 
 Q_SIGNALS:
 	void updateDetectState_detecter(int state);

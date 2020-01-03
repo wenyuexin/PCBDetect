@@ -264,13 +264,15 @@ void DefectDetecter::detect()
 			defectInfos[defectNum-1] = temp;
 		}
 		
-		//向检测界面发送是否合格的信息
+		//判断是否合格
 		bool qualified = (totalDefectNum < 1);
 		detectResult->SampleIsQualified = qualified;
-		emit detectFinished_detectThread();
 
 		//将结果信息存入结果对象
 		saveDetectResult(qualified, bigTempl, sz, defectInfos, (runtimeParams->productID).date);
+
+		//向检测界面发送检测结束的信号
+		emit detectFinished_detectThread();
 
 		//清空历史数据
 		allDetailImage.clear();
@@ -284,11 +286,11 @@ void DefectDetecter::detect()
 }
 
 //保存检测结果
-void DefectDetecter::saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size fullImageSize, std::vector<pcb::DefectInfo>& flawInfos, QDate detectionDate)
+void DefectDetecter::saveDetectResult(bool SampleIsQualified, cv::Mat &fullImage, cv::Size originalFullImageSize, std::vector<pcb::DefectInfo>& flawInfos, QDate detectionDate)
 {
 	detectResult->SampleIsQualified = SampleIsQualified;
 	detectResult->fullImage = fullImage.clone();
-	detectResult->fullImageSize = fullImageSize;
+	detectResult->originalFullImageSize = originalFullImageSize;
 	detectResult->defectInfos = flawInfos;
 	detectResult->detectDate = detectionDate;
 }
