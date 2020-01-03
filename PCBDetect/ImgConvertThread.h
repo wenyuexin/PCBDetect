@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QThread>
-#include <QSemaphore>
+#include <QThreadPool>
 #include "Configurator.h"
 #include "RuntimeParams.h"
 #include "pcbFuncLib.h"
@@ -10,7 +10,6 @@
 
 //图像转换线程
 //包括cv::Mat到QImage、QPixmap，以及后两种到cv::Mat的转换
-//注意，除cv::Mat到QPixmap之外，其他转换不能同时处理超过ConvertersNum张图片
 class ImgConvertThread : public QThread
 {
 	Q_OBJECT
@@ -29,8 +28,8 @@ private:
 
 	const int ConvertersNum = 8; //转换线程的总数不超过设定值
 	ImageConverter::CvtCode cvtCode; //转换代码
-	QSemaphore *semaphore; //限制转换器的信号量
 	std::vector<ImageConverter *> converters; //格式转换线程
+	QThreadPool *convertPool; //图像转换的线程池
 
 public:
 	ImgConvertThread(QObject *parent = Q_NULLPTR);
@@ -48,7 +47,7 @@ public:
 	inline void setCvtCode(ImageConverter::CvtCode code) { cvtCode = code; }
 
 private:
-	void initImageConverters();
+	void initImageConverters(int);
 	void deleteImageConverters();
 
 	void convertQImagesToCvMats(const pcb::QImageVector &src, pcb::CvMatVector &dst);

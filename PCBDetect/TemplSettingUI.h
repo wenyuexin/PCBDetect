@@ -5,8 +5,8 @@
 #include "RuntimeParams.h"
 #include "pcbFuncLib.h"
 #include "ImageConverter.h"
-#include <allheaders.h>
-#include <capi.h>
+//#include <allheaders.h>
+//#include <capi.h>
 #include <QWidget>
 #include <QDesktopWidget>
 #include <QMouseEvent>

@@ -95,10 +95,10 @@ void FlickeringArrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
 	if (pos().y() < marginWidth) {
 		painter->drawConvexPolygon(arrow_toUp, 7);
 	}
-	else if (pos().y() > fullImageSize->height() - marginWidth) {
+	else if (pos().y() > originalFullImageSize->height() - marginWidth) {
 		painter->drawConvexPolygon(arrow_toDown, 7);
 	} 
-	else if(pos().x() > fullImageSize->width() - marginWidth) {
+	else if(pos().x() > originalFullImageSize->width() - marginWidth) {
 		painter->drawConvexPolygon(arrow_toRight, 7);
 	}
 	else {

@@ -24,7 +24,7 @@ namespace pcb
 	struct DetectResult {
 		bool SampleIsQualified; //当前产品是否合格
 		cv::Mat fullImage; //标记有缺陷的整图
-		cv::Size fullImageSize; //缩放前的整图大小
+		cv::Size originalFullImageSize; //缩放前的整图大小
 		std::vector<DefectInfo> defectInfos; //缺陷信息
 		QDate detectDate; //检测日期
 	};

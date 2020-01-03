@@ -8,33 +8,34 @@ using pcb::CvMatVector;
 ImgConvertThread::ImgConvertThread(QObject *parent)
 	: QThread(parent)
 {
-
 	//成员变量初始化
 	errorCode = ImageConverter::ErrorCode::Default;
 	cvmatArray = Q_NULLPTR;
 	qpixmapArray = Q_NULLPTR;
 	qimageArray = Q_NULLPTR;
-	cvtCode = ImageConverter::CvtCode::Null; //转换代码
 	currentRow = Q_NULLPTR; //当前行号
-	semaphore = Q_NULLPTR;
+	cvtCode = ImageConverter::CvtCode::Null; //转换代码
 
-	//初始化图像转换器
-	initImageConverters();
+	//线程池
+	convertPool = Q_NULLPTR;
+	convertPool = QThreadPool::globalInstance(); //获取全局的线程池实例
+	convertPool->setMaxThreadCount(ConvertersNum); //设置最大可启动的线程数
+	convertPool->setExpiryTimeout(-1); //没有超时等待
+
+	converters.resize(0);
+	initImageConverters(ConvertersNum); //设置转换器
 }
 
 ImgConvertThread::~ImgConvertThread()
 {
 	qDebug() << "~ImgConvertThread";
-	delete semaphore; //删除信号量
-	semaphore = Q_NULLPTR;
 	deleteImageConverters();
 }
 
 
 void ImgConvertThread::run()
 {
-	qDebug() << "==================== " << pcb::chinese("转换图像类型")
-		<< "( currentRow_show =" << *currentRow << ")" << endl;
+	qDebug() << "==================== " << pcb::chinese("转换图像类型") << endl;
 
 	clock_t t1 = clock();
 	errorCode = ImageConverter::Unchecked;
@@ -83,23 +84,24 @@ void ImgConvertThread::run()
 	}
 
 	clock_t t2 = clock();
-	qDebug() << "==================== " << pcb::chinese("图像类型转换：")
-		<< (t2 - t1) << "ms ( currentRow_show =" << *currentRow << ")" << endl;
-
+	qDebug() << "==================== " << pcb::chinese("图像类型转换：") 
+		<< (t2 - t1) << "ms)" << endl;
+	
 	emit convertFinished_convertThread();
 }
 
 
 /************* 图像转换器的初始化、delete操作 ***************/
 
-void ImgConvertThread::initImageConverters()
+void ImgConvertThread::initImageConverters(int num)
 {
-	semaphore = new QSemaphore(ConvertersNum);
-
-	converters.resize(ConvertersNum);
-	for (int i = 0; i < ConvertersNum; i++) {
+	if (num <= converters.size() && converters.size() < 500) return;
+	
+	int from = converters.size();
+	converters.resize(num);
+	for (int i = from; i < num; i++) {
 		converters[i] = new ImageConverter();
-		converters[i]->setSemaphore(semaphore);
+		converters[i]->setAutoDelete(false); //运行结束后不自动delete
 	}
 }
 
@@ -117,75 +119,67 @@ void ImgConvertThread::deleteImageConverters()
 //QImage转cv::Mat
 void ImgConvertThread::convertQImagesToCvMats(const QImageVector &src, CvMatVector &dst)
 {
+	initImageConverters(src.size()); //转换器初始化
+
 	//开启转换线程
-	size_t srcSize = src.size();
-	dst.resize(srcSize);
-	for (int i = 0; i < srcSize; i++) {
+	dst.resize(src.size());
+	for (int i = 0; i < src.size(); i++) {
 		dst[i] = new cv::Mat; //分配内存
-		converters[i]->set(src[i], dst[i], ImageConverter::QImage2CvMat);
-		converters[i]->start(); //开始转换
+		converters[i]->set(src[i], dst[i], ImageConverter::QImage2CvMat);//配置转换器
+		convertPool->start(converters[i]);
 	}
-	//线程等待
-	for (int i = 0; i < srcSize; i++) {
-		converters[i]->wait();
-	}
+
+	//等待所有图像转换结束
+	convertPool->waitForDone();
 }
 
 //QPixmap转cv::Mat
 void ImgConvertThread::convertQPixmapsToCvMats(const QPixmapVector &src, CvMatVector &dst)
 {
+	initImageConverters(src.size()); //转换器初始化
+
 	//开启转换线程
-	size_t srcSize = src.size();
-	dst.resize(srcSize);
-	for (int i = 0; i < srcSize; i++) {
+	dst.resize(src.size());
+	for (int i = 0; i < src.size(); i++) {
 		dst[i] = new cv::Mat; //分配内存
 		converters[i]->set(src[i], dst[i], ImageConverter::QPixmap2CvMat);//配置转换器
-		converters[i]->start(); //开始转换
+		convertPool->start(converters[i]);
 	}
-	//线程等待
-	for (int i = 0; i < srcSize; i++) {
-		converters[i]->wait();
-	}
+
+	//等待所有图像转换结束
+	convertPool->waitForDone();
 }
 
 //cv::Mat转QImage
 void ImgConvertThread::convertCvMatsToQImages(const CvMatVector &src, QImageVector &dst)
 {
+	initImageConverters(src.size()); //转换器初始化
+
 	//开启转换线程
-	size_t srcSize = src.size();
-	dst.resize(srcSize);
-	for (int i = 0; i < srcSize; i++) {
+	dst.resize(src.size());
+	for (int i = 0; i < src.size(); i++) {
 		dst[i] = new QImage; //分配内存
-		converters[i]->set(src[i], dst[i], ImageConverter::CvMat2QImage);
-		converters[i]->start(); //开始转换
+		converters[i]->set(src[i], dst[i], ImageConverter::CvMat2QImage);//配置转换器
+		convertPool->start(converters[i]);
 	}
-	//线程等待
-	for (int i = 0; i < srcSize; i++) {
-		converters[i]->wait();
-	}
+
+	//等待所有图像转换结束
+	convertPool->waitForDone();
 }
 
 //cv::Mat转QPixmap
 void ImgConvertThread::convertCvMatsToQPixmaps(const CvMatVector &src, QPixmapVector &dst)
 {
+	initImageConverters(src.size()); //转换器初始化
+
 	//开启转换线程
 	dst.resize(src.size());
 	for (int i = 0; i < src.size(); i++) {
-		semaphore->acquire();
 		dst[i] = new QPixmap; //分配内存
-		for (int j = 0; j < ConvertersNum; j++) {
-			if (converters[j]->isRunning()) continue;
-			converters[j]->set(src[i], dst[i], ImageConverter::CvMat2QPixmap);//配置转换器
-			converters[j]->start(); //开始转换
-			break;
-		}
+		converters[i]->set(src[i], dst[i], ImageConverter::CvMat2QPixmap);//配置转换器
+		convertPool->start(converters[i]);
 	}
 
-	//线程等待
-	for (int i = 0; i < ConvertersNum; i++) {
-		converters[i]->wait();
-	}
-
-	semaphore->acquire(ConvertersNum);
-	semaphore->release(ConvertersNum);
+	//等待所有图像转换结束
+	convertPool->waitForDone();
 }

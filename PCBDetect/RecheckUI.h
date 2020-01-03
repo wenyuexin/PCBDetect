@@ -52,7 +52,7 @@ private:
 	QSize originalFullImageSize; //PCB大图的原始尺寸
 	QSize fullImageItemSize; //PCB大图的显示尺寸
 	qreal scaledFactor; //PCB大图的尺寸变换因子
-	QGraphicsScene fullImageScene; //显示PCB大图的场景
+	QGraphicsScene *fullImageScene; //显示PCB大图的场景
 	FlickeringArrow flickeringArrow; //PCB大图上闪烁的箭头
 	ImageConverter *imageConverter; //图像转换器
 
@@ -63,6 +63,7 @@ private:
 	int defectNum; //缺陷总数
 	int defectIndex; //当前正在显示的缺陷图
 	ImgConvertThread imgConvertThread; //图像转换线程
+	pcb::CvMatVector cvmatImages; //转换前的缺陷小图
 	pcb::QPixmapVector defectImages; //用于界面显示的缺陷小图
 	uint16_t flawIndicatorStatus; //指示灯亮灭状态
 

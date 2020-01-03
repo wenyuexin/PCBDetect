@@ -10,7 +10,7 @@ ImageConverter::ImageConverter(QObject *parent)
 	qimage = Q_NULLPTR;
 	qpixmap = Q_NULLPTR;
 	cvmat = Q_NULLPTR;
-	semaphore = Q_NULLPTR;
+	//semaphore = Q_NULLPTR;
 }
 
 ImageConverter::~ImageConverter()
@@ -76,8 +76,6 @@ void ImageConverter::run()
 	catch (std::exception) {
 		//pass	
 	};
-	
-	if (semaphore != Q_NULLPTR) semaphore->release(); //任务结束后释放信号量
 }
 
 
